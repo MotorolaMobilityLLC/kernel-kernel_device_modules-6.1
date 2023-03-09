@@ -645,6 +645,7 @@ int __mtk_pdc_get_setting(struct chg_alg_device *alg, int *newvbus, int *newcur,
 	if (pd_min_watt <= 5000000)
 		pd_min_watt = 5000000;
 
+#ifdef MTK_BASE
 	if ((now_max_watt >= pd_max_watt) || chg1_mivr || chg2_mivr) {
 		*newidx = pd->pd_boost_idx;
 		boost = true;
@@ -656,7 +657,11 @@ int __mtk_pdc_get_setting(struct chg_alg_device *alg, int *newvbus, int *newcur,
 		boost = false;
 		buck = false;
 	}
-
+#else
+	*newidx = selected_idx;
+	boost = false;
+	buck = false;
+#endif
 	*newvbus = cap->max_mv[*newidx];
 	*newcur = cap->ma[*newidx];
 
