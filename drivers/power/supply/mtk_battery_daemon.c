@@ -4517,7 +4517,9 @@ void sw_check_bat_plugout(struct mtk_battery *gm)
 			gm->bs_data.bat_status = POWER_SUPPLY_STATUS_UNKNOWN;
 			wakeup_fg_algo(gm, FG_INTR_BAT_PLUGOUT);
 			battery_update(gm);
+		#ifdef MTK_BASE
 			kernel_power_off();
+		#endif
 		}
 	}
 }
@@ -4726,7 +4728,9 @@ static void bat_plugout_irq_handler(struct mtk_battery *gm)
 		wakeup_fg_algo(gm, FG_INTR_BAT_PLUGOUT);
 		battery_update(gm);
 		fg_int_event(gm, EVT_INT_BAT_PLUGOUT);
+	#ifdef MTK_BASE
 		kernel_power_off();
+	#endif
 	}
 }
 
