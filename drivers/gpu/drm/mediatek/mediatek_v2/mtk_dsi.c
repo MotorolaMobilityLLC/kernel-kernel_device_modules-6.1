@@ -3347,6 +3347,10 @@ static void mtk_output_en_doze_switch(struct mtk_dsi *dsi)
 					MTK_IO_CMD_RDMA_GOLDEN_SETTING, &cfg);
 			cmdq_pkt_flush(handle);
 			cmdq_pkt_destroy(handle);
+
+			/*update mmclk when C/V switch*/
+			if (dsi->driver_data && dsi->driver_data->mmclk_by_datarate)
+				dsi->driver_data->mmclk_by_datarate(dsi, mtk_crtc, 1);
 		}
 
 		if (!mtk_dsi_is_cmd_mode(&dsi->ddp_comp)) {
