@@ -13,6 +13,7 @@
 #include <sound/soc.h>
 #include <linux/pm_runtime.h>
 #include "mtk-afe-external.h"
+#include <linux/io.h>
 
 #include "audio_ultra_msg_id.h"
 #include "mtk-scp-ultra-mem-control.h"
@@ -67,6 +68,16 @@ static struct ultra_gain_config gain_config = {
 	.mic_gain = 0,
 	.receiver_gain = 0
 };
+
+static int cap_state = -1;
+static int cali_state = -1;
+
+struct cali_result_t {
+	char state;
+	char result[16];
+};
+
+struct cali_result_t g_cali_result;
 
 /*****************************************************************************
  * SCP Recovery Register
@@ -230,6 +241,33 @@ int notify_ultra_afe_hw_free_event(struct notifier_block *nb, unsigned long even
 static struct notifier_block ultra_afe_hw_free_notifier = {
 	.notifier_call = notify_ultra_afe_hw_free_event,
 };
+void ultra_cali_message(void *msg_data)
+{
+	uint32_t *temp_payload = (uint32_t *)(msg_data);
+	struct mtk_base_scp_ultra *scp_ultra = get_scp_ultra_base();
+	struct audio_ultra_dram *cali_resv_mem =
+		&scp_ultra->ultra_cali.cali_resv_mem;
+	struct mtk_base_afe *afe = get_afe_base();
+	int data_size = 0;
+
+	if (temp_payload == NULL) {
+		pr_info("%s err\n", __func__);
+		return;
+	}
+
+	data_size  = *(temp_payload + 1);
+
+	pr_info("%s(), data size %d vir addr %p\r", __func__,
+			data_size, cali_resv_mem->vir_addr);
+
+	g_cali_result.state = 1;
+
+	memcpy_fromio(&(g_cali_result.result[0]), cali_resv_mem->vir_addr, data_size);
+
+	/* scp ultra dump buffer use dram */
+	if (afe->release_dram_resource)
+		afe->release_dram_resource(afe->dev);
+}
 
 void ultra_ipi_rx_internal(unsigned int msg_id, void *msg_data)
 {
@@ -243,6 +281,10 @@ void ultra_ipi_rx_internal(unsigned int msg_id, void *msg_data)
 	case AUDIO_TASK_USND_MSG_ID_DEBUG:
 	{
 		pr_debug("%s(), AUDIO_TASK_USND_MSG_ID_DEBUG \r", __func__);
+		break;
+	}
+	case AUDIO_TASK_USND_MSG_ID_CALI_RESULT: {
+		ultra_cali_message(msg_data);
 		break;
 	}
 	default:
@@ -422,6 +464,129 @@ static int mtk_scp_ultra_gain_config_set(struct snd_kcontrol *kcontrol,
 	return 0;
 }
 
+static int mtk_scp_ultra_cap_get(struct snd_kcontrol *kcontrol,
+					  struct snd_ctl_elem_value *ucontrol)
+{
+	ucontrol->value.integer.value[0] = cap_state;
+	return 0;
+}
+
+static int mtk_scp_ultra_cap_set(struct snd_kcontrol *kcontrol,
+					  struct snd_ctl_elem_value *ucontrol)
+{
+	int val = ucontrol->value.integer.value[0];
+	pr_info("%s() val=%d\n", __func__, val);
+	ultra_ipi_send(AUDIO_TASK_USND_MSG_ID_CAP_SENSOR_VALUE, false, 1, &val, 0);
+	cap_state = val;
+	return 0;
+}
+
+static int mtk_scp_ultra_cali_get(struct snd_kcontrol *kcontrol,
+					  struct snd_ctl_elem_value *ucontrol)
+{
+	ucontrol->value.integer.value[0] = cali_state;
+	return 0;
+}
+
+static void send_cali_state(int val) {
+	int timeout = 0;
+	int payload[3];
+	bool ret_val;
+
+	while (ultra_ipi_wait) {
+		msleep(ultra_WAITCHECK_INTERVAL_MS);
+		if (timeout++ >= ultra_IPIMSG_TIMEOUT)
+			ultra_ipi_wait = false;
+	}
+
+	payload[2] = val;
+
+	ret_val = ultra_ipi_send(AUDIO_TASK_USND_MSG_ID_CALI,
+				 false,
+				 3,
+				 &payload[0],
+				 ULTRA_IPI_BYPASS_ACK);
+	cali_state = val;
+}
+
+static int mtk_scp_ultra_cali_set(struct snd_kcontrol *kcontrol,
+					  struct snd_ctl_elem_value *ucontrol)
+{
+	struct snd_soc_component *cmpnt = snd_soc_kcontrol_component(kcontrol);
+	struct mtk_base_scp_ultra *scp_ultra =
+			snd_soc_component_get_drvdata(cmpnt);
+	struct mtk_base_scp_ultra_cali *ultra_cali = &scp_ultra->ultra_cali;
+	struct mtk_base_afe *afe = get_afe_base();
+	static int ctrl_val;
+	int payload[3];
+	bool ret_val;
+	int val = ucontrol->value.integer.value[0];
+
+	g_cali_result.state = 0;
+
+	pr_info("%s() val=%d\n", __func__, val);
+	if (ultra_cali->cali_flag == false && val == 1) {
+		ultra_cali->cali_flag = true;
+		//pcm_dump_switch = true;
+
+		if (afe->request_dram_resource) {
+			afe->request_dram_resource(afe->dev);
+			msleep(10);
+		}
+
+		payload[0] = ultra_cali->cali_resv_mem.size;
+		payload[1] = ultra_cali->cali_resv_mem.phy_addr;
+		payload[2] = val;
+
+		ret_val = ultra_ipi_send(AUDIO_TASK_USND_MSG_ID_CALI,
+					 false,
+					 3,
+					 &payload[0],
+					 ULTRA_IPI_BYPASS_ACK);
+		ultra_ipi_wait = true;
+		cali_state = 1;
+	} else if (ultra_cali->cali_flag == true && val == 2) {
+		send_cali_state(2);
+	} else if (ultra_cali->cali_flag == true && val == 3) {
+		send_cali_state(3);
+	} else if (ultra_cali->cali_flag == true && val == 0) {
+		send_cali_state(0);
+		ultra_cali->cali_flag = false;
+		ctrl_val = ucontrol->value.integer.value[0];
+	}
+
+
+	return 0;
+}
+
+static int mtk_scp_ultra_cali_result_get(struct snd_kcontrol *kcontrol,
+						 unsigned int __user *bytes,
+						 unsigned int size)
+{
+	int ret = 0;
+	// int i = 0;
+
+	// for (i = 0; i < 16; ++i) {
+	// 	pr_info("fang [%d][%d]\n", i, g_cali_result.result[i]);
+	// }
+
+	if (size < sizeof(struct cali_result_t)) {
+		pr_err("%s: invalid size %d requested, returning\n",
+			__func__, size);
+		ret = -EINVAL;
+		goto done;
+	}
+
+	ret = copy_to_user(bytes, &g_cali_result, sizeof(struct cali_result_t));
+	if (ret) {
+		pr_err("%s: failed to copy be_dai_name_table\n", __func__);
+		ret = -EFAULT;
+	}
+
+done:
+	return ret;
+}
+
 static int mtk_scp_ultra_engine_state_get(struct snd_kcontrol *kcontrol,
 					  struct snd_ctl_elem_value *ucontrol)
 {
@@ -588,6 +753,18 @@ static const struct snd_kcontrol_new ultra_platform_kcontrols[] = {
 			  sizeof(struct ultra_gain_config),
 			  mtk_scp_ultra_gain_config_get,
 			  mtk_scp_ultra_gain_config_set),
+	SOC_SINGLE_EXT("mtk_scp_ultra_cap_state",
+			  SND_SOC_NOPM, 0, 0xff, 0,
+			  mtk_scp_ultra_cap_get,
+			  mtk_scp_ultra_cap_set),
+	SOC_SINGLE_EXT("mtk_scp_ultra_cali_state",
+			  SND_SOC_NOPM, 0, 0xff, 0,
+			  mtk_scp_ultra_cali_get,
+			  mtk_scp_ultra_cali_set),
+	SND_SOC_BYTES_TLV("mtk_scp_ultra_cali_result",
+			  sizeof(struct cali_result_t),
+			  mtk_scp_ultra_cali_result_get,
+			  0),
 	SOC_SINGLE_EXT("mtk_scp_ultra_engine_state",
 		     SND_SOC_NOPM, 0, 0xff, 0,
 		     mtk_scp_ultra_engine_state_get,
@@ -620,7 +797,7 @@ static int mtk_scp_ultra_pcm_open(struct snd_soc_component *component,
 		return 0;
 	}
 
-	dev_info(scp_ultra->dev, "%s() memif dl=%d,ul=%d\n",
+	dev_info(scp_ultra->dev, "%s() zmemif dl=%d,ul=%d\n",
 		__func__,
 		scp_ultra->ultra_mem.ultra_dl_memif_id,
 		scp_ultra->ultra_mem.ultra_ul_memif_id);
@@ -839,4 +1016,3 @@ EXPORT_SYMBOL_GPL(mtk_scp_ultra_pcm_platform);
 MODULE_DESCRIPTION("Mediatek scp ultra platform driver");
 MODULE_AUTHOR("Youwei Dong <Youwei.Dong@mediatek.com>");
 MODULE_LICENSE("GPL v2");
-

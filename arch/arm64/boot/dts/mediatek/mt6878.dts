@@ -10368,7 +10368,7 @@
 				  <10  22 0>,	/* vow vendor G */
 				  <11  20 0>,	/* vow dual mic */
 				  <12 100 0>,	/* vow dual mic barge in */
-				  <13 200 0>;	/* ultrasound */
+				  <13 410 0>;	/* ultrasound */
 
 		scp-dram-region = "enable";   /* enable scp dram region manage */
 		scp-protect = "enable";   /* enable scp protections */
@@ -10396,7 +10396,8 @@
 				  <10 0x2000 0x0>, /* sensor debug */
 				  <11 0x100 0x0>, /* sensor custom writer */
 				  <12 0x100 0x0>, /* sensor custom reader */
-				  <19 0x200 0x0>;  /* low power debug */
+				  <19 0x200 0x0>,  /* low power debug */
+				  <20 0x100 0x0>; /* ultra cali mem reader */
 
 		memorydump = <0x100000>, /* l2tcm */
 				 <0x0c4000>, /* l1c */
