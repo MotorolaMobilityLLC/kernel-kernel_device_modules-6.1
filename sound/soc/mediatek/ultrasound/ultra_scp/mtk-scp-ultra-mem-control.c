@@ -26,6 +26,8 @@ int mtk_scp_ultra_reserved_dram_init(void)
 	struct audio_ultra_dram *ultra_resv_mem = &scp_ultra->ultra_reserve_dram;
 	struct audio_ultra_dram *dump_resv_mem =
 		&scp_ultra->ultra_dump.dump_resv_mem;
+	struct audio_ultra_dram *cali_resv_mem =
+		&scp_ultra->ultra_cali.cali_resv_mem;
 
 	ultra_resv_mem->phy_addr =
 		scp_get_reserve_mem_phys(ULTRA_MEM_ID);
@@ -50,6 +52,14 @@ int mtk_scp_ultra_reserved_dram_init(void)
 	}
 
 	memset_io((void *)ultra_resv_mem->vir_addr, 0, ultra_resv_mem->size);
+
+	cali_resv_mem->phy_addr =
+		scp_get_reserve_mem_phys(ULTRA_CALI_MEM_ID);
+	cali_resv_mem->vir_addr =
+		(unsigned char *)scp_get_reserve_mem_virt
+				 (ULTRA_CALI_MEM_ID);
+	cali_resv_mem->size = scp_get_reserve_mem_size(ULTRA_CALI_MEM_ID);
+	memset_io((void *)cali_resv_mem->vir_addr, 0, cali_resv_mem->size);
 
 	dev_info(scp_ultra->dev,
 		 "%s(), sce reserve mem pa=0x%llx, va=0x%lx, size=0x%llx\n",
@@ -92,4 +102,3 @@ int mtk_scp_ultra_reserved_dram_init(void)
 
 	return 0;
 }
-
