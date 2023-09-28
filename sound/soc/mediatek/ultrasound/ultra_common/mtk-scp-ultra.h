@@ -20,6 +20,11 @@ struct mtk_base_scp_ultra_dump {
 	struct audio_ultra_dram dump_resv_mem;
 };
 
+struct mtk_base_scp_ultra_cali {
+	bool cali_flag;
+	struct audio_ultra_dram cali_resv_mem;
+};
+
 struct mtk_base_scp_ultra_mem {
 	struct snd_dma_buffer ultra_dl_dma_buf;
 	struct snd_dma_buffer ultra_ul_dma_buf;
@@ -33,6 +38,7 @@ struct mtk_base_scp_ultra {
 	const struct snd_soc_component_driver *component_driver;
 	struct mtk_base_scp_ultra_mem ultra_mem;
 	struct mtk_base_scp_ultra_dump ultra_dump;
+	struct mtk_base_scp_ultra_cali ultra_cali;
 	struct audio_ultra_dram ultra_reserve_dram;
 	unsigned int usnd_state;
 	unsigned int scp_ultra_dl_memif_id;
