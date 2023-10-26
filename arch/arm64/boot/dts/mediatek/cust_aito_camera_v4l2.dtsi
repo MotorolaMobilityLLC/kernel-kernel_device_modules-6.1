@@ -313,13 +313,13 @@
 			};
 		};
 	};
-#if 0
+
 	mtk_camera_eeprom0:camera-eeprom0@50 {
 		compatible = "mediatek,camera_eeprom";
 		reg = <0x50>;
 		status = "okay";
 	};
-#endif
+
 	sensor0: sensor0@20 {
 		compatible = "mediatek,imgsensor";
 		sensor-names = "mot_aito_s5kgn8_mipi_raw";
