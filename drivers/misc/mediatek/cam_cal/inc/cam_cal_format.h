@@ -53,7 +53,13 @@ enum ENUM_CAMERA_CAM_CAL_TYPE_ENUM {
 	CAMERA_CAM_CAL_DATA_DUMP,
 	CAMERA_CAM_CAL_DATA_LENS_ID,
 	CAMERA_CAM_CAL_DATA_SHADING_TABLE_16_9,
+	CAMERA_CAM_CAL_DATA_MANUFACTURE,
 	CAMERA_CAM_CAL_DATA_LIST
+};
+
+enum ENUM_MOT_CAMERA_CAM_CAL_TYPE_ENUM {
+	CAMERA_CAM_CAL_DATA_FACTORY_VERIFY = 0,
+	MOT_CAMERA_CAM_CAL_DATA_LIST
 };
 
 enum ENUM_CAM_CAL_DATA_VER_ENUM {
@@ -137,14 +143,14 @@ struct STRUCT_CAM_CAL_PREGAIN_STRUCT {
 	unsigned int rUnitGainu4G_low;
 	unsigned int rUnitGainu4B_low;
 
-	unsigned char rValueR;
-	unsigned char rValueGr;
-	unsigned char rValueGb;
-	unsigned char rValueB;
-	unsigned char rGoldenR;
-	unsigned char rGoldenGr;
-	unsigned char rGoldenGb;
-	unsigned char rGoldenB;
+	unsigned short rValueR;
+	unsigned short rValueGr;
+	unsigned short rValueGb;
+	unsigned short rValueB;
+	unsigned short rGoldenR;
+	unsigned short rGoldenGr;
+	unsigned short rGoldenGb;
+	unsigned short rGoldenB;
 };
 
 struct STRUCT_CAM_CAL_AF_STRUCT {
@@ -183,6 +189,63 @@ struct STRUCT_CAM_CAL_PDAF_STRUCT {
 	unsigned char Data[CAM_CAL_PDAF_SIZE];
 };
 
+#define MAX_CALIBRATION_STRING 40
+#define MAX_ALL_EEPROM_DATA_SIZE 0x2500
+
+typedef enum {
+	NONEXISTENCE = -1,
+	NO_ERRORS,
+	CRC_FAILURE,
+	LIMIT_FAILURE,
+} calibration_status_t;
+
+typedef enum {
+	MAIN_CAMERA,
+	FRONT_CAMERA,
+	DEPTH_CAMERA,
+	UW_CAMERA,
+	TELE_CAMERA,
+} sensor_type_t;
+
+struct MOT_MANUFACTURE_DATA {
+	unsigned char eeprom_table_version[MAX_CALIBRATION_STRING];
+	unsigned char cal_hw_ver[MAX_CALIBRATION_STRING];
+	unsigned char cal_sw_ver[MAX_CALIBRATION_STRING];
+	unsigned char part_number[MAX_CALIBRATION_STRING];
+	unsigned char actuator_id[MAX_CALIBRATION_STRING];
+	unsigned char lens_id[MAX_CALIBRATION_STRING];
+	unsigned char manufacturer_id[MAX_CALIBRATION_STRING];
+	unsigned char factory_id[MAX_CALIBRATION_STRING];
+	unsigned char manufacture_line[MAX_CALIBRATION_STRING];
+	unsigned char manufacture_date[MAX_CALIBRATION_STRING];
+	unsigned char serial_number[MAX_CALIBRATION_STRING];
+};
+
+struct MOT_CALIBRATION_STATUS {
+	calibration_status_t mnf_status;
+	calibration_status_t af_status;
+	calibration_status_t awb_status;
+	calibration_status_t lsc_status;
+	calibration_status_t pdaf_status;
+	calibration_status_t dual_status;
+	calibration_status_t af_sync_status;
+	calibration_status_t mtk_necessary_status;
+	calibration_status_t xtalk_status;
+};
+
+struct STRUCT_MOT_EEPROM_DATA {
+	enum ENUM_MOT_CAMERA_CAM_CAL_TYPE_ENUM Command;
+	unsigned int  sensorID;
+	unsigned int  deviceID;
+	unsigned char SensorName[MAX_CALIBRATION_STRING];
+	unsigned int  data_size;
+	sensor_type_t sensor_type;
+	struct MOT_CALIBRATION_STATUS  CalibrationStatus;
+	unsigned char DumpAllEepromData[MAX_ALL_EEPROM_DATA_SIZE];
+	unsigned char serial_number[MAX_CALIBRATION_STRING];
+	unsigned int serial_number_bit;
+};
+
 /** @brief This enum defines the CAM_CAL Table.  */
 
 struct STRUCT_CAM_CAL_DATA_STRUCT {
@@ -196,6 +259,8 @@ struct STRUCT_CAM_CAL_DATA_STRUCT {
 	struct STRUCT_CAM_CAL_PDAF_STRUCT         PDAF;
 	struct STRUCT_CAM_CAL_Stereo_Data_STRUCT  Stereo_Data;
 	unsigned char LensDrvId[10];
+	struct MOT_MANUFACTURE_DATA   ManufactureData;
+	unsigned char *SensorName;
 };
 
 /**
