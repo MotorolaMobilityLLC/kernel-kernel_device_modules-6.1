@@ -12740,3 +12740,6 @@ TOP_LDRO7,TOP_LDRO8,TOP_LDRO9,TOP_LDRO10,TOP_LDRO11,TOP_LDRO12,TOP_LDRO13,TOP_LD
 &mt6369codec {
 	mediatek,bypass-vant18 = <1>; /* 0: do not bypass; 1: bypass */
 };
+
+/* Motorola base dts override */
+#include "mediatek/mt6878-moto-base.dtsi"
