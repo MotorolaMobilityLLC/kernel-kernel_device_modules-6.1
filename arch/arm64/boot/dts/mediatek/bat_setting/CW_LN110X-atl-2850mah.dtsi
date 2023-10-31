@@ -1,0 +1,27 @@
+/*
+ * Copyright (C) 2023 Motorola Inc.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 as
+ * published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See http://www.gnu.org/licenses/gpl-2.0.html for more details.
+ */
+ln110x-atl-2850mah {
+	serialnum = "SB18D80977";
+	fcc_design = <2850>;
+	//ui_full = <98>;
+	config_profile_info = [ 46 00 00 00 00 00 00 00
+				9d b5 b4 c4 af a7 da c7
+				bc ff ff be 87 6f 59 4c
+				43 3b 2f a7 95 e1 d1 ff
+				d2 c7 ce d6 d8 d7 d3 d0
+				cb c9 d5 c9 a6 98 8d 86
+				7f 7c 89 92 a5 9d 56 d1
+				20 00 ab 10 00 a3 7c 00
+				00 00 64 11 b2 47 00 00
+				00 00 00 00 00 00 00 48];
+};
