@@ -24,4 +24,5 @@ obj-$(CONFIG_DEVICE_MODULES_REGULATOR_RT6160)	+= rt6160-regulator.o
 ifneq ($(wildcard $(srctree)/$(src)/k6878v1_64_alpha),)
 obj-$(CONFIG_REGULATOR_MT6878_ALPHA_SUPPORT) += k6878v1_64_alpha/
 endif
+obj-$(CONFIG_MOTO_WL2864C)  += wl2864c-regulator.o
 ccflags-$(CONFIG_REGULATOR_DEBUG) += -DDEBUG
