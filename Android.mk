@@ -14,6 +14,7 @@ endif
 endif
 
 include $(LOCAL_PATH)/kenv.mk
+include $(LOCAL_PATH)/defconfig.mk
 
 ifeq ($(wildcard $(TARGET_PREBUILT_KERNEL)),)
 KERNEL_MAKE_DEPENDENCIES := $(shell find $(KERNEL_DIR) -name .git -prune -o -type f | sort)
@@ -49,6 +50,7 @@ $(GEN_KERNEL_BUILD_CONFIG): $(KERNEL_DIR)/scripts/gen_build_config.py $(wildcard
 	$(hide) cd kernel && python $(PRIVATE_GEN_BUILD_CONFIG) --kernel-defconfig $(PRIVATE_KERNEL_DEFCONFIG) --kernel-defconfig-overlays "$(PRIVATE_KERNEL_DEFCONFIG_OVERLAYS)" --kernel-build-config-overlays "$(PRIVATE_KERNEL_BUILD_CONFIG_OVERLAYS)" -m $(TARGET_BUILD_VARIANT) -o $(PRIVATE_KERNEL_BUILD_CONFIG) && cd ..
 
 ifeq (yes,$(strip $(BUILD_KERNEL)))
+KERNEL_MAKE_DEPENDENCIES += $(TARGET_DEFCONFIG)
 ifneq ($(KERNEL_USE_BAZEL),yes)
 $(KERNEL_ZIMAGE_OUT): .KATI_IMPLICIT_OUTPUTS += $(TARGET_KERNEL_CONFIG)
 $(KERNEL_ZIMAGE_OUT): PRIVATE_DIR := $(KERNEL_DIR)
