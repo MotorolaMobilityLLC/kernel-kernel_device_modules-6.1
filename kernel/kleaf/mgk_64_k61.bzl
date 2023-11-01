@@ -75,6 +75,8 @@ mgk_64_k61_kleaf_modules = [
     "//vendor/mediatek/kernel_modules/mtkcam/scpsys/mtk-aov:mtk_aov",
     "//vendor/mediatek/kernel_modules/sched_cus:sched_cus",
     "//vendor/mediatek/kernel_modules/sched_int:sched_int",
+    "//motorola/kernel/modules/drivers/misc/utag:utags",
+    "//motorola/kernel/modules/drivers/mmi_info:mmi_info",
 ]
 
 mgk_64_k61_kleaf_eng_modules = [
