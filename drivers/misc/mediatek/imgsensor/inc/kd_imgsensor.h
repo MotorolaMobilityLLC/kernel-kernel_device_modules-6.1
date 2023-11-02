@@ -272,6 +272,7 @@
 #define S5KGD2_SENSOR_ID                        0x0842
 #define S5KGN8_SENSOR_ID                        0x08e8
 #define MOT_AITO_S5KGN8_SENSOR_ID               0x08e8
+#define MOT_AITO_OV32B_SENSOR_ID                0x3242
 /*HI*/
 #define HI841_SENSOR_ID                         0x0841
 #define HI707_SENSOR_ID                         0x00b8
@@ -547,6 +548,7 @@
 #define SENSOR_DRVNAME_S5KGD2_MIPI_RAW         "s5kgd2_mipi_raw"
 #define SENSOR_DRVNAME_S5KGN8_MIPI_RAW         "s5kgn8_mipi_raw"
 #define SENSOR_DRVNAME_MOT_AITO_S5KGN8_MIPI_RAW         "mot_aito_s5kgn8_mipi_raw"
+#define SENSOR_DRVNAME_MOT_AITO_OV32B_MIPI_RAW "mot_aito_ov32b_mipi_raw"
 /*HI*/
 #define SENSOR_DRVNAME_HI841_MIPI_RAW           "hi841_mipi_raw"
 #define SENSOR_DRVNAME_HI707_YUV                "hi707_yuv"
