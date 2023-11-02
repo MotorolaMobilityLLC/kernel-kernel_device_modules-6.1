@@ -12,3 +12,6 @@
 
 #include "mediatek/mt6878-moto-common-overlay.dtsi"
 
+#include "mediatek/aito-wl2864c.dtsi"
+#include "mediatek/cust_aito_camera_v4l2.dtsi"
+
