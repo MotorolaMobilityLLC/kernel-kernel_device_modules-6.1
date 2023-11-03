@@ -289,6 +289,7 @@
 #define HI191MIPI_SENSOR_ID                     0x0191
 #define HIVICF_SENSOR_ID                        0x0081
 #define HI847_SENSOR_ID                         0x0847
+#define MOT_AITO_HI1336_SENSOR_ID              0x1336
 /*MT*/
 #define MT9D011_SENSOR_ID                       0x1511
 #define MT9D111_SENSOR_ID                       0x1511
@@ -563,6 +564,7 @@
 #define SENSOR_DRVNAME_HI253_YUV                "hi253_yuv"
 #define SENSOR_DRVNAME_HI191_MIPI_RAW           "hi191_mipi_raw"
 #define SENSOR_DRVNAME_HI847_MIPI_RAW           "hi847_mipi_raw"
+#define SENSOR_DRVNAME_MOT_AITO_HI1336_MIPI_RAW  "mot_aito_hi1336_mipi_raw"
 /*MT*/
 #define SENSOR_DRVNAME_MT9P012_RAW              "mt9p012_raw"
 #define SENSOR_DRVNAME_MT9P015_RAW              "mt9p015_raw"
