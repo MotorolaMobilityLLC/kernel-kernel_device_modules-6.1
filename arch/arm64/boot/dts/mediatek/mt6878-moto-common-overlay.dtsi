@@ -13,6 +13,18 @@
 #include <dt-bindings/pinctrl/mt6897-pinfunc.h>
 #endif
 
+&utags {
+	compatible = "mmi,utags";
+	mmi,main-utags = "/dev/block/by-name/utags";
+	mmi,backup-utags = "/dev/block/by-name/utagsBackup";
+};
+
+&hw {
+	compatible = "mmi,utags";
+	mmi,dir-name = "hw";
+	mmi,main-utags = "/dev/block/by-name/hw";
+};
+
 &chosen {
 bootargs_ext = "arm64.nopauth arm64.nosme arm64.nosve";
 };
