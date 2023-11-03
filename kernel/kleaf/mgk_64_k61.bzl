@@ -77,6 +77,8 @@ mgk_64_k61_kleaf_modules = [
     "//vendor/mediatek/kernel_modules/sched_int:sched_int",
     "//motorola/kernel/modules/drivers/misc/utag:utags",
     "//motorola/kernel/modules/drivers/mmi_info:mmi_info",
+    "//motorola/kernel/modules/drivers/sensors:sensors_class",
+    "//motorola/kernel/modules/drivers/misc/sx937x_multi:sx937x_multi",
 ]
 
 mgk_64_k61_kleaf_eng_modules = [
