@@ -8,5 +8,14 @@
 	utags: utags { };
 	hw: hw { };
 	moto_chg_tcmd: moto_chg_tcmd { };
+
+	mt6363_thermistor2: mt6363_thermistor2 { };
+	mt6363_thermistor3: mt6363_thermistor3 { };
+	mt6363_thermistor4: mt6363_thermistor4 { };
+	mt6363_thermistor5: mt6363_thermistor5 { };
+	mt6363_thermistor6: mt6363_thermistor6 { };
+	mt6363_thermistor7: mt6363_thermistor7 { };
+	mt6369_thermistor2: mt6369_thermistor2 { };
+	mt6375_thermistor: mt6375_thermistor { };
 };
 
