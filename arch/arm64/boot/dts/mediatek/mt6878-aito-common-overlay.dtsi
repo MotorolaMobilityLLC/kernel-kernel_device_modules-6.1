@@ -17,3 +17,6 @@
 
 #include "mediatek/aito-ntc.dtsi"
 
+&mmc1 {
+	status = "disabled";
+};
