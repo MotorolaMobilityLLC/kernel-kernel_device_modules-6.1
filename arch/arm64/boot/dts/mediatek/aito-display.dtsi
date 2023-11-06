@@ -24,7 +24,17 @@
 		max-hw-brightness = <16380>;
 	};
 };
+/*
+&mtk_leds1 {
+	compatible = "mediatek,disp-conn-leds";
 
+	backlight {
+		led-mode = <4>;
+		max-brightness = <16380>;
+		max-hw-brightness = <16380>;
+	};
+};
+*/
 &dsi0 {
 	status = "okay";
 /*
@@ -56,6 +66,38 @@
 	};
 };
 
+&dsi1 {
+	status = "okay";
+
+/*
+	panel21@0 {
+		/delete-property/ compatible;
+		/delete-property/ pm-enable-gpios;
+		/delete-property/ reset-gpios;
+		/delete-property/gate-ic;
+
+		compatible = "mot,dummy,vdo,60hz";
+		reg = <0>;
+		pinctrl-names = "default";
+	};
+*/
+	panel21@0 {
+		/delete-property/ compatible;
+		/delete-property/ pm-enable-gpios;
+		/delete-property/ reset-gpios;
+		/delete-property/gate-ic;
+
+		compatible = "csot,nt37705,cmd,cli";
+		reg = <0>;
+		pm-enable-gpios = <&pio 114 0>,
+                          <&pio 59 0>,
+                          <&pio 77 0>,
+                          <&pio 115 0>;
+		reset-gpios = <&pio 113 0>;
+		pinctrl-names = "default";
+	};
+};
+
 &mtkfb {
 	/delete-property/ pinctrl-names;
 	/delete-property/ pinctrl-0;
@@ -70,7 +112,11 @@
 
 	pinctrl-names = "lcm_rst_out0_gpio", "mode_te_te",
 		"oled_vci_en_gpio", "oled_vio_en_gpio",
-		"oled_dvdd_en0_gpio", "oled_dvdd_en1_gpio";
+		"oled_dvdd_en0_gpio", "oled_dvdd_en1_gpio",
+
+		"lcm1_rst_out0_gpio", "lcm1_mode_te_te",
+		"oled1_vci_en_gpio", "oled1_vio_en_gpio",
+		"oled1_dvdd_en0_gpio", "oled1_dvdd_en1_gpio";
 
 	pinctrl-0 = <&mtkfb_pins_lcm_rst_out_gpio>;
 	pinctrl-1 = <&mtkfb_pins_lcm_dsi_te>;
@@ -78,6 +124,13 @@
 	pinctrl-3 = <&mtkfb_pins_oled_vio_en>;
 	pinctrl-4 = <&mtkfb_pins_oled_avdd_en0>;
 	pinctrl-5 = <&mtkfb_pins_oled_avdd_en1>;
+
+	pinctrl-6 = <&mtkfb_pins_lcm1_rst_out_gpio>;
+	pinctrl-7 = <&mtkfb_pins_lcm_dsi1_te>;
+	pinctrl-8 = <&mtkfb_pins_oled1_vci_en>;
+	pinctrl-9 = <&mtkfb_pins_oled1_vio_en>;
+	pinctrl-10 = <&mtkfb_pins_oled1_avdd_en0>;
+	pinctrl-11 = <&mtkfb_pins_oled1_avdd_en1>;
 
 	status = "okay";
 
@@ -120,6 +173,46 @@
 	mtkfb_pins_lcm_rst_out_gpio: lcm_rst_out_gpio {
 		pins_cmd_dat {
 			pinmux = <PINMUX_GPIO90__FUNC_GPIO90>;
+			slew-rate = <1>;
+			output-low;
+		};
+	};
+
+	mtkfb_pins_oled1_vci_en: oled1_vci_en_gpio {
+		pins_cmd_dat {
+			pinmux = <PINMUX_GPIO115__FUNC_GPIO115>;
+			slew-rate = <1>;
+			output-low;
+		};
+	};
+
+	mtkfb_pins_oled1_vio_en: oled1_vio_en_gpio {
+		pins_cmd_dat {
+			pinmux = <PINMUX_GPIO114__FUNC_GPIO114>;
+			slew-rate = <1>;
+			output-low;
+		};
+	};
+
+	mtkfb_pins_oled1_avdd_en0: oled1_dvdd_en0_gpio {
+		pins_cmd_dat {
+			pinmux = <PINMUX_GPIO59__FUNC_GPIO59>;
+			slew-rate = <1>;
+			output-low;
+		};
+	};
+
+	mtkfb_pins_oled1_avdd_en1: oled1_dvdd_en1_gpio {
+		pins_cmd_dat {
+			pinmux = <PINMUX_GPIO77__FUNC_GPIO77>;
+			slew-rate = <1>;
+			output-low;
+		};
+	};
+
+	mtkfb_pins_lcm1_rst_out_gpio: lcm1_rst_out_gpio {
+		pins_cmd_dat {
+			pinmux = <PINMUX_GPIO113__FUNC_GPIO113>;
 			slew-rate = <1>;
 			output-low;
 		};
