@@ -310,8 +310,8 @@ bootargs_ext = "arm64.nopauth arm64.nosme arm64.nosve";
 		Semtech,ref-phases-a = <4>;
 		Semtech,ref-phases-b = <5>;
 		Semtech,ref-phases-c = <6>;
-		Semtech,button-flag = <0x3a>;
-		Semtech,button-names = "Moto CapSense Ch1","Moto CapSense Ch3","Moto CapSense Ch4","Moto CapSense Ch5";
+		Semtech,button-flag = <0x1a>;
+		Semtech,button-names = "Moto CapSense Ch1","Moto CapSense Ch3","Moto CapSense Ch4";
 		Semtech,debug-name = "capsense0";
 		Semtech,flip_operation_num = <3>;
 		Semtech,flip_operation_far_num = <3>;
@@ -338,13 +338,13 @@ bootargs_ext = "arm64.nopauth arm64.nosme arm64.nosve";
 			0x8064 0x486
 			0x8070 0x486
 			0x807C 0x486
-			0x8030 0xFFCFFF
-			0x803C 0xFFCFFD
-			0x8048 0xFFCFFF
-			0x8054 0xFFCFEF
-			0x8060 0xFFCBFF
-			0x806C 0xFECFFF
-			0x8078 0xFFCFFF
+			0x8030 0xFFF9FF
+			0x803C 0xFFF9EF
+			0x8048 0xFFF9FF
+			0x8054 0xFEF9FF
+			0x8060 0xF7F9FF
+			0x806C 0xFFF9EF
+			0x8078 0xFFF9EF
 			0x8084 0x0
 			0x802C 0x0
 			0x8038 0x0
@@ -419,8 +419,8 @@ bootargs_ext = "arm64.nopauth arm64.nosme arm64.nosve";
 		Semtech,ref-phases-a = <4>;
 		Semtech,ref-phases-b = <5>;
 		Semtech,ref-phases-c = <6>;
-		Semtech,button-flag = <0x45>;
-		Semtech,button-names = "Moto CapSense Ch0","Moto CapSense Ch2","Moto CapSense Ch6";
+		Semtech,button-flag = <0x5>;
+		Semtech,button-names = "Moto CapSense Ch0","Moto CapSense Ch2";
 		Semtech,debug-name = "capsense1";
 		Semtech,flip_operation_num = <2>;
 		Semtech,flip_operation_far_num = <2>;
@@ -445,13 +445,13 @@ bootargs_ext = "arm64.nopauth arm64.nosme arm64.nosve";
 			0x8064 0x476
 			0x8070 0x456
 			0x807C 0x476
-			0x8030 0xFFCFFD
-			0x803C 0xFFCFFF
-			0x8048 0xFFCFEF
-			0x8054 0xFFCFFF
-			0x8060 0xFFFCFF
-			0x806C 0xFFCFFF
-			0x8078 0xFECBFF
+			0x8030 0xFFD9FF
+			0x803C 0xFFF9FF
+			0x8048 0xFFF9EF
+			0x8054 0xFFF9FF
+			0x8060 0xFFF9FF
+			0x806C 0xFFF9FF
+			0x8078 0xFFF9FF
 			0x8084 0x0
 			0x802C 0x0
 			0x8038 0x0
