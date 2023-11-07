@@ -79,6 +79,7 @@ mgk_64_k61_kleaf_modules = [
     "//motorola/kernel/modules/drivers/mmi_info:mmi_info",
     "//motorola/kernel/modules/drivers/sensors:sensors_class",
     "//motorola/kernel/modules/drivers/misc/sx937x_multi:sx937x_multi",
+    "//motorola/kernel/modules/drivers/power/sc760x_charger_mmi:sc760x_charger_mmi",
 ]
 
 mgk_64_k61_kleaf_eng_modules = [
