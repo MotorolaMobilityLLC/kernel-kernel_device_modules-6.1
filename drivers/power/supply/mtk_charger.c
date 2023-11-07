@@ -3649,6 +3649,23 @@ static void mtk_charger_external_power_changed(struct power_supply *psy)
 	_wake_up_charger(info);
 }
 
+
+int mmi_batt_health_check(void)
+{
+	//<MMI-STOPSHIP>: mtk_charger: temporary to make smart_battery build pass
+	return POWER_SUPPLY_HEALTH_GOOD;
+}
+EXPORT_SYMBOL(mmi_batt_health_check);
+
+int mmi_charger_update_batt_status(void)
+{
+	//<MMI-STOPSHIP>: mtk_charger: temporary to make smart_battery build pass
+	return POWER_SUPPLY_STATUS_CHARGING;
+}
+EXPORT_SYMBOL(mmi_charger_update_batt_status);
+
+
+
 int notify_adapter_event(struct notifier_block *notifier,
 			unsigned long evt, void *val)
 {
