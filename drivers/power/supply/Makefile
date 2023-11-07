@@ -36,3 +36,4 @@ mtk_pep50p-objs := mtk_pe5p.o mtk_pe5p_hal.o
 obj-$(CONFIG_CHARGER_RT9759)	+= rt9759.o
 obj-$(CONFIG_CHARGER_RT9490)	+= rt9490-charger.o
 obj-$(CONFIG_CHARGER_RT9758)	+= rt9758-charger.o
+obj-$(CONFIG_MOTO_CHG_TCMD_SUPPORT) += moto_chg_tcmd.o

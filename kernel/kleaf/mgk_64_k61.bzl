@@ -520,6 +520,7 @@ mgk_64_k61_device_modules = [
     "drivers/pinctrl/mediatek/pinctrl-mt8188.ko",
     "drivers/pinctrl/mediatek/pinctrl-mtk-common-v2_debug.ko",
     "drivers/pinctrl/mediatek/pinctrl-mtk-v2.ko",
+    "drivers/power/supply/moto_chg_tcmd.ko",
     "drivers/power/supply/adapter_class.ko",
     "drivers/power/supply/charger_class.ko",
     "drivers/power/supply/k6985v1_64_alpha/bq2579x.ko",
