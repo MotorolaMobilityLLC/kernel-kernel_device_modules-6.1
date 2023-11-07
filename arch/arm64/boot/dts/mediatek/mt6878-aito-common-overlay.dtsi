@@ -17,6 +17,7 @@
 #include "mediatek/aito-charger.dtsi"
 #include "mediatek/aito-fps.dtsi"
 #include "mediatek/aito-ntc.dtsi"
+#include "mediatek/aito-display.dtsi"
 
 &mmc1 {
 	status = "disabled";
