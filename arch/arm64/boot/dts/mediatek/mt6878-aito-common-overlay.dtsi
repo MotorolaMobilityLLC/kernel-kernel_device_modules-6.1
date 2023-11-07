@@ -15,7 +15,7 @@
 #include "mediatek/aito-wl2864c.dtsi"
 #include "mediatek/cust_aito_camera_v4l2.dtsi"
 #include "mediatek/aito-charger.dtsi"
-
+#include "mediatek/aito-fps.dtsi"
 #include "mediatek/aito-ntc.dtsi"
 
 &mmc1 {
