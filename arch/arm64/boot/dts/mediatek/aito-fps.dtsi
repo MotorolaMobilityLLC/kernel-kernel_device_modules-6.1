@@ -1,0 +1,57 @@
+// SPDX-License-Identifier: GPL-2.0
+//
+// Copyright (c) 2023 Motorola Inc.
+&pio {
+	fps_irq: fps_irq {
+		pins_cmd_dat {
+			pinmux = <PINMUX_GPIO6__FUNC_GPIO6>;
+			slew-rate = <0>;
+			bias-disable;
+		};
+	};
+
+	fps_reset_high: fps_reset_high {
+		pins_cmd_dat {
+			pinmux = <PINMUX_GPIO80__FUNC_GPIO80>;
+			slew-rate = <1>;
+			output-high;
+		};
+	};
+
+	fps_reset_low: fps_reset_low {
+		pins_cmd_dat {
+			pinmux = <PINMUX_GPIO80__FUNC_GPIO80>;
+			slew-rate = <1>;
+			output-low;
+		};
+	};
+};
+&spi1 {
+	status = "okay";
+	tee-only;
+	mediatek,pad-select =  <0>;
+	fingerprint@0 {
+		compatible = "fpc,fpc_spi";
+		reg = <0>;
+		spi-max-frequency = <8000000>;
+		status = "okay";
+	};
+};
+
+
+&odm {
+	fingerprint_int: fingerprint_int {
+		compatible = "mediatek,fingerprint-fpc";
+		fpc,enable-wakeup;
+		interrupt-parent = <&pio>;
+		interrupts = <6 IRQ_TYPE_EDGE_RISING 6 0>;
+		fpc,vdd = <&pio 65  0x00>;
+		pinctrl-names = "fingerprint_irq", "fingerprint_reset_high", "fingerprint_reset_low";
+		pinctrl-0 = <&fps_irq>;
+		pinctrl-1 = <&fps_reset_high>;
+		pinctrl-2 = <&fps_reset_low>;
+		fpc,rst= <&pio 80 0>;
+		fpc,irq = <&pio 6 0>;
+		status = "okay";
+	};
+};
