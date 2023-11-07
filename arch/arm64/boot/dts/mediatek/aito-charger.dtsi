@@ -75,7 +75,7 @@
 };
 
 &mtk_gauge {
-	status = "okay";
+	status = "disabled";
 };
 
 &mt6375_typec {
@@ -110,7 +110,7 @@
 };
 
 &charger {
-	gauge = <&mtk_gauge>;
+	gauge = <&smart_battery>;
 	battery_cv = <4500000>;
 	max_charger_voltage = <14500000>;
 	ac_charger_current = <3000000>;
@@ -181,8 +181,8 @@
 };
 
 &smart_battery {
+	status = "okay";
 	compatible = "mmi,smart-battery";
-	status = "disabled";
 	mmi,gauge_names = "main_battery";
 };
 
@@ -313,7 +313,7 @@
 
 &pdc {
 	compatible = "mediatek,charger,pd";
-	gauge = <&mtk_gauge>;
+	gauge = <&smart_battery>;
 
 	min_charger_voltage = <4600000>;
 	pd_vbus_low_bound = <5000000>;
@@ -339,24 +339,24 @@
 };
 
 &pe {
-	gauge = <&mtk_gauge>;
+	gauge = <&smart_battery>;
 };
 
 &pe45 {
-	gauge = <&mtk_gauge>;
+	gauge = <&smart_battery>;
 };
 
 &pe5p {
-	gauge = <&mtk_gauge>;
+	gauge = <&smart_battery>;
 };
 
 &hvbp {
-	gauge = <&mtk_gauge>;
+	gauge = <&smart_battery>;
 };
 
 &pe2 {
 	compatible = "mediatek,charger,pe2";
-	gauge = <&mtk_gauge>;
+	gauge = <&smart_battery>;
 
 	/* PE 2.0 */
 	pe20_ichg_level_threshold = <1000000>; /* uA */
@@ -384,7 +384,7 @@
 
 &pe5 {
 	compatible = "mediatek,charger,pe5";
-	gauge = <&mtk_gauge>;
+	gauge = <&smart_battery>;
 	polling_interval = <10000>;
 	ta_cv_ss_repeat_tmin = <25>;
 	vbat_cv = <4530>;
