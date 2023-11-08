@@ -243,13 +243,11 @@
 	status = "okay";
 	clock-frequency = <1000000>;
 
-#if 0
-	mtk_camera_eeprom1:camera-eeprom1@50 {
+	mtk_camera_eeprom1:camera-eeprom1@51 {
 		compatible = "mediatek,camera_eeprom";
-		reg = <0x50>;
+		reg = <0x51>;
 		status = "okay";
 	};
-#endif
 
 	sensor1: sensor1@20 {
 		compatible = "mediatek,imgsensor";
