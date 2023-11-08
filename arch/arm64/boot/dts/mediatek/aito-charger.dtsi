@@ -204,7 +204,7 @@
 		compatible = "southchip,sc7603_master";
 		reg = <0x52>;
 		interrupt-parent = <&pio>;
-		interrupts = <50 0>;
+		interrupts = <50 IRQ_TYPE_EDGE_FALLING 50 0>;
 		pinctrl-names = "default", "sc760x_enable", "sc760x_disable";
 		pinctrl-0 = <&sc760x_irq_default>;
 		pinctrl-1 = <&sc760x_enable>;
@@ -282,7 +282,6 @@
 		sc,sc8546d,irq-gpio = <&pio 11 IRQ_TYPE_EDGE_FALLING>;
 		charger {
 		    charger_name = "primary_dvchg";
-		    charger_name_v4_19 = "primary_divider_chg";
 		    sc,sc8546d,adc-rate = <0>;    /*0:Continuous conversion  1:One-shot*/
 
 		    sc,sc8546d,bat-ovp-disable = <0>;    /*0:enable protetion  1:disable protetion*/
@@ -291,7 +290,7 @@
 		    sc,sc8546d,bus-ucp-disable = <0>;    /*0:enable protetion  1:disable protetion*/
 		    sc,sc8546d,bus-ocp-disable = <0>;    /*0:enable protetion  1:disable protetion*/
 
-		    sc,sc8546d,bat-ovp-threshold = <41>;/* val * 25 + 3500 mv [0-63]*/
+		    sc,sc8546d,bat-ovp-threshold = <44>;/* val * 25 + 3500 mv [0-63]*/
 		    sc,sc8546d,bat-ocp-threshold = <50>;/* val * 100 + 2000 ma [0-63]*/
 		    sc,sc8546d,ac-ovp-threshold = <2>;/* val * 1000 + 11000 mv  [0-7] when val = 7 the value = 6500mv*/
 		    sc,sc8546d,bus-ovp-threshold = <100>;/* val * 50 + 6000 mv [0-127]*/
