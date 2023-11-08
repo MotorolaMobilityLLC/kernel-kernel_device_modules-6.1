@@ -19,6 +19,55 @@
 #include "mediatek/aito-ntc.dtsi"
 #include "mediatek/aito-display.dtsi"
 
+&pio {
+	gpio1_input_pull_up: gpio1_input_pull_up {
+		pins_cmd_dat {
+			pinmux = <PINMUX_GPIO7__FUNC_GPIO7>;
+			slew-rate = <0>;
+			bias-pull-up = <00>;
+		};
+	};
+};
+
+&i2c11 {
+	clock-frequency = <400000>;
+	status = "okay";
+	haptic_hv@5A {
+		status = "okay";
+		compatible = "awinic,haptic_hv";
+		reg = <0x5A>;
+		irq-gpio = <&pio 7 0>;
+		reset-gpio = <&pio 100 0>;
+		pinctrl-names = "irq_active";
+		pinctrl-0 = <&gpio1_input_pull_up>;
+		f0_pre = < 1700 >;
+		mode = /bits/ 8 < 5 >;
+
+		aw8692x_f0_cali_percent = /bits/ 8 < 7 >;
+		aw8692x_gain_bypass = /bits/ 8 < 1 >;
+		aw8692x_cont_drv1_lvl = /bits/ 8 < 0x7F >;
+		aw8692x_cont_lra_vrms = < 1000 >;
+		aw8692x_cont_drv1_time = /bits/ 8 < 0x04 >;
+		aw8692x_cont_drv2_time = /bits/ 8 < 0x14 >;
+		aw8692x_cont_track_margin = /bits/ 8 < 0x0F >;
+		aw8692x_cont_brk_gain = /bits/ 8 < 0x08 >;
+		aw8692x_cont_brk_time = /bits/ 8 < 0x08 >;
+		aw8692x_duration_time = /bits/ 8 < 20 30 60 >;
+		aw8692x_d2s_gain = /bits/ 8 < 0x04 >;
+		aw8692x_trig_config = /bits/ 8 < 0 0 0 1 0 2 0 0
+						 0 0 0 1 0 2 0 0
+						 0 0 0 1 0 2 0 0 >;
+		aw8692x_bst_vol_default = < 8500 >;
+		aw8692x_is_enabled_track_en;
+		/* aw8692x_is_enabled_auto_bst; */
+		/* aw8692x_is_enabled_one_wire; */
+	};
+};
+
+&regulator_vibrator {
+	status = "disabled";
+};
+
 &mmc1 {
 	status = "disabled";
 };
