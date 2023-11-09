@@ -166,7 +166,7 @@ static void lcm_panel_init(struct lcm *ctx)
 	lcm_dcs_write_seq_static(ctx, 0x2B, 0x00, 0x00, 0x04, 0x29);
 	lcm_dcs_write_seq_static(ctx, 0x2F, 0x01);
 	lcm_dcs_write_seq_static(ctx, 0x35, 0x00);
-	lcm_dcs_write_seq_static(ctx, 0x51, 0x00, 0x00);
+	lcm_dcs_write_seq_static(ctx, 0x51, 0x08, 0xFF);
 	lcm_dcs_write_seq_static(ctx, 0x6F, 0x04);
 	lcm_dcs_write_seq_static(ctx, 0x51, 0x00, 0x00);
 	lcm_dcs_write_seq_static(ctx, 0x53, 0x20);
