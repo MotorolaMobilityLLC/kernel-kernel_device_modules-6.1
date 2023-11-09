@@ -18,6 +18,7 @@
 #include "mediatek/aito-fps.dtsi"
 #include "mediatek/aito-ntc.dtsi"
 #include "mediatek/aito-display.dtsi"
+#include "mediatek/aito-touch.dtsi"
 
 &pio {
 	gpio1_input_pull_up: gpio1_input_pull_up {
