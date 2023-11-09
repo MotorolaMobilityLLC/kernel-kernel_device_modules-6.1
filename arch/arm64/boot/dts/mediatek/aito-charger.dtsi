@@ -73,6 +73,23 @@
 		};
 	};
 
+	wls_cps4041_int_default: wls_cps4041_int_default {
+		wls_int {
+			pinmux = <PINMUX_GPIO34__FUNC_GPIO34>;
+			input-enable;
+			bias-disable;
+		};
+		wls_det_int {
+			pinmux = <PINMUX_GPIO36__FUNC_GPIO36>;
+			input-enable;
+			bias-pull-down;
+		};
+		wls_mode_select {
+			pinmux = <PINMUX_GPIO170__FUNC_GPIO170>;
+			output-low;
+		};
+	};
+
 	mmi_control_wls_default: mmi_control_wls_default {
 		wls_control {
 			pinmux = <PINMUX_GPIO35__FUNC_GPIO35>;
@@ -310,6 +327,23 @@
 		    sc,sc8546d,ibat-regulation-threshold = <1>;/*0:200 mA 1:300 mA 2:400 mA 3:500 mA*/
 		    sc,sc8546d,vbat-regulation-threshold = <0>;/*0:50 mV 1:100 mV 2:150 mV 3:200 mV*/
 		};
+	};
+
+	cps_wls_charger@30 {
+		compatible = "cps,wls-charger-cps4041";
+		wireless-fw-name = "cps4041.bin";
+		enable_stop_epp = <1>;
+		enable_rx_offset_detect = <1>;
+		/*stop rx offset detect battery soc*/
+		rod_stop_battery_soc = <90>;
+		bootmode = <&chosen>;
+		reg = <0x30>;
+		cps_wls_int = <&pio 34 0x0>;
+		cps_det_int = <&pio 36 0x0>;
+		wls_mode_select = <&pio 170 0x0>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&wls_cps4041_int_default>;
+		status = "okay";
 	};
 };
 
