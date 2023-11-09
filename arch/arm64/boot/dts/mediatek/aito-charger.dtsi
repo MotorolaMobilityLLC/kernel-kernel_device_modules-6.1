@@ -72,6 +72,13 @@
 				<PINMUX_GPIO125__FUNC_SCL0>;
 		};
 	};
+
+	mmi_control_wls_default: mmi_control_wls_default {
+		wls_control {
+			pinmux = <PINMUX_GPIO35__FUNC_GPIO35>;
+			output-low;
+		};
+	};
 };
 
 &mtk_gauge {
@@ -304,6 +311,20 @@
 		    sc,sc8546d,vbat-regulation-threshold = <0>;/*0:50 mV 1:100 mV 2:150 mV 3:200 mV*/
 		};
 	};
+};
+
+&moto_wlc {
+	compatible = "moto,charger,wlc";
+	gauge = <&smart_battery>;
+	min_charger_voltage = <4600000>;
+	wlc_max_charger_current = <3150000>;
+	wlc_max_input_current = <1150000>;
+	mmi,wls_control_en = <&pio 35 0x0>;
+	pinctrl-names = "default";
+	pinctrl-0 = <&mmi_control_wls_default>;
+	#cooling-cells = <2>;
+	mmi,wlc-rx-mitigation = <(-1) 2500000 2000000 1500000 1200000
+							1000000 800000 500000>;
 };
 
 &pd_adapter{
