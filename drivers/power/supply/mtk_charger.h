@@ -12,6 +12,7 @@
 #include "mtk_charger_algorithm_class.h"
 #include <linux/power_supply.h>
 #include "mtk_smartcharging.h"
+#include <linux/power/moto_chg_tcmd.h>
 
 #define CHARGING_INTERVAL 10
 #define CHARGING_FULL_INTERVAL 20
@@ -230,6 +231,8 @@ struct charger_data {
 	int input_current_limit_by_aicl;
 	int junction_temp_min;
 	int junction_temp_max;
+	int moto_chg_tcmd_ichg;
+	int moto_chg_tcmd_ibat;
 };
 
 enum chg_data_idx_enum {
@@ -417,6 +420,8 @@ struct mtk_charger {
 	/* enable boot volt*/
 	bool enable_boot_volt;
 	bool reset_boot_volt_times;
+
+	struct moto_chg_tcmd_client chg_tcmd_client;
 };
 
 static inline int mtk_chg_alg_notify_call(struct mtk_charger *info,
