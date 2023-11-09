@@ -551,6 +551,7 @@ mgk_64_k61_device_modules = [
     "drivers/power/supply/mtk_pep45.ko",
     "drivers/power/supply/mtk_pep50.ko",
     "drivers/power/supply/mtk_pep50p.ko",
+    "drivers/power/supply/moto_wlc_alg.ko",
     "drivers/power/supply/rt9490-charger.ko",
     "drivers/power/supply/rt9758-charger.ko",
     "drivers/power/supply/rt9759.ko",

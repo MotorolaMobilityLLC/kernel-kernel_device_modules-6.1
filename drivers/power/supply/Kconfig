@@ -192,3 +192,8 @@ config MTK_CHARGER_TYPE_DETECT
 	  Support enable charger type detect when receiving
 	  typec attach notify.
 	  Say N to disable.
+
+config MOTO_WLC_ALG_SUPPORT
+	tristate "moto wlc interface driver for charger"
+	help
+	  This is to enable MOTO supports of wlc charger INTERFACE.
