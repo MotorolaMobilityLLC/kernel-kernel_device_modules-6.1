@@ -37,3 +37,6 @@ obj-$(CONFIG_CHARGER_RT9759)	+= rt9759.o
 obj-$(CONFIG_CHARGER_RT9490)	+= rt9490-charger.o
 obj-$(CONFIG_CHARGER_RT9758)	+= rt9758-charger.o
 obj-$(CONFIG_MOTO_CHG_TCMD_SUPPORT) += moto_chg_tcmd.o
+
+obj-$(CONFIG_MOTO_WLC_ALG_SUPPORT) += moto_wlc_alg.o
+moto_wlc_alg-objs := moto_wlc.o moto_wlc_hal.o
