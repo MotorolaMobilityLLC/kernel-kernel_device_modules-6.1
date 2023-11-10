@@ -16,6 +16,10 @@
 
 #define DISABLE_VBAT_THRESHOLD -1
 
+#define MMI_THERMAL_CURRENT_THRESHOLD	500
+#define MMI_THERMAL_VOL_THRESHOLD	80
+#define MMI_THERMAL_STEP	3
+
 extern int pe50_get_log_level(void);
 #define PE50_DBG(fmt, ...) \
 	do { \
@@ -179,6 +183,9 @@ struct pe50_algo_data {
 	u32 start_soc_max;		/* algo start soc upper bound */
 	int mmi_fcc_limit;
 	int mmi_therm_fcc_limit;
+	int mmi_therm_cur_thres;
+	int mmi_therm_vol_thres;
+	int mmi_therm_step;
 };
 
 /* Setting from dtsi */
