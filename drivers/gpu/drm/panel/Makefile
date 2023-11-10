@@ -67,6 +67,7 @@ endif
 
 obj-$(CONFIG_DRM_PANEL_CSOT_NT37707_667_FHDP_DPHY_CMD) += dsi-panel-mot-csot-nt37707-667-fhdp-dphy-cmd.o
 obj-$(CONFIG_DRM_PANEL_CSOT_NT37705_1056x1068_DPHY_CMD_CLI) += dsi-panel-mot-csot-nt37705-1056x1068-dphy-cmd-cli.o
+obj-$(CONFIG_DRM_PANEL_MOT_DUMMY_VDO_60HZ) += dsi-panel-mot-dummy-vdo-60hz.o
 
 mediatek-drm-gateic-y := mtk_drm_panel_i2c.o \
 		  mtk_drm_gateic_rt4801h.o \
