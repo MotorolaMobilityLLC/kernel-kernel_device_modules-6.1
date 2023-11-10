@@ -29,6 +29,20 @@
 		};
 	};
 
+	nfc_spi_cs_mode_spi: nfc_spi_cs_mode_spi {
+		pins_cmd_dat {
+			pinmux = <PINMUX_GPIO73__FUNC_SPI5_CSB>;
+			bias-disable;
+		};
+	};
+
+	nfc_spi_cs_mode_idle: nfc_spi_cs_mode_idle {
+		pins_cmd_dat {
+			pinmux = <PINMUX_GPIO73__FUNC_GPIO73>;
+			bias-disable;
+		};
+	};
+
 	sar_int_default: sar_int_default {
 		pins_cmd_dat {
 			pinmux = <PINMUX_GPIO10__FUNC_GPIO10>;
@@ -65,6 +79,39 @@
 		};
 	};
 };
+
+
+&spi5 {
+	st54spi: st54spi@0 {
+		compatible = "st,st54spi";
+		reg = <0>;
+		spi-max-frequency = <1000000>;
+		gpio-power_nreset = <40>;
+		gpio-power_nreset-std = <&pio 40 0x00>;
+		power_mode = "ST54J";
+		pinctrl-names = "pinctrl_state_mode_spi",
+				"pinctrl_state_mode_idle";
+		pinctrl-0 = <&nfc_spi_cs_mode_spi>;
+		pinctrl-1 = <&nfc_spi_cs_mode_idle>;
+		status = "okay";
+	};
+};
+
+&i2c12 {
+	status = "okay";
+	clock-frequency = <400000>;
+	st21nfc: st21nfc@08 {
+		compatible = "st,st21nfc";
+		reg = <0x08>;
+		interrupt-parent = <&pio>;
+		interrupts = <109  0>;
+		reset-gpios = <&pio 108 0x0>;
+		irq-gpios = <&pio 109 0x0>;
+		clkreq-gpios = <&pio 152 0x0>;
+		status = "okay";
+	};
+};
+
 
 &i2c12 {
 	status = "ok";

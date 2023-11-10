@@ -80,6 +80,8 @@ mgk_64_k61_kleaf_modules = [
     "//motorola/kernel/modules/drivers/mmi_info:mmi_info",
     "//motorola/kernel/modules/drivers/moto_f_usbnet:moto_f_usbnet",
     "//motorola/kernel/modules/drivers/input/misc/fpc_fps_mmi:fpc_mtk_tee",
+    "//motorola/kernel/modules/drivers/nfc/st54lnfc/st21nfc:st54lnfc",
+    "//motorola/kernel/modules/drivers/nfc/st54lnfc/st54spi:st54lspi",
     "//motorola/kernel/modules/drivers/power/mmi_gauge_class:mmi_gauge_class",
     "//motorola/kernel/modules/drivers/power/smart_battery:smart_battery",
     "//motorola/kernel/modules/drivers/power/cw2217b_fg_mmi:cw2217b_fg_mmi",
