@@ -56,6 +56,7 @@ int pe50_get_log_level(void)
 #define PE50_VSYS_UPPER_BOUND_GAP        40      /* mV */
 #define PE50_START_SOC_MAX_GAP		4	/* % */
 #define PE50_WHILE_LOOP_ITERATION_MAX	50
+#define MMI_IBAT_GAP_MA 50 	/* mA */
 
 
 #define PE50_HWERR_NOTIFY \
@@ -771,10 +772,10 @@ static u32 pe50_get_dvchg_vbusovp(struct pe50_algo_info *info, u32 ita)
 /* Calculate IBUSOC S/W level */
 static u32 pe50_get_dvchg_ibusocp(struct pe50_algo_info *info, u32 ita)
 {
+	u32 ibus, ratio = PE50_IBUSOCP_RATIO;
+#ifdef MTK_BASE
 	struct pe50_algo_data *data = info->data;
 	struct pe50_algo_desc *desc = info->desc;
-	u32 ibus, ratio = PE50_IBUSOCP_RATIO;
-
 	ibus = data->is_swchg_en ?
 	       (ita > data->aicr_setting ? ita - data->aicr_setting : 0) : ita;
 	/* Add 10% for unbalance tolerance */
@@ -783,6 +784,9 @@ static u32 pe50_get_dvchg_ibusocp(struct pe50_algo_info *info, u32 ita)
 		ratio += 10;
 	}
 	ibus = max(ibus, desc->idvchg_term);
+#else
+	ibus = pe50_get_idvchg_lmt(info);
+#endif
 	return percent(ibus, ratio);
 }
 
@@ -797,7 +801,14 @@ static u32 pe50_get_vbatovp(struct pe50_algo_info *info)
 /* Calculate IBATOC S/W level */
 static u32 pe50_get_ibatocp(struct pe50_algo_info *info, u32 ita)
 {
+#ifdef MTK_BASE
 	return percent(pe50_cal_ibat(info, ita), PE50_IBATOCP_RATIO);
+#else
+	struct pe50_algo_data *data = info->data;
+	u32 ibat;
+	ibat = data->mmi_fcc_limit;
+	return percent(ibat, PE50_IBATOCP_RATIO);
+#endif
 }
 
 /* Calculate ITAOC S/W level */
@@ -2276,7 +2287,7 @@ err:
 
 static int pe50_algo_ss_dvchg_with_ta_cv(struct pe50_algo_info *info)
 {
-	int ret, vbat;
+	int ret, vbat, ibat, fcc_min;
 	struct pe50_algo_data *data = info->data;
 	struct pe50_algo_desc *desc = info->desc;
 	struct pe50_ta_auth_data *auth_data = &data->ta_auth_data;
@@ -2290,6 +2301,13 @@ static int pe50_algo_ss_dvchg_with_ta_cv(struct pe50_algo_info *info)
 	ita_gap_per_vstep = data->ita_gap_per_vstep > 0 ?
 			    data->ita_gap_per_vstep :
 			    auth_data->ita_gap_per_vstep;
+
+	ret = pe50_get_adc(info, PE50_ADCCHAN_IBAT, &ibat);
+	if (ret < 0) {
+		PE50_ERR("get ibat fail(%d)\n", ret);
+		goto out;
+	}
+
 	ret = pe50_get_ta_cap_by_supportive(info, &data->vta_measure,
 					    &data->ita_measure);
 	if (ret < 0) {
@@ -2380,8 +2398,17 @@ single_dvchg_select_ita:
 
 	idvchg_lmt = pe50_get_idvchg_lmt(info);
 	/* ITA reaches CC level */
+	if (data->mmi_therm_fcc_limit > 0 &&
+		data->mmi_therm_fcc_limit < data->mmi_fcc_limit)
+		fcc_min = data->mmi_therm_fcc_limit;
+	else
+		fcc_min = data->mmi_fcc_limit;
+	PE50_INFO(" cc_cv fcc_result(%d), fcc(%d), therm_fcc(%d)\n",
+				  fcc_min, data->mmi_fcc_limit, data->mmi_therm_fcc_limit);
+
 	if (data->ita_measure + ita_gap_per_vstep > idvchg_lmt ||
-	    vta == auth_data->vcap_max)
+	    vta == auth_data->vcap_max ||
+	    ibat + 2 * MMI_IBAT_GAP_MA > fcc_min)
 		data->state = PE50_ALGO_CC_CV;
 	else {
 		vstep_cnt = precise_div(idvchg_lmt - data->ita_measure,
@@ -2615,7 +2642,7 @@ err:
 
 static int pe50_algo_cc_cv_with_ta_cv(struct pe50_algo_info *info)
 {
-	int ret, vbat, vsys = 0;
+	int ret, vbat, ibat, vsys, fcc_min;
 	struct pe50_algo_data *data = info->data;
 	struct pe50_ta_auth_data *auth_data = &data->ta_auth_data;
 	u32 idvchg_lmt, vta = data->vta_setting, ita = data->ita_setting;
@@ -2668,6 +2695,20 @@ static int pe50_algo_cc_cv_with_ta_cv(struct pe50_algo_info *info)
 		goto out;
 	}
 
+	ret = pe50_get_adc(info, PE50_ADCCHAN_IBAT, &ibat);
+	if (ret < 0) {
+		PE50_ERR("get ibat fail(%d)\n", ret);
+		goto out;
+	}
+
+	if (data->mmi_therm_fcc_limit > 0 &&
+		data->mmi_therm_fcc_limit < data->mmi_fcc_limit)
+		fcc_min = data->mmi_therm_fcc_limit;
+	else
+		fcc_min = data->mmi_fcc_limit;
+	PE50_INFO(" cc_cv fcc_result(%d), fcc(%d), therm_fcc(%d)\n",
+				  fcc_min, data->mmi_fcc_limit, data->mmi_therm_fcc_limit);
+
 	if (vbat >= data->vbat_cv) {
 		PE50_INFO("--vbat >= vbat_cv, %d > %d\n", vbat, data->vbat_cv);
 		vta -= auth_data->vta_step;
@@ -2679,8 +2720,13 @@ static int pe50_algo_cc_cv_with_ta_cv(struct pe50_algo_info *info)
 		ita -= ita_gap_per_vstep;
 		PE50_INFO("--vta, ita(meas,lmt)=(%d,%d)\n", data->ita_measure,
 			  idvchg_lmt);
+	} else if (ibat > fcc_min) {
+		vta -= auth_data->vta_step;
+		ita -= ita_gap_per_vstep;
+		ita = max(ita, idvchg_lmt);
+		PE50_INFO("--vta, ibat(meas,lmt)=(%d,%d)\n", ibat, fcc_min);
 	} else if (!data->is_vbat_over_cv && vbat <= data->cv_lower_bound &&
-		   data->ita_measure <= (idvchg_lmt - ita_gap_per_vstep) &&
+		   data->ita_measure <= (idvchg_lmt - ita_gap_per_vstep) &&  ibat <=  (fcc_min - MMI_IBAT_GAP_MA) &&
 		   vta < auth_data->vcap_max && !data->suspect_ta_cc &&
 		   vsys < (PE50_VSYS_UPPER_BOUND - PE50_VSYS_UPPER_BOUND_GAP)) {
 		vta += auth_data->vta_step;
@@ -2689,8 +2735,8 @@ static int pe50_algo_cc_cv_with_ta_cv(struct pe50_algo_info *info)
 		ita = min(ita, idvchg_lmt);
 		if (ita == data->ita_setting)
 			suspect_ta_cc = true;
-		PE50_INFO("++vta, ita(meas,lmt)=(%d,%d)\n", data->ita_measure,
-			  idvchg_lmt);
+		PE50_INFO("++vta, ita(meas,lmt)=(%d,%d), mmi_fcc = %d\n", data->ita_measure,
+			  idvchg_lmt, fcc_min);
 	} else if (data->is_vbat_over_cv)
 		data->is_vbat_over_cv = false;
 
@@ -2956,6 +3002,10 @@ static bool pe50_check_ibatocp(struct pe50_algo_info *info,
 		return false;
 	}
 	PE50_INFO("ibat(%dmA), ibatocp(%dmA)\n", ibat, ibatocp);
+	if (ibat < 0) {
+		PE50_ERR("ibat(%dmA) < 0)\n", ibat);
+		return true;
+	}
 	if (ibat > ibatocp) {
 		PE50_ERR("ibat(%dmA) > ibatocp(%dmA)\n", ibat, ibatocp);
 		return false;
@@ -3651,8 +3701,9 @@ static int pe50_init_algo(struct chg_alg_device *alg)
 		PE50_INFO("already inited\n");
 		goto out;
 	}
-	if (pe50_hal_init_hardware(info->alg, desc->support_ta,
-				   desc->support_ta_cnt)) {
+	ret = pe50_hal_init_hardware(info->alg, desc->support_ta,
+				   desc->support_ta_cnt);
+	if (ret) {
 		PE50_ERR("%s: init hw fail\n", __func__);
 		goto out;
 	}
@@ -3864,12 +3915,18 @@ static int pe50_set_current_limit(struct chg_alg_device *alg,
 	struct pe50_algo_data *data = info->data;
 	int cv = micro_to_milli(setting->cv);
 	int ic = micro_to_milli(setting->input_current_limit_dvchg1);
+	int fcc = micro_to_milli(setting->mmi_fcc_limit);
+	int therm_fcc = micro_to_milli(setting->mmi_current_limit_dvchg1);
 
 	mutex_lock(&data->ext_lock);
-	if (data->cv_limit != cv || data->input_current_limit != ic) {
+	if (data->cv_limit != cv || data->input_current_limit != ic
+		|| data->mmi_fcc_limit != fcc
+		|| data->mmi_therm_fcc_limit != therm_fcc) {
 		data->cv_limit = cv;
 		data->input_current_limit = ic;
-		PE50_INFO("ic = %d, cv = %d\n", ic, cv);
+		data->mmi_fcc_limit = fcc;
+		data->mmi_therm_fcc_limit = therm_fcc;
+		PE50_INFO("ic = %d, cv = %d, mmi_fcc = %d, therm_fcc = %d\n", ic, cv, fcc, therm_fcc);
 		pe50_wakeup_algo_thread(data);
 	}
 	mutex_unlock(&data->ext_lock);
