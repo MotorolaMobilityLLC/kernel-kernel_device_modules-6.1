@@ -86,6 +86,9 @@
 		/delete-property/ pm-enable-gpios;
 		/delete-property/ reset-gpios;
 		/delete-property/gate-ic;
+		/delete-property/ swap-from-dts;
+		/delete-property/ lane-swap-setting;
+		/delete-property/ pn-swap-setting;
 
 		compatible = "csot,nt37705,cmd,cli";
 		reg = <0>;
