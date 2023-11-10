@@ -177,6 +177,8 @@ struct pe50_algo_data {
 	int input_current_limit;
 	int cv_limit;
 	u32 start_soc_max;		/* algo start soc upper bound */
+	int mmi_fcc_limit;
+	int mmi_therm_fcc_limit;
 };
 
 /* Setting from dtsi */

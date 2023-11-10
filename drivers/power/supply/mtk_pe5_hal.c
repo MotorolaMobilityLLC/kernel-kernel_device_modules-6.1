@@ -247,8 +247,10 @@ int pe50_hal_init_hardware(struct chg_alg_device *alg, const char **support_ta,
 	hal->adapters = devm_kzalloc(info->dev,
 				     sizeof(struct adapter_device *) *
 				     support_ta_cnt, GFP_KERNEL);
-	if (!hal->adapters)
-		return -ENOMEM;
+	if (!hal->adapters) {
+		ret = -ENOMEM;
+		goto err_free_mem2;
+	}
 
 	hal->support_ta = support_ta;
 	hal->support_ta_cnt = support_ta_cnt;
@@ -263,7 +265,7 @@ int pe50_hal_init_hardware(struct chg_alg_device *alg, const char **support_ta,
 	}
 	if (!has_ta) {
 		ret = -ENODEV;
-		goto err;
+		goto err_free_mem1;
 	}
 
 	/* get charger device */
@@ -274,7 +276,7 @@ int pe50_hal_init_hardware(struct chg_alg_device *alg, const char **support_ta,
 			PE50_ERR("get %s fail\n", mtk_chgdev_desc_tbl[i].name);
 			if (mtk_chgdev_desc_tbl[i].must_exist) {
 				ret = -ENODEV;
-				goto err;
+				goto err_free_mem1;
 			}
 		}
 	}
@@ -290,7 +292,11 @@ int pe50_hal_init_hardware(struct chg_alg_device *alg, const char **support_ta,
 	}
 	PE50_INFO("successfully\n");
 	return 0;
-err:
+
+err_free_mem1:
+	devm_kfree(info->dev, hal->adapters);
+err_free_mem2:
+	devm_kfree(info->dev, hal);
 	return ret;
 }
 
@@ -457,6 +463,27 @@ out:
 	return ret;
 }
 
+static int pe50_get_vbat(struct pe50_hal *hal)
+{
+	int ret = 0;
+	union power_supply_propval val = {0,};
+
+	if (IS_ERR_OR_NULL(hal->bat_psy))
+		goto out;
+
+	ret = power_supply_get_property(hal->bat_psy,
+					POWER_SUPPLY_PROP_VOLTAGE_NOW, &val);
+	if (ret < 0) {
+		PE50_ERR("get vbat fail(%d)\n", ret);
+		ret = 0;
+		goto out;
+	}
+	ret = val.intval / 1000;
+out:
+	PE50_DBG("%d\n", ret);
+	return ret;
+}
+
 int pe50_hal_get_adc(struct chg_alg_device *alg, enum chg_idx chgidx,
 		     enum pe50_adc_channel chan, int *val)
 {
@@ -476,7 +503,11 @@ int pe50_hal_get_adc(struct chg_alg_device *alg, enum chg_idx chgidx,
 	} else if (_chan == ADC_CHANNEL_IBAT) {
 		*val = pe50_get_ibat(hal);
 		return 0;
+	} else if (_chan == ADC_CHANNEL_VBAT) {
+		*val = pe50_get_vbat(hal);
+		return 0;
 	}
+
 	ret = charger_dev_get_adc(hal->chgdevs[chgtyp], _chan, val, val);
 	if (ret < 0)
 		return ret;
@@ -492,6 +523,10 @@ int pe50_hal_get_soc(struct chg_alg_device *alg, u32 *soc)
 	int ret = -EOPNOTSUPP;
 	union power_supply_propval val = {0,};
 	struct pe50_hal *hal = chg_alg_dev_get_drv_hal_data(alg);
+
+	if (IS_ERR_OR_NULL(hal->bat_psy)) {
+	    hal->bat_psy = devm_power_supply_get_by_phandle(hal->dev, "gauge");
+	}
 
 	if (IS_ERR_OR_NULL(hal->bat_psy))
 		goto out;
