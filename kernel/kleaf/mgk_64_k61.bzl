@@ -571,7 +571,6 @@ mgk_64_k61_device_modules = [
     "drivers/regulator/mtk-dvfsrc-regulator.ko",
     "drivers/regulator/mtk-extbuck-debug.ko",
     "drivers/regulator/mtk-vmm-isp71-regulator.ko",
-    "drivers/regulator/sgm62110-regulator.ko",
     "drivers/regulator/rt4803.ko",
     "drivers/regulator/rt5133-regulator.ko",
     "drivers/regulator/rt6160-regulator.ko",
