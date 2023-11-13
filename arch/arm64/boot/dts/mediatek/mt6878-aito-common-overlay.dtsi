@@ -328,3 +328,37 @@
 &mmc1 {
 	status = "disabled";
 };
+
+&i2c11 {
+	status = "okay";
+	clock-frequency = <400000>;
+
+	spk: tfa98xx@35 {
+		compatible = "tfa,tfa98xx";
+		#address-cells = <1>;
+		#size-cells = <0>;
+		#sound-dai-cells = <0>;
+		reg = <0x35>;
+		reset-gpio= <&pio 149 0>;
+		reset-polarity=<0>;
+		status = "okay";
+	};
+
+	rcv: tfa98xx@34 {
+		compatible = "tfa,tfa98xx";
+		#address-cells = <1>;
+		#size-cells = <0>;
+		#sound-dai-cells = <0>;
+		reg = <0x34>;
+		reset-gpio= <&pio 164 0>;
+		reset-polarity=<0>;
+		status = "okay";
+	};
+};
+
+&sound {
+	mediatek,spk-i2s = <25 24>;
+	mediatek,speaker-codec {
+		sound-dai = <&spk &rcv>;
+	};
+};
