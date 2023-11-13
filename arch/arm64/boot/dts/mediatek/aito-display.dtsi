@@ -37,7 +37,7 @@
 */
 &dsi0 {
 	status = "okay";
-/*
+
 	panel1@0 {
 		/delete-property/ compatible;
 		/delete-property/ pm-enable-gpios;
@@ -48,21 +48,26 @@
 		reg = <0>;
 		pinctrl-names = "default";
 	};
-*/
-	panel1@0 {
+
+	panel2@0 {
 		/delete-property/ compatible;
 		/delete-property/ pm-enable-gpios;
 		/delete-property/ reset-gpios;
 		/delete-property/gate-ic;
 
 		compatible = "csot,nt37707,cmd,667";
-		reg = <0>;
+		reg = <1>;
 		pm-enable-gpios = <&pio 79 0>,
                           <&pio 59 0>,
                           <&pio 154 0>,
                           <&pio 153 0>;
 		reset-gpios = <&pio 90 0>;
 		pinctrl-names = "default";
+		port {
+			panel_in2: endpoint {
+				remote-endpoint = <&dsi_out>;
+			};
+		};
 	};
 };
 
