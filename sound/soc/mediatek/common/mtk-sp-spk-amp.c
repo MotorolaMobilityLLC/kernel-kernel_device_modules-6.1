@@ -167,8 +167,11 @@ int mtk_spk_update_info(struct snd_soc_card *card,
 	unsigned int i2s_set[2];
 	unsigned int is_ipm2p0;
 
+#if IS_ENABLED(CONFIG_SND_SOC_TFA9865)
+#else
 	if (mtk_spk_type == MTK_SPK_NOT_SMARTPA)
 		goto BYPASS_UPDATE;
+#endif
 
 	/* get hw IPM version */
 	ret = of_property_read_u32(pdev->dev.of_node, "mediatek,ipm", &is_ipm2p0);
@@ -298,7 +301,10 @@ int mtk_spk_update_info(struct snd_soc_card *card,
 		return -ENODEV;
 	}
 
+#if IS_ENABLED(CONFIG_SND_SOC_TFA9865)
+#else
 BYPASS_UPDATE:
+#endif
 	dev_info(&pdev->dev,
 		 "%s(), mtk_spk_type %d, spk_in_dai_link_idx %d, spk_out_dai_link_idx %d\n",
 		 __func__,
