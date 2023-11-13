@@ -25,16 +25,6 @@ menuconfig REGULATOR
 
 if REGULATOR
 
-config MOTO_SGM62110
-        tristate "moto sgm62110 regulator driver"
-	depends on I2C
-	select REGMAP
-	select CRC8
-	select OF_GPIO
-	select REGULATOR_FIXED_VOLTAGE
-	help
-	  sgm62110 is an pmic chip.
-
 config DEVICE_MODULES_REGULATOR_MT6315
 	tristate "MediaTek MT6315 PMIC"
 	depends on SPMI
