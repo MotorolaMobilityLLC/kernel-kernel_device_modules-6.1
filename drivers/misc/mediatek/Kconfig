@@ -221,6 +221,11 @@ source "$(KCONFIG_EXT_PREFIX)drivers/misc/mediatek/task_turbo/Kconfig"
 source "$(KCONFIG_EXT_PREFIX)drivers/misc/mediatek/pgboost/Kconfig"
 endmenu # Performance
 
+config INPUT_MISC_FPC1020_SAVE_TO_CLASS_DEVICE
+	bool "FPC class device node"
+	help
+	  Say Y here if you want to use fpc fps class node.
+	  If unsure, say N.
 
 
 menu "Config File"
