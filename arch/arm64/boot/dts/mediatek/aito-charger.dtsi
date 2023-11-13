@@ -207,7 +207,7 @@
 &smart_battery {
 	status = "okay";
 	compatible = "mmi,smart-battery";
-	mmi,gauge_names = "main_battery";
+	mmi,gauge_names = "main_battery", "flip_battery";
 };
 
 &i2c0 {
