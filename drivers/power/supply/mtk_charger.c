@@ -3465,6 +3465,16 @@ static void mmi_updata_batt_status(struct mtk_charger *info)
 	kfree(chrg_rate_string);
 }
 
+int mmi_batt_health_check(void)
+{
+	if (mmi_info == NULL) {
+		pr_err("[%s]called before charger_manager valid!\n", __func__);
+		return POWER_SUPPLY_HEALTH_GOOD;
+	}
+	return mmi_info->mmi.batt_health;
+}
+EXPORT_SYMBOL(mmi_batt_health_check);
+
 #define WARM_TEMP 45
 #define COOL_TEMP 0
 #define HYST_STEP_MV 50
@@ -5008,14 +5018,6 @@ static void mtk_charger_external_power_changed(struct power_supply *psy)
 
 	_wake_up_charger(info);
 }
-
-
-int mmi_batt_health_check(void)
-{
-	//<MMI-STOPSHIP>: mtk_charger: temporary to make smart_battery build pass
-	return POWER_SUPPLY_HEALTH_GOOD;
-}
-EXPORT_SYMBOL(mmi_batt_health_check);
 
 int mmi_charger_update_batt_status(void)
 {
