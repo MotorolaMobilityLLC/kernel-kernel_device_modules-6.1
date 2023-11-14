@@ -1235,7 +1235,7 @@ extern void do_fg_algo(struct mtk_battery *gm, unsigned int intr_num);
 extern void fg_bat_temp_int_internal(struct mtk_battery *gm);
 /* mtk_battery_algo.c end */
 extern void disable_all_irq(struct mtk_battery *gm);
-
+extern int mmi_batt_health_check(void);
 /*mtk_battery_daemon.c*/
 extern void wake_up_bat_irq_controller(struct irq_controller *irq_ctrl, int flags);
 /*mtk_battery_daemon.c end*/
