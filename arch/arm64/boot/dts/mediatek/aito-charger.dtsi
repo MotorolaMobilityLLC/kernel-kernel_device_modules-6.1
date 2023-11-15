@@ -151,6 +151,8 @@
 
 	disable_aicl;
 
+	mmi,enable-mux;
+	mmi,mux_wls_switch_en = <&pio 99 0x0>;
 	/* dynamic mivr */
 	enable_dynamic_mivr;
 
