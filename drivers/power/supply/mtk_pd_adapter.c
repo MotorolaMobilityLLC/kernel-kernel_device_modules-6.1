@@ -466,7 +466,11 @@ stop_repeat:
 	data->vta_max = selected_apdo_cap.max_mv;
 	data->ita_max = selected_apdo_cap.ma;
 	data->pwr_lmt = !!selected_apdo_cap.pwr_limit;
-	data->support_meas_cap = true;
+	#ifdef MTK_BASE
+		data->support_meas_cap = true;
+	#else
+		data->support_meas_cap = false;
+	#endif
 	data->support_status = true;
 	data->support_cc = true;
 	data->vta_step = 20;
