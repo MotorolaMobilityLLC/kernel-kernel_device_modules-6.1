@@ -26,6 +26,24 @@
 	mmi,main-utags = "/dev/block/by-name/hw";
 };
 
+/*
+long powerkey reset setting
+
+#   power-off-time-sec :
+#   0      : 8 sec
+#   1      : 11 sec
+#   2      : 2 sec
+#   3      : 5 sec
+#
+*/
+&spmi {
+	main_pmic: pmic@4 {
+		mt6363keys: mt6363keys {
+			power-off-time-sec = <1>;
+		};
+	};
+};
+
 &chosen {
 bootargs_ext = "arm64.nopauth arm64.nosme arm64.nosve";
 };
