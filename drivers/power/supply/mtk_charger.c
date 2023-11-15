@@ -2885,6 +2885,7 @@ static int mtk_charger_plug_out(struct mtk_charger *info)
 	info->pd_reset = false;
 	info->dpdmov_stat = false;
 	info->lst_dpdmov_stat = false;
+	info->mmi.active_fast_alg = 0;
 
 	pdata1->disable_charging_count = 0;
 	pdata1->input_current_limit_by_aicl = -1;
