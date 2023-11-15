@@ -34,10 +34,6 @@ static struct audio_gpio_attr aud_gpios[MT6878_AFE_GPIO_GPIO_NUM] = {
 	[MT6878_AFE_GPIO_VOW_DAT_ON] = {"vow-dat-miso-on", false, NULL},
 	[MT6878_AFE_GPIO_VOW_CLK_OFF] = {"vow-clk-miso-off", false, NULL},
 	[MT6878_AFE_GPIO_VOW_CLK_ON] = {"vow-clk-miso-on", false, NULL},
-	[MT6878_AFE_GPIO_AP_DMIC_OFF] = {"aud-gpio-ap-dmic-off", false, NULL},
-	[MT6878_AFE_GPIO_AP_DMIC_ON] = {"aud-gpio-ap-dmic-on", false, NULL},
-	[MT6878_AFE_GPIO_AP_DMIC1_OFF] = {"aud-gpio-ap-dmic1-off", false, NULL},
-	[MT6878_AFE_GPIO_AP_DMIC1_ON] = {"aud-gpio-ap-dmic1-on", false, NULL},
 	[MT6878_AFE_GPIO_VOW_SCP_DMIC_DAT_OFF] = {"vow-scp-dmic-dat-off", false, NULL},
 	[MT6878_AFE_GPIO_VOW_SCP_DMIC_DAT_ON] = {"vow-scp-dmic-dat-on", false, NULL},
 	[MT6878_AFE_GPIO_VOW_SCP_DMIC_CLK_OFF] = {"vow-scp-dmic-clk-off", false, NULL},
@@ -223,7 +219,6 @@ int mt6878_afe_gpio_request(struct mtk_base_afe *afe, bool enable,
 			mt6878_afe_gpio_select(afe, MT6878_AFE_GPIO_AP_DMIC1_ON);
 		else
 			mt6878_afe_gpio_select(afe, MT6878_AFE_GPIO_AP_DMIC1_OFF);
-		break;
 	default:
 		mutex_unlock(&gpio_request_mutex);
 		dev_info(afe->dev, "%s(), invalid dai %d\n", __func__, dai);
