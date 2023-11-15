@@ -409,3 +409,7 @@
 		sound-dai = <&spk &rcv>;
 	};
 };
+
+&afe {
+	mediatek,ap-dmic = <1>;
+};
