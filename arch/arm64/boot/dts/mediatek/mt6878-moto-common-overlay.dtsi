@@ -8,6 +8,7 @@
 #include <dt-bindings/interrupt-controller/irq.h>
 #include <dt-bindings/phy/phy.h>
 #include <dt-bindings/pinctrl/mt6878-pinfunc.h>
+#include "mediatek/carrier-channel-ids.dtsi"
 
 #if 0
 #include <dt-bindings/pinctrl/mt6897-pinfunc.h>
