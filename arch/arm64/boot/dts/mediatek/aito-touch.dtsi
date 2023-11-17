@@ -26,6 +26,7 @@
 		pinctrl-0 = <&ctp_gt9896s_int_active &ctp_gt9896s_reset_active>;
 		pinctrl-1 = <&ctp_gt9896s_int_suspend &ctp_gt9896s_reset_suspend>;
 		spi-max-frequency = <15000000>;  /* 4800000,9600000,15000000,19200000 */
+		mmi,status = "/chosen","mmi,panel_name","contains","csot_nt37707";
 		goodix,reset-gpio = <&pio 81 0x0>;
 		goodix,irq-gpio = <&pio 8 0x2002>;
 		goodix,avdd-gpio = <&pio 29 0x0>;

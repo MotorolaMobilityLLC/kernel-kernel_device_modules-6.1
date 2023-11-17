@@ -78,6 +78,7 @@ mgk_64_k61_kleaf_modules = [
     "//motorola/kernel/modules/drivers/misc/awinic/aw86927:aw86927",
     "//motorola/kernel/modules/drivers/misc/utag:utags",
     "//motorola/kernel/modules/drivers/mmi_info:mmi_info",
+    "//motorola/kernel/modules/drivers/mmi_relay:mmi_relay",
     "//motorola/kernel/modules/drivers/moto_f_usbnet:moto_f_usbnet",
     "//motorola/kernel/modules/drivers/input/misc/fpc_fps_mmi:fpc_mtk_tee",
     "//motorola/kernel/modules/drivers/nfc/st54lnfc/st21nfc:st54lnfc",
@@ -91,6 +92,7 @@ mgk_64_k61_kleaf_modules = [
     "//motorola/kernel/modules/drivers/power/sc8549d:sc8546d_charger",
     "//motorola/kernel/modules/drivers/power/cps4041_mmi:cps4041_mmi",
     "//motorola/kernel/modules/drivers/input/touchscreen/goodix_berlin_u_mmi:goodix_brl_u_mmi",
+    "//motorola/kernel/modules/drivers/input/touchscreen/touchscreen_u_mmi:touchscreen_u_mmi",
 ]
 
 mgk_64_k61_kleaf_eng_modules = [
