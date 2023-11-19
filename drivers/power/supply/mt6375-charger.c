@@ -1938,6 +1938,35 @@ out:
 	return ret;
 }
 
+static int mt6375_enable_otg(struct charger_device *chgdev, bool en)
+{
+	int ret = 0;
+	static struct regulator *regulator = NULL;
+	struct mt6375_chg_data *ddata = charger_get_data(chgdev);
+
+	if (!regulator) {
+		regulator = devm_regulator_get(ddata->dev, "usb-otg-vbus");
+		if (IS_ERR_OR_NULL(regulator)) {
+			dev_err(ddata->dev, "failed to get otg regulator\n");
+			return -EINVAL;
+		} else {
+			dev_info(ddata->dev, "get usb-otg-vbus regulator success!\n");
+		}
+	}
+
+	if (en) {
+		mt_dbg(ddata->dev, "enable usb-otg-vbus\n");
+		ret = regulator_enable(regulator);
+	} else {
+		mt_dbg(ddata->dev, "disable usb-otg-vbus\n");
+		ret = regulator_disable(regulator);
+	}
+
+	dev_info(ddata->dev, "en=%d ret=%d\n", en, ret);
+
+	return ret;
+}
+
 static int mt6375_enable_discharge(struct charger_device *chgdev, bool en)
 {
 	int i, ret;
@@ -2412,6 +2441,7 @@ static const struct charger_ops mt6375_chg_ops = {
 	.reset_ta = mt6375_reset_pe_ta,
 	.enable_cable_drop_comp = mt6375_enable_pe_cable_drop_comp,
 	/* OTG */
+	.enable_otg = mt6375_enable_otg,
 	.enable_discharge = mt6375_enable_discharge,
 	/* charger type detection */
 	.enable_chg_type_det = mt6375_enable_chg_type_det,
