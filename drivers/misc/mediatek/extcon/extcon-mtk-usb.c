@@ -328,10 +328,10 @@ static int mtk_usb_extcon_vbus_init(struct mtk_extcon_info *extcon)
 		goto fail;
 	}
 
-	extcon->vbus =  devm_regulator_get_exclusive(dev, "vbus");
+	extcon->vbus = devm_regulator_get(dev, "vbus");
 	if (IS_ERR(extcon->vbus)) {
 		/* try to get by name */
-		extcon->vbus =  devm_regulator_get_exclusive(dev, "usb-otg-vbus");
+		extcon->vbus = devm_regulator_get(dev, "usb-otg-vbus");
 		if (IS_ERR(extcon->vbus)) {
 			dev_err(dev, "failed to get vbus\n");
 			ret = PTR_ERR(extcon->vbus);
