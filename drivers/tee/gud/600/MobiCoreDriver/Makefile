@@ -74,6 +74,10 @@ mcDrvModule-ffa-y := \
 	xen_common.o \
 	xen_fe.o
 
+# Support HW wrapped key mode for FBE.
+mcDrvModule-ffa-$(CONFIG_FSCRYPT_WRAPED_KEY_MODE_SUPPORT) += hwkm.o
+mcDrvModule-$(CONFIG_FSCRYPT_WRAPED_KEY_MODE_SUPPORT) += hwkm.o
+
 # Release mode by default
 ccflags-y += -DNDEBUG
 ccflags-y += -Wno-declaration-after-statement
