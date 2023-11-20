@@ -237,6 +237,12 @@
 			remote-endpoint = <&wide_af>;
 		};
 	};
+	port@2 {
+		reg = <2>;
+		main_ois_endpoint: endpoint {
+			remote-endpoint = <&main_ois>;
+		};
+	};
 };
 
 &i2c4 {
@@ -314,6 +320,20 @@
 		compatible = "mediatek,camera_eeprom";
 		reg = <0x50>;
 		status = "okay";
+	};
+
+	camera_ois_main@72 {
+		compatible = "mediatek,dw9784";
+		camera-type = "main";
+		reg = <0x72>;
+		vin-supply = <&cam_main_afdd_ldo>;
+		vdd-supply = <&cam_main_ois_vdd_ldo>;
+		status = "okay";
+		port {
+			main_ois: endpoint {
+			remote-endpoint = <&main_ois_endpoint>;
+			};
+		};
 	};
 
 	sensor0: sensor0@20 {
