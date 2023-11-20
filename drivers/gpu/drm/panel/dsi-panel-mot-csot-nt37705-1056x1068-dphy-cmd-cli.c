@@ -433,6 +433,7 @@ static struct mtk_panel_params ext_params_48hz = {
 	.physical_width_um = 68256,
 	.physical_height_um = 151680,
 	.lcm_index = 0,
+	.lcm_degree = 180,
 
 	//.output_mode = MTK_PANEL_DSC_SINGLE_PORT,
 
