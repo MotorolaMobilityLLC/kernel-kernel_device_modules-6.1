@@ -97,6 +97,17 @@
 	};
 };
 
+
+/* BOB */
+&i2c5 {
+	hl7603@77 {
+		status = "ok";
+		compatible = "hl7603";
+		reg = <0x77>;
+
+	};
+};
+
 &i2c12 {
 	status = "okay";
 	clock-frequency = <400000>;
