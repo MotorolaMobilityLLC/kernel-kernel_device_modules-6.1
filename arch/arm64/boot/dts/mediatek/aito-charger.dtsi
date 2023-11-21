@@ -153,6 +153,7 @@
 
 	mmi,enable-mux;
 	mmi,mux_wls_switch_en = <&pio 99 0x0>;
+	mmi,mux_switch_enn_en = <&pio 32 0x0>;
 	/* dynamic mivr */
 	enable_dynamic_mivr;
 

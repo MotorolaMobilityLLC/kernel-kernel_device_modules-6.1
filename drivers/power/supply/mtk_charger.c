@@ -4232,6 +4232,10 @@ static int parse_mmi_dt(struct mtk_charger *info, struct device *dev)
 	if(!gpio_is_valid(info->mmi.wls_boost_en))
 		pr_err("mmi wls_boost_en is %d invalid\n", info->mmi.wls_boost_en);
 
+	info->mmi.switch_enn_en = of_get_named_gpio(node, "mmi,mux_switch_enn_en", 0);
+	if (!gpio_is_valid(info->mmi.switch_enn_en))
+		pr_err("mmi switch_enn_en is %d invalid\n", info->mmi.switch_enn_en);
+
 	info->mmi.enable_charging_limit =
 		of_property_read_bool(node, "mmi,enable-charging-limit");
 
@@ -4515,6 +4519,14 @@ void mmi_init(struct mtk_charger *info)
 		if (rc  < 0)
 			pr_err(" [%s] Failed to request wls_boost_en gpio, ret:%d", __func__, rc);
 	}
+
+	if (gpio_is_valid(info->mmi.switch_enn_en)) {
+		rc = devm_gpio_request_one(&info->pdev->dev, info->mmi.switch_enn_en,
+				GPIOF_OUT_INIT_LOW, "mux_switch_enn_en");
+		if (rc < 0)
+			pr_err(" [%s] Failed to request switch_enn_en gpio, ret:%d", __func__, rc);
+	}
+
 	info->mmi.batt_health = POWER_SUPPLY_HEALTH_GOOD;
 
 	info->mmi.chg_reboot.notifier_call = chg_reboot;
