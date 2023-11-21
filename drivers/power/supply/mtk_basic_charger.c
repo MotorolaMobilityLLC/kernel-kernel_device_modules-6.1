@@ -880,6 +880,27 @@ static int mmi_mux_config(struct mtk_charger *info, enum mmi_mux_channel channel
 	return 0;
 }
 
+static int mmi_switch_enn_config(struct mtk_charger *info, enum mmi_mux_channel channel, bool en)
+{
+	struct chg_alg_device *alg = NULL;
+
+	pr_info("%s en=%d factory_mode=%d\n", __func__, en, info->mmi.factory_mode);
+	if (info->mmi.factory_mode) {
+		alg = get_chg_alg_by_name("wlc");
+		if ((NULL != alg) && (alg->alg_id & info->fast_charging_indicator)) {
+			if (gpio_is_valid(info->mmi.switch_enn_en)) {
+				gpio_set_value(info->mmi.switch_enn_en, en);
+				pr_info("[%s] switch_enn_en %d\n", __func__, en);
+				chg_alg_set_prop(alg, ALG_WLC_STATE, en);
+			}
+		} else {
+			pr_info("[%s] not found wlc\n", __func__);
+		}
+	}
+
+	return 0;
+}
+
 static int mmi_mux_switch(struct mtk_charger *info, enum mmi_mux_channel channel, bool on)
 {
 	int pre_chan, pre_on;
@@ -1032,6 +1053,9 @@ static int mmi_mux_switch(struct mtk_charger *info, enum mmi_mux_channel channel
 			info->mmi.mux_channel.on = on;
 			break;
 		case MMI_MUX_CHANNEL_WLC_FACTORY_TEST:
+			pr_info("%s MMI_MUX_CHANNEL_WLC_FACTORY_TEST %d\n", __func__, on);
+			mmi_switch_enn_config(info, MMI_MUX_CHANNEL_WLC_FACTORY_TEST, on);
+			msleep(50);
 			if (on) {
 				mmi_mux_config(info, MMI_MUX_CHANNEL_WLC_FACTORY_TEST);
 				info->mmi.mux_channel.chan = MMI_MUX_CHANNEL_WLC_FACTORY_TEST;
