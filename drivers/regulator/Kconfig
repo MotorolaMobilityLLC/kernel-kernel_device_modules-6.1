@@ -25,6 +25,16 @@ menuconfig REGULATOR
 
 if REGULATOR
 
+config MOTO_HL7603
+        tristate "moto hl7603 regulator driver"
+	depends on I2C
+	select REGMAP
+	select CRC8
+	select OF_GPIO
+	select REGULATOR_FIXED_VOLTAGE
+	help
+	  hl7603 is an pmic chip.
+
 config MOTO_SGM62110
         tristate "moto sgm62110 regulator driver"
 	depends on I2C
