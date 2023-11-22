@@ -363,7 +363,7 @@ static int lcm_enable(struct drm_panel *panel)
 
 
 static const struct drm_display_mode switch_mode_60hz = {
-	.clock = 212000,
+	.clock = 70359,
 	.hdisplay	= HACT,
 	.hsync_start	= HACT + HFP,
 	.hsync_end	= HACT + HFP + HSA,
@@ -376,7 +376,7 @@ static const struct drm_display_mode switch_mode_60hz = {
 
 
 static const struct drm_display_mode switch_mode_48hz = {
-	.clock = 170000,
+	.clock = 56288,
 	.hdisplay	= HACT,
 	.hsync_start	= HACT + HFP,
 	.hsync_end	= HACT + HFP + HSA,
@@ -733,7 +733,7 @@ static int lcm_get_modes(struct drm_panel *panel,
 					struct drm_connector *connector)
 {
 	struct drm_display_mode *mode;
-	//struct drm_display_mode *mode_1;
+	struct drm_display_mode *mode_1;
 
 	mode = drm_mode_duplicate(connector->dev, &switch_mode_60hz);
 	if (!mode) {
@@ -745,7 +745,7 @@ static int lcm_get_modes(struct drm_panel *panel,
 	drm_mode_set_name(mode);
 	mode->type = DRM_MODE_TYPE_DRIVER | DRM_MODE_TYPE_PREFERRED;
 	drm_mode_probed_add(connector, mode);
-/*
+
 	mode_1 = drm_mode_duplicate(connector->dev, &switch_mode_48hz);
 	if (!mode_1) {
 		dev_info(connector->dev->dev, "failed to add mode %ux%ux@%u\n",
@@ -756,7 +756,7 @@ static int lcm_get_modes(struct drm_panel *panel,
 	drm_mode_set_name(mode_1);
 	mode_1->type = DRM_MODE_TYPE_DRIVER | DRM_MODE_TYPE_PREFERRED;
 	drm_mode_probed_add(connector, mode_1);
-*/
+
 	connector->display_info.width_mm = 68;
 	connector->display_info.height_mm = 152;
 
