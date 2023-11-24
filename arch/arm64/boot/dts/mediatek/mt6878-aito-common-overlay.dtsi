@@ -104,7 +104,7 @@
 		status = "ok";
 		compatible = "hl7603";
 		reg = <0x77>;
-
+		/* hl7603_vout_voltage = <0x0B>; //3.4v */
 	};
 };
 
