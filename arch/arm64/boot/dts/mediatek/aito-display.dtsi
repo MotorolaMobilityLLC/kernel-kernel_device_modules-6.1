@@ -77,7 +77,7 @@
 &dsi1 {
 	status = "okay";
 
-/*
+
 	panel21@0 {
 		/delete-property/ compatible;
 		/delete-property/ pm-enable-gpios;
@@ -88,8 +88,8 @@
 		reg = <0>;
 		pinctrl-names = "default";
 	};
-*/
-	panel21@0 {
+
+	panel22@0 {
 		/delete-property/ compatible;
 		/delete-property/ pm-enable-gpios;
 		/delete-property/ reset-gpios;
@@ -99,13 +99,19 @@
 		/delete-property/ pn-swap-setting;
 
 		compatible = "csot,nt37705,cmd,cli";
-		reg = <0>;
+		reg = <1>;
 		pm-enable-gpios = <&pio 114 0>,
                           <&pio 59 0>,
                           <&pio 77 0>,
                           <&pio 115 0>;
 		reset-gpios = <&pio 113 0>;
 		pinctrl-names = "default";
+
+		port {
+			panel22_in: endpoint {
+				remote-endpoint = <&dsi1_out>;
+			};
+		};
 	};
 };
 
