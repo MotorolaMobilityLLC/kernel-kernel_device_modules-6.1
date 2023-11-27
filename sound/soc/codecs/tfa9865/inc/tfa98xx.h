@@ -121,6 +121,8 @@ struct tfa98xx {
 
 #ifdef CONFIG_DEBUG_FS
 	struct dentry *dbg_dir;
+#else
+	struct proc_dir_entry *dbg_dir;
 #endif
 	u8 reg;
 	unsigned int flags;
