@@ -621,26 +621,54 @@ static int transceiver_config(struct hf_device *hf_dev,
 {
 	struct transceiver_device *dev = hf_dev->private_data;
 	struct transceiver_config *cfg = NULL;
+	bool copy_config = true;
+
+	/* If the sensor is als or ps, copy config only when it's
+	 * cali data */
+#ifdef CONFIG_MOTO_LIGHT_1_SENSOR
+	if (((SENSOR_TYPE_LIGHT == sensor_type || SENSOR_TYPE_LIGHT_1 == sensor_type) &&
+#else
+	if (((SENSOR_TYPE_LIGHT == sensor_type) &&
+#endif
+		(14 != ((uint32_t*)data)[0])) ||
+		((SENSOR_TYPE_PROXIMITY == sensor_type || SENSOR_TYPE_PROX_CLI == sensor_type || SENSOR_TYPE_PS_APPROACH == sensor_type) &&
+		 (15 != ((uint32_t*)data)[0])))
+		copy_config = false;
 
 	mutex_lock(&dev->config_lock);
 	cfg = dev->state[sensor_type].config;
-	if (!cfg) {
+	if (copy_config && !cfg) {
 		cfg = kzalloc(sizeof(*cfg) + length, GFP_KERNEL);
 		if (!cfg) {
 			mutex_unlock(&dev->config_lock);
 			return -ENOMEM;
 		}
+		cfg->length = length;
 		dev->state[sensor_type].config = cfg;
 	} else {
+#if 0
 		if (cfg->length != length) {
 			pr_err("length not equal to prev length\n");
 			mutex_unlock(&dev->config_lock);
 			return -EINVAL;
 
 		}
+#endif
 	}
-	cfg->length = length;
-	memcpy(cfg->data, data, length);
+
+	if (copy_config) {
+		if (cfg->length != length) {
+			kfree(cfg);
+			cfg = kzalloc(sizeof(*cfg) + length, GFP_KERNEL);
+			if (!cfg) {
+				mutex_unlock(&dev->config_lock);
+				return -ENOMEM;
+			}
+			dev->state[sensor_type].config = cfg;
+			cfg->length = length;
+		}
+		memcpy(cfg->data, data, length);
+	}
 	mutex_unlock(&dev->config_lock);
 
 	return transceiver_comm_with(sensor_type,
