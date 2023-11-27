@@ -200,6 +200,7 @@ mgk_64_k61_device_modules = [
     "drivers/gpu/drm/panel/dsi-panel-mot-csot-nt37707-667-fhdp-dphy-cmd.ko",
     "drivers/gpu/drm/panel/dsi-panel-mot-csot-nt37705-1056x1068-dphy-cmd-cli.ko",
     "drivers/gpu/drm/panel/dsi-panel-mot-dummy-vdo-60hz.ko",
+    "drivers/gpu/drm/panel/dsi-panel-mot-dummy-cmd-60hz.ko",
     "drivers/gpu/mediatek/ged/ged.ko",
     "drivers/gpu/mediatek/gpu_bm/mtk_gpu_qos.ko",
     "drivers/gpu/mediatek/gpueb/gpueb.ko",
