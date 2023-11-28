@@ -103,7 +103,8 @@ static int get_profile_from_list(char *buf, int id);
 static int get_profile_id_for_sr(int id, unsigned int rate);
 
 #ifdef TFA_NON_DSP_SOLUTION
-#if 0//IS_ENABLED(CONFIG_ARCH_QCOM)
+//#if IS_ENABLED(CONFIG_ARCH_QCOM)
+#if 0
 //Please export the symbol from q6afe.c
 extern int send_tfa_cal_apr(void *buf, int cmd_size, bool bRead);
 extern int send_tfa_cal_in_band(void *buf, int cmd_size);
@@ -143,7 +144,8 @@ int tfa98xx_send_data_to_dsp(int8_t *buffer, int16_t DataLength)
 
 	if (buffer == NULL)
 		return -EFAULT;
-#if 0//IS_ENABLED(CONFIG_ARCH_QCOM)
+//#if IS_ENABLED(CONFIG_ARCH_QCOM)
+#if 0
 	result = send_tfa_cal_apr(buffer, DataLength, false);
 #else
 	result = mtk_spk_send_ipi_buf_to_dsp(buffer, DataLength);
@@ -156,7 +158,8 @@ int tfa98xx_send_data_to_dsp(int8_t *buffer, int16_t DataLength)
 int tfa98xx_receive_data_from_dsp(int8_t *buffer, int16_t size, uint32_t *DataLength)
 {
 	int result = 0;
-#if 0//IS_ENABLED(CONFIG_ARCH_QCOM)
+//#if IS_ENABLED(CONFIG_ARCH_QCOM)
+#if 0
 	result = send_tfa_cal_apr(buffer, size, true);
 #else
 	result = mtk_spk_recv_ipi_buf_from_dsp(buffer, size, DataLength);
@@ -1606,37 +1609,40 @@ static int tfa98xx_set_algo_ctl(struct snd_kcontrol *kcontrol,
 {
 	struct tfa98xx *tfa98xx;
 	int error = 0;
+	int send_flag = 0;
 
 	mutex_lock(&tfa98xx_mutex);
 	list_for_each_entry(tfa98xx, &tfa98xx_device_list, list) {
-	    pr_debug("value: %ld\n", ucontrol->value.integer.value[0]);
-	}
+		pr_debug("value: %ld\n", ucontrol->value.integer.value[0]);
+	
+		algo_bytes[0] = 0x00;
+		algo_bytes[1] = 0x80;
+		algo_bytes[2] = 0x3f;
+		algo_bytes[3] = 0x00;
+		algo_bytes[4] = 0x00;
+		if (ucontrol->value.integer.value[0] == 0){
+			algo_status = 0;
+			algo_bytes[5] = 0x00;
+		}
+		else if(ucontrol->value.integer.value[0] == 1){
+			algo_status = 1;
+			algo_bytes[5] = 0x01;
+			pr_debug("value: %d\n", algo_bytes[5]);
+		}
+		else{
+			return -EINVAL;
+		}
 
-	algo_bytes[0] = 0x00;
-	algo_bytes[1] = 0x80;
-	algo_bytes[2] = 0x3f;
-	algo_bytes[3] = 0x00;
-	algo_bytes[4] = 0x00;
-	if (ucontrol->value.integer.value[0] == 0){
-		algo_status = 0;
-		algo_bytes[5] = 0x00;
+		if (tfa98xx->dsp_init == TFA98XX_DSP_INIT_DONE && 0 == send_flag) {
+			send_flag = 1;
+			error = tfa98xx_send_data_to_dsp(algo_bytes, sizeof(algo_bytes));
+			pr_info("send data to DSP\n");
+		} else {
+			error = -1;
+			pr_info("send data fail as DSP NOT work\n");
+		}
+		usleep_range(10000, 10500);
 	}
-	else if(ucontrol->value.integer.value[0] == 1){
-		algo_status = 1;
-		algo_bytes[5] = 0x01;
-		pr_debug("value: %d\n", algo_bytes[5]);
-	}
-	else{
-		return -EINVAL;
-	}
-
-	if (tfa98xx->dsp_init == TFA98XX_DSP_INIT_DONE) {
-		error = tfa98xx_send_data_to_dsp(algo_bytes, sizeof(algo_bytes));
-	} else {
-		error = -1;
-		pr_info(" send data fail as DSP NOT work\n");
-	}
-	usleep_range(10000, 10500);
 	mutex_unlock(&tfa98xx_mutex);
 
 	return 1;
