@@ -49,6 +49,8 @@ struct charger_cooling_device {
 	enum charger_type type;
 	struct power_supply *chg_psy;
 	struct power_supply *s_chg_psy;
+	struct power_supply *q_chg_psy;
+	bool thermal_charger_pump_support;
 	const struct charger_cooling_platform_data *pdata;
 };
 

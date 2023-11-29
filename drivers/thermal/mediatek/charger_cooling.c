@@ -101,6 +101,14 @@ static int cooling_state_to_charger_limit_v1(struct charger_cooling_device *chg)
 	}
 	prop_bat_chr.intval = master_charger_state_to_current_limit[chg->target_state];
 
+	if(chg->thermal_charger_pump_support) {
+		ret = power_supply_set_property(chg->q_chg_psy,
+			POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT_MAX, &prop_bat_chr);
+		if (ret != 0) {
+			pr_notice("qc3p temp level set bat curr fail\n");
+		}
+	}
+
 	ret = power_supply_set_property(chg->chg_psy,
 		POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT_MAX,
 		&prop_bat_chr);
@@ -281,6 +289,16 @@ static int charger_cooling_probe(struct platform_device *pdev)
 			return -EINVAL;
 		}
 	}
+
+	charger_cdev->thermal_charger_pump_support = of_property_read_bool(np, "mmi,thermal-charger-pump-support");
+	if (charger_cdev->thermal_charger_pump_support) {
+		charger_cdev->q_chg_psy = power_supply_get_by_name("mmi_chrg_manager");
+		if (charger_cdev->q_chg_psy == NULL || IS_ERR(charger_cdev->q_chg_psy)) {
+			pr_info("Couldn't get mmi chrg manager psy\n");
+			return -EPROBE_DEFER;
+		}
+	}
+	pr_err("%s: thermal-charger-pump-support = %d \n", __func__, charger_cdev->thermal_charger_pump_support);
 
 	ret = sysfs_create_group(kernel_kobj, &charger_cooler_attr_group);
 	if (ret) {
