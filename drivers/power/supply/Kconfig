@@ -193,6 +193,12 @@ config MTK_CHARGER_TYPE_DETECT
 	  typec attach notify.
 	  Say N to disable.
 
+config MOTO_CHG_WT6670F_SUPPORT
+        bool "Enable WT6670F charger protocol IC for Moto"
+        default n
+        help
+          This is to enable MOTO supports of IC WT6670F.
+
 config MOTO_WLC_ALG_SUPPORT
 	tristate "moto wlc interface driver for charger"
 	help

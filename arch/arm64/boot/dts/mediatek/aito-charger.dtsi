@@ -514,8 +514,55 @@
 &charger_cooler {
 	mmi,thermal-mitigation = <(-1) 8000000 6000000 4000000 3000000
 				2000000 1000000 500000 300000>;
+	mmi,thermal-charger-pump-support;
 };
 
 &extcon_usb {
 	vbus-current = <1300000>;
+};
+
+&odm {
+	mmi_chrg_manager {
+		compatible = "mmi,chrg-manager";
+		mmi,pps-volt-steps = <20000>;
+		mmi,pps-curr-steps = <40000>;
+		mmi,pd-volt-max = <12000000>;
+		mmi,pd-curr-max = <3000000>;
+		mmi,batt-curr-boost = <300000>;
+		mmi,batt-ovp-lmt = <4550000>;
+		mmi,pl-chrg-vbatt-min = <3000000>;
+		mmi,typec-middle-current = <800000>;
+		mmi,step-first-current-comp = <0>;
+		mmi,dont-rerun-aicl;
+		mmi,chrg-temp-zones-num = <5>;
+		mmi,mmi-chrg-temp-zones =
+				<0 4200 1200  0 0 0 0>,
+				<10 4250 3000 4500 1800 0 0>,
+				<15 4500 3000 0 0 0 0>,
+				<45 4300 6000 4400 5200 4530 4000>,
+				<60 4200 5840 0 0 0 0>;
+
+		mmi,mmi-ffc-zones = <4200 292>,
+				<4250 292>,
+				<4450 292>,
+				<4530 776>,
+				<4530 946>,
+				<4530 1379>,
+				<4200 292>;
+
+		mmi,thermal-min-level = <1500000>;
+
+		charger = <&mt6375_chg>;
+
+		charger_device_0 {
+			chrg-name = "pmic-sw";
+			psy-name = "mtk-master-charger";
+			charging-curr-limited = <500000>;
+		};
+		charger_device_1 {
+			chrg-name = "cp-master";
+			psy-name = "cp-standalone";
+			charging-curr-min = <1800000>;
+		};
+	};
 };
