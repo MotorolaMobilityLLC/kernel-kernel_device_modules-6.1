@@ -204,10 +204,10 @@ static void lcm_panel_init(struct lcm *ctx)
 	lcm_dcs_write_seq_static(ctx, 0x11);
 	usleep_range(120 * 1000, 121 * 1000);
 	lcm_dcs_write_seq_static(ctx, 0x29);
-/*
+
 	lcm_dcs_write_seq_static(ctx, 0xF0, 0x55, 0xAA, 0x52, 0x08, 0x00);
 	lcm_dcs_write_seq_static(ctx, 0xB2, 0x01, 0x60);
-*/
+
 
 
 	pr_info("%s-\n", __func__);
@@ -463,7 +463,7 @@ static int lcm_setbacklight_cmdq(void *dsi, dcs_write_gce cb, void *handle,
 	if (!(ctx->current_bl && level)) pr_info("backlight changed from %u to %u\n", ctx->current_bl, level);
 	else pr_debug("backlight changed from %u to %u\n", ctx->current_bl, level);
 
-	bl_tb0[1] = (u8)((level>>8)&0xF);
+	bl_tb0[1] = (u8)((level>>8)&0x3F);
 	bl_tb0[2] = (u8)(level&0xFF);
 
 	if (!cb)
