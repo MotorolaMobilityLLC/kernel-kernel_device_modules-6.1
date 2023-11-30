@@ -20,3 +20,8 @@ config GTP_MULTI_CONFIG
 	bool "Use different config files"
 	help
 		Say Y here if use use different config names based on different modules.
+
+config TARGET_BUILD_FACTORY
+	bool "Identify if it's a factory build"
+	help
+		Say Y here if it's a factory build for touch driver.
