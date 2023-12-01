@@ -830,15 +830,18 @@ out:
 
 static int mt6375_get_chg_status(struct mt6375_chg_data *ddata)
 {
-	int ret = 0, attach;
+	int ret = 0;
 	u32 stat;
 	bool chg_en = false;
 
+#ifdef MTK_BASE
+	int attach = 0;
 	mutex_lock(&ddata->attach_lock);
 	attach = atomic_read(&ddata->attach[ddata->active_idx]);
 	mutex_unlock(&ddata->attach_lock);
 	if (!attach)
 		return POWER_SUPPLY_STATUS_NOT_CHARGING;
+#endif
 
 	ret = mt6375_chg_is_enabled(ddata, &chg_en);
 	if (ret < 0)
