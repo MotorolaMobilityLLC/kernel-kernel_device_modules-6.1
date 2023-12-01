@@ -12,6 +12,7 @@
 #include <linux/of.h>
 #include <linux/platform_device.h>
 #include <linux/power_supply.h>
+#include <linux/reboot.h>
 #include <tcpm.h>
 #include "mtk_charger.h"
 
@@ -21,6 +22,13 @@
 #endif /* CONFIG_MTK_CHARGER */
 
 #define MTK_CTD_DRV_VERSION	"1.0.2_MTK"
+
+struct tag_bootmode {
+	u32 size;
+	u32 tag;
+	u32 bootmode;
+	u32 boottype;
+};
 
 #define FAST_CHG_WATT		7500000 /* uW */
 
@@ -48,6 +56,10 @@ struct mtk_ctd_info {
 	wait_queue_head_t attach_wq;
 	struct mutex attach_lock;
 	struct task_struct *attach_task;
+	struct work_struct	mmi_hardreset_work;
+	bool is_mmi_pd_hardreset;
+	bool is_mmi_pd_hardreset_plugout;
+	bool tcpc_kpoc;
 };
 
 static int mmi_mux_typec_chg_chan(enum mmi_mux_channel channel, bool on)
@@ -191,6 +203,11 @@ static int pd_tcp_notifier_call(struct notifier_block *nb,
 		break;
 	case TCP_NOTIFY_PD_STATE:
 		handle_pd_rdy_attach(mci, idx, noti);
+		if (noti->pd_state.connected == PD_CONNECT_HARD_RESET)
+			mci->is_mmi_pd_hardreset = true;
+		else
+			mci->is_mmi_pd_hardreset = false;
+		pr_info("%s: is_mmi_pd_hardreset = %d\n", __func__, mci->is_mmi_pd_hardreset);
 		break;
 	case TCP_NOTIFY_TYPEC_STATE:
 		old_state = noti->typec_state.old_state;
@@ -204,6 +221,7 @@ static int pd_tcp_notifier_call(struct notifier_block *nb,
 			dev_info(mci->dev,
 				 "%s Charger plug in, polarity = %d\n",
 				 __func__, noti->typec_state.polarity);
+			mci->is_mmi_pd_hardreset_plugout = false;
 			mmi_mux_typec_chg_chan(MMI_MUX_CHANNEL_TYPEC_CHG, true);
 			handle_typec_pd_attach(mci, idx, ATTACH_TYPE_TYPEC);
 		} else if ((old_state == TYPEC_ATTACHED_SNK ||
@@ -212,6 +230,15 @@ static int pd_tcp_notifier_call(struct notifier_block *nb,
 			    old_state == TYPEC_ATTACHED_DBGACC_SNK ||
 			    old_state == TYPEC_ATTACHED_AUDIO) &&
 			    new_state == TYPEC_UNATTACHED) {
+			if (mci->tcpc_kpoc) {
+				pr_info("%s: typec unattached, power off\n",
+					__func__);
+				if (mci->is_mmi_pd_hardreset) {
+					mci->is_mmi_pd_hardreset_plugout = true;
+					schedule_work(&mci->mmi_hardreset_work);
+					break;
+				}
+			}
 			dev_info(mci->dev, "%s Charger plug out\n", __func__);
 			mmi_mux_typec_chg_chan(MMI_MUX_CHANNEL_TYPEC_CHG, false);
 			handle_typec_pd_attach(mci, idx, ATTACH_TYPE_NONE);
@@ -251,6 +278,52 @@ static void mtk_ctd_driver_remove_helper(struct mtk_ctd_info *mci)
 			break;
 	}
 	mutex_destroy(&mci->attach_lock);
+}
+
+static void mtk_ctd_parse_dt(struct mtk_ctd_info *mci)
+{
+	struct device_node *boot_node = NULL;
+	struct tag_bootmode *tag = NULL;
+	struct device_node *np = mci->dev->of_node;
+
+	boot_node = of_parse_phandle(np, "bootmode", 0);
+	if (!boot_node)
+		pr_err("%s: failed to get boot mode phandle\n", __func__);
+	else {
+		tag = (struct tag_bootmode *)of_get_property(boot_node,
+							"atag,boot", NULL);
+		if (!tag)
+			pr_err("%s: failed to get atag,boot\n", __func__);
+		else {
+			pr_err("%s: size:0x%x tag:0x%x bootmode:0x%x boottype:0x%x\n",
+				__func__, tag->size, tag->tag,
+				tag->bootmode, tag->boottype);
+
+			/*charge only mode*/
+			if (tag->bootmode == 8 ||tag->bootmode == 9)
+				mci->tcpc_kpoc = true;
+			else
+				mci->tcpc_kpoc = false;
+		}
+	}
+}
+
+#define MMI_HARDRESET_CNT 50
+static void mmi_pd_hardreset_work(struct work_struct *work)
+{
+	int i;
+	struct mtk_ctd_info *mci = container_of(work, struct mtk_ctd_info,
+						mmi_hardreset_work);
+
+	for (i = 0; i < MMI_HARDRESET_CNT; i++) {
+		msleep(20);
+		if (!mci->is_mmi_pd_hardreset_plugout)
+			break;
+	}
+
+	pr_info("mmi_pd_hardreset_work i = %d\n", i);
+	if (i >= MMI_HARDRESET_CNT)
+		kernel_power_off();
 }
 
 #define MCI_DEVM_KCALLOC(member)					\
@@ -298,6 +371,8 @@ static int mtk_ctd_probe(struct platform_device *pdev)
 	init_waitqueue_head(&mci->attach_wq);
 	mutex_init(&mci->attach_lock);
 	platform_set_drvdata(pdev, mci);
+
+	mtk_ctd_parse_dt(mci);
 
 	for (i = 0; i < mci->nr_port; i++) {
 #if IS_ENABLED(CONFIG_MTK_CHARGER)
@@ -384,6 +459,10 @@ skip_get_psy:
 		dev_notice(mci->dev, "Failed to run attach kthread(%d)\n", ret);
 		goto out;
 	}
+
+	INIT_WORK(&mci->mmi_hardreset_work,
+					mmi_pd_hardreset_work);
+
 	dev_info(mci->dev, "%s successfully\n", __func__);
 
 	return 0;
