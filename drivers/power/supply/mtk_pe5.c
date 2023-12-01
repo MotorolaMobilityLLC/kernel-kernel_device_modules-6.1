@@ -2343,9 +2343,9 @@ static int pe50_algo_ss_dvchg_with_ta_cv(struct pe50_algo_info *info)
 			goto single_dvchg_restart;
 		}
 		data->ignore_ibusucpf = true;
-		ret = pe50_enable_dvchg_charging(info, PE50_DVCHG_SLAVE, true);
+		ret = pe50_enable_dvchg_charging(info, PE50_DVCHG_MASTER, true);
 		if (ret < 0) {
-			PE50_ERR("en slave dvchg fail(%d)\n", ret);
+			PE50_ERR("en master dvchg fail(%d)\n", ret);
 			goto single_dvchg_restart;
 		}
 		ret = pe50_adjust_vta_with_ta_cv(info);
@@ -2353,9 +2353,11 @@ static int pe50_algo_ss_dvchg_with_ta_cv(struct pe50_algo_info *info)
 			PE50_ERR("adjust vta fail(%d)\n", ret);
 			goto single_dvchg_restart;
 		}
-		ret = pe50_enable_dvchg_charging(info, PE50_DVCHG_MASTER, true);
+
+		msleep(200);
+		ret = pe50_enable_dvchg_charging(info, PE50_DVCHG_SLAVE, true);
 		if (ret < 0) {
-			PE50_ERR("en master dvchg fail(%d)\n", ret);
+			PE50_ERR("en slave dvchg fail(%d)\n", ret);
 			goto single_dvchg_restart;
 		}
 		return 0;
