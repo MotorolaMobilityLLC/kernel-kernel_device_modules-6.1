@@ -72,6 +72,27 @@
 			};
 		};
 	};
+
+	panel3@0 {
+		/delete-property/ compatible;
+		/delete-property/ pm-enable-gpios;
+		/delete-property/ reset-gpios;
+		/delete-property/gate-ic;
+
+		compatible = "tianma,nt37707,cmd,667";
+		reg = <2>;
+		pm-enable-gpios = <&pio 79 0>,
+                          <&pio 59 0>,
+                          <&pio 154 0>,
+                          <&pio 153 0>;
+		reset-gpios = <&pio 90 0>;
+		pinctrl-names = "default";
+		port {
+			panel_in3: endpoint {
+				remote-endpoint = <&dsi_out>;
+			};
+		};
+	};
 };
 
 &dsi1 {
