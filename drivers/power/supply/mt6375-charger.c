@@ -255,6 +255,13 @@ struct mt6375_chg_data {
 	int vbat0_flag;
 	atomic_t no_6pin_used;
 	int mmi_chg_status;
+
+	/*for external qc protocol ic such as wt6670f*/
+	struct delayed_work detect_qc_dwork;
+	int pulse_cnt;
+	struct adapter_device *qc_dev;
+	bool	qc_is_detect;
+	int	qc_chg_type;
 };
 
 struct mt6375_chg_platform_data {
@@ -1149,10 +1156,18 @@ static void mt6375_chg_bc12_work_func(struct work_struct *work)
 	case PORT_STAT_APPLE_10W:
 	case PORT_STAT_APPLE_12W:
 	case PORT_STAT_SAMSUNG:
+		ddata->psy_desc.type = POWER_SUPPLY_TYPE_USB_DCP;
+		ddata->psy_type[active_idx] = POWER_SUPPLY_TYPE_USB_DCP;
+		ddata->psy_usb_type[active_idx] = POWER_SUPPLY_USB_TYPE_DCP;
+		break;
 	case PORT_STAT_DCP:
 		ddata->psy_desc.type = POWER_SUPPLY_TYPE_USB_DCP;
 		ddata->psy_type[active_idx] = POWER_SUPPLY_TYPE_USB_DCP;
 		ddata->psy_usb_type[active_idx] = POWER_SUPPLY_USB_TYPE_DCP;
+
+		if (ddata->qc_dev)
+			schedule_delayed_work(&ddata->detect_qc_dwork, 0);
+
 		break;
 	case PORT_STAT_SDP:
 		ddata->psy_desc.type = POWER_SUPPLY_TYPE_USB;
@@ -2025,6 +2040,157 @@ static int mt6375_enable_chg_type_det(struct charger_device *chgdev, bool en)
 	return 0;
 }
 
+#define HVDCP_POWER_MIN			15000
+#define HVDCP_VOLTAGE_BASIC		5000000
+#define HVDCP_VOLTAGE_NOM		(HVDCP_VOLTAGE_BASIC - 200000)
+#define HVDCP_VOLTAGE_MAX		(HVDCP_VOLTAGE_BASIC + 200000)
+#define HVDCP_VOLTAGE_MIN		4000000
+#define HVDCP_PULSE_COUNT_MAX 	((HVDCP_VOLTAGE_BASIC - 5000000) / 200000 + 2)
+int mt6375_config_qc_charger(struct charger_device *chg_dev)
+{
+	int rc = 0;
+	int vbus_uv;
+	struct mt6375_chg_data *ddata = charger_get_data(chg_dev);
+
+	if (!ddata->qc_dev) {
+		pr_err("qc protocol ic don't ready, exit\n");
+		return -1;
+	}
+
+	rc = mt6375_get_vbus(chg_dev, &vbus_uv);
+	if (rc != 0) {
+		pr_err("%s get vbus failed\n",__func__);
+		return -1;
+	}
+
+	if(vbus_uv < 4000000 || vbus_uv > 6000000) {
+		pr_err("vbus is not for qc3.0\n");
+		return -1;
+	}
+
+	pr_info("pulse_cnt=%d, vbus_uv=%d\n", ddata->pulse_cnt, vbus_uv);
+	if (vbus_uv < HVDCP_VOLTAGE_NOM && ddata->pulse_cnt < HVDCP_PULSE_COUNT_MAX) {
+		rc = adapter_dev_dp_dm(ddata->qc_dev, DP_DM_DP_PULSE);
+		if (rc<0)
+			dev_err(ddata->dev, "qc protocol ic set vbus up failed\n");
+		else
+			ddata->pulse_cnt++;
+	} else if (vbus_uv > HVDCP_VOLTAGE_MAX && ddata->pulse_cnt > 0 ) {
+		rc = adapter_dev_dp_dm(ddata->qc_dev, DP_DM_DM_PULSE);
+		if (rc<0)
+			dev_err(ddata->dev, "qc protocol ic set vbus down failed\n");
+		else {
+			ddata->pulse_cnt--;
+		}
+	} else {
+		pr_info("QC3.0 output configure completed\n");
+		rc = 0;
+		return rc;
+	}
+	msleep(100);
+	return rc;
+}
+
+void get_qc_charger_type_func_work(struct work_struct *work)
+{
+	struct delayed_work *detect_qc_dwork = NULL;
+	struct mt6375_chg_data *ddata;
+	bool early_notified = false;
+	bool need_retry = false;
+	bool m_chg_ready = false;
+	int early_chg_type = 0;
+	int count = 0;
+	int ret;
+	union power_supply_propval val;
+
+	detect_qc_dwork = container_of(work, struct delayed_work, work);
+	if(detect_qc_dwork == NULL) {
+		pr_err("Cann't get charge_monitor_work\n");
+		return ;
+	}
+	ddata = container_of(detect_qc_dwork, struct mt6375_chg_data, detect_qc_dwork);
+	if(ddata == NULL) {
+		pr_err("Cann't get mt6375_chg_data \n");
+		return ;
+	}
+
+	if (!ddata->qc_dev) {
+		pr_err("qc protocol ic dev is not ready, exit \n");
+		return;
+	}
+
+	adapter_dev_reset_chg_type(ddata->qc_dev);
+	pr_err("start qc detected \n");
+	ddata->qc_is_detect = true;
+
+	mt6375_chg_field_set(ddata, F_IAICR, 500);
+	mt6375_chg_set_usbsw(ddata, USBSW_CHG);
+	do{
+		m_chg_ready = false;
+		ddata->qc_chg_type = 0;
+		early_notified = false;
+		need_retry = false;
+		early_chg_type = 0;
+		adapter_dev_start_detection(ddata->qc_dev);
+		while((!m_chg_ready)&&(count<100)) {
+			ret = power_supply_get_property(ddata->psy, POWER_SUPPLY_PROP_ONLINE, &val);
+			if (val.intval <= 0) {
+			      pr_err("[%s] ONLINE: %d, skip detecting0\n",__func__, val.intval);
+			      break;
+			}
+			msleep(30);
+			count++;
+			adapter_dev_is_charger_ready(ddata->qc_dev, &m_chg_ready);
+
+			if(!early_notified){
+			      adapter_dev_get_protocol(ddata->qc_dev, &early_chg_type);
+			}
+
+			if(early_chg_type == USB_TYPE_QC3P_18 || early_chg_type == USB_TYPE_QC3P_27){
+				pr_err("[%s] qc early type is QC3+: %d, skip detecting\n",__func__, early_chg_type);
+				break;
+			}
+				pr_err("qc waiting early type: 0x%x, detect ready: 0x%x, count: %d\n", early_chg_type, m_chg_ready, count);
+		}
+
+		adapter_dev_get_protocol(ddata->qc_dev, &ddata->qc_chg_type);
+
+		if(ddata->qc_chg_type == USB_TYPE_OCP && !need_retry){
+			need_retry = true;
+		} else {
+			need_retry = false;
+		}
+		ret = power_supply_get_property(ddata->psy, POWER_SUPPLY_PROP_ONLINE, &val);
+		if (val.intval) {
+			power_supply_changed(ddata->psy);
+		}
+		else {
+			pr_err("[%s] ONLINE: %d, skip detecting1\n",__func__, val.intval);
+			break;
+		}
+		pr_err("[%s] qc charge type is  0x%x\n",__func__, ddata->qc_chg_type);
+	}while(need_retry);
+
+	ddata->qc_is_detect = false;
+
+	if(ddata->qc_chg_type == USB_TYPE_QC20){
+		adapter_dev_dp_dm(ddata->qc_dev, DP_DM_FORCE_QC2_5V);
+		pr_err("Force set qc2 5V");
+		msleep(100);
+	}else if(ddata->qc_chg_type == USB_TYPE_QC30){
+		adapter_dev_dp_dm(ddata->qc_dev, DP_DM_FORCE_QC3_5V);
+		msleep(100);
+		ddata->pulse_cnt = 0;
+		pr_err("Force set qc3 5V");
+	}
+
+	if (ddata->qc_chg_type != USB_TYPE_QC3P_27) {
+		mt6375_chg_field_set(ddata, F_IAICR, 3000);
+	} else {
+		mt6375_chg_field_set(ddata, F_IAICR, 500);
+	}
+}
+
 #define DUMP_REG_BUF_SIZE	1024
 static int mt6375_dump_registers(struct charger_device *chgdev)
 {
@@ -2184,6 +2350,13 @@ static int mt6375_plug_out(struct charger_device *chgdev)
 	mt_dbg(ddata->dev, "++\n");
 
 	ddata->mmi_chg_status = POWER_SUPPLY_STATUS_DISCHARGING;
+
+	if(ddata->qc_dev){
+		adapter_dev_reset_chg_type(ddata->qc_dev);
+		ddata->pulse_cnt = 0;
+		ddata->qc_chg_type = 0;
+		ddata->qc_is_detect = false;
+	}
 
 	if (pdata->wdt_en) {
 		ret = mt6375_chg_field_set(ddata, F_WDT_EN, 0);
@@ -2395,6 +2568,24 @@ static int mt6375_enable_usbid_floating(struct charger_device *chgdev, bool en)
 	return mt6375_chg_field_set(ddata, F_USBID_FLOATING, en ? 1 : 0);
 }
 
+static int mmi_qc_is_detect(struct charger_device *chgdev, bool *val)
+{
+	struct mt6375_chg_data *ddata = charger_get_data(chgdev);
+
+	*val = ddata->qc_is_detect;
+
+	return 0;
+}
+
+static int mmi_get_protocol(struct charger_device *chgdev, int *val)
+{
+	struct mt6375_chg_data *ddata = charger_get_data(chgdev);
+
+	*val = ddata->qc_chg_type;
+
+	return 0;
+}
+
 static const struct charger_properties mt6375_chg_props = {
 	.alias_name = "mt6375_chg",
 };
@@ -2468,6 +2659,10 @@ static const struct charger_ops mt6375_chg_ops = {
 	.set_usbid_rup = mt6375_set_usbid_rup,
 	.set_usbid_src_ton = mt6375_set_usbid_src_ton,
 	.enable_usbid_floating = mt6375_enable_usbid_floating,
+
+	.qc_is_detect = mmi_qc_is_detect,
+	.get_protocol = mmi_get_protocol,
+	.config_qc_charger = mt6375_config_qc_charger,
 };
 
 static irqreturn_t mt6375_fl_wdt_handler(int irq, void *data)
@@ -3067,8 +3262,16 @@ static int mt6375_chg_probe(struct platform_device *pdev)
 		goto out;
 	}
 
+	ddata->qc_dev = get_adapter_by_name("qc_protocol_ic");
+	if (ddata->qc_dev) {
+		dev_info(dev, "Found qc protocol ic dev\n");
+	} else {
+		dev_info(dev, "Don't find qc protocol ic dev\n");
+	}
+
 	INIT_WORK(&ddata->bc12_work, mt6375_chg_bc12_work_func);
 	INIT_DELAYED_WORK(&ddata->pwr_rdy_dwork, mt6375_chg_pwr_rdy_dwork_func);
+	INIT_DELAYED_WORK(&ddata->detect_qc_dwork, get_qc_charger_type_func_work);
 	platform_set_drvdata(pdev, ddata);
 
 	ret = device_create_file(dev, &dev_attr_shipping_mode);
@@ -3118,6 +3321,7 @@ static int mt6375_chg_probe(struct platform_device *pdev)
 		dev_err(dev, "failed to init irq\n");
 		goto out_chgdev;
 	}
+
 	queue_delayed_work(system_freezable_wq, &ddata->pwr_rdy_dwork,
 			   msecs_to_jiffies(2000));
 	mt_dbg(dev, "successfully\n");
@@ -3145,6 +3349,7 @@ static int mt6375_chg_remove(struct platform_device *pdev)
 
 	mt_dbg(&pdev->dev, "%s: entry. 6375 charger remove now.\n", __func__);
 	if (ddata) {
+		cancel_delayed_work_sync(&ddata->detect_qc_dwork);
 		charger_device_unregister(ddata->chgdev);
 		device_remove_file(ddata->dev, &dev_attr_shipping_mode);
 		cancel_delayed_work_sync(&ddata->pwr_rdy_dwork);
