@@ -128,6 +128,29 @@ struct mmi_mux_configure {
 	bool wls_chip_en;
 };
 
+/* for external qc protocol ic such as wt6670f*/
+enum mmi_usb_type {
+	USB_TYPE_UNKNOWN = 0,
+	USB_TYPE_FC,
+	USB_TYPE_SDP,		/* Standard Downstream Port */
+	USB_TYPE_CDP,		/* Charging Downstream Port */
+	USB_TYPE_DCP,		/* Dedicated Charging Port */
+
+	USB_TYPE_QC20,
+	USB_TYPE_QC30,
+	USB_TYPE_OCP,
+	USB_TYPE_QC3P_18,
+	USB_TYPE_QC3P_27,
+};
+
+enum {
+	DP_DM_UNKNOWN = 0,
+	DP_DM_FORCE_QC2_5V = 1,
+	DP_DM_FORCE_QC3_5V = 2,
+	DP_DM_DP_PULSE = 3,
+	DP_DM_DM_PULSE = 4,
+};
+
 enum bat_temp_state_enum {
 	BAT_TEMP_LOW = 0,
 	BAT_TEMP_NORMAL,
@@ -272,6 +295,8 @@ struct charger_data {
 	int junction_temp_max;
 	int moto_chg_tcmd_ichg;
 	int moto_chg_tcmd_ibat;
+
+	int cp_ichg_limit;
 };
 
 /*moto mmi Functionality start*/
