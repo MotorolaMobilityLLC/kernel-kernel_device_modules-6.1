@@ -149,6 +149,8 @@ int tcpci_notify_role_swap(
 int tcpci_notify_pd_mode(struct tcpc_device *tcpc);
 int tcpci_notify_pd_state(struct tcpc_device *tcpc, uint8_t connect);
 
+int tcpci_notify_pd_vdm_verify(struct tcpc_device *tcpc, uint8_t vdm_verify);
+
 int tcpci_source_vbus(struct tcpc_device *tcpc, uint8_t type, int mv, int ma);
 int tcpci_sink_vbus(struct tcpc_device *tcpc, uint8_t type, int mv, int ma);
 int tcpci_disable_vbus_control(struct tcpc_device *tcpc);
