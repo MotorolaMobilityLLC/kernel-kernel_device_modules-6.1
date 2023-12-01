@@ -214,7 +214,15 @@ static void transceiver_update_config(struct transceiver_device *dev,
 		 * and so on can use this branch.
 		 */
 		if (src->action == CALI_ACTION &&
-				dst->length <= sizeof(src->word))
+				dst->length <= sizeof(src->word) &&
+				((SENSOR_TYPE_LIGHT != src->sensor_type) &&
+				(SENSOR_TYPE_PROXIMITY != src->sensor_type)
+#ifdef CONFIG_MOTO_LIGHT_1_SENSOR
+				&& (SENSOR_TYPE_LIGHT_1 != src->sensor_type)
+#endif
+                && (SENSOR_TYPE_PROX_CLI != src->sensor_type)
+                && (SENSOR_TYPE_PS_APPROACH != src->sensor_type)
+				))
 			transceiver_copy_config(dst, src, 0, dst->length, 0);
 		else
 			pr_err_ratelimited("can't update config %u %u %u\n",
