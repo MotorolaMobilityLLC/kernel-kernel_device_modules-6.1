@@ -102,6 +102,8 @@ static bool support_fast_charging(struct mtk_charger *info)
 	struct chg_alg_device *alg;
 	int i = 0, state = 0;
 	bool ret = false;
+	bool qc_is_detect = false;
+	int qc_chg_type = 0;
 
 	for (i = 0; i < MAX_ALG_NO; i++) {
 		alg = info->alg[i];
@@ -111,6 +113,23 @@ static bool support_fast_charging(struct mtk_charger *info)
 		if (info->enable_fast_charging_indicator &&
 		    ((alg->alg_id & info->fast_charging_indicator) == 0))
 			continue;
+
+		charger_dev_qc_is_detect(info->chg1_dev, &qc_is_detect);
+		charger_dev_get_protocol(info->chg1_dev, &qc_chg_type);
+		if(qc_is_detect == true && alg->alg_id  != PE5_ID) {
+			chr_err("qc is detecting and skip detect others type\n");
+			return ret;
+		} else if (qc_chg_type == USB_TYPE_QC30) {
+			if(charger_dev_config_qc_charger(info->chg1_dev) != 0) {
+				chr_err("config_qc_charger set dpdm failed\n");
+			} else {
+				chr_err("it is HVDCP set ICL 3A  qc_chg_type = %d\n",qc_chg_type);
+			}
+			return ret;
+		} else if (qc_chg_type == USB_TYPE_QC3P_18 || qc_chg_type == USB_TYPE_QC3P_27) {
+			chr_err("qc type and skip others type \n");
+			return ret;
+		}
 
 		chg_alg_set_current_limit(alg, &info->setting);
 		state = chg_alg_is_algo_ready(alg);
@@ -140,6 +159,8 @@ static bool select_charging_current_limit(struct mtk_charger *info,
 	bool is_basic = false;
 	u32 ichg1_min = 0, aicr1_min = 0;
 	int ret;
+	bool qc_is_detect = false;
+	int qc_chg_type = 0;
 
 	select_cv(info);
 
@@ -286,7 +307,28 @@ static bool select_charging_current_limit(struct mtk_charger *info,
 
 	pdata->charging_current_limit = ((info->mmi.target_fcc < 0) ? 0 : info->mmi.target_fcc);
 
+	charger_dev_qc_is_detect(info->chg1_dev, &qc_is_detect);
+	charger_dev_get_protocol(info->chg1_dev, &qc_chg_type);
+	/*when qc is detect should make sure ICL is 500mA*/
+	if(qc_is_detect == true){
+		if(pdata->charging_current_limit > 500000){
+			pdata->charging_current_limit = 500000;
+			chr_err("qc is detect, set charging_current_limit 500mA!\n");
+		}
+	} else {
+		if(qc_chg_type == USB_TYPE_QC3P_27 || qc_chg_type == USB_TYPE_QC3P_18) {
+				pdata->input_current_limit = 2000000;
+		}
+	}
+
 	info->mmi.target_usb = pdata->input_current_limit;
+
+	if (pdata->cp_ichg_limit!= -1) {
+		if (pdata->cp_ichg_limit <
+		    pdata->charging_current_limit)
+			pdata->charging_current_limit =
+					pdata->cp_ichg_limit;
+	}
 
 	sc_select_charging_current(info, pdata);
 

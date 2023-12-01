@@ -3430,6 +3430,7 @@ void mmi_charge_rate_check(struct mtk_charger *info)
 	int rp_level = 0;
 	union power_supply_propval val;
 	struct charger_data *pdata;
+	int qc_chg_type = 0;
 
 	if (info == NULL)
 		return;
@@ -3456,6 +3457,15 @@ void mmi_charge_rate_check(struct mtk_charger *info)
 		goto end_rate_check;
  	}
 
+	charger_dev_get_protocol(info->chg1_dev, &qc_chg_type);
+	// QC2, QC3 and Qc3+ all support max power more than 15w, should show trubo power
+	if ((qc_chg_type == USB_TYPE_QC20) || (qc_chg_type == USB_TYPE_QC30) ||
+            (qc_chg_type == USB_TYPE_QC3P_18) || (qc_chg_type == USB_TYPE_QC3P_27)) {
+
+		info->mmi.charge_rate = POWER_SUPPLY_CHARGE_RATE_TURBO;
+		goto end_rate_check;
+	}
+
 	if (icl >= TURBO_CHRG_THRSH)
 		info->mmi.charge_rate = POWER_SUPPLY_CHARGE_RATE_TURBO;
 	else if (icl < WEAK_CHRG_THRSH)
@@ -3464,8 +3474,9 @@ void mmi_charge_rate_check(struct mtk_charger *info)
 		info->mmi.charge_rate =  POWER_SUPPLY_CHARGE_RATE_NORMAL;
 
 end_rate_check:
-	pr_info("%s ICL:%d, Rp:%d, PD:%d, Charger Detected: %s\n",
-		__func__, icl, rp_level, info->pd_type, charge_rate[info->mmi.charge_rate]);
+	pr_info("%s ICL:%d, Rp:%d, PD:%d, chg_type: %d, Charger Detected: %s\n",
+		__func__, icl, rp_level, info->pd_type, qc_chg_type, charge_rate[info->mmi.charge_rate]);
+
 }
 
 static ssize_t charge_rate_show(struct device *dev,
@@ -3599,6 +3610,7 @@ static void mmi_charger_check_status(struct mtk_charger *info)
 	int charger_present = 0;
 	int stop_recharge_hyst;
 	int prev_step;
+	int qc_chg_type = 0;
 
 	union power_supply_propval val;
 	struct mmi_params *mmi = &info->mmi;
@@ -3680,9 +3692,12 @@ static void mmi_charger_check_status(struct mtk_charger *info)
 	if (mmi->base_fv_mv == 0) {
 		mmi->base_fv_mv = info->data.battery_cv / 1000;
 	}
-	if (info->dvchg1_dev != NULL
-		&& info->pd_type == MTK_PD_CONNECT_PE_READY_SNK_APDO) {
+
+	charger_dev_get_protocol(info->chg1_dev, &qc_chg_type);
+	if ( (info->dvchg1_dev != NULL && info->pd_type == MTK_PD_CONNECT_PE_READY_SNK_APDO) ||
+                (qc_chg_type == USB_TYPE_QC3P_27 || qc_chg_type == USB_TYPE_QC3P_18)) {
 		max_fv_mv = mmi_get_ffc_fv(info, batt_temp);
+
 		if (max_fv_mv == 0)
 			max_fv_mv = mmi->base_fv_mv;
 	} else {
@@ -4873,6 +4888,8 @@ static int psy_charger_property_is_writeable(struct power_supply *psy,
 	case POWER_SUPPLY_PROP_INPUT_POWER_LIMIT:
 	case POWER_SUPPLY_PROP_CURRENT_MAX:
 		return 1;
+	case POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT:
+		return 1;
 	default:
 		return 0;
 	}
@@ -4899,6 +4916,7 @@ static const enum power_supply_property charger_psy_properties[] = {
 	POWER_SUPPLY_PROP_USB_TYPE,
 	POWER_SUPPLY_PROP_INPUT_POWER_LIMIT,
 	POWER_SUPPLY_PROP_CURRENT_MAX,
+	POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT,
 };
 
 static int psy_charger_get_property(struct power_supply *psy,
@@ -4996,6 +5014,9 @@ static int psy_charger_get_property(struct power_supply *psy,
 			val->intval = info->usb_type;
 			break;
 		}
+		break;
+	case POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT:
+		val->intval = info->chg_data[idx].cp_ichg_limit;
 		break;
 	default:
 		return -EINVAL;
@@ -5159,6 +5180,9 @@ static int psy_charger_set_property(struct power_supply *psy,
 		info->mmi.adaptive_charging_disable_ibat =  !!val->intval;
 		pr_info("%s: adaptive charging disable ibat %d\n", __func__,
 			info->mmi.adaptive_charging_disable_ibat);
+		break;
+	case POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT:
+		info->chg_data[idx].cp_ichg_limit = val->intval;
 		break;
 	default:
 		return -EINVAL;
@@ -5530,6 +5554,7 @@ static int mtk_charger_probe(struct platform_device *pdev)
 		info->chg_data[i].input_current_limit_by_aicl = -1;
 		info->chg_data[i].moto_chg_tcmd_ichg = -1;
 		info->chg_data[i].moto_chg_tcmd_ibat = -1;
+		info->chg_data[i].cp_ichg_limit= -1;
 	}
 	info->enable_hv_charging = true;
 
