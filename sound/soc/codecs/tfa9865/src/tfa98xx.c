@@ -69,6 +69,9 @@ static TfaContainer_t *tfa98xx_container = NULL;
 static int tfa98xx_kmsg_regs = 0;
 static int tfa98xx_ftrace_regs = 0;
 
+static int tfa98xx_cali_l = 0;
+static int tfa98xx_cali_r = 0;
+
 static char *fw_name = "tfa98xx.cnt";
 module_param(fw_name, charp, S_IRUGO | S_IWUSR);
 MODULE_PARM_DESC(fw_name, "TFA98xx DSP firmware (container file) name.");
@@ -1614,7 +1617,7 @@ static int tfa98xx_set_algo_ctl(struct snd_kcontrol *kcontrol,
 	mutex_lock(&tfa98xx_mutex);
 	list_for_each_entry(tfa98xx, &tfa98xx_device_list, list) {
 		pr_debug("value: %ld\n", ucontrol->value.integer.value[0]);
-	
+
 		algo_bytes[0] = 0x00;
 		algo_bytes[1] = 0x80;
 		algo_bytes[2] = 0x3f;
@@ -1637,7 +1640,7 @@ static int tfa98xx_set_algo_ctl(struct snd_kcontrol *kcontrol,
 			send_flag = 1;
 			error = tfa98xx_send_data_to_dsp(algo_bytes, sizeof(algo_bytes));
 			pr_info("send data to DSP\n");
-		} else {
+		} else if(0 == send_flag){
 			error = -1;
 			pr_info("send data fail as DSP NOT work\n");
 		}
@@ -2123,7 +2126,7 @@ enum Tfa98xx_Error
 #ifdef TFA_NON_DSP_SOLUTION
 	int err = 0;
 	TfaFileDsc_t *msg_file;
-	
+
 	pr_info("tfa98xx_write_dsp num_bytes %d\n", num_bytes);
 
 	/* msg_file.name is not used */
@@ -2133,21 +2136,21 @@ enum Tfa98xx_Error
 		return  -ENOMEM;
 	}
 	msg_file->size = num_bytes;
-	
+
 	memcpy(msg_file->data, command_buffer, num_bytes);
-	
+
 	err = tfa98xx_send_data_to_dsp(msg_file->data, msg_file->size);
 
 	if (err) {
 		pr_err("tfa dsp_msg error: err %d\n", err);
 	}
 	mdelay(20);
-	
+
 	kfree(msg_file);
-	
+
 	return 0;
 #else
-	
+
 	pr_info("tfa98xx_write_dsp not define!\n");
 	return Tfa98xx_Error_Not_Supported;
 #endif
@@ -2165,24 +2168,24 @@ enum Tfa98xx_Error
 	uint32_t DataLength = 0;
 
 	pr_info("tfa98xx_read_dsp num_bytes %d\n", num_bytes);
-	
+
 	buffer = kmalloc(num_bytes, GFP_KERNEL);
 	if (buffer == NULL) {
 		pr_err("tfa98xx_read_dsp can not allocate memory\n");
 		return -ENOMEM;
 	}
-	
+
 	error = tfa98xx_receive_data_from_dsp(buffer, num_bytes, &DataLength);
 	if (error != 0) {
 		pr_info("[0x%x] dsp_msg_read error: %d\n", tfa->slave_address, error);
 		kfree(buffer);
 		return -EFAULT;
 	}
-	
-	memcpy(result_buffer, buffer, num_bytes);	
-	
+
+	memcpy(result_buffer, buffer, num_bytes);
+
 	kfree(buffer);
-	
+
 	return 0;
 #else
 	pr_info("tfa98xx_read_dsp not define!\n");
@@ -2442,7 +2445,7 @@ static void tfa98xx_container_loaded(const struct firmware *cont, void *context)
 
 	/* Preload settings using internal clock on TFA2 */
 	if (tfa98xx->tfa->tfa_family == 2 &&
-		tfa98xx->tfa->is_probus_device == 0) {                 //modify by mono for have dsp 20231030             
+		tfa98xx->tfa->is_probus_device == 0) {                 //modify by mono for have dsp 20231030
 		mutex_lock(&tfa98xx->dsp_lock);
 		ret = tfa98xx_tfa_start(tfa98xx, tfa98xx->profile, tfa98xx->vstep);
 		if (ret == Tfa98xx_Error_Not_Supported)
@@ -2904,6 +2907,67 @@ enum Tfa98xx_Error tfa98xx_adsp_send_calib_values(void)
 	return ret;
 }
 
+static uint8_t cali_value[3*3 + 1] = {0};
+enum Tfa98xx_Error tfa98xx_adsp_send_calib_values_from_hal(void)
+{
+	struct tfa98xx *tfa98xx;
+	int ret = 0;
+
+	/* if the calibration value was sent to host DSP,
+	 * we clear flag only (stereo case).
+	 */
+	if ((tfa98xx_device_count > 1) && (tfa98xx_device_count == cali_value[0])) {
+		pr_info("The calibration value was sent to host DSP.\n");
+		cali_value[0] = 0;
+		return Tfa98xx_Error_Ok;
+	}
+
+	/* read calibrated impendance from all devices. */
+	list_for_each_entry(tfa98xx, &tfa98xx_device_list, list) {
+		cali_value[0] += 1;
+	}
+
+	if(tfa98xx_cali_l != 0 && tfa98xx_cali_r != 0)
+	{
+		cali_value[4] = (uint8_t)((tfa98xx_cali_l >> 16) & 0xff);
+		cali_value[5] = (uint8_t)((tfa98xx_cali_l >> 8) & 0xff);
+		cali_value[6] = (uint8_t)(tfa98xx_cali_l & 0xff);
+
+		cali_value[7] = (uint8_t)((tfa98xx_cali_r >> 16) & 0xff);
+		cali_value[8] = (uint8_t)((tfa98xx_cali_r >> 8) & 0xff);
+		cali_value[9] = (uint8_t)(tfa98xx_cali_r & 0xff);
+	}else{
+		pr_err("load calibration data from HAL failed.\n");
+		cali_value[0]  = 0;
+		ret = Tfa98xx_Error_Bad_Parameter;
+	}
+
+	pr_info("tfa98xx_device_count=%d  cali_value[0]=%d\n",
+		tfa98xx_device_count, cali_value[0]);
+
+	/* we will send it to host DSP algorithm once calibraion
+	* value loaded from all device.
+	*/
+
+	cali_value[1] = 0x00;
+	cali_value[2] = 0x81;
+	cali_value[3] = 0x05;
+	ret = tfa98xx_send_data_to_dsp(&cali_value[1], sizeof(cali_value) - 1);
+	pr_info(" send data to DSP from HAL\n");
+
+	if (ret) {
+		pr_err("send data to error: err %d\n", ret);
+	}
+
+	usleep_range(10000, 10500);
+
+	/* for mono case, we should clear flag here. */
+	if (tfa98xx_device_count == 1)
+		cali_value[0] = 0;
+	
+	return ret;
+}
+
 static int tfa98xx_send_mute_cmd(void)
 {
 	//uint8_t cmd[9] = {0x04, 0x81, 0x04, 0x00, 0x00, 0xff, 0x00, 0x00, 0xff};
@@ -2973,7 +3037,8 @@ static int tfa98xx_mute(struct snd_soc_dai *dai, int mute, int stream)
 			tfa98xx->pstream = 1;
 #ifdef TFA_NON_DSP_SOLUTION
 		if (tfa98xx->tfa->is_probus_device)
-			pr_debug("send_calib_values from HAL later\n");
+			pr_debug("send_calib_values from HAL\n");
+			tfa98xx_adsp_send_calib_values_from_hal();
 			//tfa98xx_adsp_send_calib_values();             //modify by mono for no OTP 20231115
 #endif
 		}
@@ -3237,13 +3302,10 @@ int str_to_int(const char *str) {
 	int sign = 1;
 	long num = 0;
     if (str == NULL) {
-        return 0; // 或者根据你的错误处理策略返回其他值或产生错误
+        return 0; 
     }
 
-    // 跳过前导空格
     while (isspace((unsigned char)*str)) str++;
-
-    // 判断数字的符号
 
     if (*str == '-') {
         sign = -1;
@@ -3252,55 +3314,56 @@ int str_to_int(const char *str) {
         str++;
     }
 
-    // 逐个字符转换并检查溢出
-
     while (isdigit((unsigned char)*str)) {
         int digit = *str - '0';
 
-        // 检查溢出
         if (sign == 1 && (num > 65536 / 10 || (num == 65536 / 10 && digit > 65536 % 10))) {
-            return 65536; // 正溢出
+            return 65536;
         } else if (sign == -1 && (-num < 0 / 10 || (-num == 0 / 10 && -digit < 0 % 10))) {
-            return 0; // 负溢出
+            return 0;
         }
 
         num = num * 10 + digit;
         str++;
     }
 
-    return num * sign; // 返回最终结果
+    return num * sign;
 }
 
+static ssize_t tfa98xx_cal_read(struct file *filp, struct kobject *kobj,
+	struct bin_attribute *bin_attr,
+	char *buf, loff_t off, size_t count)
+{
+
+	//TODO NULL;
+	return 0;
+}
 static ssize_t tfa98xx_cal_send(struct file *filp, struct kobject *kobj,
 	struct bin_attribute *bin_attr,
 	char *buf, loff_t off, size_t count)
 {
-	struct device *dev = container_of(kobj, struct device, kobj);
-	struct tfa98xx *tfa98xx = dev_get_drvdata(dev);
-	u8 *cali_data;
 	char tempbuf_l[5] = {0};
 	char tempbuf_r[5] = {0};
 	int error = 0;
-	int cali_l = 0, cali_r = 0;
 
 	if (count == 0)
 	{
 		pr_debug("err !count is 0\n");
 		return 0;
 	}
-		
-	cali_data = kmalloc(9, GFP_KERNEL);
-	if (cali_data == NULL) {
-		pr_debug("can not allocate memory\n");
-		return  -ENOMEM;
-	}
+
+	pr_err("send cali %s\n",buf);
 
 	memcpy(&tempbuf_l, buf, 4);                        //copy data data[3], data[0] used to idx
 	memcpy(&tempbuf_r, &buf[5], 4);                    //copy data data[3], data[0] used to idx
 
-	cali_l = str_to_int(tempbuf_l) * 65536 / 1000;
-	cali_r = str_to_int(tempbuf_r) * 65536 / 1000;
+	tfa98xx_cali_l = str_to_int(tempbuf_l) * 65536 / 1000;
+	tfa98xx_cali_r = str_to_int(tempbuf_r) * 65536 / 1000;
 
+	pr_debug("P cal data is: %d\n", tfa98xx_cali_l);
+	pr_debug("S cal data is: %d\n", tfa98xx_cali_r);
+
+/*
 	cali_data[3] = (uint8_t)((cali_l >> 16) & 0xff);
 	cali_data[4] = (uint8_t)((cali_l >> 8) & 0xff);
 	cali_data[5] = (uint8_t)(cali_l & 0xff);
@@ -3309,18 +3372,13 @@ static ssize_t tfa98xx_cal_send(struct file *filp, struct kobject *kobj,
 	cali_data[7] = (uint8_t)((cali_r >> 8) & 0xff);
 	cali_data[8] = (uint8_t)(cali_r & 0xff);
 	
-	/* for mono case, we will copy primary channel
-	 * data to secondary channel.
-	 */
+
 	if (count == 4)
 	{
 		//TODO
 		//memcpy(&cali_data[6], &cali_data[3], sizeof(char)*3);
 	}
 
-	/* we will send it to host DSP algorithm once calibraion
-	 * value loaded from HAL
-	 */
 	cali_data[0] = 0x00;
 	cali_data[1] = 0x81;
 	cali_data[2] = 0x05;
@@ -3341,7 +3399,7 @@ static ssize_t tfa98xx_cal_send(struct file *filp, struct kobject *kobj,
 	usleep_range(2000, 3000);
 
 	kfree(cali_data);
-
+*/
 	/* the number of data bytes written without the register address */
 	return error;
 }
@@ -3443,10 +3501,10 @@ static struct bin_attribute dev_attr_reg = {
 static struct bin_attribute dev_attr_cal = {
 	.attr = {
 		.name = "cal",
-		.mode = S_IWUSR,
+		.mode = S_IRUSR | S_IWUSR,
 	},
 	.size = 0,
-	.read = NULL,
+	.read = tfa98xx_cal_read,
 	.write = tfa98xx_cal_send,
 };
 /*
