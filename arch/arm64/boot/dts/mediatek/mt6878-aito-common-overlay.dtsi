@@ -367,7 +367,7 @@
 		aw8692x_cont_track_margin = /bits/ 8 < 0x0F >;
 		aw8692x_cont_brk_gain = /bits/ 8 < 0x08 >;
 		aw8692x_cont_brk_time = /bits/ 8 < 0x08 >;
-		aw8692x_duration_time = /bits/ 8 < 20 30 60 >;
+		aw8692x_duration_time = /bits/ 8 < 34 67 101 >;
 		aw8692x_d2s_gain = /bits/ 8 < 0x04 >;
 		aw8692x_trig_config = /bits/ 8 < 0 0 0 1 0 2 0 0
 						 0 0 0 1 0 2 0 0
