@@ -18,5 +18,26 @@
 	mt6363_thermistor7: mt6363_thermistor7 { };
 	mt6369_thermistor2: mt6369_thermistor2 { };
 	mt6375_thermistor: mt6375_thermistor { };
+
 };
 
+/*vol+/- keys swap*/
+&mt6363keys {
+	home {
+		linux,keycodes = <114>;
+	};
+};
+
+&gpio_keys {
+	/delete-node/ volumedown;
+
+	volumeup {
+		label = "Volume_Up";
+		labelxx = "Volume_Upxxxx";
+		linux,code = <115>;
+		linux,input-type = <1>;
+		gpios = <&pio 54 1>;
+		debounce-interval = <30>;
+	};
+};
+/*vol+/- keys swap end*/
