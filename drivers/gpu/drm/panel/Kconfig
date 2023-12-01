@@ -575,7 +575,7 @@ config DRM_PANEL_ALPHA_JDI_NT36672E_VDO_120HZ_THRESHOLD
 	  It provides aMIPI DSI interface to host.
 
 config DRM_PANEL_CSOT_NT37707_667_FHDP_DPHY_CMD
-	tristate "NT37707 amoled dphy cmd mode panel"
+	tristate "csot NT37707 amoled dphy cmd mode panel"
 	depends on OF
 	depends on DRM_MIPI_DSI
 	depends on BACKLIGHT_CLASS_DEVICE
@@ -585,6 +585,19 @@ config DRM_PANEL_CSOT_NT37707_667_FHDP_DPHY_CMD
 	  cmd mode Full HD panel. The panel has a 1080x2400
 	  resolution and uses 24-bits RGB per pixel. It provides a
 	  MIPI DSI interface to host.
+
+config DRM_PANEL_TIANMA_NT37707_667_FHDP_DPHY_CMD
+	tristate "tianma NT37707 amoled dphy cmd mode panel"
+	depends on OF
+	depends on DRM_MIPI_DSI
+	depends on BACKLIGHT_CLASS_DEVICE
+	default n
+	help
+	  Say Y here if you want to enable support for NT37701 DPHY
+	  cmd mode Full HD panel. The panel has a 1080x2400
+	  resolution and uses 24-bits RGB per pixel. It provides a
+	  MIPI DSI interface to host.
+
 
 config DRM_PANEL_CSOT_NT37705_1056x1068_DPHY_CMD_CLI
 	tristate "NT37705 amoled dphy cmd mode panel cli"
