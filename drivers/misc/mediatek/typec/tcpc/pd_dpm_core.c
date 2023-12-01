@@ -49,6 +49,18 @@ static const struct svdm_svid_ops svdm_svid_ops[] = {
 		.reset_state = dp_reset_state,
 		.parse_svid_data = dp_parse_svid_data,
 	},
+
+#ifdef CONFIG_SUPPORT_MMI_ADAPTER
+	{
+		.name = "mmi adapter",
+		.svid = USB_VID_MMI_ADAPTER,
+		.notify_pe_startup = mmi_dfp_notify_pe_startup,
+		.dfp_inform_svids = mmi_dfp_u_notify_discover_svid,
+		.dfp_notify_uvdm = mmi_dfp_notify_uvdm,
+		.notify_pe_ready = mmi_notify_pe_ready,
+	},
+#endif /* CONFIG_SUPPORT_MMI_ADAPTER */
+
 };
 
 /*
