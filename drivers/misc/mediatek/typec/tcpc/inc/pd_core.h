@@ -591,6 +591,7 @@
 #define USB_VID_MQP		0x1748
 
 #define DP_ALT_MODE_CABLE_SVIDS_CNT	2
+#define USB_VID_MMI_ADAPTER  	0x22b8
 
 /* PD counter definitions */
 #define PD_MESSAGE_ID_COUNT		7
@@ -789,6 +790,8 @@ struct pd_port {
 	uint8_t state_machine;
 	uint8_t pd_connect_state;
 
+	uint8_t pd_vdm_verify_state;
+
 	uint8_t pe_pd_state;
 	uint8_t pe_vdm_state;
 
@@ -947,6 +950,10 @@ struct pd_port {
 	struct work_struct fg_bat_work;
 	struct notifier_block fg_bat_nb;
 #endif /* CONFIG_RECV_BAT_ABSENT_NOTIFY */
+
+#ifdef CONFIG_SUPPORT_MMI_ADAPTER
+	uint8_t mmi_adapter_state;
+#endif /* CONFIG_SUPPORT_MMI_ADAPTER */
 };
 
 static inline struct dp_data *pd_get_dp_data(struct pd_port *pd_port)
@@ -1130,6 +1137,7 @@ int pd_schedule_wait_request(struct pd_port *pd_port, uint8_t type);
 int pd_cancel_wait_request(struct pd_port *pd_port);
 
 int pd_update_connect_state(struct pd_port *pd_port, uint8_t state);
+int pd_update_vdm_verify_state(struct pd_port *pd_port, uint8_t state);
 
 /* ---- PD notify TCPC Policy Engine State Changed ---- */
 

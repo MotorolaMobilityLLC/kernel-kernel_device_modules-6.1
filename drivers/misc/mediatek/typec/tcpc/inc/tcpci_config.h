@@ -8,6 +8,7 @@
 
 #if IS_ENABLED(CONFIG_TCPC_CLASS)
 /* default config */
+#define CONFIG_SUPPORT_MMI_ADAPTER
 
 #define CONFIG_TYPEC_USE_DIS_VBUS_CTRL	0
 

@@ -349,6 +349,10 @@ static int pd_tcp_notifier_call(struct notifier_block *nb,
 	case TCP_NOTIFY_CC_HI:
 		dev_info(rpmd->dev, "%s cc_hi = %d\n", __func__, noti->cc_hi);
 		break;
+	case TCP_NOTIFY_PD_VDM_VERIFY:
+		dev_info(rpmd->dev, "%s mmi pd vdm verify state = %d\n",
+					__func__, noti->pd_state.vdm_verify);
+		break;
 	default:
 		break;
 	}
