@@ -100,7 +100,7 @@ wait:
 
 		dev_info(mci->dev, "%s port%d attach = %d\n", __func__,
 				   i, attach);
-		mmi_mux_typec_chg_chan(MMI_MUX_CHANNEL_TYPEC_CHG, attach);
+
 		if (mci->bc12_sel[i] == MTK_CTD_BY_SUBPMIC_PWR_RDY)
 			continue;
 
@@ -204,6 +204,7 @@ static int pd_tcp_notifier_call(struct notifier_block *nb,
 			dev_info(mci->dev,
 				 "%s Charger plug in, polarity = %d\n",
 				 __func__, noti->typec_state.polarity);
+			mmi_mux_typec_chg_chan(MMI_MUX_CHANNEL_TYPEC_CHG, true);
 			handle_typec_pd_attach(mci, idx, ATTACH_TYPE_TYPEC);
 		} else if ((old_state == TYPEC_ATTACHED_SNK ||
 			    old_state == TYPEC_ATTACHED_NORP_SRC ||
@@ -212,6 +213,7 @@ static int pd_tcp_notifier_call(struct notifier_block *nb,
 			    old_state == TYPEC_ATTACHED_AUDIO) &&
 			    new_state == TYPEC_UNATTACHED) {
 			dev_info(mci->dev, "%s Charger plug out\n", __func__);
+			mmi_mux_typec_chg_chan(MMI_MUX_CHANNEL_TYPEC_CHG, false);
 			handle_typec_pd_attach(mci, idx, ATTACH_TYPE_NONE);
 		}
 		break;
