@@ -171,6 +171,7 @@ unsigned int g_trace_log;
 #endif
 
 struct DISP_PANEL_BASE_VOLTAGE base_volageg;
+static bool reading_cellid = false;
 
 static int draw_RGBA8888_buffer(char *va, int w, int h,
 		       char r, char g, char b, char a)
@@ -528,6 +529,12 @@ int __mtkfb_set_backlight_level(unsigned int level, unsigned int panel_ext_param
 		DDPPR_ERR("%s failed to find crtc\n", __func__);
 		return -EINVAL;
 	}
+
+	if (reading_cellid) {
+		DDPMSG("%s: is reading cellid, skip backlight\n", __func__);
+		return 0;
+	}
+
 	if (group == true)
 		ret = mtk_drm_setbacklight_grp(crtc, level, panel_ext_param, cfg_flag);
 	else
@@ -1382,6 +1389,156 @@ int mtk_ddic_dsi_send_cmd(struct mtk_ddic_dsi_msg *cmd_msg,
 	return ret;
 }
 
+static void mtk_ddic_send_dual_panel_cb(struct cmdq_cb_data data)
+{
+	struct mtk_cmdq_cb_data *cb_data = data.data;
+
+	cmdq_pkt_destroy(cb_data->cmdq_handle);
+	kfree(cb_data);
+	CRTC_MMP_MARK(0, ddic_send_cmd, 1, 1);
+}
+
+int mtk_ddic_dsi_send_cmd_dual_panel(int dsi_index, struct mtk_ddic_dsi_msg *cmd_msg,
+			bool blocking)
+{
+	struct drm_crtc *crtc;
+	struct mtk_drm_crtc *mtk_crtc;
+	struct mtk_drm_private *private;
+	struct mtk_ddp_comp *output_comp;
+	struct cmdq_pkt *cmdq_handle;
+	struct cmdq_client *gce_client;
+	bool is_frame_mode;
+	bool use_lpm = false;
+	struct mtk_cmdq_cb_data *cb_data;
+	int index = 0;
+	int ret = 0;
+	int i = 0;
+
+	if (IS_ERR_OR_NULL(drm_dev)) {
+		DDPPR_ERR("%s, invalid drm dev\n", __func__);
+		return -EINVAL;
+	}
+
+	private = (drm_dev) ? drm_dev->dev_private : NULL;
+	if (IS_ERR_OR_NULL(private)) {
+		DDPPR_ERR("%s:%d invalid private\n", __func__, __LINE__);
+		return  -EINVAL;
+	}
+
+	DDPMSG("%s +\n", __func__);
+
+	for (i = dsi_index ; i < MAX_CRTC ; ++i) {
+		crtc = private->crtc[i];
+		if (!crtc) {
+			DDPPR_ERR("find crtc fail\n");
+			return -EINVAL;
+		}
+
+		mtk_crtc = to_mtk_crtc(crtc);
+		output_comp = mtk_ddp_comp_request_output(mtk_crtc);
+		if (output_comp && mtk_ddp_comp_get_type(output_comp->id) == MTK_DSI)
+			break;
+	}
+
+	if (i == MAX_CRTC ) return -EINVAL;
+
+	index = drm_crtc_index(crtc);
+
+	CRTC_MMP_EVENT_START(index, ddic_send_cmd, (unsigned long)crtc,
+				blocking);
+
+	DDP_MUTEX_LOCK(&mtk_crtc->lock, __func__, __LINE__);
+
+	if (!mtk_crtc->enabled) {
+		DDPMSG("crtc%d disable skip %s\n",
+			drm_crtc_index(&mtk_crtc->base), __func__);
+		DDP_MUTEX_UNLOCK(&mtk_crtc->lock, __func__, __LINE__);
+		CRTC_MMP_EVENT_END(index, ddic_send_cmd, 0, 1);
+		return -EINVAL;
+	} else if (mtk_crtc->ddp_mode == DDP_NO_USE) {
+		DDPMSG("skip %s, ddp_mode: NO_USE\n",
+			__func__);
+		DDP_MUTEX_UNLOCK(&mtk_crtc->lock, __func__, __LINE__);
+		CRTC_MMP_EVENT_END(index, ddic_send_cmd, 0, 2);
+		return -EINVAL;
+	}
+
+	if (unlikely(!output_comp)) {
+		DDPPR_ERR("%s:invalid output comp\n", __func__);
+		DDP_MUTEX_UNLOCK(&mtk_crtc->lock, __func__, __LINE__);
+		CRTC_MMP_EVENT_END(index, ddic_send_cmd, 0, 3);
+		return -EINVAL;
+	}
+
+	is_frame_mode = mtk_crtc_is_frame_trigger_mode(&mtk_crtc->base);
+	if (cmd_msg)
+		use_lpm = cmd_msg->flags & MIPI_DSI_MSG_USE_LPM;
+
+	CRTC_MMP_MARK(index, ddic_send_cmd, 1, 0);
+
+	/* Kick idle */
+	mtk_drm_idlemgr_kick(__func__, crtc, 0);
+
+	CRTC_MMP_MARK(index, ddic_send_cmd, 2, 0);
+
+	/* only use CLIENT_DSI_CFG for VM CMD scenario */
+	/* use CLIENT_CFG otherwise */
+	gce_client = (!is_frame_mode && !use_lpm &&
+				mtk_crtc->gce_obj.client[CLIENT_DSI_CFG]) ?
+			mtk_crtc->gce_obj.client[CLIENT_DSI_CFG] :
+			mtk_crtc->gce_obj.client[CLIENT_CFG];
+
+	mtk_crtc_pkt_create(&cmdq_handle, crtc, gce_client);
+
+	if (mtk_crtc_with_sub_path(crtc, mtk_crtc->ddp_mode))
+		mtk_crtc_wait_frame_done(mtk_crtc, cmdq_handle,
+			DDP_SECOND_PATH, 0);
+	else
+		mtk_crtc_wait_frame_done(mtk_crtc, cmdq_handle,
+			DDP_FIRST_PATH, 0);
+
+	if (is_frame_mode) {
+		cmdq_pkt_clear_event(cmdq_handle,
+			mtk_crtc->gce_obj.event[EVENT_STREAM_BLOCK]);
+		cmdq_pkt_wfe(cmdq_handle,
+			mtk_crtc->gce_obj.event[EVENT_CABC_EOF]);
+	}
+
+	/* DSI_SEND_DDIC_CMD */
+	if (output_comp)
+		ret = mtk_ddp_comp_io_cmd(output_comp, cmdq_handle,
+		DSI_SEND_DDIC_CMD, cmd_msg);
+
+	if (is_frame_mode) {
+		cmdq_pkt_set_event(cmdq_handle,
+			mtk_crtc->gce_obj.event[EVENT_CABC_EOF]);
+		cmdq_pkt_set_event(cmdq_handle,
+			mtk_crtc->gce_obj.event[EVENT_STREAM_BLOCK]);
+	}
+
+	if (blocking) {
+		cmdq_pkt_flush(cmdq_handle);
+		cmdq_pkt_destroy(cmdq_handle);
+	} else {
+		cb_data = kmalloc(sizeof(*cb_data), GFP_KERNEL);
+		if (!cb_data) {
+			DDPPR_ERR("%s:cb data creation failed\n", __func__);
+			DDP_MUTEX_UNLOCK(&mtk_crtc->lock, __func__, __LINE__);
+			CRTC_MMP_EVENT_END(index, ddic_send_cmd, 0, 4);
+			return -EINVAL;
+		}
+
+		cb_data->cmdq_handle = cmdq_handle;
+		cmdq_pkt_flush_threaded(cmdq_handle, mtk_ddic_send_dual_panel_cb, cb_data);
+	}
+	DDPMSG("%s -\n", __func__);
+	DDP_MUTEX_UNLOCK(&mtk_crtc->lock, __func__, __LINE__);
+	CRTC_MMP_EVENT_END(index, ddic_send_cmd, (unsigned long)crtc,
+			blocking);
+
+	return ret;
+}
+
 static void set_cwb_info_buffer(struct drm_crtc *crtc, int format)
 {
 
@@ -1450,6 +1607,98 @@ int mtk_ddic_dsi_read_cmd(struct mtk_ddic_dsi_msg *cmd_msg)
 
 	private = crtc->dev->dev_private;
 	mtk_crtc = to_mtk_crtc(crtc);
+
+	DDP_COMMIT_LOCK(&private->commit.lock, __func__, __LINE__);
+	DDP_MUTEX_LOCK(&mtk_crtc->lock, __func__, __LINE__);
+
+	if (!mtk_crtc->enabled) {
+		DDPMSG("crtc%d disable skip %s\n",
+			drm_crtc_index(&mtk_crtc->base), __func__);
+		DDP_MUTEX_UNLOCK(&mtk_crtc->lock, __func__, __LINE__);
+		DDP_COMMIT_UNLOCK(&private->commit.lock, __func__, __LINE__);
+		CRTC_MMP_EVENT_END(index, ddic_read_cmd, 0, 1);
+		return -EINVAL;
+	} else if (mtk_crtc->ddp_mode == DDP_NO_USE) {
+		DDPMSG("skip %s, ddp_mode: NO_USE\n",
+			__func__);
+		DDP_MUTEX_UNLOCK(&mtk_crtc->lock, __func__, __LINE__);
+		DDP_COMMIT_UNLOCK(&private->commit.lock, __func__, __LINE__);
+		CRTC_MMP_EVENT_END(index, ddic_read_cmd, 0, 2);
+		return -EINVAL;
+	}
+
+	output_comp = mtk_ddp_comp_request_output(mtk_crtc);
+	if (unlikely(!output_comp)) {
+		DDPPR_ERR("%s:invalid output comp\n", __func__);
+		DDP_MUTEX_UNLOCK(&mtk_crtc->lock, __func__, __LINE__);
+		DDP_COMMIT_UNLOCK(&private->commit.lock, __func__, __LINE__);
+		CRTC_MMP_EVENT_END(index, ddic_read_cmd, 0, 3);
+		return -EINVAL;
+	}
+
+	CRTC_MMP_MARK(index, ddic_read_cmd, 1, 0);
+
+	/* Kick idle */
+	mtk_drm_idlemgr_kick(__func__, crtc, 0);
+
+	CRTC_MMP_MARK(index, ddic_read_cmd, 2, 0);
+
+	/* DSI_READ_DDIC_CMD */
+	if (output_comp)
+		ret = mtk_ddp_comp_io_cmd(output_comp, NULL, DSI_READ_DDIC_CMD,
+				cmd_msg);
+
+	CRTC_MMP_MARK(index, ddic_read_cmd, 3, 0);
+
+	DDPMSG("%s -\n", __func__);
+	DDP_MUTEX_UNLOCK(&mtk_crtc->lock, __func__, __LINE__);
+	DDP_COMMIT_UNLOCK(&private->commit.lock, __func__, __LINE__);
+	CRTC_MMP_EVENT_END(index, ddic_read_cmd, (unsigned long)crtc, 4);
+
+	return ret;
+}
+
+int mtk_ddic_dsi_read_cmd_dual_panel(int dsi_index, struct mtk_ddic_dsi_msg *cmd_msg)
+{
+	struct drm_crtc *crtc;
+	struct mtk_drm_crtc *mtk_crtc;
+	struct mtk_drm_private *private;
+	struct mtk_ddp_comp *output_comp;
+	int index = 0;
+	int ret = 0;
+	int i = 0;
+
+	if (IS_ERR_OR_NULL(drm_dev)) {
+		DDPPR_ERR("%s, invalid drm dev\n", __func__);
+		return -EINVAL;
+	}
+
+	private = (drm_dev) ? drm_dev->dev_private : NULL;
+	if (IS_ERR_OR_NULL(private)) {
+		DDPPR_ERR("%s:%d invalid private\n", __func__, __LINE__);
+		return  -EINVAL;
+	}
+
+	DDPMSG("%s +\n", __func__);
+
+	for (i = dsi_index ; i < MAX_CRTC ; ++i) {
+		crtc = private->crtc[i];
+		if (!crtc) {
+			DDPPR_ERR("find crtc fail\n");
+			return -EINVAL;
+		}
+
+		mtk_crtc = to_mtk_crtc(crtc);
+		output_comp = mtk_ddp_comp_request_output(mtk_crtc);
+		if (output_comp && mtk_ddp_comp_get_type(output_comp->id) == MTK_DSI)
+			break;
+	}
+
+	if (i == MAX_CRTC) return -EINVAL;
+
+	index = drm_crtc_index(crtc);
+
+	CRTC_MMP_EVENT_START(index, ddic_read_cmd, (unsigned long)crtc, 0);
 
 	DDP_COMMIT_LOCK(&private->commit.lock, __func__, __LINE__);
 	DDP_MUTEX_LOCK(&mtk_crtc->lock, __func__, __LINE__);
@@ -5687,4 +5936,109 @@ int mtk_disp_ioctl_debug_log_switch(struct drm_device *dev, void *data,
 	else if (switch_log == MTK_DRM_IRQ_LOG)
 		g_irq_log = 1;
 	return 0;
+}
+
+int mtk_read_ddic_cellid(int dsi_index, unsigned char *cellid, int reg, int offset_reg, int offset, int len)
+{
+	struct mtk_ddic_dsi_msg *cmd_msg =
+		vmalloc(sizeof(struct mtk_ddic_dsi_msg));
+	u8 tx[10] = {0};
+	int i,j,k;
+	unsigned int ret_dlen = 0;
+	int ret=0;
+	int dsi_read_max = 8;	//MTK platform only support 10 byte each read.
+	int dsi_read_pkg;
+
+	if (!cmd_msg) {
+		DDPPR_ERR("cmd msg is NULL\n");
+		return ret_dlen;
+	}
+
+	memset(cmd_msg, 0, sizeof(struct mtk_ddic_dsi_msg));
+
+	cmd_msg->rx_buf[0] = kmalloc(32 * sizeof(unsigned char),
+		GFP_ATOMIC);
+	if (!cmd_msg->rx_buf[0]) {
+		DDPPR_ERR("cmd msg rx_buf is NULL\n");
+		goto  done;
+	}
+
+
+	dsi_read_pkg = len/dsi_read_max;
+	if(len%dsi_read_max)
+		dsi_read_pkg += 1;
+
+	reading_cellid = true;
+	for(k = 0; k < dsi_read_pkg; k++) {
+		cmd_msg->channel = 0;
+		cmd_msg->flags |= MIPI_DSI_MSG_USE_LPM;
+		cmd_msg->tx_cmd_num = 1;
+		cmd_msg->type[0] = 0x15;
+		tx[0] = offset_reg;
+		tx[1] = offset + dsi_read_max*k;
+		cmd_msg->tx_buf[0] = tx;
+		cmd_msg->tx_len[0] = 2;
+
+		DDPMSG("send lcm tx_cmd_num:%d\n", (int)cmd_msg->tx_cmd_num);
+		for (i = 0; i < (int)cmd_msg->tx_cmd_num; i++) {
+			DDPMSG("send lcm tx_len[%d]=%d\n",
+				i, (int)cmd_msg->tx_len[i]);
+			for (j = 0; j < (int)cmd_msg->tx_len[i]; j++) {
+				DDPMSG(
+					"send lcm type[%d]=0x%x, tx_buf[%d]--byte:%d,val:0x%x\n",
+					i, cmd_msg->type[i], i, j,
+					*(char *)(cmd_msg->tx_buf[i] + j));
+			}
+		}
+
+		ret = mtk_ddic_dsi_send_cmd_dual_panel(dsi_index, cmd_msg, true);
+		if (ret != 0) {
+			DDPPR_ERR("mtk_ddic_dsi_send_cmd_dual_panel error\n");
+			goto  dsi_error;
+		}
+
+		/* Read 0x0A = 0x1C */
+		cmd_msg->channel = 0;
+		cmd_msg->flags = 0;
+		cmd_msg->tx_cmd_num = 1;
+		cmd_msg->type[0] = 0x06;
+		tx[0] = reg;
+		cmd_msg->tx_buf[0] = tx;
+		cmd_msg->tx_len[0] = 1;
+
+		cmd_msg->rx_cmd_num = 1;
+		if(len > dsi_read_max)
+			cmd_msg->rx_len[0] = dsi_read_max;
+		else
+			cmd_msg->rx_len[0] = len;
+
+
+		ret = mtk_ddic_dsi_read_cmd_dual_panel(dsi_index, cmd_msg);
+		if (ret != 0) {
+			DDPPR_ERR("%s error\n", __func__);
+			goto  dsi_error;
+		}
+
+		for (i = 0; i < cmd_msg->rx_cmd_num; i++) {
+			ret_dlen = cmd_msg->rx_len[i];
+			DDPMSG("read lcm addr:0x%x--dlen:%d--cmd_idx:%d\n",
+				*(char *)(cmd_msg->tx_buf[i]), ret_dlen, i);
+			for (j = 0; j < ret_dlen; j++) {
+				DDPMSG("read lcm addr:0x%x--byte:%d,val:0x%x\n",
+					*(char *)(cmd_msg->tx_buf[i]), j,
+					*(char *)(cmd_msg->rx_buf[i] + j));
+			}
+		}
+
+		memcpy(&cellid[dsi_read_max*k], cmd_msg->rx_buf[0], ret_dlen);
+
+		len -= ret_dlen;
+	}
+
+dsi_error:
+	kfree(cmd_msg->rx_buf[0]);
+done:
+	vfree(cmd_msg);
+	reading_cellid = false;
+	return ret_dlen;
 }
