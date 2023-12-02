@@ -413,6 +413,10 @@ static struct mtk_panel_params ext_params_60hz = {
 	//.max_bl_level = 3514,
 	//.hbm_type = HBM_MODE_DCS_ONLY,
 	//.te_delay = 1,
+
+	.panel_ver = 1,
+	.panel_name = "csot_nt37705_1056_1068",
+	.panel_supplier = "csot-nt37705",
 };
 
 
@@ -440,6 +444,10 @@ static struct mtk_panel_params ext_params_48hz = {
 	//.max_bl_level = 3514,
 	//.hbm_type = HBM_MODE_DCS_ONLY,
 	//.te_delay = 1,
+
+	.panel_ver = 1,
+	.panel_name = "csot_nt37705_1056_1068",
+	.panel_supplier = "csot-nt37705",
 };
 
 
