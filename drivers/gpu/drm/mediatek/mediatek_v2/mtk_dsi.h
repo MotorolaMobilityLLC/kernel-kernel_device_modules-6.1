@@ -152,6 +152,8 @@ struct mtk_dsi {
 	bool set_partial_update;
 	unsigned int roi_y_offset;
 	unsigned int roi_height;
+
+	bool moto_sysfs_add_done;
 };
 
 s32 mtk_dsi_poll_for_idle(struct mtk_dsi *dsi, struct cmdq_pkt *handle);

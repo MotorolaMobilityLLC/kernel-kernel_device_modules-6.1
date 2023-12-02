@@ -25,6 +25,8 @@
 #define MAX_TX_CMD_NUM_PACK 64
 #define MAX_MODE_SWITCH_CMD_NUM 20
 
+#define DRM_DISPLAY_NAME_LEN 128
+
 struct mtk_dsi;
 struct cmdq_pkt;
 struct mtk_panel_para_table {
@@ -575,6 +577,10 @@ struct mtk_panel_params {
 
 	bool dual_swap;
 	unsigned int mode_switch_delay;
+
+	u64 panel_ver;
+	char panel_name[DRM_DISPLAY_NAME_LEN];
+	char panel_supplier[DRM_DISPLAY_NAME_LEN];
 };
 
 struct mtk_panel_ext {
