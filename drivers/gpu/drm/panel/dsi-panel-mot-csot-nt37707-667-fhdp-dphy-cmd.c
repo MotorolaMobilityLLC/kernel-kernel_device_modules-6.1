@@ -661,6 +661,10 @@ static struct mtk_panel_params ext_params_30hz = {
 	//.max_bl_level = 16380,
 	//.hbm_type = HBM_MODE_DCS_ONLY,
 	//.te_delay = 1,
+
+	.panel_ver = 1,
+	.panel_name = "csot_nt37707_667_1080_2640",
+	.panel_supplier = "csot-nt37707",
 };
 
 static struct mtk_panel_params ext_params_60hz = {
@@ -737,6 +741,10 @@ static struct mtk_panel_params ext_params_60hz = {
 	//.max_bl_level = 16380,
 	//.hbm_type = HBM_MODE_DCS_ONLY,
 	//.te_delay = 1,
+
+	.panel_ver = 1,
+	.panel_name = "csot_nt37707_667_1080_2640",
+	.panel_supplier = "csot-nt37707",
 };
 
 
@@ -814,6 +822,10 @@ static struct mtk_panel_params ext_params_90hz = {
 	//.max_bl_level = 16380,
 	//.hbm_type = HBM_MODE_DCS_ONLY,
 	//.te_delay = 1,
+
+	.panel_ver = 1,
+	.panel_name = "csot_nt37707_667_1080_2640",
+	.panel_supplier = "csot-nt37707",
 };
 
 static struct mtk_panel_params ext_params_120hz = {
@@ -890,6 +902,10 @@ static struct mtk_panel_params ext_params_120hz = {
 	//.max_bl_level = 16380,
 	//.hbm_type = HBM_MODE_DCS_ONLY,
 	//.te_delay = 1,
+
+	.panel_ver = 1,
+	.panel_name = "csot_nt37707_667_1080_2640",
+	.panel_supplier = "csot-nt37707",
 };
 
 static struct mtk_panel_params ext_params_24hz = {
@@ -966,6 +982,10 @@ static struct mtk_panel_params ext_params_24hz = {
 	//.max_bl_level = 16380,
 	//.hbm_type = HBM_MODE_DCS_ONLY,
 	//.te_delay = 1,
+
+	.panel_ver = 1,
+	.panel_name = "csot_nt37707_667_1080_2640",
+	.panel_supplier = "csot-nt37707",
 };
 
 static struct mtk_panel_params ext_params_10hz = {
@@ -1042,6 +1062,10 @@ static struct mtk_panel_params ext_params_10hz = {
 	//.max_bl_level = 16380,
 	//.hbm_type = HBM_MODE_DCS_ONLY,
 	//.te_delay = 1,
+
+	.panel_ver = 1,
+	.panel_name = "csot_nt37707_667_1080_2640",
+	.panel_supplier = "csot-nt37707",
 };
 
 static struct mtk_panel_params ext_params_1hz = {
@@ -1118,6 +1142,9 @@ static struct mtk_panel_params ext_params_1hz = {
 	//.max_bl_level = 16380,
 	//.hbm_type = HBM_MODE_DCS_ONLY,
 	//.te_delay = 1,
+	.panel_ver = 1,
+	.panel_name = "csot_nt37707_667_1080_2640",
+	.panel_supplier = "csot-nt37707",
 };
 
 static int panel_ata_check(struct drm_panel *panel)
