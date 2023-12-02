@@ -4109,14 +4109,54 @@ static ssize_t panelSupplier_show(struct device *device,
 	return written;
 }
 
+
+extern int mtk_read_ddic_cellid(int dsi_index, unsigned char *cellid, int reg, int offset_reg, int offset, int len);
+static ssize_t panelCellId_show(struct device *device,
+			struct device_attribute *attr,
+			char *buf)
+{
+	struct drm_connector *connector = dev_get_drvdata(device);
+	struct mtk_dsi *dsi = connector_to_dsi(connector);
+	int reg_addr = 0;
+	int offset_reg_addr = 0;
+	int offset = 0;
+	int len = 0;
+
+	int written = 0, ret;
+	unsigned char cellid[32];
+	int dsi_index = 0;
+
+	if (dsi && dsi->ext && dsi->ext->params) {
+		reg_addr = dsi->ext->params->panel_cellid_reg;
+		offset_reg_addr = dsi->ext->params->panel_cellid_offset_reg;
+		offset = dsi->ext->params->panel_cellid_offset;
+		len = dsi->ext->params->panel_cellid_len;
+		if (dsi->ddp_comp.id == DDP_COMPONENT_DSI1) dsi_index = 1;
+		DDPMSG("houdz reg_addr 0x%x offset_reg_addr 0x%x offset 0x%x len 0x%x dsi_index 0x%x\n", reg_addr, offset_reg_addr, offset, len, dsi_index);
+	}
+
+	if(reg_addr && offset_reg_addr && len && len<32) {
+		memset(cellid, 0, 32);
+
+		ret = mtk_read_ddic_cellid(dsi_index, cellid, reg_addr, offset_reg_addr, offset, len);
+		if(ret) {
+			written = snprintf(buf, PAGE_SIZE, "%s\n", cellid);
+		}
+	}
+
+	return written;
+}
+
 static DEVICE_ATTR_RO(panelVer);
 static DEVICE_ATTR_RO(panelName);
 static DEVICE_ATTR_RO(panelSupplier);
+static DEVICE_ATTR_RO(panelCellId);
 
 static const struct attribute *conn_panel_attrs[] = {
 	&dev_attr_panelVer.attr,
 	&dev_attr_panelName.attr,
 	&dev_attr_panelSupplier.attr,
+	&dev_attr_panelCellId.attr,
 	NULL
 };
 

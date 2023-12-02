@@ -581,6 +581,10 @@ struct mtk_panel_params {
 	u64 panel_ver;
 	char panel_name[DRM_DISPLAY_NAME_LEN];
 	char panel_supplier[DRM_DISPLAY_NAME_LEN];
+	int panel_cellid_reg;
+	int panel_cellid_offset_reg;
+	int panel_cellid_offset;
+	int panel_cellid_len;
 };
 
 struct mtk_panel_ext {
