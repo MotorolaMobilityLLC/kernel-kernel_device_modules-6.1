@@ -662,6 +662,11 @@ static struct mtk_panel_params ext_params_30hz = {
 	//.hbm_type = HBM_MODE_DCS_ONLY,
 	//.te_delay = 1,
 
+	.panel_cellid_reg = 0xAC,
+	.panel_cellid_offset_reg = 0x6F,
+	.panel_cellid_offset = 0x0D,
+	.panel_cellid_len = 23,
+
 	.panel_ver = 1,
 	.panel_name = "csot_nt37707_667_1080_2640",
 	.panel_supplier = "csot-nt37707",
@@ -669,9 +674,9 @@ static struct mtk_panel_params ext_params_30hz = {
 
 static struct mtk_panel_params ext_params_60hz = {
 	.dyn_fps = {
-		.data_rate = 450,
+		.data_rate = 500,
 	},
-	.data_rate = 450,
+	.data_rate = 500,
 	.lp_perline_en = 1,
 
 	.cust_esd_check = 0,
@@ -741,6 +746,11 @@ static struct mtk_panel_params ext_params_60hz = {
 	//.max_bl_level = 16380,
 	//.hbm_type = HBM_MODE_DCS_ONLY,
 	//.te_delay = 1,
+
+	.panel_cellid_reg = 0xAC,
+	.panel_cellid_offset_reg = 0x6F,
+	.panel_cellid_offset = 0x0D,
+	.panel_cellid_len = 23,
 
 	.panel_ver = 1,
 	.panel_name = "csot_nt37707_667_1080_2640",
@@ -823,6 +833,11 @@ static struct mtk_panel_params ext_params_90hz = {
 	//.hbm_type = HBM_MODE_DCS_ONLY,
 	//.te_delay = 1,
 
+	.panel_cellid_reg = 0xAC,
+	.panel_cellid_offset_reg = 0x6F,
+	.panel_cellid_offset = 0x0D,
+	.panel_cellid_len = 23,
+
 	.panel_ver = 1,
 	.panel_name = "csot_nt37707_667_1080_2640",
 	.panel_supplier = "csot-nt37707",
@@ -902,6 +917,11 @@ static struct mtk_panel_params ext_params_120hz = {
 	//.max_bl_level = 16380,
 	//.hbm_type = HBM_MODE_DCS_ONLY,
 	//.te_delay = 1,
+
+	.panel_cellid_reg = 0xAC,
+	.panel_cellid_offset_reg = 0x6F,
+	.panel_cellid_offset = 0x0D,
+	.panel_cellid_len = 23,
 
 	.panel_ver = 1,
 	.panel_name = "csot_nt37707_667_1080_2640",
@@ -983,6 +1003,11 @@ static struct mtk_panel_params ext_params_24hz = {
 	//.hbm_type = HBM_MODE_DCS_ONLY,
 	//.te_delay = 1,
 
+	.panel_cellid_reg = 0xAC,
+	.panel_cellid_offset_reg = 0x6F,
+	.panel_cellid_offset = 0x0D,
+	.panel_cellid_len = 23,
+
 	.panel_ver = 1,
 	.panel_name = "csot_nt37707_667_1080_2640",
 	.panel_supplier = "csot-nt37707",
@@ -1063,6 +1088,11 @@ static struct mtk_panel_params ext_params_10hz = {
 	//.hbm_type = HBM_MODE_DCS_ONLY,
 	//.te_delay = 1,
 
+	.panel_cellid_reg = 0xAC,
+	.panel_cellid_offset_reg = 0x6F,
+	.panel_cellid_offset = 0x0D,
+	.panel_cellid_len = 23,
+
 	.panel_ver = 1,
 	.panel_name = "csot_nt37707_667_1080_2640",
 	.panel_supplier = "csot-nt37707",
@@ -1142,6 +1172,12 @@ static struct mtk_panel_params ext_params_1hz = {
 	//.max_bl_level = 16380,
 	//.hbm_type = HBM_MODE_DCS_ONLY,
 	//.te_delay = 1,
+
+	.panel_cellid_reg = 0xAC,
+	.panel_cellid_offset_reg = 0x6F,
+	.panel_cellid_offset = 0x0D,
+	.panel_cellid_len = 23,
+
 	.panel_ver = 1,
 	.panel_name = "csot_nt37707_667_1080_2640",
 	.panel_supplier = "csot-nt37707",
