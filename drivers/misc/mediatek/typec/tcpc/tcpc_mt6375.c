@@ -14,6 +14,8 @@
 #include <linux/sched.h>
 #include <dt-bindings/mfd/mt6375.h>
 #include <linux/sched/clock.h>
+#include <linux/of_gpio.h>
+#include <linux/irq.h>
 
 #include "inc/tcpci.h"
 #include "inc/tcpci_typec.h"
@@ -282,6 +284,9 @@ struct mt6375_tcpc_data {
 	struct delayed_work fod_polling_dwork;
 
 	struct delayed_work cc_short_dwork;
+	int mmi_cid_int;
+	int mmi_cid_irq;
+	struct mutex cid_irq_lock;
 };
 
 enum mt6375_vend_int {
@@ -2289,6 +2294,73 @@ static int mt6375_tcpc_init_irq(struct mt6375_tcpc_data *ddata)
 	return 0;
 }
 
+static irqreturn_t mmi_cid_irq_handler(int irq, void *dev_id)
+{
+	struct mt6375_tcpc_data *ddata = dev_id;
+	int int_gpio_value;
+	static int per_irq_flg = -1;
+
+	dev_info(ddata->dev, "[%s] IRQ triggered\n", __func__);
+	int_gpio_value = gpio_get_value(ddata->mmi_cid_int);
+	if (per_irq_flg != int_gpio_value)
+		per_irq_flg = int_gpio_value;
+	else
+		return IRQ_NONE;
+
+	mutex_lock(&ddata->cid_irq_lock);
+	if (int_gpio_value) {
+		//High level
+		dev_info(ddata->dev, "[%s] High Level irq, TYPEC cable unplug\n", __func__);
+		// Need setting cc to SINK state
+
+	}
+	else {
+		//Low level
+		dev_info(ddata->dev, "[%s] Low Level irq, TYPEC cable pluging\n", __func__);
+		// Need setting cc to DRP state
+	}
+
+	mutex_unlock(&ddata->cid_irq_lock);
+
+	return IRQ_HANDLED;
+}
+
+static int mmi_init_cid_irq(struct mt6375_tcpc_data *ddata)
+{
+	struct device *dev = ddata->dev;
+	int ret;
+
+	ddata->mmi_cid_int = of_get_named_gpio(dev->of_node, "mmi_cid_int", 0);
+	if(!gpio_is_valid(ddata->mmi_cid_int )) {
+		dev_err(dev, " %s of_get_named_gpio failed\n", __func__);
+		return -EINVAL;
+	}
+	ret = devm_gpio_request_one(dev, ddata->mmi_cid_int ,
+				  GPIOF_IN, "tcpc_mt6375_mmi_cid_int");
+	if (ret < 0) {
+		dev_err(dev, "Failed to request int gpio, ret:%d", ret);
+		return ret;
+	}
+	ddata->mmi_cid_irq = gpio_to_irq(ddata->mmi_cid_int);
+	if (ddata->mmi_cid_irq < 0) {
+		dev_err(dev, "failed get mmi_cid_irq num %d", ddata->mmi_cid_irq);
+		return -EINVAL;
+	}
+
+	if(ddata->mmi_cid_irq){
+		ret = devm_request_threaded_irq(dev, ddata->mmi_cid_irq, NULL,
+		    mmi_cid_irq_handler, IRQF_TRIGGER_FALLING | IRQF_TRIGGER_RISING | IRQF_ONESHOT, "mmi_cid_irq", ddata);
+		if(ret){
+		   dev_err(dev, "[%s] request mmi_cid_irq irq failed ret = %d\n", __func__, ret);
+		    return -EINVAL;
+		}
+		enable_irq_wake(ddata->mmi_cid_irq);
+	}
+	dev_info(dev, "[%s] cid init successfully\n", __func__);
+
+	return 0;
+}
+
 static int mt6375_register_tcpcdev(struct mt6375_tcpc_data *ddata)
 {
 	struct tcpc_desc *desc = ddata->desc;
@@ -2533,6 +2605,10 @@ static int mt6375_tcpc_probe(struct platform_device *pdev)
 		ret = PTR_ERR(ddata->adc_iio);
 		dev_err(ddata->dev, "failed to get adc iio(%d)\n", ret);
 		return ret;
+	}
+	ret = mmi_init_cid_irq(ddata);
+	if (ret < 0) {
+		dev_err(ddata->dev, "failed to init cid irq\n");
 	}
 
 	ret = mt6375_register_tcpcdev(ddata);

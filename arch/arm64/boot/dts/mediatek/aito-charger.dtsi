@@ -106,6 +106,7 @@
        tcpc,en_wd;
        tcpc,en_wd_sbu_polling;
        tcpc,en_wd_polling_only;
+       mmi_cid_int = <&pio 33 0x0>;
 };
 
 &mt6375_chg {
