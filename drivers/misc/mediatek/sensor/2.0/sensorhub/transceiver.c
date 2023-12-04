@@ -150,7 +150,8 @@ static bool transceiver_wakeup_check(uint8_t action, uint8_t sensor_type)
 			sensor_type == SENSOR_TYPE_MOTION_DETECT ||
 			sensor_type == SENSOR_TYPE_IN_POCKET ||
 			sensor_type == SENSOR_TYPE_ANSWER_CALL ||
-			sensor_type == SENSOR_TYPE_FLAT))
+			sensor_type == SENSOR_TYPE_FLAT ||
+			sensor_type == SENSOR_TYPE_FLIP))
 		return true;
 
 	return false;
@@ -340,6 +341,12 @@ static int transceiver_translate(struct transceiver_device *dev,
 		case SENSOR_TYPE_STEP_COUNTER:
 			dst->word[0] = src->value[0];
 			break;
+		case SENSOR_TYPE_DEVICE_ORIENTATION:
+			memcpy(dst->word, src->value,
+				min(sizeof(dst->word), sizeof(src->value)));
+			if (src->value[0] == 16)
+				dst->word[0] = -1;
+		break;
 		default:
 			memcpy(dst->word, src->value,
 				min(sizeof(dst->word), sizeof(src->value)));
