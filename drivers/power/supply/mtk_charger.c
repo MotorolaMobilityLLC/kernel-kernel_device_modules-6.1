@@ -5415,6 +5415,10 @@ int notify_adapter_event(struct notifier_block *notifier,
 		pinfo->cc_hi = *(int *)val;
 		_wake_up_charger(pinfo);
 		break;
+	case MMI_PD30_VDM_VERIFY:
+		chr_err("%s VDM VERIFY\n", __func__);
+		mtk_chg_alg_notify_call(pinfo, EVT_VDM_VERIFY, 0);
+		break;
 	}
 	if (report_psy)
 		power_supply_changed(pinfo->psy1);
