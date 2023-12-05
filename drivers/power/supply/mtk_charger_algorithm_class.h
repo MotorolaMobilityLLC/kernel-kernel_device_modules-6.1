@@ -106,6 +106,7 @@ enum chg_alg_notifier_events {
 	EVT_VBUSOVP_ALARM,
 	EVT_BATPRO_DONE,
 	EVT_ALGO_STOP,
+	EVT_VDM_VERIFY,
 	EVT_MAX,
 };
 
