@@ -169,6 +169,13 @@ static int pd_tcp_notifier_call(struct notifier_block *nb,
 		srcu_notifier_call_chain(&adapter->evt_nh,
 					 MTK_TYPEC_CC_HI_STATUS, &noti->cc_hi);
 		break;
+	case TCP_NOTIFY_PD_VDM_VERIFY:
+		pr_info("%s mmi pd vdm verify state = %d\n",
+					__func__, noti->pd_state.vdm_verify);
+		if (noti->pd_state.vdm_verify == true)
+			srcu_notifier_call_chain(&adapter->evt_nh,
+				MMI_PD30_VDM_VERIFY, NULL);
+		break;
 	}
 
 	return NOTIFY_OK;
@@ -525,6 +532,105 @@ out:
 	return ret;
 }
 
+static int pd_update_apdo_cap(struct adapter_device *dev,
+			     struct adapter_auth_data *data)
+{
+	struct mtk_pd_adapter_info *info = adapter_dev_get_drvdata(dev);
+	int ret = MTK_ADAPTER_ERROR, active_idx = 0, i = 0;
+	struct tcpm_power_cap_val apdo_cap, selected_apdo_cap;
+	uint8_t cap_idx = 0, apdo_idx = 0;
+	struct pd_source_cap_ext src_cap_ext;
+	u32 prog_mv = 0;
+
+	if (info == NULL)
+		return ret;
+
+	mutex_lock(&info->idx_lock);
+	active_idx = info->active_idx;
+
+	if (tcpm_inquire_typec_attach_state(info->tcpc[active_idx]) !=
+			TYPEC_ATTACHED_SNK) {
+		dev_notice(info->dev, "%s not Attached.SNK\n", __func__);
+		mutex_unlock(&info->idx_lock);
+		return ret;
+	}
+
+	if (info->pd_type[active_idx] != MTK_PD_CONNECT_PE_READY_SNK_APDO) {
+		dev_notice(info->dev, "%s pd type is not snk apdo\n", __func__);
+		mutex_unlock(&info->idx_lock);
+		return ret;
+	}
+	mutex_unlock(&info->idx_lock);
+
+	if (!tcpm_inquire_pd_pe_ready(info->tcpc[active_idx])) {
+		dev_notice(info->dev, "%s pd pe not ready\n", __func__);
+		return ret;
+	}
+
+repeat:
+	ret = tcpm_inquire_pd_source_apdo(info->tcpc[active_idx],
+					  TCPM_POWER_CAP_APDO_TYPE_PPS,
+					  &cap_idx, &apdo_cap);
+	if (ret != TCPM_SUCCESS) {
+		if (apdo_idx == 0)
+			dev_notice(info->dev, "%s inquire pd apdo fail(%d)\n",
+					      __func__, ret);
+		goto stop_repeat;
+	}
+
+	dev_info(info->dev, "%s cap_idx[%d], %dmV ~ %dmV, %dmA pl:%d\n",
+			    __func__, cap_idx, apdo_cap.min_mv,
+			    apdo_cap.max_mv, apdo_cap.ma, apdo_cap.pwr_limit);
+
+	if (apdo_cap.min_mv > data->vcap_min ||
+	    apdo_cap.max_mv < data->vcap_max ||
+	    apdo_cap.ma < data->icap_min)
+		goto repeat;
+	if (apdo_idx == 0 || apdo_cap.ma > selected_apdo_cap.ma) {
+		selected_apdo_cap = apdo_cap;
+		apdo_idx = cap_idx;
+		dev_info(info->dev, "%s select potential cap_idx[%d]\n",
+				    __func__, cap_idx);
+	}
+	goto repeat;
+stop_repeat:
+	if (apdo_idx == 0) {
+		dev_notice(info->dev, "%s no suitable apdo\n", __func__);
+		return MTK_ADAPTER_ERROR;
+	}
+
+	data->vta_min = selected_apdo_cap.min_mv;
+	data->vta_max = selected_apdo_cap.max_mv;
+	data->ita_max = selected_apdo_cap.ma;
+	data->pwr_lmt = !!selected_apdo_cap.pwr_limit;
+	data->vta_step = 20;
+	data->ita_step = 50;
+	data->ita_gap_per_vstep = 200;
+	ret = tcpm_dpm_pd_get_source_cap_ext(info->tcpc[active_idx],
+					     NULL, &src_cap_ext);
+	if (ret == TCP_DPM_RET_SUCCESS) {
+		data->pdp = src_cap_ext.source_pdp;
+		if (data->pdp > 0 && !data->pwr_lmt)
+			data->pwr_lmt = true;
+	} else {
+		dev_info(info->dev, "%s inquire pdp fail(%d)\n", __func__, ret);
+		if (data->pwr_lmt) {
+			for (i = 0; i < ARRAY_SIZE(apdo_pps_tbl); i++) {
+				if (apdo_pps_tbl[i].max_mv < data->vta_max)
+					continue;
+				prog_mv = min_t(u32, apdo_pps_tbl[i].prog_mv,
+						data->vta_max);
+				data->pdp = prog_mv * data->ita_max / 1000000;
+			}
+		}
+	}
+
+	dev_info(info->dev, "%s select cap_idx[%d], power limit[%d,%dW]\n",
+			    __func__, apdo_idx, data->pwr_lmt, data->pdp);
+
+	return ret;
+}
+
 static int pd_is_cc(struct adapter_device *dev, bool *cc)
 {
 	struct mtk_pd_adapter_info *info = adapter_dev_get_drvdata(dev);
@@ -580,6 +686,7 @@ static struct adapter_ops adapter_ops = {
 	.get_cap = pd_get_cap,
 	.get_output = pd_get_output,
 	.authentication = pd_authentication,
+	.update_apdo_cap = pd_update_apdo_cap,
 	.is_cc = pd_is_cc,
 	.set_wdt = pd_set_wdt,
 	.enable_wdt = pd_enable_wdt,
