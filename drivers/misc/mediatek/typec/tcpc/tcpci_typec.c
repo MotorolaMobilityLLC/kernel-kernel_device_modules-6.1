@@ -354,7 +354,10 @@ static inline void typec_unattached_snk_and_drp_entry(struct tcpc_device *tcpc)
 {
 	TYPEC_NEW_STATE(typec_unattached_snk);
 	tcpci_set_auto_dischg_discnt(tcpc, false);
-	tcpci_set_cc(tcpc, TYPEC_CC_DRP);
+	if (!tcpci_is_support_cid(tcpc)) {
+		tcpci_set_cc(tcpc, TYPEC_CC_DRP);
+		TYPEC_INFO("%s, set cc to DRP\n", __func__);
+	}
 	typec_enable_low_power_mode(tcpc);
 	if (tcpc->typec_vbus_to_cc_en && tcpc->tcpc_flags & TCPC_FLAGS_VBUS_SHORT_CC)
 		tcpci_set_vbus_short_cc_en(tcpc, false, false);

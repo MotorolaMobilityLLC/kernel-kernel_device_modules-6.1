@@ -284,8 +284,11 @@ struct mt6375_tcpc_data {
 	struct delayed_work fod_polling_dwork;
 
 	struct delayed_work cc_short_dwork;
+	int mmi_cid_state;
 	int mmi_cid_int;
 	int mmi_cid_irq;
+	bool support_cid;
+	struct delayed_work cid_det_work;
 	struct mutex cid_irq_lock;
 };
 
@@ -2197,6 +2200,13 @@ static int mt6375_get_vbus_voltage(struct tcpc_device *tcpc, u32 *vbus)
 	return 0;
 }
 
+static int mt6375_is_support_cid(struct tcpc_device *tcpc)
+{
+	struct mt6375_tcpc_data *ddata = tcpc_get_dev_data(tcpc);
+
+	return ddata->support_cid;
+}
+
 static struct tcpc_ops mt6375_tcpc_ops = {
 	.init = mt6375_tcpc_init,
 	.init_alert_mask = mt6375_init_mask,
@@ -2217,7 +2227,7 @@ static struct tcpc_ops mt6375_tcpc_ops = {
 	.get_vbus_voltage = mt6375_get_vbus_voltage,
 
 	.is_vsafe0v = mt6375_is_vsafe0v,
-
+	.is_support_cid = mt6375_is_support_cid,
 	.set_low_power_mode = mt6375_set_low_power_mode,
 
 #if IS_ENABLED(CONFIG_USB_POWER_DELIVERY)
@@ -2294,33 +2304,47 @@ static int mt6375_tcpc_init_irq(struct mt6375_tcpc_data *ddata)
 	return 0;
 }
 
+enum cid_cc_state{
+	CID_TYPEC_CONNECT = 0,        /*int_gpio_level is Low*/
+	CID_TYPEC_DISCONNECT = 1, /*int_gpio_level is High*/
+};
+
+static void mmi_cid_detect_work(struct work_struct *work)
+{
+	struct mt6375_tcpc_data *ddata;
+	int int_gpio_level;
+
+	ddata = container_of(to_delayed_work(work),
+			    struct mt6375_tcpc_data, cid_det_work);
+
+	mutex_lock(&ddata->cid_irq_lock);
+	int_gpio_level = gpio_get_value(ddata->mmi_cid_int);
+	dev_info(ddata->dev, "[%s] IRQ triggered, int_gpio_level=%d\n", __func__, int_gpio_level);
+	if (int_gpio_level != ddata->mmi_cid_state) {
+		if (int_gpio_level) {
+			ddata->mmi_cid_state = CID_TYPEC_DISCONNECT;
+			tcpci_set_cc(ddata->tcpc, TYPEC_CC_RD);
+			dev_info(ddata->dev, "[%s] CID High Level irq, TYPEC cable unplug, set CC to SINK only\n", __func__);
+		}
+		else {
+			tcpci_set_cc(ddata->tcpc, TYPEC_CC_DRP);
+			ddata->mmi_cid_state = CID_TYPEC_CONNECT;
+			dev_info(ddata->dev, "[%s] CID Low Level irq, TYPEC cable pluging,set CC to DRP\n", __func__);
+		}
+	}
+	mutex_unlock(&ddata->cid_irq_lock);
+
+}
+
+#define CID_GPIO_DEB_MS 10 /*ms*/
 static irqreturn_t mmi_cid_irq_handler(int irq, void *dev_id)
 {
 	struct mt6375_tcpc_data *ddata = dev_id;
-	int int_gpio_value;
-	static int per_irq_flg = -1;
 
 	dev_info(ddata->dev, "[%s] IRQ triggered\n", __func__);
-	int_gpio_value = gpio_get_value(ddata->mmi_cid_int);
-	if (per_irq_flg != int_gpio_value)
-		per_irq_flg = int_gpio_value;
-	else
-		return IRQ_NONE;
-
-	mutex_lock(&ddata->cid_irq_lock);
-	if (int_gpio_value) {
-		//High level
-		dev_info(ddata->dev, "[%s] High Level irq, TYPEC cable unplug\n", __func__);
-		// Need setting cc to SINK state
-
-	}
-	else {
-		//Low level
-		dev_info(ddata->dev, "[%s] Low Level irq, TYPEC cable pluging\n", __func__);
-		// Need setting cc to DRP state
-	}
-
-	mutex_unlock(&ddata->cid_irq_lock);
+	disable_irq_nosync(irq);
+	queue_delayed_work(system_power_efficient_wq, &ddata->cid_det_work, msecs_to_jiffies(CID_GPIO_DEB_MS));
+	enable_irq(irq);
 
 	return IRQ_HANDLED;
 }
@@ -2338,25 +2362,27 @@ static int mmi_init_cid_irq(struct mt6375_tcpc_data *ddata)
 	ret = devm_gpio_request_one(dev, ddata->mmi_cid_int ,
 				  GPIOF_IN, "tcpc_mt6375_mmi_cid_int");
 	if (ret < 0) {
-		dev_err(dev, "Failed to request int gpio, ret:%d", ret);
+		dev_err(dev, "Failed to request CID int gpio, ret:%d", ret);
 		return ret;
 	}
+
 	ddata->mmi_cid_irq = gpio_to_irq(ddata->mmi_cid_int);
 	if (ddata->mmi_cid_irq < 0) {
-		dev_err(dev, "failed get mmi_cid_irq num %d", ddata->mmi_cid_irq);
+		dev_err(dev, "CID failed get mmi_cid_irq num %d", ddata->mmi_cid_irq);
 		return -EINVAL;
 	}
 
+	INIT_DELAYED_WORK(&ddata->cid_det_work, mmi_cid_detect_work);
 	if(ddata->mmi_cid_irq){
 		ret = devm_request_threaded_irq(dev, ddata->mmi_cid_irq, NULL,
-		    mmi_cid_irq_handler, IRQF_TRIGGER_FALLING | IRQF_TRIGGER_RISING | IRQF_ONESHOT, "mmi_cid_irq", ddata);
+		    mmi_cid_irq_handler, IRQF_TRIGGER_RISING | IRQF_TRIGGER_FALLING | IRQF_ONESHOT, "mmi_cid_irq", ddata);
 		if(ret){
-		   dev_err(dev, "[%s] request mmi_cid_irq irq failed ret = %d\n", __func__, ret);
+		   dev_err(dev, "[%s] CID irq request threaded failed ret = %d\n", __func__, ret);
 		    return -EINVAL;
 		}
 		enable_irq_wake(ddata->mmi_cid_irq);
 	}
-	dev_info(dev, "[%s] cid init successfully\n", __func__);
+	dev_info(dev, "[%s] CID init successfully\n", __func__);
 
 	return 0;
 }
@@ -2517,6 +2543,8 @@ static int mt6375_parse_dt(struct mt6375_tcpc_data *ddata)
 		}
 	}
 
+	ddata->support_cid = device_property_read_bool(dev, "mmi,support_CID");
+
 	return 0;
 }
 
@@ -2606,10 +2634,6 @@ static int mt6375_tcpc_probe(struct platform_device *pdev)
 		dev_err(ddata->dev, "failed to get adc iio(%d)\n", ret);
 		return ret;
 	}
-	ret = mmi_init_cid_irq(ddata);
-	if (ret < 0) {
-		dev_err(ddata->dev, "failed to init cid irq\n");
-	}
 
 	ret = mt6375_register_tcpcdev(ddata);
 	if (ret < 0) {
@@ -2667,6 +2691,18 @@ static int mt6375_tcpc_probe(struct platform_device *pdev)
 		goto err;
 	}
 
+	if (ddata->support_cid) {
+		ddata->mmi_cid_state = -EINVAL;
+		ret = mmi_init_cid_irq(ddata);
+		if (ret < 0) {
+			dev_err(ddata->dev, "failed to init CID irq\n");
+		}
+		else {
+			mmi_cid_irq_handler(ddata->mmi_cid_irq, (void *)ddata);
+			dev_info(ddata->dev, "As CID,set cc to SINK mode\n");
+		}
+	}
+
 	dev_info(ddata->dev, "%s successfully!\n", __func__);
 	return 0;
 err:
@@ -2678,6 +2714,10 @@ static void mt6375_shutdown(struct platform_device *pdev)
 {
 	struct mt6375_tcpc_data *ddata = platform_get_drvdata(pdev);
 
+	if (ddata->support_cid && ddata->mmi_cid_irq > 0) {
+		disable_irq(ddata->mmi_cid_irq);
+		cancel_delayed_work_sync(&ddata->cid_det_work);
+	}
 	disable_irq(ddata->irq);
 	cancel_delayed_work_sync(&ddata->cc_short_dwork);
 	if (ddata->tcpc->tcpc_flags & TCPC_FLAGS_WATER_DETECTION) {

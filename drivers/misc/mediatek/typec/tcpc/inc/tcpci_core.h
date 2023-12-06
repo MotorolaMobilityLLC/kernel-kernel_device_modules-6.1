@@ -225,6 +225,7 @@ struct tcpc_ops {
 	int (*set_auto_dischg_discnt)(struct tcpc_device *tcpc, bool en);
 	int (*get_vbus_voltage)(struct tcpc_device *tcpc, u32 *vbus);
 
+	int (*is_support_cid)(struct tcpc_device *tcpc);
 	int (*is_vsafe0v)(struct tcpc_device *tcpc);
 
 #if CONFIG_WATER_DETECTION

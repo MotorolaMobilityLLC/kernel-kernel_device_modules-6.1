@@ -365,6 +365,17 @@ int tcpci_alert_vendor_defined_handler(struct tcpc_device *tcpc)
 }
 EXPORT_SYMBOL(tcpci_alert_vendor_defined_handler);
 
+int tcpci_is_support_cid(struct tcpc_device *tcpc)
+{
+	int ret = 0;
+
+	if (tcpc->ops->is_support_cid)
+		ret = tcpc->ops->is_support_cid(tcpc);
+
+	return ret;
+}
+EXPORT_SYMBOL(tcpci_is_support_cid);
+
 int tcpci_is_vsafe0v(struct tcpc_device *tcpc)
 {
 	int ret = -EOPNOTSUPP;
