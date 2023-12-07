@@ -826,6 +826,7 @@ static int pe50_set_dvchg_protection(struct pe50_algo_info *info)
 	struct pe50_algo_desc *desc = info->desc;
 	struct pe50_ta_auth_data *auth_data = &data->ta_auth_data;
 	u32 ita_lmt, vbusovp, vbusovp_alarm, ibusocp, vbatovp, ibatocp;
+	u32 idvchg_lmt;
 
 	/* VBATOVP ALARM */
 	ret = pe50_hal_set_vbatovp_alarm(info->alg, DVCHG1,
@@ -861,13 +862,17 @@ static int pe50_set_dvchg_protection(struct pe50_algo_info *info)
 	}
 
 	/* IBUSOCP */
-	ibusocp = pe50_get_dvchg_ibusocp(info, ita_lmt);
+	idvchg_lmt = min(data->idvchg_cc, (u32)auth_data->ita_max);
+	ibusocp = percent(idvchg_lmt, PE50_IBUSOCP_RATIO);
 	ret = pe50_hal_set_ibusocp(info->alg, DVCHG1, ibusocp);
 	if (ret < 0) {
 		PE50_ERR("set ibusocp fail(%d)\n", ret);
 		return ret;
 	}
 	if (data->is_dvchg_exist[PE50_DVCHG_SLAVE]) {
+		/* Add 10% for unbalance tolerance */
+		ibusocp = percent(precise_div(idvchg_lmt, 2),
+				  PE50_IBUSOCP_RATIO + 10);
 		ret = pe50_hal_set_ibusocp(info->alg, DVCHG2, ibusocp);
 		if (ret < 0) {
 			PE50_ERR("set slave ibusocp fail(%d)\n", ret);
