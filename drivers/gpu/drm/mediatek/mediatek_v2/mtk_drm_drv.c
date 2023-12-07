@@ -7980,6 +7980,70 @@ int mtk_drm_fm_lcm_auto_test(struct drm_device *dev, void *data,
 }
 #endif
 
+static bool mtk_drm_check_pane_feature_valid(struct drm_crtc *crtc, struct panel_param_info param_info)
+{
+	uint32_t param_value = 0;
+	bool  ret = false;
+	if (!mtk_drm_crtc_get_panel_feature(crtc, param_info.param_idx, &param_value))
+	{
+		if (param_value != param_info.value) ret = true;
+		DDPMSG("%s: set param_idx %d from %d to %d\n", __func__, param_info.param_idx, param_value, param_info.value);
+	}
+	return ret;
+}
+
+static int mtk_drm_ioctl_set_panel_feature(struct drm_device *dev, void *data,
+		struct drm_file *file_priv)
+{
+	struct panel_param_info *param_info = data;
+	struct mtk_drm_private *private = dev->dev_private;
+	struct drm_crtc *crtc = NULL;
+	struct mtk_drm_crtc *mtk_crtc = NULL;
+	struct mtk_ddp_comp *comp = NULL;
+	struct mtk_panel_params *panel_ext = NULL;
+	int ret = 0;
+	unsigned int bl_level = 0;
+	unsigned int timeout = 30;
+	unsigned int i;
+
+	for (i = 0 ; i < MAX_CRTC ; ++i) {
+		crtc = private->crtc[i];
+		mtk_crtc = to_mtk_crtc(crtc);
+		if (!mtk_crtc->enabled) {
+			DDPINFO("%s: CRTC %d, slepted\n", __func__, drm_crtc_index(crtc));
+			continue;
+		}
+
+		comp = mtk_ddp_comp_request_output(mtk_crtc);
+		panel_ext = mtk_drm_get_lcm_ext_params(crtc);
+
+		if (panel_ext->check_panel_feature) {
+			if (!mtk_drm_check_pane_feature_valid(crtc, *param_info)) return ret;
+		}
+
+		DDPMSG("%s: set param_idx %d to %d\n", __func__, param_info->param_idx, param_info->value);
+
+		switch (param_info->param_idx) {
+			case PARAM_HBM:
+				if (comp && comp->funcs && comp->funcs->io_cmd && (param_info->value ==2))
+					comp->funcs->io_cmd(comp, NULL, PANEL_HBM_WAITFOR_FPS_VALID, &timeout);
+
+				if (panel_ext->hbm_type == HBM_MODE_DCS_ONLY) {
+					bl_level = (param_info->value) ? BRIGHTNESS_HBM_ON_SKIP_BL : BRIGHTNESS_HBM_OFF;
+				} else {
+					bl_level = (param_info->value) ? BRIGHTNESS_HBM_ON : BRIGHTNESS_HBM_OFF;
+				}
+				ret = mtk_drm_crtc_set_panel_feature(crtc, *param_info);
+				if (!ret) mtk_drm_setbacklight(&mtk_crtc->base, bl_level, 0, (0X1<<SET_BACKLIGHT_LEVEL), 0);
+
+				break;
+			default:
+				ret = mtk_drm_crtc_set_panel_feature(crtc, *param_info);
+				break;
+		}
+	}
+	return ret;
+}
 static const struct drm_ioctl_desc mtk_ioctls[] = {
 	DRM_IOCTL_DEF_DRV(MTK_GEM_CREATE, mtk_gem_create_ioctl,
 			  DRM_UNLOCKED | DRM_AUTH | DRM_RENDER_ALLOW),
@@ -8141,6 +8205,9 @@ static const struct drm_ioctl_desc mtk_ioctls[] = {
 				  DRM_UNLOCKED),
 	DRM_IOCTL_DEF_DRV(MTK_DEBUG_LOG, mtk_disp_ioctl_debug_log_switch,
 					DRM_UNLOCKED),
+
+	DRM_IOCTL_DEF_DRV(SET_PANEL_FEATURE, mtk_drm_ioctl_set_panel_feature,
+			  DRM_UNLOCKED),
 };
 
 static const struct file_operations mtk_drm_fops = {
