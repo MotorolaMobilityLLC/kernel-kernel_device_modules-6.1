@@ -1515,5 +1515,7 @@ void mtk_crtc_default_path_rst(struct drm_crtc *crtc, struct cmdq_pkt *cmdq_hand
 void mtk_crtc_rst_module(struct drm_crtc *crtc);
 void mtk_crtc_init_hrt_usage(struct drm_crtc *crtc);
 
+int mtk_drm_crtc_set_panel_feature(struct drm_crtc *crtc, const struct panel_param_info param_info);
+int mtk_drm_crtc_get_panel_feature(struct drm_crtc *crtc, paramId_t param_id, uint32_t *param_value);
 
 #endif /* MTK_DRM_CRTC_H */
