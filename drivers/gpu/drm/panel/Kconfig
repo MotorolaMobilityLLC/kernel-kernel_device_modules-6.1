@@ -599,7 +599,7 @@ config DRM_PANEL_TIANMA_NT37707_667_FHDP_DPHY_CMD
 	  MIPI DSI interface to host.
 
 
-config DRM_PANEL_CSOT_NT37705_1056x1068_DPHY_CMD_CLI
+config DRM_PANEL_CSOT_NT37705_1056x1066_DPHY_CMD_CLI
 	tristate "NT37705 amoled dphy cmd mode panel cli"
 	depends on OF
 	depends on DRM_MIPI_DSI

@@ -358,7 +358,7 @@ static int lcm_enable(struct drm_panel *panel)
 #define VFP (20)
 #define VSA (2)
 #define VBP (8)
-#define VACT (1068)
+#define VACT (1066)
 #define PLL_CLOCK (330)
 
 
@@ -420,7 +420,7 @@ static struct mtk_panel_params ext_params_60hz = {
 	.panel_cellid_len = 23,
 
 	.panel_ver = 1,
-	.panel_name = "csot_nt37705_1056_1068",
+	.panel_name = "csot_nt37705_1056_1066",
 	.panel_supplier = "csot-nt37705",
 };
 
@@ -456,7 +456,7 @@ static struct mtk_panel_params ext_params_48hz = {
 	.panel_cellid_len = 23,
 
 	.panel_ver = 1,
-	.panel_name = "csot_nt37705_1056_1068",
+	.panel_name = "csot_nt37705_1056_1066",
 	.panel_supplier = "csot-nt37705",
 };
 
