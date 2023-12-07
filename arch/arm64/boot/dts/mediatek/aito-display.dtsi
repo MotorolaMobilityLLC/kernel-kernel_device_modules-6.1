@@ -11,29 +11,19 @@
  */
 
 &mtk_leds {
-	/delete-property/ compatible;
-	/delete-property/ led_mode;
-	/delete-property/ gate_enable;
-	/delete-property/ pwm_config;
-
-	compatible = "mediatek,disp-conn-leds";
 	backlight {
-		label = "lcd-backlight";
-		led_mode = <4>;
+		/delete-property/ max-hw-brightness;
+		/delete-property/ max-brightness;
 		max-brightness = <16380>;
-		min-brightness = <4>;
 		max-hw-brightness = <16380>;
 	};
 };
 
 &mtk_leds1 {
-	compatible = "mediatek,disp-conn-leds";
-
 	backlight {
-		label = "lcd-backlight1";
-		led-mode = <4>;
+		/delete-property/ max-hw-brightness;
+		/delete-property/ max-brightness;
 		max-brightness = <16380>;
-		min-brightness = <4>;
 		max-hw-brightness = <16380>;
 	};
 };
@@ -45,21 +35,31 @@
 		/delete-property/ compatible;
 		/delete-property/ pm-enable-gpios;
 		/delete-property/ reset-gpios;
-		/delete-property/gate-ic;
+		/delete-property/ gate-ic;
+		/delete-property/ swap-from-dts;
+		/delete-property/ lane-swap-setting;
+		/delete-property/ pn-swap-setting;
 
 		compatible = "mot,dummy,vdo,60hz";
-		reg = <0>;
-		pinctrl-names = "default";
 	};
 
-	panel2@0 {
+	panel2@1 {
 		/delete-property/ compatible;
 		/delete-property/ pm-enable-gpios;
 		/delete-property/ reset-gpios;
 		/delete-property/gate-ic;
 
 		compatible = "csot,nt37707,cmd,667";
-		reg = <1>;
+		pm-enable-gpios = <&pio 79 0>,
+                          <&pio 59 0>,
+                          <&pio 154 0>,
+                          <&pio 153 0>;
+		reset-gpios = <&pio 90 0>;
+	};
+
+	panel3@2 {
+		compatible = "tianma,nt37707,cmd,667";
+		reg = <2>;
 		pm-enable-gpios = <&pio 79 0>,
                           <&pio 59 0>,
                           <&pio 154 0>,
@@ -73,23 +73,10 @@
 		};
 	};
 
-	panel3@0 {
-		/delete-property/ compatible;
-		/delete-property/ pm-enable-gpios;
-		/delete-property/ reset-gpios;
-		/delete-property/gate-ic;
-
-		compatible = "tianma,nt37707,cmd,667";
-		reg = <2>;
-		pm-enable-gpios = <&pio 79 0>,
-                          <&pio 59 0>,
-                          <&pio 154 0>,
-                          <&pio 153 0>;
-		reset-gpios = <&pio 90 0>;
-		pinctrl-names = "default";
+	ports {
 		port {
-			panel_in3: endpoint {
-				remote-endpoint = <&dsi_out>;
+			dsi_out2: endpoint@2 {
+				remote-endpoint = <&panel_in2>;
 			};
 		};
 	};
@@ -103,14 +90,15 @@
 		/delete-property/ compatible;
 		/delete-property/ pm-enable-gpios;
 		/delete-property/ reset-gpios;
-		/delete-property/gate-ic;
+		/delete-property/ gate-ic;
+		/delete-property/ swap-from-dts;
+		/delete-property/ lane-swap-setting;
+		/delete-property/ pn-swap-setting;
 
 		compatible = "mot,dummy,cmd,60hz";
-		reg = <0>;
-		pinctrl-names = "default";
 	};
 
-	panel22@0 {
+	panel22@1 {
 		/delete-property/ compatible;
 		/delete-property/ pm-enable-gpios;
 		/delete-property/ reset-gpios;
@@ -120,19 +108,11 @@
 		/delete-property/ pn-swap-setting;
 
 		compatible = "csot,nt37705,cmd,cli";
-		reg = <1>;
 		pm-enable-gpios = <&pio 114 0>,
                           <&pio 59 0>,
                           <&pio 77 0>,
                           <&pio 115 0>;
 		reset-gpios = <&pio 113 0>;
-		pinctrl-names = "default";
-
-		port {
-			panel22_in: endpoint {
-				remote-endpoint = <&dsi1_out>;
-			};
-		};
 	};
 };
 
@@ -147,6 +127,8 @@
 	/delete-property/ pinctrl-6;
 	/delete-property/ pinctrl-7;
 	/delete-property/ pinctrl-8;
+	/delete-property/ pinctrl-9;
+	/delete-property/ pinctrl-10;
 
 	pinctrl-names = "lcm_rst_out0_gpio", "mode_te_te",
 		"oled_vci_en_gpio", "oled_vio_en_gpio",
