@@ -25,3 +25,18 @@ config TARGET_BUILD_FACTORY
 	bool "Identify if it's a factory build"
 	help
 		Say Y here if it's a factory build for touch driver.
+
+config TOUCHCLASS_MMI_MTK_CHARGER
+	bool "Support mtk charger detection"
+	help
+		Say Y here if use mtk charger detection for touchscreen mmi.
+
+config GTP_LAST_TIME
+	bool "Support get the timestamp of last touch event"
+	help
+		Say Y here if need to get the timestamp of last touch event.
+
+config BOARD_USES_DOUBLE_TAP_CTRL
+	bool "Support touch wake gesture feature"
+	help
+		Say Y here if support touch wake gesture feature.
