@@ -199,8 +199,22 @@ static void transceiver_update_config(struct transceiver_device *dev,
 		transceiver_copy_config(dst, src, 12, 12, 0);
 		break;
 	case SENSOR_TYPE_MAGNETIC_FIELD:
-		transceiver_copy_config(dst, src, 12, 24, 0);
-		break;
+            /*
+                MAX length is 48
+                the bias_len+cali_len+temp_len MUST less than 48
+            */
+#ifdef MOTO_SENSOR_MAG_FLIP_SUPPORT
+              if (src->action == CALI_ACTION) {
+                transceiver_copy_config(dst, src, 0, 36, 0);
+              } else if (src->action == BIAS_ACTION){
+                transceiver_copy_config(dst, src, 28, 0, 0);
+              } else {
+                transceiver_copy_config(dst, src, 0, 0, 0);
+              }
+#else
+              transceiver_copy_config(dst, src, 12, 24, 0);
+#endif
+              break;
 	case SENSOR_TYPE_GYROSCOPE:
 		transceiver_copy_config(dst, src, 12, 12, 24);
 		break;
