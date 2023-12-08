@@ -2,6 +2,30 @@
 //
 // Copyright (c) 2021 MediaTek Inc.
 &i2c6 {
+
+
+	rt6160@75 {
+		compatible = "richtek,rt6160";
+		reg = <0x75>;
+		//enable-gpios = <&gpio26 2 0>;
+		regulator-name = "rt6160-buckboost-1";
+		regulator-min-microvolt = <3250000>;
+		regulator-max-microvolt = <3250000>;
+		regulator-always-on;
+		status = "disabled";
+
+	};
+	sgm62110@75 {
+		status = "ok";
+		compatible = "cam_sgm62110";
+		reg = <0x75>;
+		regulators {
+			bob_buck: ldo1 {
+				regulator-name = "sgm62110-buck";
+			};
+		};
+	};
+
 	wl2864c: wl2864c@29 {
 		status = "ok";
 		compatible = "wl2864c";
@@ -17,6 +41,8 @@
 				regulator-name = "wl2864c-ldo1";
 				regulator-min-microvolt = <600000>;
 				regulator-max-microvolt = <3787500>;
+
+
 
 			};
 			cam_uw_dvdd_ldo: ldo2 {
