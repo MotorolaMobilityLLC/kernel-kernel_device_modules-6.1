@@ -231,12 +231,15 @@
 			remote-endpoint = <&main_af>;
 		};
 	};
+
+#if 0
 	port@1 {
 		reg = <1>;
 		wide_af_endpoint: endpoint {
 			remote-endpoint = <&wide_af>;
 		};
 	};
+#endif
 	port@2 {
 		reg = <2>;
 		main_ois_endpoint: endpoint {
@@ -386,8 +389,9 @@
 
 &i2c2 {
 	status = "okay";
-	clock-frequency = <1000000>;
+	clock-frequency = <400000>;
 
+#if 0
 	camera_af_wide@18 {
 		compatible = "mediatek,main2_vcm";
 		reg = <0x18>;
@@ -399,7 +403,6 @@
 		};
 	};
 
-#if 0
 	camera-af-main-four@d {
 		compatible = "mediatek,main4_vcm";
 		reg = <0x0d>;
@@ -417,10 +420,10 @@
 		status = "okay";
 	};
 #endif
-	sensor2: sensor2@40 {
+	sensor2: sensor2@20 {
 		compatible = "mediatek,imgsensor";
-		sensor-names = "mot_aito_hi1336_mipi_raw";
-		reg = <0x40>;
+		sensor-names = "mot_aito_imx258_mipi_raw","mot_aito_hi1336_mipi_raw";
+		reg = <0x20>;
 		#thermal-sensor-cells = <0>;
 
 		pinctrl-names = "mclk_off",
