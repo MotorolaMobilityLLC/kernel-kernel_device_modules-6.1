@@ -655,16 +655,30 @@ static int transceiver_config(struct hf_device *hf_dev,
 
 	/* If the sensor is als or ps, copy config only when it's
 	 * cali data */
-#ifdef CONFIG_MOTO_LIGHT_1_SENSOR
-	if (((SENSOR_TYPE_LIGHT == sensor_type || SENSOR_TYPE_LIGHT_1 == sensor_type) &&
-#else
-	if (((SENSOR_TYPE_LIGHT == sensor_type) &&
-#endif
-		(14 != ((uint32_t*)data)[0])) ||
-		((SENSOR_TYPE_PROXIMITY == sensor_type || SENSOR_TYPE_PROX_CLI == sensor_type || SENSOR_TYPE_PS_APPROACH == sensor_type) &&
-		 (15 != ((uint32_t*)data)[0])))
-		copy_config = false;
-
+    switch (sensor_type)
+    {
+        case SENSOR_TYPE_LIGHT:
+        case SENSOR_TYPE_LIGHT_1:
+            if ((((uint32_t*)data)[0] == 14)
+                || (((uint32_t*)data)[0] == 15)
+                ) {
+                copy_config = true;
+            } else {
+                copy_config = false;
+            }
+            break;
+        case SENSOR_TYPE_PROXIMITY:
+        case SENSOR_TYPE_PROX_CLI:
+        case SENSOR_TYPE_PS_APPROACH:
+            if (((uint32_t*)data)[0] == 15) {
+                copy_config = true;
+            } else {
+                copy_config = false;
+            }
+            break;
+        default:
+            break;
+    }
 	mutex_lock(&dev->config_lock);
 	cfg = dev->state[sensor_type].config;
 	if (copy_config && !cfg) {
