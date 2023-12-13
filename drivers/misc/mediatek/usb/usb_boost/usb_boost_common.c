@@ -91,6 +91,7 @@ enum {
 	USB_TYPE_MTP,
 	/* USB_TYPE_PTP, */
 	USB_TYPE_RNDIS,
+	USB_TYPE_ACCESSORY,
 };
 
 #if IS_ENABLED(CONFIG_DEVICE_MODULES_USB_MTU3)
@@ -731,6 +732,9 @@ static int mtu3_get_ep_type(struct usb_descriptor_header **f_desc)
 		} else if (int_class == 0xe0 && int_subclass == 0x1
 			&& int_protocol == 0x3) {
 			return USB_TYPE_RNDIS;
+		} else if (int_class == 0xff && int_subclass == 0xff
+			&& int_protocol == 0x00) {
+			return USB_TYPE_ACCESSORY;
 		}
 	}
 
@@ -854,8 +858,10 @@ static void boost_gadget_queue(void *unused, struct mtu3_request *mreq)
 	if (epnum) {
 		switch (type) {
 		case USB_TYPE_MTP:
+		case USB_TYPE_ACCESSORY:
 			//if (req->length >= 8192)
 			usb_boost();
+			pr_info("USB_TYPE_MTP/USB_TYPE_ACCESSORY boost!");
 			break;
 		case USB_TYPE_RNDIS:
 			if (mep->type == USB_ENDPOINT_XFER_BULK)
