@@ -842,7 +842,7 @@ static void boost_ep_disable(void *unused, struct mtu3_ep *mep)
 
 static void boost_gadget_queue(void *unused, struct mtu3_request *mreq)
 {
-	struct usb_request *req = &mreq->request;
+	//struct usb_request *req = &mreq->request;
 	struct mtu3_ep *mep = mreq->mep;
 	struct usb_gadget *g = &mep->mtu->g;
 	int speed = g->speed;
@@ -854,11 +854,11 @@ static void boost_gadget_queue(void *unused, struct mtu3_request *mreq)
 	if (epnum) {
 		switch (type) {
 		case USB_TYPE_MTP:
-			if (req->length >= 8192)
-				usb_boost();
+			//if (req->length >= 8192)
+			usb_boost();
 			break;
 		case USB_TYPE_RNDIS:
-			if (mep->is_in && mep->type == USB_ENDPOINT_XFER_BULK)
+			if (mep->type == USB_ENDPOINT_XFER_BULK)
 				usb_boost();
 			break;
 		}
