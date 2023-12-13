@@ -247,7 +247,6 @@ void ultra_cali_message(void *msg_data)
 	struct mtk_base_scp_ultra *scp_ultra = get_scp_ultra_base();
 	struct audio_ultra_dram *cali_resv_mem =
 		&scp_ultra->ultra_cali.cali_resv_mem;
-	struct mtk_base_afe *afe = get_afe_base();
 	int data_size = 0;
 
 	if (temp_payload == NULL) {
@@ -263,10 +262,6 @@ void ultra_cali_message(void *msg_data)
 	g_cali_result.state = 1;
 
 	memcpy_fromio(&(g_cali_result.result[0]), cali_resv_mem->vir_addr, data_size);
-
-	/* scp ultra dump buffer use dram */
-	if (afe->release_dram_resource)
-		afe->release_dram_resource(afe->dev);
 }
 
 void ultra_ipi_rx_internal(unsigned int msg_id, void *msg_data)
@@ -516,7 +511,6 @@ static int mtk_scp_ultra_cali_set(struct snd_kcontrol *kcontrol,
 	struct mtk_base_scp_ultra *scp_ultra =
 			snd_soc_component_get_drvdata(cmpnt);
 	struct mtk_base_scp_ultra_cali *ultra_cali = &scp_ultra->ultra_cali;
-	struct mtk_base_afe *afe = get_afe_base();
 	static int ctrl_val;
 	int payload[3];
 	bool ret_val;
@@ -527,12 +521,6 @@ static int mtk_scp_ultra_cali_set(struct snd_kcontrol *kcontrol,
 	pr_info("%s() val=%d\n", __func__, val);
 	if (ultra_cali->cali_flag == false && val == 1) {
 		ultra_cali->cali_flag = true;
-		//pcm_dump_switch = true;
-
-		if (afe->request_dram_resource) {
-			afe->request_dram_resource(afe->dev);
-			msleep(10);
-		}
 
 		payload[0] = ultra_cali->cali_resv_mem.size;
 		payload[1] = ultra_cali->cali_resv_mem.phy_addr;
