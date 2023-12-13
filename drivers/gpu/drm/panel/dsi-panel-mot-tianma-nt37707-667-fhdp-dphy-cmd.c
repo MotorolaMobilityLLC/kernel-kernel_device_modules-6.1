@@ -277,8 +277,6 @@ static int gate_ic_Power_on(struct drm_panel *panel, int enabled)
 	return 0;
 }
 
-static int panel_ext_init_power(struct drm_panel *panel);//
-static int panel_ext_powerdown(struct drm_panel *panel);//
 static int lcm_unprepare(struct drm_panel *panel)
 {
 	struct lcm *ctx = panel_to_lcm(panel);
@@ -295,8 +293,6 @@ static int lcm_unprepare(struct drm_panel *panel)
 	ctx->error = 0;
 	ctx->prepared = false;
 
-	panel_ext_powerdown(panel);//
-
 	return 0;
 }
 
@@ -308,8 +304,6 @@ static int lcm_prepare(struct drm_panel *panel)
 	pr_info("%s+\n", __func__);
 	if (ctx->prepared)
 		return 0;
-
-	panel_ext_init_power(panel);//
 
 	// lcd reset L->H -> L -> L
 	ctx->reset_gpio = devm_gpiod_get(ctx->dev, "reset", GPIOD_OUT_LOW);
@@ -1389,6 +1383,12 @@ static int panel_feature_set(struct drm_panel *panel, void *dsi,
 static int panel_ext_init_power(struct drm_panel *panel)
 {
 	int ret;
+	struct lcm *ctx = panel_to_lcm(panel);
+
+	ctx->reset_gpio = devm_gpiod_get(ctx->dev, "reset", GPIOD_OUT_HIGH);
+	gpiod_set_value(ctx->reset_gpio, 0);
+	devm_gpiod_put(ctx->dev, ctx->reset_gpio);
+
 	ret = gate_ic_Power_on(panel, 1);
 	return ret;
 }
@@ -1439,8 +1439,8 @@ static int panel_hbm_waitfor_fps_valid(struct drm_panel *panel, unsigned int tim
 static struct mtk_panel_funcs ext_funcs = {
 	.reset = panel_ext_reset,
 	.set_backlight_cmdq = lcm_setbacklight_cmdq,
-	//.init_power = panel_ext_init_power,
-	//.power_down = panel_ext_powerdown,
+	.init_power = panel_ext_init_power,
+	.power_down = panel_ext_powerdown,
 	.ata_check = panel_ata_check,
 	.ext_param_set = mtk_panel_ext_param_set,
 	.mode_switch = mode_switch,
