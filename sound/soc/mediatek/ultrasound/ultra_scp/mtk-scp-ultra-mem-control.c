@@ -56,8 +56,7 @@ int mtk_scp_ultra_reserved_dram_init(void)
 	cali_resv_mem->phy_addr =
 		scp_get_reserve_mem_phys(ULTRA_CALI_MEM_ID);
 	cali_resv_mem->vir_addr =
-		(unsigned char *)scp_get_reserve_mem_virt
-				 (ULTRA_CALI_MEM_ID);
+		(unsigned char *)scp_get_reserve_mem_virt(ULTRA_CALI_MEM_ID);
 	cali_resv_mem->size = scp_get_reserve_mem_size(ULTRA_CALI_MEM_ID);
 	memset_io((void *)cali_resv_mem->vir_addr, 0, cali_resv_mem->size);
 
