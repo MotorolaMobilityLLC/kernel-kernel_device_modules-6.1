@@ -2144,6 +2144,17 @@ static int mtk_mipi_tx_pll_dphy_config_mt6989(struct mtk_mipi_tx *mipi_tx)
 			FLD_RG_DSI_V2I_REF_SEL, 0x0);
 #endif
 
+	mtk_mipi_tx_update_bits(mipi_tx, MIPITX_VOLTAGE_SEL_MT6983,
+		FLD_RG_DSI_HSTX_LDO_REF_SEL, (mipi_tx->mipi_volt << 6));
+	DDPMSG("%s+ mipi_volt: %d\n", __func__, mipi_tx->mipi_volt);
+
+	/* change the mipi_volt */
+	if (mipi_volt) {
+		DDPMSG("%s+ mipi_volt change: %d\n", __func__, mipi_volt);
+		mtk_mipi_tx_update_bits(mipi_tx, MIPITX_VOLTAGE_SEL_MT6983,
+			FLD_RG_DSI_HSTX_LDO_REF_SEL, mipi_volt << 6);
+	}
+
 	/* value different from MT6983 */
 	if (rate < 2500)
 		writel(0xFFFF00F0, mipi_tx->regs + MIPITX_PRESERVED_MT6983);
@@ -6268,6 +6279,7 @@ static int mtk_mipi_tx_probe(struct platform_device *pdev)
 	struct phy_provider *phy_provider;
 	int ret;
 	unsigned int i, disp_offset[2] = {0};
+	u32 mipi_volt;
 
 	DDPINFO("%s+\n", __func__);
 
@@ -6315,6 +6327,10 @@ static int mtk_mipi_tx_probe(struct platform_device *pdev)
 				__func__, i, mipi_tx->disp_offset[i]);
 		}
 	}
+
+	ret = of_property_read_u32(dev->of_node, "mipi-volt", &mipi_volt) ;
+	if (ret == 0) mipi_tx->mipi_volt = mipi_volt & 0x0F;
+	else  mipi_tx->mipi_volt = 0x08;
 
 	mtk_mipi_tx_pll_ops.prepare = mipi_tx->driver_data->pll_prepare;
 	mtk_mipi_tx_pll_ops.unprepare = mipi_tx->driver_data->pll_unprepare;
