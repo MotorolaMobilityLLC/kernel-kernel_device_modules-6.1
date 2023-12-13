@@ -69,8 +69,8 @@ static TfaContainer_t *tfa98xx_container = NULL;
 static int tfa98xx_kmsg_regs = 0;
 static int tfa98xx_ftrace_regs = 0;
 
-static int tfa98xx_cali_l = 0;
-static int tfa98xx_cali_r = 0;
+static int tfa98xx_cali_l = 458752;
+static int tfa98xx_cali_r = 393216;
 
 static char *fw_name = "tfa98xx.cnt";
 module_param(fw_name, charp, S_IRUGO | S_IWUSR);
