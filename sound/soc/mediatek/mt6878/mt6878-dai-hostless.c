@@ -69,8 +69,11 @@ static const struct snd_soc_dapm_route mtk_dai_hostless_routes[] = {
 	{"PCM_0_PB_CH2", "ADDA_UL_CH2", "Hostless Speech DL"},
 	{"PCM_1_PB_CH1", "ADDA_UL_CH1", "Hostless Speech DL"},
 	{"PCM_1_PB_CH1", "ADDA_UL_CH2", "Hostless Speech DL"},
+	{"PCM_1_PB_CH1", "ADDA_UL_CH3", "Hostless Speech DL"},
 	{"PCM_1_PB_CH2", "ADDA_UL_CH1", "Hostless Speech DL"},
 	{"PCM_1_PB_CH2", "ADDA_UL_CH2", "Hostless Speech DL"},
+	{"PCM_1_PB_CH2", "ADDA_UL_CH3", "Hostless Speech DL"},
+	{"PCM_1_PB_CH3", "ADDA_UL_CH3", "Hostless Speech DL"},
 	{"PCM_1_PB_CH1", "HW_SRC_0_OUT_CH1", "Hostless_HW_SRC_0_IN_DL"},
 	{"PCM_1_PB_CH2", "HW_SRC_0_OUT_CH2", "Hostless_HW_SRC_0_IN_DL"},
 	{"PCM_1_PB_CH4", "HW_SRC_1_OUT_CH1", "Hostless Speech DL"},
@@ -81,6 +84,7 @@ static const struct snd_soc_dapm_route mtk_dai_hostless_routes[] = {
 	{"Hostless_HW_SRC_2_OUT_UL", NULL, "PCM 1 Capture"},
 	{"Hostless Speech UL", NULL, "ADDA_UL_Mux"},
 	{"Hostless_HW_SRC_0_OUT_UL", NULL, "ADDA_UL_Mux"},
+	{"Hostless Speech UL", NULL, "ADDA_CH34_UL_Mux"},
 
 	/* Hostless_Sph_Echo_Ref_DAI */
 	{"PCM_0_PB_CH4", "I2SIN1_CH1", "Hostless_Sph_Echo_Ref_DL"},
