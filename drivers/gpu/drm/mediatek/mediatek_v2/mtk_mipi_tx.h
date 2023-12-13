@@ -117,6 +117,7 @@ struct mtk_mipi_tx {
 	struct clk_hw pll_hw;
 	struct clk *pll;
 	unsigned int disp_offset[2]; //for mt6989 dispsys1 dsi0/dsi1 reg offset
+	u32 mipi_volt;
 };
 
 struct mtk_mipitx_data {
