@@ -383,12 +383,13 @@ static const struct drm_display_mode switch_mode_48hz = {
 #if defined(CONFIG_MTK_PANEL_EXT)
 static struct mtk_panel_params ext_params_60hz = {
 	.dyn_fps = {
+		.vact_timing_fps = 60,
 		.data_rate = 500,
 	},
 	.data_rate = 500,
 	.lp_perline_en = 1,
 
-	.cust_esd_check = 0,
+	.cust_esd_check = 1,
 	.esd_check_enable = 1,
 	.lcm_esd_check_table[0] = {
 		.cmd = 0x0a,
@@ -419,12 +420,13 @@ static struct mtk_panel_params ext_params_60hz = {
 
 static struct mtk_panel_params ext_params_48hz = {
 	.dyn_fps = {
+		.vact_timing_fps = 60,
 		.data_rate = 500,
 	},
 	.data_rate = 500,
 	.lp_perline_en = 1,
 
-	.cust_esd_check = 0,
+	.cust_esd_check = 1,
 	.esd_check_enable = 1,
 	.lcm_esd_check_table[0] = {
 		.cmd = 0x0a,
