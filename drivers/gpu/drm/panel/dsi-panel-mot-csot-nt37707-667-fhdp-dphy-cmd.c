@@ -525,12 +525,14 @@ static const struct drm_display_mode switch_mode_1hz = {
 
 static struct mtk_panel_params ext_params_30hz = {
 	.dyn_fps = {
+		.switch_en = 1,
+		.vact_timing_fps = 60,
 		.data_rate = 500,
 	},
 	.data_rate = 500,
 	.lp_perline_en = 1,
 
-	.cust_esd_check = 0,
+	.cust_esd_check = 1,
 	.esd_check_enable = 1,
 	.lcm_esd_check_table[0] = {
 		.cmd = 0x0a,
@@ -601,12 +603,14 @@ static struct mtk_panel_params ext_params_30hz = {
 
 static struct mtk_panel_params ext_params_60hz = {
 	.dyn_fps = {
+		.switch_en = 1,
+		.vact_timing_fps = 60,
 		.data_rate = 500,
 	},
 	.data_rate = 500,
 	.lp_perline_en = 1,
 
-	.cust_esd_check = 0,
+	.cust_esd_check = 1,
 	.esd_check_enable = 1,
 	.lcm_esd_check_table[0] = {
 		.cmd = 0x0a,
@@ -678,12 +682,14 @@ static struct mtk_panel_params ext_params_60hz = {
 
 static struct mtk_panel_params ext_params_90hz = {
 	.dyn_fps = {
+		.switch_en = 1,
+		.vact_timing_fps = 90,
 		.data_rate = 675,
 	},
 	.data_rate = 675,
 	.lp_perline_en = 1,
 
-	.cust_esd_check = 0,
+	.cust_esd_check = 1,
 	.esd_check_enable = 1,
 	.lcm_esd_check_table[0] = {
 		.cmd = 0x0a,
@@ -754,12 +760,14 @@ static struct mtk_panel_params ext_params_90hz = {
 
 static struct mtk_panel_params ext_params_120hz = {
 	.dyn_fps = {
+		.switch_en = 1,
+		.vact_timing_fps = 120,
 		.data_rate = 900,
 	},
 	.data_rate = 900,
 	.lp_perline_en = 1,
 
-	.cust_esd_check = 0,
+	.cust_esd_check = 1,
 	.esd_check_enable = 1,
 	.lcm_esd_check_table[0] = {
 		.cmd = 0x0a,
@@ -830,12 +838,14 @@ static struct mtk_panel_params ext_params_120hz = {
 
 static struct mtk_panel_params ext_params_24hz = {
 	.dyn_fps = {
+		.switch_en = 1,
+		.vact_timing_fps = 120,
 		.data_rate = 900,
 	},
 	.data_rate = 900,
 	.lp_perline_en = 1,
 
-	.cust_esd_check = 0,
+	.cust_esd_check = 1,
 	.esd_check_enable = 1,
 	.lcm_esd_check_table[0] = {
 		.cmd = 0x0a,
@@ -906,12 +916,14 @@ static struct mtk_panel_params ext_params_24hz = {
 
 static struct mtk_panel_params ext_params_10hz = {
 	.dyn_fps = {
+		.switch_en = 1,
+		.vact_timing_fps = 120,
 		.data_rate = 900,
 	},
 	.data_rate = 900,
 	.lp_perline_en = 1,
 
-	.cust_esd_check = 0,
+	.cust_esd_check = 1,
 	.esd_check_enable = 1,
 	.lcm_esd_check_table[0] = {
 		.cmd = 0x0a,
@@ -982,12 +994,14 @@ static struct mtk_panel_params ext_params_10hz = {
 
 static struct mtk_panel_params ext_params_1hz = {
 	.dyn_fps = {
+		.switch_en = 1,
+		.vact_timing_fps = 120,
 		.data_rate = 900,
 	},
 	.data_rate = 900,
 	.lp_perline_en = 1,
 
-	.cust_esd_check = 0,
+	.cust_esd_check = 1,
 	.esd_check_enable = 1,
 	.lcm_esd_check_table[0] = {
 		.cmd = 0x0a,
