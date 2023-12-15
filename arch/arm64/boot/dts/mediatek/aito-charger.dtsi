@@ -219,10 +219,10 @@
 		compatible = "cellwise,cw2217-slave";
 		reg = <0x64>;
 		sense_r_mohm = <5>;
-		df-serialnum = "SB18D80976";
+		df-serialnum = "SB18E12803";
 		//vdd-i2c-supply = <&L18B>;
 		fg-psy-name = "flip_battery";
-		#include "bat_setting/CW_LN110X-atl-1165mah.dtsi"
+		#include "bat_setting/CW_AITO-atl-1140mah.dtsi"
 	};
 
 	sc760x_balance: sc760x-balance@52{
@@ -296,14 +296,14 @@
 		reg = <0x64>;
 		sense_r_mohm = <5>;
 		//vdd-i2c-supply = <&L18B>;;
-		df-serialnum = "SB18D80977";
+		df-serialnum = "SB18E12803";
 		fg-psy-name = "main_battery";
 		has_ext_ntc;
 		io-channels = <&mt6375_auxadc MT6375_AUXADC_BATON>,
 			      <&mt6375_auxadc MT6375_AUXADC_VREF>;
 		io-channel-names = "bat_temp", "vref";
 		rbat_pull_up_r = <24000>;/*24k*/
-		#include "bat_setting/CW_LN110X-atl-2850mah.dtsi"
+		#include "bat_setting/CW_AITO-atl-3060mah.dtsi"
 	};
 
 	sc8546d-charger@6a{
