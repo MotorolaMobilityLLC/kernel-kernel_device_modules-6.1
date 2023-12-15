@@ -10,18 +10,18 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  * See http://www.gnu.org/licenses/gpl-2.0.html for more details.
  */
-ln110x-atl-2850mah {
-	serialnum = "SB18D80977";
-	fcc_design = <2850>;
+aito-atl-3060mah {
+	serialnum = "SB18E12803";
+	fcc_design = <3060>;
 	//ui_full = <98>;
-	config_profile_info = [ 46 00 00 00 00 00 00 00
-				9d b5 b4 c4 af a7 da c7
-				bc ff ff be 87 6f 59 4c
-				43 3b 2f a7 95 e1 d1 ff
-				d2 c7 ce d6 d8 d7 d3 d0
-				cb c9 d5 c9 a6 98 8d 86
-				7f 7c 89 92 a5 9d 56 d1
-				20 00 ab 10 00 a3 7c 00
-				00 00 64 11 b2 47 00 00
-				00 00 00 00 00 00 00 48];
+	config_profile_info = [ 32 00 00 00 00 00 00 00
+				AD B9 B3 C4 AF A8 CE B4
+				A2 FF EF C2 96 81 6A 59
+				4D 46 3D 9D 81 E4 9E FF
+				FF C9 CE D2 D8 DA D9 D7
+				DE CF D2 C1 AF A9 AE AA
+				BB A8 C2 CE D2 FE FF 5C
+				20 00 AB 10 00 A2 D5 00
+				00 00 64 08 B1 BB 00 00
+				00 00 00 00 00 00 00 82];
 };
