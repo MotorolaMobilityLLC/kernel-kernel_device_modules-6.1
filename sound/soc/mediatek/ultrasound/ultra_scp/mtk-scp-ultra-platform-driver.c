@@ -727,6 +727,59 @@ static int mtk_scp_ultra_engine_state_set(struct snd_kcontrol *kcontrol,
 	return 0;
 }
 
+static int mtk_scp_ultra_ramp_down_set(struct snd_kcontrol *kcontrol,
+					  struct snd_ctl_elem_value *ucontrol)
+{
+	int val = ucontrol->value.integer.value[0];
+	pr_info("%s() val=%d\n", __func__, val);
+	ultra_ipi_send(AUDIO_TASK_USND_MSG_ID_RAMP_DOWN, false, 1, &val, 0);
+
+	return 0;
+}
+
+static int mtk_scp_ultra_ramp_down_get(struct snd_kcontrol *kcontrol,
+					  struct snd_ctl_elem_value *ucontrol)
+{
+    pr_info("%s(\n", __func__);
+	ucontrol->value.integer.value[0] = 0;
+	return 0;
+}
+
+static int mtk_scp_ultra_suspend_set(struct snd_kcontrol *kcontrol,
+					  struct snd_ctl_elem_value *ucontrol)
+{
+	int val = ucontrol->value.integer.value[0];
+	pr_info("%s() val=%d\n", __func__, val);
+	ultra_ipi_send(AUDIO_TASK_USND_MSG_ID_SUSPEND, false, 1, &val, 0);
+	return 0;
+}
+
+static int mtk_scp_ultra_suspend_get(struct snd_kcontrol *kcontrol,
+					  struct snd_ctl_elem_value *ucontrol)
+{
+    pr_info("%s(\n", __func__);
+	ucontrol->value.integer.value[0] = 0;
+	return 0;
+}
+
+static int mtk_scp_ultra_custom_setting_set(struct snd_kcontrol *kcontrol,
+					  struct snd_ctl_elem_value *ucontrol)
+{
+	int val = ucontrol->value.integer.value[0];
+	pr_info("%s() val=%d\n", __func__, val);
+	ultra_ipi_send(AUDIO_TASK_USND_MSG_ID_CUSTOM_SETTING, false, 1, &val, 0);
+	return 0;
+}
+
+static int mtk_scp_ultra_rx_port_set(struct snd_kcontrol *kcontrol,
+					  struct snd_ctl_elem_value *ucontrol)
+{
+	int val = ucontrol->value.integer.value[0];
+	pr_info("%s() val=%d\n", __func__, val);
+	ultra_ipi_send(AUDIO_TASK_USND_MSG_ID_RX_PORT, false, 1, &val, 0);
+
+	return 0;
+}
 
 static const struct snd_kcontrol_new ultra_platform_kcontrols[] = {
 	SOC_ENUM_EXT("mtk_scp_ultra_pcm_dump",
@@ -757,6 +810,22 @@ static const struct snd_kcontrol_new ultra_platform_kcontrols[] = {
 		     SND_SOC_NOPM, 0, 0xff, 0,
 		     mtk_scp_ultra_engine_state_get,
 		     mtk_scp_ultra_engine_state_set),
+	SOC_SINGLE_EXT("Ultrasound RampDown",
+		     SND_SOC_NOPM, 0, 0xff, 0,
+		     mtk_scp_ultra_ramp_down_get,
+		     mtk_scp_ultra_ramp_down_set),
+	SOC_SINGLE_EXT("Ultrasound Suspend",
+		     SND_SOC_NOPM, 0, 0xff, 0,
+		     mtk_scp_ultra_suspend_get,
+		     mtk_scp_ultra_suspend_set),
+	SOC_SINGLE_EXT("Ultrasound Custom Setting 1",
+		     SND_SOC_NOPM, 0, 0xff, 0,
+		     0,
+		     mtk_scp_ultra_custom_setting_set),
+	SOC_SINGLE_EXT("Ultrasound Rx Port",
+		     SND_SOC_NOPM, 0, 0xff, 0,
+		     0,
+		     mtk_scp_ultra_rx_port_set),
 };
 
 static int mtk_scp_ultra_pcm_open(struct snd_soc_component *component,
