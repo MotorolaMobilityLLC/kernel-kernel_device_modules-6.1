@@ -1425,38 +1425,21 @@ static int pane_hbm_set_cmdq(struct lcm *ctx, void *dsi, dcs_grp_write_gce cb, v
 	return 0;
 }
 
+#endif
 
 static struct mtk_panel_para_table panel_dc_off[] = {
-
-	{6, {0xF0, 0x55, 0xAA, 0x52, 0x08, 0x00}},
-	{2, {0xB2, 0x11}},
-	{2, {0x6F, 0x0F}},
-	{7, {0xB2, 0x60, 0x50, 0x66, 0x91, 0x86, 0x91}},
-	{13, {0xB3, 0x00, 0x08, 0x01, 0x5F, 0x01, 0x5F, 0x02, 0xA4, 0x02, 0xA4, 0x03, 0xBB}},
-	{2, {0x6F, 0x0C}},
-	{13, {0xB3, 0x03, 0xBB, 0x05, 0x2F, 0x05, 0x2F, 0x06, 0x91, 0x06, 0x91, 0x06, 0x92}},
-	{2, {0x6F, 0x18}},
-	{13, {0xB3, 0x06, 0x92, 0x0A, 0x2F, 0x0A, 0x2F, 0x0D, 0xB9, 0x0D, 0xB9, 0x0F, 0xFF}},
-	{2, {0x58, 0x00}},
-
+	{2, {0x6F, 0x01}},
+	{2, {0x8B, 0x00}},
+	{3, {0x6D, 0x00, 0x00}},
 };
 
 static struct mtk_panel_para_table panel_dc_on[] = {
-
-	{6, {0xF0, 0x55, 0xAA, 0x52, 0x08, 0x00}},
-	{2, {0xB2, 0x91}},
-	{2, {0x6F, 0x0F}},
-	{7, {0xB2, 0x60, 0x50, 0x60, 0x00, 0x80, 0x00}},
-	{13, {0xB3, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}},
-	{2, {0x6F, 0x0C}},
-	{13, {0xB3, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}},
-	{2, {0x6F, 0x18}},
-	{13, {0xB3, 0x06, 0x92, 0x0A, 0x2F, 0x0A, 0x2F, 0x0D, 0xB9, 0x0D, 0xB9, 0x0F, 0xFF}},
-	{2, {0x58, 0x01}},
-
+	{2, {0x6F, 0x01}},
+	{2, {0x8B, 0x81}},
+	{3, {0x6D, 0x00, 0x00}},
 };
 
-static int pane_dc_set_cmdq(void *dsi, dcs_grp_write_gce cb, void *handle, uint32_t dc_state)
+static int pane_dc_set_cmdq(struct lcm *ctx, void *dsi, dcs_grp_write_gce cb, void *handle, uint32_t dc_state)
 {
 	unsigned int para_count = 0;
 	struct mtk_panel_para_table *pTable;
@@ -1468,6 +1451,21 @@ static int pane_dc_set_cmdq(void *dsi, dcs_grp_write_gce cb, void *handle, uint3
 		para_count = sizeof(panel_dc_off) / sizeof(struct mtk_panel_para_table);
 		pTable = panel_dc_off;
 	}
+
+	switch (ctx->current_fps) {
+		case 30:
+			pTable[para_count-1].para_list[1] = 0x01;
+			break;
+		case 24:
+			pTable[para_count-1].para_list[1] = 0x02;
+			break;
+		default:
+			pTable[para_count-1].para_list[1] = 0x00;
+			break;
+	}
+
+	pr_info("%s: current_fps %d(pTable[%d] = 0x%x)\n", __func__, ctx->current_fps, para_count-1, pTable[para_count-1].para_list[1]);
+
 	cb(dsi, handle, pTable, para_count);
 	return 0;
 }
@@ -1484,6 +1482,7 @@ static int panel_feature_set(struct drm_panel *panel, void *dsi,
 	pr_info("%s: set feature %d to %d\n", __func__, param_info.param_idx, param_info.value);
 
 	switch (param_info.param_idx) {
+#if 0
 		case PARAM_CABC:
 		case PARAM_ACL:
 			break;
@@ -1491,8 +1490,9 @@ static int panel_feature_set(struct drm_panel *panel, void *dsi,
 			ctx->hbm_mode = param_info.value;
 			pane_hbm_set_cmdq(ctx, dsi, cb, handle, param_info.value);
 			break;
+#endif
 		case PARAM_DC:
-			pane_dc_set_cmdq(dsi, cb, handle, param_info.value);
+			pane_dc_set_cmdq(ctx, dsi, cb, handle, param_info.value);
 			ctx->dc_mode = param_info.value;
 			break;
 		default:
@@ -1502,7 +1502,6 @@ static int panel_feature_set(struct drm_panel *panel, void *dsi,
 	pr_info("%s: set feature %d to %d success\n", __func__, param_info.param_idx, param_info.value);
 	return 0;
 }
-#endif
 
 static int panel_ext_init_power(struct drm_panel *panel)
 {
@@ -1568,7 +1567,7 @@ static struct mtk_panel_funcs ext_funcs = {
 	.ata_check = panel_ata_check,
 	.ext_param_set = mtk_panel_ext_param_set,
 	.mode_switch = mode_switch,
-	//.panel_feature_set = panel_feature_set,
+	.panel_feature_set = panel_feature_set,
 	//.panel_hbm_waitfor_fps_valid = panel_hbm_waitfor_fps_valid,
 };
 #endif
