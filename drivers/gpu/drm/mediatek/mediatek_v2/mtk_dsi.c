@@ -10668,20 +10668,14 @@ static int mtk_dsi_io_cmd(struct mtk_ddp_comp *comp, struct cmdq_pkt *handle,
 	{
 		struct mtk_dsi *dsi =
 			container_of(comp, struct mtk_dsi, ddp_comp);
-		char *envp[2];
 
 
 		panel_ext = mtk_dsi_get_panel_ext(comp);
 		if (panel_ext && panel_ext->funcs
-			&& panel_ext->funcs->set_backlight_cmdq) {
+			&& panel_ext->funcs->set_backlight_cmdq)
 			panel_ext->funcs->set_backlight_cmdq(dsi,
 					mipi_dsi_dcs_write_gce,
 					handle, *(int *)params);
-
-			envp[0] = "SOURCE=backlight";
-			envp[1] = NULL;
-			kobject_uevent_env(&dsi->dev->kobj, KOBJ_CHANGE, envp);
-		}
 	}
 		break;
 	case DSI_SET_BL_AOD:
