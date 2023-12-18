@@ -97,6 +97,11 @@
 	};
 };
 
+&u2port0{
+	mediatek,eye-vrt = <7>;
+	mediatek,eye-term = <7>;
+	mediatek,rev6 = <3>;
+};
 
 /* BOB */
 &i2c5 {
