@@ -18,7 +18,18 @@
 	mt6363_thermistor7: mt6363_thermistor7 { };
 	mt6369_thermistor2: mt6369_thermistor2 { };
 	mt6375_thermistor: mt6375_thermistor { };
-
+	swtp: swtp {
+		compatible = "mediatek, swtp-eint";
+	};
+	swtp_1: swtp_1 {
+		compatible = "mediatek, swtp1-eint";
+	};
+	swtp_2: swtp_2 {
+		compatible = "mediatek, swtp2-eint";
+	};
+	swtp_3: swtp_3 {
+		compatible = "mediatek, swtp3-eint";
+	};
 };
 
 /*vol+/- keys swap*/
