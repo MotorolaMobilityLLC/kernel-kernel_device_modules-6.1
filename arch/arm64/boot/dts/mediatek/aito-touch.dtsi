@@ -31,7 +31,7 @@
 		goodix,reset-gpio = <&pio 81 0x0>;
 		goodix,irq-gpio = <&pio 8 0x2002>;
 		goodix,avdd-gpio = <&pio 29 0x0>;
-		goodix,iovdd-gpio = <&pio 151 0x0>;
+		goodix,iovdd-gpio = <&pio 152 0x0>;
 		goodix,irq-flags = <0x2002>; /* 1:trigger rising, 2:trigger falling;*/
 		goodix,panel-max-id = <10>;
 		goodix,panel-max-x = <17280>;
