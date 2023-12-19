@@ -30,5 +30,10 @@
 	clkreq-gpios = <&pio 152 0x0>;
 };
 
+&spi3 {
+	goodix_ts_spi@0 {
+		goodix,iovdd-gpio = <&pio 151 0x0>;
+	};
+};
 #include <aito_evb/cust.dtsi>
 /*End of this file, DO NOT ADD ANYTHING HERE*/
