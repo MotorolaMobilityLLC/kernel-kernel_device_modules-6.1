@@ -41,6 +41,9 @@
 #include "ccci_modem.h"
 #include "port_rpc.h"
 #define MAX_QUEUE_LENGTH 16
+#ifdef CONFIG_MOTO_DRDI_SUPPORT
+#include "mt-plat/mtk_ccci_common.h"
+#endif
 
 static struct gpio_item gpio_mapping_table[] = {
 	{"GPIO_FDD_Band_Support_Detection_1",
@@ -1295,7 +1298,39 @@ static void ccci_rpc_work_helper(struct port_t *port, struct rpc_pkt *pkt,
 			1, pkt[1].len, *((unsigned int *)pkt[1].buf));
 			break;
 		}
+#ifdef CONFIG_MOTO_DRDI_SUPPORT
+	case IPC_RPC_PRODUCT_OP:
+		{
+			struct ccci_product_data_t *product_data = NULL;
+			unsigned int product_data_len = 0;
 
+			CCCI_NORMAL_LOG(0, RPC,
+				"enter IPC_RPC_PRODUCT_OP\n");
+			product_data = ccci_rpc_get_product_data(&product_data_len);
+			if (!product_data) {
+				CCCI_ERROR_LOG(0, RPC, "%s:get product_data fail\n",
+					__func__);
+			}
+
+			if (product_data_len <= 0) {
+				tmp_data[0] = -1;
+				pkt_num = 0;
+				pkt[pkt_num].len = sizeof(unsigned int);
+				pkt[pkt_num++].buf = (void *)(&tmp_data[0]);
+				pkt[pkt_num].len = sizeof(unsigned int);
+				pkt[pkt_num++].buf = (void *)(&tmp_data[1]);
+				break;
+			}
+
+			pkt_num = 0;
+			pkt[pkt_num].len = sizeof(unsigned int);
+			pkt[pkt_num++].buf = (void *)(&tmp_data[0]);
+			pkt[pkt_num].len = product_data_len;
+			pkt[pkt_num++].buf = (void *)product_data;
+
+			break;
+		}
+#endif
 	default:
 		CCCI_NORMAL_LOG(0, RPC,
 		"[Error]Unknown Operation ID (0x%08X)\n",
