@@ -770,6 +770,13 @@ static int mtk_scp_ultra_custom_setting_set(struct snd_kcontrol *kcontrol,
 	ultra_ipi_send(AUDIO_TASK_USND_MSG_ID_CUSTOM_SETTING, false, 1, &val, 0);
 	return 0;
 }
+static int mtk_scp_ultra_custom_setting_get(struct snd_kcontrol *kcontrol,
+					  struct snd_ctl_elem_value *ucontrol)
+{
+    pr_info("%s(\n", __func__);
+	ucontrol->value.integer.value[0] = 0;
+	return 0;
+}
 
 static int mtk_scp_ultra_rx_port_set(struct snd_kcontrol *kcontrol,
 					  struct snd_ctl_elem_value *ucontrol)
@@ -820,7 +827,7 @@ static const struct snd_kcontrol_new ultra_platform_kcontrols[] = {
 		     mtk_scp_ultra_suspend_set),
 	SOC_SINGLE_EXT("Ultrasound Custom Setting 1",
 		     SND_SOC_NOPM, 0, 0xff, 0,
-		     0,
+		     mtk_scp_ultra_custom_setting_get,
 		     mtk_scp_ultra_custom_setting_set),
 	SOC_SINGLE_EXT("Ultrasound Rx Port",
 		     SND_SOC_NOPM, 0, 0xff, 0,
