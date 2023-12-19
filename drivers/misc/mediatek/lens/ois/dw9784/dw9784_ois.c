@@ -204,8 +204,6 @@ int circle_motion_test (int radius, int accuracy, int deg_step, int w_time0,
 					        radius, accuracy, deg_step, w_time0,
 					        w_time1, w_time2, ref_stroke);
 
-	REF_STROKE = ref_stroke;
-
 	// set ois to servo on mode
 	LOG_INF("[circle_motion_test] ois_hall_test start, set ois to servo on mode");
 
@@ -238,8 +236,8 @@ int circle_motion_test (int radius, int accuracy, int deg_step, int w_time0,
 
 	LOG_INF("[circle_motion_test] REF_POSITION_RADIUS_X = %d -- REF_POSITION_RADIUS_Y = %d\r\n", REF_POSITION_RADIUS[AXIS_X], REF_POSITION_RADIUS[AXIS_Y]);
 
-	ADC_PER_MIC[AXIS_X] = (signed short)REF_POSITION_RADIUS[AXIS_X] / REF_STROKE;  /* [code/um] */
-	ADC_PER_MIC[AXIS_Y] = (signed short)REF_POSITION_RADIUS[AXIS_Y] / REF_STROKE;
+	ADC_PER_MIC[AXIS_X] = (signed short)REF_POSITION_RADIUS[AXIS_X] / (ref_stroke / 100);  /* [code/um] */
+	ADC_PER_MIC[AXIS_Y] = (signed short)REF_POSITION_RADIUS[AXIS_Y] / (ref_stroke / 100);
 
 	LOG_INF("[circle_motion_test] ADC_PER_MIC_X = %06d[code/um] -- ADC_PER_MIC_Y = %06d[code/um]\r\n", ADC_PER_MIC[AXIS_X], ADC_PER_MIC[AXIS_Y]);
 
@@ -248,7 +246,7 @@ int circle_motion_test (int radius, int accuracy, int deg_step, int w_time0,
 
 	LOG_INF("[circle_motion_test] POSITION_ACCURACYX = %06d[code] -- POSITION_ACCURACY = %06d[code] -- ACCURACY : %d[um]\r\n", POSITION_ACCURACY[AXIS_X], POSITION_ACCURACY[AXIS_Y], accuracy);
 
-	RADIUS_GYRO_RESULT = (signed short)REF_GYRO_RESULT * radius / REF_STROKE;  /* [deg/um] */
+	RADIUS_GYRO_RESULT = (signed short)REF_GYRO_RESULT * radius / (ref_stroke / 100);  /* [deg/um] */
 
 	LOG_INF("[circle_motion_test] RADIUS_GYRO_RESULT = %06d\r\n", RADIUS_GYRO_RESULT);
 

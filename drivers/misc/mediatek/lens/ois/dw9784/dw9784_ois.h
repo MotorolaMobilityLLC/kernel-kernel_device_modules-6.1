@@ -102,8 +102,6 @@ typedef struct {
 #define AXIS_ADC_X (2)
 #define AXIS_ADC_Y (3)
 
-static int REF_STROKE = 97; //Default
-
 static const int tab_sin[361] = {
 	0,   17,   34,   52,   69,   87,  104,  121,  139,  156,  173,
 	190,  207,  224,  241,  258,  275,  292,  309,  325,  342,
