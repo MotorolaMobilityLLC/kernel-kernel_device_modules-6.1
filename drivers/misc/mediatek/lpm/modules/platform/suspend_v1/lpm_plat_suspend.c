@@ -125,6 +125,10 @@ int lpm_suspend_s2idle_prompt(int cpu,
 		pr_info("[name:spm&][%s:%d] - suspend enter\n",
 			__func__, __LINE__);
 
+#if IS_ENABLED(CONFIG_DEBUG_FS)
+	gpio_dump_regs();
+#endif
+
 #if IS_ENABLED(CONFIG_MTK_ECCCI_DRIVER)
 		/* Record md sleep status*/
 		get_md_sleep_time(&before_md_sleep_status);
