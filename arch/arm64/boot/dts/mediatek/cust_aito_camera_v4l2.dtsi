@@ -401,24 +401,12 @@
 		};
 	};
 
-#if 0
-	camera-af-main-four@d {
-		compatible = "mediatek,main4_vcm";
-		reg = <0x0d>;
-		vin-supply = <&rt5133_ldo2>;
-		port {
-			main_af_cam2: endpoint {
-				remote-endpoint = <&main_af_cam2_endpoint>;
-			};
-		};
-	};
-
 	mtk_camera_eeprom2:camera-eeprom2@50 {
 		compatible = "mediatek,camera_eeprom";
 		reg = <0x50>;
 		status = "okay";
 	};
-#endif
+
 	sensor2: sensor2@20 {
 		compatible = "mediatek,imgsensor";
 		sensor-names = "mot_aito_imx258_mipi_raw","mot_aito_hi1336_mipi_raw";
