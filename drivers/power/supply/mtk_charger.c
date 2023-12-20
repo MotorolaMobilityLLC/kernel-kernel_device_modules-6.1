@@ -3500,8 +3500,8 @@ void mmi_charge_rate_check(struct mtk_charger *info)
  	}
 
 	charger_dev_get_protocol(info->chg1_dev, &qc_chg_type);
-	// QC2, QC3 and Qc3+ all support max power more than 15w, should show trubo power
-	if ((qc_chg_type == USB_TYPE_QC20) || (qc_chg_type == USB_TYPE_QC30) ||
+	//QC3 and Qc3+ all support max power more than 15w, should show trubo power
+	if ((qc_chg_type == USB_TYPE_QC30) ||
             (qc_chg_type == USB_TYPE_QC3P_18) || (qc_chg_type == USB_TYPE_QC3P_27)) {
 
 		info->mmi.charge_rate = POWER_SUPPLY_CHARGE_RATE_TURBO;
@@ -3712,11 +3712,14 @@ static int mmi_get_pdc_power(struct mtk_charger *info, bool force)
 	return pmax_mw;
 }
 
+#define MMI_POWER_30W 30
+#define MMI_POWER_15W 15
 static int mmi_check_power_watt(struct mtk_charger *info, bool force)
 {
 	int rc = 0;
 	int icl = 0;
 	int power_watt = 0;
+	int qc_chg_type = 0;
 	union power_supply_propval val;
 
 	if (info == NULL)
@@ -3748,6 +3751,7 @@ static int mmi_check_power_watt(struct mtk_charger *info, bool force)
 	}
 
 	icl = get_charger_input_current(info, info->chg1_dev) / 1000;
+	charger_dev_get_protocol(info->chg1_dev, &qc_chg_type);
 
 	if (info->pd_type == MTK_PD_CONNECT_PE_READY_SNK_APDO) {
 		power_watt = mmi_get_apdo_power(info, force) / 1000;
@@ -3756,6 +3760,10 @@ static int mmi_check_power_watt(struct mtk_charger *info, bool force)
 			|| info->pd_type == MTK_PD_CONNECT_PE_READY_SNK_PD30) {
 		power_watt = mmi_get_pdc_power(info, force) / 1000;
 
+	} else if (qc_chg_type == USB_TYPE_QC3P_27 || qc_chg_type == USB_TYPE_QC3P_18) {
+		power_watt = MMI_POWER_30W;
+	} else if (qc_chg_type == USB_TYPE_QC30) {
+		power_watt = MMI_POWER_15W;
 	} else {
 		power_watt = 5 * icl /1000;
 	}
