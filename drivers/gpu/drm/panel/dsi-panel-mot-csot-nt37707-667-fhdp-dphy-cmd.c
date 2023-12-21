@@ -1402,10 +1402,10 @@ static int mode_switch(struct drm_panel *panel,
 
 	return ret;
 }
-#if 0
-static int pane_hbm_set_cmdq(struct lcm *ctx, void *dsi, dcs_grp_write_gce cb, void *handle, uint32_t hbm_state)
+
+static int panel_hbm_set_cmdq(struct lcm *ctx, void *dsi, dcs_grp_write_gce cb, void *handle, uint32_t hbm_state)
 {
-	struct mtk_panel_para_table hbm_on_table = {3, {0x51, 0xFF, 0xFF}};
+	struct mtk_panel_para_table hbm_on_table = {3, {0x51, 0x3F, 0xFC}};
 
 	if (hbm_state > 2) return -1;
 	switch (hbm_state)
@@ -1416,7 +1416,6 @@ static int pane_hbm_set_cmdq(struct lcm *ctx, void *dsi, dcs_grp_write_gce cb, v
 			cb(dsi, handle, &hbm_on_table, 1);
 			break;
 		case 2:
-			cb(dsi, handle, &hbm_on_table, 1);
 			break;
 		default:
 			break;
@@ -1424,8 +1423,6 @@ static int pane_hbm_set_cmdq(struct lcm *ctx, void *dsi, dcs_grp_write_gce cb, v
 
 	return 0;
 }
-
-#endif
 
 static struct mtk_panel_para_table panel_dc_off[] = {
 	{2, {0x6F, 0x01}},
@@ -1482,15 +1479,14 @@ static int panel_feature_set(struct drm_panel *panel, void *dsi,
 	pr_info("%s: set feature %d to %d\n", __func__, param_info.param_idx, param_info.value);
 
 	switch (param_info.param_idx) {
-#if 0
+
 		case PARAM_CABC:
 		case PARAM_ACL:
 			break;
 		case PARAM_HBM:
 			ctx->hbm_mode = param_info.value;
-			pane_hbm_set_cmdq(ctx, dsi, cb, handle, param_info.value);
+			panel_hbm_set_cmdq(ctx, dsi, cb, handle, param_info.value);
 			break;
-#endif
 		case PARAM_DC:
 			pane_dc_set_cmdq(ctx, dsi, cb, handle, param_info.value);
 			ctx->dc_mode = param_info.value;
