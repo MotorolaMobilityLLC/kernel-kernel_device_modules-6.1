@@ -196,6 +196,7 @@ static void transceiver_update_config(struct transceiver_device *dev,
 	}
 	switch (src->sensor_type) {
 	case SENSOR_TYPE_ACCELEROMETER:
+	case SENSOR_TYPE_ACCELEROMETER_FLIP:
 		transceiver_copy_config(dst, src, 12, 12, 0);
 		break;
 	case SENSOR_TYPE_MAGNETIC_FIELD:
@@ -216,9 +217,17 @@ static void transceiver_update_config(struct transceiver_device *dev,
 #endif
               break;
 	case SENSOR_TYPE_GYROSCOPE:
+	case SENSOR_TYPE_GYROSCOPE_FLIP:
 		transceiver_copy_config(dst, src, 12, 12, 24);
 		break;
-	default:
+	case SENSOR_TYPE_HALL:
+              if (src->action == CALI_ACTION)
+		    transceiver_copy_config(dst, src, 0, 12, 0);
+              else if (src->action == BIAS_ACTION)
+		    transceiver_copy_config(dst, src, 12, 0, 0);
+
+		break;
+       default:
 		/*
 		 * NOTE: default branch only handle CALI_ACTION.
 		 * if you add new sensor type that only cali need store, you
