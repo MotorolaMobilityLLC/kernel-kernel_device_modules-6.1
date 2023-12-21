@@ -33,6 +33,7 @@ enum panel_version{
 	PANEL_V1 = 1,
 	PANEL_V2,
 	PANEL_V3,
+	PANEL_V4,
 };
 
 struct lcm {
@@ -202,6 +203,11 @@ static void lcm_panel_init(struct lcm *ctx)
 	//SWIRE2 width0
 	lcm_dcs_write_seq_static(ctx, 0x6F, 0x23);
 	lcm_dcs_write_seq_static(ctx, 0xB5, 0x55, 0x05);
+
+	if (ctx->version == 2){
+		lcm_dcs_write_seq_static(ctx, 0xF0, 0x55, 0xAA, 0x52, 0x08, 0x00);
+		lcm_dcs_write_seq_static(ctx, 0xEC, 0x47, 0x46, 0x4C, 0x47);
+	}
 
 /*
 	lcm_dcs_write_seq_static(ctx, 0xF0, 0x55, 0xAA, 0x52, 0x08, 0x00);
@@ -597,42 +603,61 @@ static int mode_switch(struct drm_panel *panel,
 	return ret;
 }
 
-#if 0
 static int pane_hbm_set_cmdq(struct lcm *ctx, void *dsi, dcs_grp_write_gce cb, void *handle, uint32_t hbm_state)
 {
-	struct mtk_panel_para_table hbm_on_table = {3, {0x51, 0x0F, 0xFF}};
-
+	struct mtk_panel_para_table hbm_on_table = {3, {0x51, 0x3F, 0xFF}};
+	pr_info("%s: set feature to %d\n", __func__, hbm_state);
 	if (hbm_state > 2) return -1;
 	switch (hbm_state)
 	{
 		case 0:
-			if (ctx->lhbm_en)
-				panel_lhbm_set_cmdq(dsi, cb, handle, 0, ctx->current_bl, ctx->version);
 			break;
 		case 1:
-			if (ctx->lhbm_en)
-				panel_lhbm_set_cmdq(dsi, cb, handle, 0, ctx->current_bl, ctx->version);
 			cb(dsi, handle, &hbm_on_table, 1);
 			break;
 		case 2:
-			if (ctx->lhbm_en)
-				panel_lhbm_set_cmdq(dsi, cb, handle, 1, ctx->current_bl, ctx->version);
-			else
-				cb(dsi, handle, &hbm_on_table, 1);
 			break;
 		default:
 			break;
 	}
-
+	pr_info("%s: set feature to %d\n", __func__, hbm_state);
 	return 0;
 }
-#endif
 
-static struct mtk_panel_para_table panel_dc_off[] = {
+static struct mtk_panel_para_table panel_dc_off_v1[] = {
 	{6, {0xF0, 0x55, 0xAA, 0x52, 0x08, 0x00}},
 	{2, {0x6F, 0x11}},
 	{4, {0xB2, 0x0B, 0x0E, 0x40}},
 	{31, {0xB3, 0x00, 0x01, 0x01, 0x03, 0x01, 0x03, 0x01, 0xD8, 0x01, 0xD8, 0x02, 0x38, 0x02, 0x38, 0x03, 0x0A, 0x03, 0x0A, 0x04, 0x44, 0x04, 0x44, 0x05, 0x28, 0x05, 0x28, 0x5, 0x2B, 0x05, 0x2B}},
+	{2, {0x6F, 0x2E}},
+	{2, {0xC0, 0x03}},
+	{2, {0xB2, 0x02}},
+	{6, {0xF0, 0x55, 0xAA, 0x52, 0x08, 0x02}},
+	{2, {0xCC, 0x30}},
+	{2, {0xCE, 0x01}},
+};
+
+static struct mtk_panel_para_table panel_dc_on_v1[] = {
+	{6, {0xF0, 0x55, 0xAA, 0x52, 0x08, 0x00}},
+	{2, {0x6F, 0x11}},
+	{4, {0xB2, 0x00, 0x00, 0x40}},
+	{31, {0xB3, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x05, 0x2B}},
+	{2, {0x6F, 0x2E}},
+	{2, {0xC0, 0x28}},
+	{2, {0xB2, 0x81}},
+	{2, {0x6F, 0x02}},
+	{2, {0xB2, 0x3F}},
+	{6, {0xF0, 0x55, 0xAA, 0x52, 0x08, 0x02}},
+	{2, {0xCC, 0x30}},
+	{2, {0xCE, 0x01}},
+};
+
+static struct mtk_panel_para_table panel_dc_off_v2[] = {
+	{6, {0xF0, 0x55, 0xAA, 0x52, 0x08, 0x00}},
+	{2, {0x6F, 0x11}},
+	{4, {0xB2, 0x0B, 0x0E, 0x40}},
+	{31, {0xB3, 0x00, 0x01, 0x01, 0x03, 0x01, 0x03, 0x01, 0xD8, 0x01, 0xD8, 0x02, 0x38, 0x02, 0x38, 0x03, 0x0A, 0x03, 0x0A, 0x04, 0x44, 0x04, 0x44, 0x05, 0x28, 0x05, 0x28, 0x5, 0x2B, 0x05, 0x2B}},
+	{2, {0xB2, 0x01}},
 	{6, {0xF0, 0x55, 0xAA, 0x52, 0x08, 0x00}},
 	{2, {0x6E, 0x2E}},
 	{3, {0xC0, 0x03, 0x20}},
@@ -641,7 +666,7 @@ static struct mtk_panel_para_table panel_dc_off[] = {
 	{2, {0xCE, 0x01}},
 };
 
-static struct mtk_panel_para_table panel_dc_on[] = {
+static struct mtk_panel_para_table panel_dc_on_v2[] = {
 	{6, {0xF0, 0x55, 0xAA, 0x52, 0x08, 0x00}},
 	{2, {0x6F, 0x11}},
 	{4, {0xB2, 0x00, 0x00, 0x40}},
@@ -657,22 +682,41 @@ static struct mtk_panel_para_table panel_dc_on[] = {
 	{2, {0xCE, 0x01}},
 };
 
+
 static struct mtk_panel_para_table panel_dc_end[] = {
 	{6, {0xF0, 0x55, 0xAA, 0x52, 0x08, 0x02}},
 	{2, {0xCC, 0x00}},
 };
 
-static int pane_dc_set_cmdq(void *dsi, dcs_grp_write_gce cb, void *handle, uint32_t dc_state)
+static int pane_dc_set_cmdq(struct lcm *ctx, void *dsi, dcs_grp_write_gce cb, void *handle, uint32_t dc_state)
 {
 	unsigned int para_count = 0;
 	struct mtk_panel_para_table *pTable;
 
 	if (dc_state) {
-		para_count = sizeof(panel_dc_on) / sizeof(struct mtk_panel_para_table);
-		pTable = panel_dc_on;
+		switch(ctx->version) {
+			case 1:
+				para_count = sizeof(panel_dc_on_v1) / sizeof(struct mtk_panel_para_table);
+				pTable = panel_dc_on_v1;
+				break;
+			case 2:
+			default:
+				para_count = sizeof(panel_dc_on_v2) / sizeof(struct mtk_panel_para_table);
+				pTable = panel_dc_on_v2;
+				break;
+		}
 	} else {
-		para_count = sizeof(panel_dc_off) / sizeof(struct mtk_panel_para_table);
-		pTable = panel_dc_off;
+		switch(ctx->version) {
+			case 1:
+				para_count = sizeof(panel_dc_off_v1) / sizeof(struct mtk_panel_para_table);
+				pTable = panel_dc_off_v1;
+				break;
+			case 2:
+			default:
+				para_count = sizeof(panel_dc_off_v2) / sizeof(struct mtk_panel_para_table);
+				pTable = panel_dc_off_v2;
+				break;
+		}
 	}
 	cb(dsi, handle, pTable, para_count);
 
@@ -692,10 +736,9 @@ static int panel_feature_set(struct drm_panel *panel, void *dsi,
 
 	if (!cb)
 		return -1;
-	pr_info("%s: set feature %d to %d\n", __func__, param_info.param_idx, param_info.value);
+	pr_info("%s: set feature1 %d to %d\n", __func__, param_info.param_idx, param_info.value);
 
 	switch (param_info.param_idx) {
-#if 0
 		case PARAM_CABC:
 		case PARAM_ACL:
 			break;
@@ -703,9 +746,8 @@ static int panel_feature_set(struct drm_panel *panel, void *dsi,
 			ctx->hbm_mode = param_info.value;
 			pane_hbm_set_cmdq(ctx, dsi, cb, handle, param_info.value);
 			break;
-#endif
 		case PARAM_DC:
-			pane_dc_set_cmdq(dsi, cb, handle, param_info.value);
+			pane_dc_set_cmdq(ctx, dsi, cb, handle, param_info.value);
 			ctx->dc_mode = param_info.value;
 			break;
 		default:
@@ -890,7 +932,7 @@ static int lcm_probe(struct mipi_dsi_device *dsi)
 
 	drm_panel_add(&ctx->panel);
 
-	val = of_get_property(dev->of_node, "reg", NULL);
+	val = of_get_property(dev->of_node, "panel-version", NULL);
 	ctx->version = val ? be32_to_cpup(val) : 1;
 
 	pr_info("%s: panel version 0x%x\n", __func__, ctx->version);
