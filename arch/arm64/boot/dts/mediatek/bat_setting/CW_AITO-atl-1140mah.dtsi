@@ -15,13 +15,13 @@ aito-atl-1140mah {
 	fcc_design = <1140>;
 	//ui_full = <98>;
 	config_profile_info = [ 32 00 00 00 00 00 00 00
-				A9 B8 B6 CC B6 B1 BD 99
-				86 FF F9 C2 99 83 6C 5A
-				4C 45 39 8E 5D E4 11 F5
-				EB C0 CB D1 D9 DB DB DA
-				DF D3 D4 C4 B2 AB AE AD
-				BB AC C1 D0 D3 FD FF 62
-				20 00 AB 10 00 80 95 00
-				00 00 64 07 A3 B0 00 00
-				00 00 00 00 00 00 00 71];
+				A9 B8 B6 CE B6 B2 BE 99
+				89 FF F5 BF 96 81 68 57
+				4A 43 35 8B 5C E3 91 FF
+				E6 D2 CD D3 D7 DA D6 D8
+				DB CC D2 BC AC A6 AC A9
+				B8 A8 C2 CE D0 F9 FF 5F
+				20 00 AB 10 00 80 AF 00
+				00 00 64 07 A3 DB 00 00
+				00 00 00 00 00 00 00 F6];
 };
