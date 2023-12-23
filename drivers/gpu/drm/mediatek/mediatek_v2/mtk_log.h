@@ -218,6 +218,8 @@ int mtk_dprec_logger_pr(unsigned int type, char *fmt, ...);
 	} while (0)
 
 #if IS_ENABLED(CONFIG_MTK_AEE_FEATURE)
+//# MMI_STOPSHIP <display>: exceptions are used in the testing process.
+//Once there is an exception, AEE's DB will be generated in the data/vendor.
 #define DDPAEE(string, args...)                                                \
 	do {                                                                   \
 		char str[200];                                                 \
@@ -226,7 +228,7 @@ int mtk_dprec_logger_pr(unsigned int type, char *fmt, ...);
 		if (r < 0) {	\
 			pr_err("snprintf error\n");	\
 		}	\
-		aee_kernel_warning_api(__FILE__, __LINE__,                     \
+		aee_kernel_exception_api(__FILE__, __LINE__,                     \
 				       DB_OPT_DEFAULT |                        \
 					       DB_OPT_MMPROFILE_BUFFER,        \
 				       str, string, ##args);                   \
