@@ -231,6 +231,18 @@ static void lcm_panel_init(struct lcm *ctx)
 	lcm_dcs_write_seq_static(ctx, 0x6F, 0x27);
 	lcm_dcs_write_seq_static(ctx, 0xB5, 0x0D, 0x0D, 0x0D, 0x0D, 0x0D);
 */
+	if (ctx->version == 2){
+		lcm_dcs_write_seq_static(ctx, 0xF0, 0x55, 0xAA, 0x52, 0x08, 0x00);
+		lcm_dcs_write_seq_static(ctx, 0xB4, 0x0E, 0xA0);
+		lcm_dcs_write_seq_static(ctx, 0x6F, 0x2E);
+		lcm_dcs_write_seq_static(ctx, 0xB4, 0x09, 0xBA);
+	} else {
+		lcm_dcs_write_seq_static(ctx, 0xF0, 0x55, 0xAA, 0x52, 0x08, 0x00);
+		lcm_dcs_write_seq_static(ctx, 0xB4, 0x07, 0x50);
+		lcm_dcs_write_seq_static(ctx, 0x6F, 0x2E);
+		lcm_dcs_write_seq_static(ctx, 0xB4, 0x09, 0x24);
+	}
+
 	lcm_dcs_write_seq_static(ctx, 0x11);
 	usleep_range(120 * 1000, 121 * 1000);
 	lcm_dcs_write_seq_static(ctx, 0x29);
@@ -516,6 +528,12 @@ static int lcm_setbacklight_cmdq(void *dsi, dcs_write_gce cb, void *handle,
 
 	cb(dsi, handle, bl_tb0, ARRAY_SIZE(bl_tb0));
 	atomic_set(&ctx->current_bl, level);
+/*
+	if(atomic_read(&ctx->unset_dc_mode) != 0x0ff){
+		pr_info("%s: unset_dc_mode = %d\n", __func__, atomic_read(&ctx->unset_dc_mode));
+		pane_dc_set_cmdq(ctx, dsi, cb, handle, atomic_read(&ctx->unset_dc_mode));
+	}
+*/
 
 	return 0;
 }
@@ -690,7 +708,13 @@ static int pane_dc_set_cmdq(struct lcm *ctx, void *dsi, dcs_grp_write_gce cb, vo
 {
 	unsigned int para_count = 0;
 	struct mtk_panel_para_table *pTable;
-
+/*
+	if(!atomic_read(&ctx->current_bl)) {
+		atomic_set(&ctx->unset_dc_mode, dc_state);
+		pr_info("%s: current_bl = 0, do not set DC mode\n", __func__);
+		return 0;
+	}
+*/
 	if (dc_state) {
 		switch(ctx->version) {
 			case 1:
