@@ -537,6 +537,8 @@ static int pd_update_apdo_cap(struct adapter_device *dev,
 {
 	struct mtk_pd_adapter_info *info = adapter_dev_get_drvdata(dev);
 	int ret = MTK_ADAPTER_ERROR, active_idx = 0, i = 0;
+	int ret_tcpm = TCPM_ERROR_UNKNOWN;
+	int ret_tcp = TCP_DPM_RET_DENIED_UNKNOWN;
 	struct tcpm_power_cap_val apdo_cap, selected_apdo_cap;
 	uint8_t cap_idx = 0, apdo_idx = 0;
 	struct pd_source_cap_ext src_cap_ext;
@@ -568,13 +570,13 @@ static int pd_update_apdo_cap(struct adapter_device *dev,
 	}
 
 repeat:
-	ret = tcpm_inquire_pd_source_apdo(info->tcpc[active_idx],
+	ret_tcpm = tcpm_inquire_pd_source_apdo(info->tcpc[active_idx],
 					  TCPM_POWER_CAP_APDO_TYPE_PPS,
 					  &cap_idx, &apdo_cap);
-	if (ret != TCPM_SUCCESS) {
+	if (ret_tcpm != TCPM_SUCCESS) {
 		if (apdo_idx == 0)
 			dev_notice(info->dev, "%s inquire pd apdo fail(%d)\n",
-					      __func__, ret);
+					      __func__, ret_tcpm);
 		goto stop_repeat;
 	}
 
@@ -606,14 +608,14 @@ stop_repeat:
 	data->vta_step = 20;
 	data->ita_step = 50;
 	data->ita_gap_per_vstep = 200;
-	ret = tcpm_dpm_pd_get_source_cap_ext(info->tcpc[active_idx],
+	ret_tcp = tcpm_dpm_pd_get_source_cap_ext(info->tcpc[active_idx],
 					     NULL, &src_cap_ext);
-	if (ret == TCP_DPM_RET_SUCCESS) {
+	if (ret_tcp == TCP_DPM_RET_SUCCESS) {
 		data->pdp = src_cap_ext.source_pdp;
 		if (data->pdp > 0 && !data->pwr_lmt)
 			data->pwr_lmt = true;
 	} else {
-		dev_info(info->dev, "%s inquire pdp fail(%d)\n", __func__, ret);
+		dev_info(info->dev, "%s inquire pdp fail(%d)\n", __func__, ret_tcp);
 		if (data->pwr_lmt) {
 			for (i = 0; i < ARRAY_SIZE(apdo_pps_tbl); i++) {
 				if (apdo_pps_tbl[i].max_mv < data->vta_max)
@@ -628,7 +630,7 @@ stop_repeat:
 	dev_info(info->dev, "%s select cap_idx[%d], power limit[%d,%dW]\n",
 			    __func__, apdo_idx, data->pwr_lmt, data->pdp);
 
-	return ret;
+	return MTK_ADAPTER_OK;
 }
 
 static int pd_is_cc(struct adapter_device *dev, bool *cc)
