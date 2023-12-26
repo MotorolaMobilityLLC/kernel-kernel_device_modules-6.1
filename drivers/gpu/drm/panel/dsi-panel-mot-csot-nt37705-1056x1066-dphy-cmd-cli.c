@@ -28,6 +28,7 @@
 #include "../mediatek/mediatek_v2/mtk_panel_ext.h"
 #include "../mediatek/mediatek_v2/mtk_drm_graphics_base.h"
 #endif
+#include "../mediatek/mediatek_v2/mtk_dsi.h"
 
 enum panel_version{
 	PANEL_V1 = 1,
@@ -510,6 +511,8 @@ static int lcm_setbacklight_cmdq(void *dsi, dcs_write_gce cb, void *handle,
 	char bl_tb0[] = { 0x51, 0x0f, 0xff};
 	struct lcm *ctx = g_ctx;
 	unsigned int current_bl;
+	char *envp[2];
+	struct mtk_dsi * cli_dsi = (struct mtk_dsi *) dsi;
 
 	if (atomic_read(&ctx->hbm_mode)) {
 		pr_info("hbm on skip backlight(%d)\n", level);
@@ -517,8 +520,6 @@ static int lcm_setbacklight_cmdq(void *dsi, dcs_write_gce cb, void *handle,
 	}
 
 	current_bl = atomic_read(&ctx->current_bl);
-	if (!( current_bl&& level)) pr_info("backlight changed from %u to %u\n", current_bl, level);
-	else pr_debug("backlight changed from %u to %u\n", current_bl, level);
 
 	bl_tb0[1] = (u8)((level>>8)&0x3F);
 	bl_tb0[2] = (u8)(level&0xFF);
@@ -527,6 +528,15 @@ static int lcm_setbacklight_cmdq(void *dsi, dcs_write_gce cb, void *handle,
 		return -1;
 
 	cb(dsi, handle, bl_tb0, ARRAY_SIZE(bl_tb0));
+
+	if (!(current_bl && level)) {
+		envp[0] = "SOURCE=backlight";
+		envp[1] = NULL;
+		kobject_uevent_env(&cli_dsi->dev->kobj, KOBJ_CHANGE, envp);
+		pr_info("backlight changed from %u to %u\n", current_bl, level);
+	} else
+		pr_debug("backlight changed from %u to %u\n", current_bl, level);
+
 	atomic_set(&ctx->current_bl, level);
 /*
 	if(atomic_read(&ctx->unset_dc_mode) != 0x0ff){
