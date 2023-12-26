@@ -104,14 +104,12 @@
 
 &mt6375_typec {
        tcpc,en_wd;
-       tcpc,en_wd_sbu_polling;
-       tcpc,en_wd_polling_only;
        mmi_cid_int = <&pio 33 0x0>;
 };
 
 &mt6375_chg {
-	ircmp_r = <0>;
-	ircmp_v = <0>;
+	ircmp-r = <0>;
+	ircmp-v = <0>;
 };
 
 &lk_charger {
@@ -137,27 +135,27 @@
 
 &charger {
 	gauge = <&smart_battery>;
-	battery_cv = <4500000>;
-	max_charger_voltage = <14500000>;
-	ac_charger_current = <3000000>;
-	usb_charger_current = <500000>;
-	ac_charger_input_current = <2000000>;
-	charging_host_charger_current = <1500000>;
+	battery-cv = <4500000>;
+	max-charger-voltage = <14500000>;
+	ac-charger-current = <3000000>;
+	usb-charger-current = <500000>;
+	ac-charger-input-current = <2000000>;
+	charging-host-charger-current = <1500000>;
 	/*pe5 && pdc && wlc*/
 	fast_charging_indicator = <0x8014>;
 	/*swchg + 1CP*/
-	charger_configuration= <3>;
+	charger-configuration= <3>;
 
 	wireless_factory_max_current = <3000000>;
 	wireless_factory_max_input_current = <600000>;
 
-	disable_aicl;
+	disable-aicl;
 
 	mmi,enable-mux;
 	mmi,mux_wls_switch_en = <&pio 99 0x0>;
 	mmi,mux_switch_enn_en = <&pio 32 0x0>;
 	/* dynamic mivr */
-	enable_dynamic_mivr;
+	enable-dynamic-mivr;
 
 	/*mmi config*/
 	mmi,typec-rp-max-current = <2000000>;
@@ -369,35 +367,31 @@
 							1000000 800000 500000>;
 };
 
-&pd_adapter{
-	ita_min = <1000>;
-};
-
 &pdc {
 	compatible = "mediatek,charger,pd";
 	gauge = <&smart_battery>;
 
-	min_charger_voltage = <4600000>;
-	pd_vbus_low_bound = <5000000>;
-	pd_vbus_upper_bound = <9000000>;
-	vsys_watt = <5000000>;
-	ibus_err = <14>;
+	min-charger-voltage = <4600000>;
+	pd-vbus-low-bound = <5000000>;
+	pd-vbus-upper-bound = <9000000>;
+	vsys-watt = <5000000>;
+	ibus-err = <14>;
 
-	pd_stop_battery_soc = <80>;
+	pd-stop-battery-soc = <80>;
 
 	/* single charger */
-	sc_input_current = <3000000>;
-	sc_charger_current = <3000000>;
+	sc-input-current = <3000000>;
+	sc-charger-current = <3000000>;
 
 	/* dual charger in series*/
-	dcs_input_current = <3200000>;
-	dcs_chg1_charger_current = <1500000>;
-	dcs_chg2_charger_current = <1500000>;
+	dcs-input-current = <3200000>;
+	dcs-chg1-charger-current = <1500000>;
+	dcs-chg2-charger-current = <1500000>;
 
 	/* dual charger */
-	dual_polling_ieoc = <450000>;
-	slave_mivr_diff = <100000>;
-	vbat_threshold = <4150>;
+	dual-polling-ieoc = <450000>;
+	slave-mivr-diff = <100000>;
+	vbat-threshold = <4150>;
 };
 
 &pe {
@@ -421,81 +415,79 @@
 	gauge = <&smart_battery>;
 
 	/* PE 2.0 */
-	pe20_ichg_level_threshold = <1000000>; /* uA */
-	ta_start_battery_soc = <0>;
-	ta_stop_battery_soc = <85>;
-	min_charger_voltage = <4600000>;
+	pe20-ichg-level-threshold = <1000000>; /* uA */
+	ta-start-battery-soc = <0>;
+	ta-stop-battery-soc = <85>;
+	min-charger-voltage = <4600000>;
 
 	/* cable measurement impedance */
-	cable_imp_threshold = <699>;
-	vbat_cable_imp_threshold = <3900000>; /* uV */
+	cable-imp-threshold = <699>;
+	vbat-cable-imp-threshold = <3900000>; /* uV */
 
 	/* single charger */
-	sc_input_current = <3000000>;
-	sc_charger_current = <3000000>;
+	sc-input-current = <3000000>;
+	sc-charger-current = <3000000>;
 
 	/* dual charger in series*/
-	dcs_input_current = <3200000>;
-	dcs_chg1_charger_current = <1500000>;
-	dcs_chg2_charger_current = <1500000>;
+	dcs-input-current = <3200000>;
+	dcs-chg1-charger-current = <1500000>;
+	dcs-chg2-charger-current = <1500000>;
 
-	dual_polling_ieoc = <450000>;
-	slave_mivr_diff = <100000>;
-	vbat_threshold = <4150>;
+	dual-polling-ieoc = <450000>;
+	slave-mivr-diff = <100000>;
+	vbat-threshold = <4150>;
 };
 
 &pe5 {
 	compatible = "mediatek,charger,pe5";
 	gauge = <&smart_battery>;
-	polling_interval = <10000>;
-	ta_cv_ss_repeat_tmin = <25>;
-	vbat_cv = <4530>;
-	start_soc_min = <0>;
-	start_soc_max = <90>;
-	start_vbat_max = <4450>;
-	idvchg_term = <500>;
-	idvchg_step = <50>;
-	ita_level = <3000 2000 1500 1000>;
-	rcable_level = <230 260 300 480>;
-	ita_level_dual = <6200 3000 2000 1500>;
-	rcable_level_dual = <180 230 260 300>;
-	idvchg_ss_init = <1000>;
-	idvchg_ss_step = <250>;
-	idvchg_ss_step1 = <100>;
-	idvchg_ss_step2 = <50>;
-	idvchg_ss_step1_vbat = <4000>;
-	idvchg_ss_step2_vbat = <4200>;
-	ta_blanking = <400>;
-	swchg_aicr = <0>;
-	swchg_ichg = <1200>;
-	swchg_aicr_ss_init = <400>;
-	swchg_aicr_ss_step = <200>;
-	swchg_off_vbat = <4250>;
-	force_ta_cv_vbat = <4250>;
-	chg_time_max = <10800>;
-	tta_level_def = <0 0 0 0 25 50 60 70 80>;
-	tta_curlmt = <0 0 0 0 0 0 0 0 0>;
-	tta_recovery_area = <3>;
-	tbat_level_def = <0 0 0 5 25 40 43 46 50>;
-	tbat_curlmt = <0 0 0 0 0 0 0 0 0>;
-	tbat_recovery_area = <3>;
-	tdvchg_level_def = <0 0 0 5 25 55 60 65 70>;
-	tdvchg_curlmt = <0 0 0 0 0 0 0 0 0>;
-	tdvchg_recovery_area = <3>;
-	tswchg_level_def = <0 0 0 5 25 65 70 75 80>;
-	tswchg_curlmt = <0 0 0 0 0 0 0 0 0>;
-	tswchg_recovery_area = <3>;
-	ifod_threshold = <200>;
-	rsw_min = <20>;
-	ircmp_rbat = <40>;
-	ircmp_vclamp = <0>;
-	vta_cap_min = <6800>;
-	vta_cap_max = <11000>;
-	ita_cap_min = <1000>;
-	support_ta = "pca_ta_pps", "pd_adapter";
+	polling-interval = <10000>;
+	vbat-cv = <4530>;
+	start-soc-min = <0>;
+	start-soc-max = <90>;
+	idvchg-term = <500>;
+	idvchg-step = <50>;
+	ita-level = <3000 2000 1500 1000>;
+	rcable-level = <230 260 300 480>;
+	ita-level-dual = <6200 3000 2000 1500>;
+	rcable-level-dual = <180 230 260 300>;
+	idvchg-ss-init = <1000>;
+	idvchg-ss-step = <250>;
+	idvchg-ss-step1 = <100>;
+	idvchg-ss-step2 = <50>;
+	idvchg-ss-step1-vbat = <4000>;
+	idvchg-ss-step2-vbat = <4200>;
+	ta-blanking = <400>;
+	swchg-aicr = <0>;
+	swchg-ichg = <1200>;
+	swchg-aicr-ss-init = <400>;
+	swchg-aicr-ss-step = <200>;
+	swchg-off-vbat = <4250>;
+	force-ta-cv-vbat = <4250>;
+	chg-time-max = <10800>;
+	tta-level-def = <0 0 0 0 25 50 60 70 80>;
+	tta-curlmt = <0 0 0 0 0 0 0 0 0>;
+	tta-recovery-area = <3>;
+	tbat-level-def = <0 0 0 5 25 40 43 46 50>;
+	tbat-curlmt = <0 0 0 0 0 0 0 0 0>;
+	tbat-recovery-area = <3>;
+	tdvchg-level-def = <0 0 0 5 25 55 60 65 70>;
+	tdvchg-curlmt = <0 0 0 0 0 0 0 0 0>;
+	tdvchg-recovery-area = <3>;
+	tswchg-level-def = <0 0 0 5 25 65 70 75 80>;
+	tswchg-curlmt = <0 0 0 0 0 0 0 0 0>;
+	tswchg-recovery-area = <3>;
+	ifod-threshold = <200>;
+	rsw-min = <20>;
+	ircmp-rbat = <40>;
+	ircmp-vclamp = <0>;
+	vta-cap-min = <6800>;
+	vta-cap-max = <11000>;
+	ita-cap-min = <1000>;
+	support-ta = "pca_ta_pps", "pd_adapter";
 	allow_not_check_ta_status;
-	vbat_threshold = <4150>;
-	min_charger_voltage = <4600000>;
+	vbat-threshold = <4150>;
+	min-charger-voltage = <4600000>;
 	mmi_therm_cur_thres = <500>;
 	mmi_therm_vol_thres = <80>;
 	mmi_therm_step = <3>;
