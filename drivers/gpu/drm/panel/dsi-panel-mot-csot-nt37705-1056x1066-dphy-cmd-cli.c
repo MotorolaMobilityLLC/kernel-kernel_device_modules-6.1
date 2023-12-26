@@ -628,7 +628,7 @@ static int mode_switch(struct drm_panel *panel,
 
 static int panel_hbm_set_cmdq(struct lcm *ctx, void *dsi, dcs_grp_write_gce cb, void *handle, uint32_t hbm_state)
 {
-	struct mtk_panel_para_table hbm_on_table = {3, {0x51, 0x3F, 0xFF}};
+	struct mtk_panel_para_table hbm_on_table = {3, {0x51, 0x3D, 0x4c}}; //15683
 
 	if (hbm_state > 2) return -1;
 
