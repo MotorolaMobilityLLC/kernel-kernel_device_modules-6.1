@@ -28,6 +28,10 @@
 	};
 };
 
+&mipi_tx_config0 {
+	mipi-volt = <11>;
+};
+
 &dsi0 {
 	status = "okay";
 
