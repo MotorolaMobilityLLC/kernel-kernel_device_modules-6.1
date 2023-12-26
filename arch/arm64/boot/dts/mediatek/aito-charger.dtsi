@@ -116,16 +116,17 @@
 
 &lk_charger {
 	/* charging current */
-	usb_charger_current = <500000>;
-	ac_charger_current = <1000000>;
-	ac_charger_input_current = <2000000>;
-	non_std_ac_charger_current = <1000000>;
+	usb-charger-current = <500000>;
+	ac-charger-current = <1000000>;
+	ac-charger-input-current = <2000000>;
+	non-std-ac-charger-current = <1000000>;
 	charging_host_input_current = <1500000>;
-	charging_host_charger_current = <1000000>;
+	charging-host-charger-current = <1000000>;
 	pre_charge_current = <400>;
 
-	temp_t4_threshold = <60>;
-	boot_battery_voltage = <3300000>;
+	temp-t4-threshold = <60>;
+	boot-battery-voltage = <3300000>;
+	boot-battery-voltage-max = <3300000>;
 	/*boot battery voltage when using AC charger*/
 	ac_charger_boot_battery_voltage = <3200000>;
 };
