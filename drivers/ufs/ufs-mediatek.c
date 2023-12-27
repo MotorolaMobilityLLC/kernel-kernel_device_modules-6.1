@@ -2067,7 +2067,14 @@ static int ufs_mtk_init(struct ufs_hba *hba)
 	get_storage_info(hba);
 	get_dram_info(hba);
 	#endif
-
+#if defined(CONFIG_SCSI_SKHID)
+	if (IS_SKHYNIX_DEVICE(storage_mfrid)) {
+		err = pixel_init(hba);
+		if (err)
+			return err;
+		pixel_init_manual_gc(hba);
+	}
+#endif
 
 	ufs_mtk_get_hw_ip_version(hba);
 
@@ -3086,7 +3093,8 @@ static void ufs_mtk_fixup_dev_quirks(struct ufs_hba *hba)
 	ufs_mtk_vreg_fix_vccqx(hba);
 
 #if defined(CONFIG_UFSFEATURE)
-	ufsf_set_init_state(hba);
+	if (IS_SAMSUNG_DEVICE(storage_mfrid) || IS_MICRON_DEVICE(storage_mfrid))
+		ufsf_set_init_state(hba);
 #endif
 
 	ufs_mtk_fix_ahit(hba);
@@ -3644,7 +3652,8 @@ out:
 
 #if defined(CONFIG_UFSFEATURE)
 	/* Register hook for Samsung feature */
-	ufs_samsung_register_hooks();
+	if (IS_SAMSUNG_DEVICE(storage_mfrid) || IS_MICRON_DEVICE(storage_mfrid))
+		ufs_samsung_register_hooks();
 #endif
 
 	of_node_put(reset_node);
