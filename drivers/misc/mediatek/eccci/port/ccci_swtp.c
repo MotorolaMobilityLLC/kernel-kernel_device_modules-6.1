@@ -65,6 +65,59 @@ static struct class swtp_class = {
 	.owner			= THIS_MODULE,
 };
 #endif
+
+#ifdef CONFIG_MOTO_SWTP_CUST
+static bool bypass_rfcable_detect = false;
+int mmi_get_bootarg(char *key, char *value, int len)
+{
+	const char *bootargs_tmp = NULL;
+	char *idx = NULL;
+	char *kvpair = NULL;
+	int err = 1;
+	struct device_node *n = of_find_node_by_path("/chosen");
+	size_t bootargs_tmp_len = 0;
+	char *bootargs_str = NULL;
+	char *found_value = NULL;
+
+	if (n == NULL)
+		goto err;
+
+	if (of_property_read_string(n, "mmi,bootconfig", &bootargs_tmp) != 0)
+		goto putnode;
+
+	bootargs_tmp_len = strlen(bootargs_tmp);
+	/* The following operations need a non-const
+	 * version of bootargs
+	 */
+	bootargs_str = kzalloc(bootargs_tmp_len + 1, GFP_KERNEL);
+	if (!bootargs_str)
+		goto putnode;
+
+	strlcpy(bootargs_str, bootargs_tmp, bootargs_tmp_len + 1);
+
+	idx = strnstr(bootargs_str, key, strlen(bootargs_str));
+	if (idx) {
+		kvpair = strsep(&idx, " ");
+		if (kvpair)
+			if (strsep(&kvpair, "=")) {
+				found_value = strsep(&kvpair, "\n");
+				if (found_value) {
+					strlcpy(value, found_value, len);
+					pr_info("mmi_get_bootarg: %s", found_value);
+                                        err = 0;
+				}
+			}
+	}
+
+	if (bootargs_str)
+	    kfree(bootargs_str);
+putnode:
+	of_node_put(n);
+err:
+	return err;
+}
+#endif
+
 static int swtp_send_tx_power(struct swtp_t *swtp)
 {
 	unsigned long flags;
@@ -84,7 +137,24 @@ static int swtp_send_tx_power(struct swtp_t *swtp)
 	ret = exec_ccci_kern_func(ID_UPDATE_TX_POWER,
 		(char *)&factory_tx_power_mode, sizeof(factory_tx_power_mode));
 	power_mode = factory_tx_power_mode;
-#else
+
+#elif defined (CONFIG_MOTO_SWTP_CUST)
+// Customer SW:  Check bypass RFcable flag and then set power accordingly
+	CCCI_LEGACY_ERR_LOG(-1, SYS,
+			"%s: bypass_rfcable_detect: %d\n", __func__ , bypass_rfcable_detect);
+	if (bypass_rfcable_detect)
+	{
+		power_mode = SWTP_DO_TX_POWER; // always set DO tx power when bypass rfcable detect
+		ret = exec_ccci_kern_func(ID_UPDATE_TX_POWER,
+			(char *)&power_mode, sizeof(power_mode));
+	}
+	else
+	{
+		ret = exec_ccci_kern_func(ID_UPDATE_TX_POWER,
+			(char *)&swtp->tx_power_mode, sizeof(swtp->tx_power_mode));
+		power_mode = swtp->tx_power_mode;
+	}
+#else // MTK original
 	ret = exec_ccci_kern_func(ID_UPDATE_TX_POWER,
 		(char *)&swtp->tx_power_mode, sizeof(swtp->tx_power_mode));
 	power_mode = swtp->tx_power_mode;
@@ -159,9 +229,14 @@ static int swtp_switch_state(int irq, struct swtp_t *swtp)
 	}
 
 #if defined(CONFIG_MOTO_SWTP_CUST)
-    inject_pin_status_event(swtp->tx_power_mode, rf_name);
-    CCCI_LEGACY_ERR_LOG(-1, SYS,
-			"%s: notify swtp tx power mode:%d (0 -- do swtp tx; 1 -- no swtp tx)\n", __func__ ,swtp->tx_power_mode);
+	CCCI_LEGACY_ERR_LOG(-1, SYS,
+			"%s: bypass_rfcable_detect: %d\n", __func__ , bypass_rfcable_detect);
+	if (!bypass_rfcable_detect) {
+		inject_pin_status_event(swtp->tx_power_mode, rf_name);
+		CCCI_LEGACY_ERR_LOG(-1, SYS,
+				"%s: notify swtp tx power mode:%d (0 -- do swtp tx; 1 -- no swtp tx)\n", __func__ ,swtp->tx_power_mode);
+
+	}
 #else
 	inject_pin_status_event(swtp->curr_mode, rf_name);
 #endif
@@ -328,6 +403,9 @@ SWTP_INIT_END:
 
 int swtp_init(void)
 {
+#if defined(CONFIG_MOTO_SWTP_CUST)
+	char bypass_rfcable_detect_str[16] = "false";
+#endif
 	/* init woke setting */
 	INIT_DELAYED_WORK(&swtp_data.init_delayed_work,
 		swtp_init_delayed_work);
@@ -348,6 +426,15 @@ int swtp_init(void)
 
 	/* schedule init work */
 	schedule_delayed_work(&swtp_data.init_delayed_work, HZ);
+
+#if defined(CONFIG_MOTO_SWTP_CUST)
+	mmi_get_bootarg("androidboot.bypass_rfcable_detect=", bypass_rfcable_detect_str, sizeof(bypass_rfcable_detect_str));
+	CCCI_LEGACY_ERR_LOG(-1, SYS,
+			"%s: bypass_rfcable_detect_str: %s\n", __func__ , bypass_rfcable_detect_str);
+	if (strncmp(bypass_rfcable_detect_str,"true",4) == 0) {
+		bypass_rfcable_detect = true;
+	}
+#endif
 
 	CCCI_BOOTUP_LOG(0, SYS, "%s end, init_delayed_work scheduled\n",
 		__func__);
