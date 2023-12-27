@@ -39,6 +39,9 @@
 
 #define MCQ_INTR_EN_MSK         (MCQ_MULTI_INTR_EN | MCQ_CMB_INTR_EN)
 
+#if defined(CONFIG_SCSI_SKHID)
+#include "vendor/ufs-manual-gc.h"
+#endif
 /*
  * Vendor specific UFSHCI Registers
  */
@@ -298,7 +301,11 @@ struct ufs_mtk_host {
 #if defined(CONFIG_UFSFEATURE)
 	struct ufsf_feature ufsf;
 #endif
-
+#if defined(CONFIG_SCSI_SKHID)
+	struct work_struct update_sysfs_work;
+	/* manual_gc */
+	struct ufs_manual_gc manual_gc;
+#endif
 };
 
 #define UFSHCD_MAX_TAG	256
