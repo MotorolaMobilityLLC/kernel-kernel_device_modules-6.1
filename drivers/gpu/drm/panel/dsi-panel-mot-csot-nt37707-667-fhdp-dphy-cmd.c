@@ -86,8 +86,6 @@ static int nt37707_cmd_fhd_range_bpg_ofs[15] = {
 	lcm_dcs_write(ctx, d, ARRAY_SIZE(d));\
 })
 
-#define APL_THRESHOLD 14056
-
 static inline struct lcm *panel_to_lcm(struct drm_panel *panel)
 {
 	return container_of(panel, struct lcm, panel);
@@ -1119,8 +1117,6 @@ static int lcm_setbacklight_cmdq(void *dsi, dcs_write_gce cb, void *handle,
 				 unsigned int level)
 {
 	char bl_tb0[] = { 0x51, 0x0f, 0xff};
-	char apl_on[] = { 0x5F, 0x00, 0x01};
-	char apl_off[] = { 0x5F, 0x00, 0x00};
 	struct lcm *ctx = g_ctx;
 	unsigned int current_bl;
 
@@ -1130,15 +1126,6 @@ static int lcm_setbacklight_cmdq(void *dsi, dcs_write_gce cb, void *handle,
 	}
 
 	current_bl = atomic_read(&ctx->current_bl);
-
-	if ((current_bl > APL_THRESHOLD) && (level <= APL_THRESHOLD)) {
-		pr_info("%s: disable DIC APL (BL: %d -> %d)\n", __func__, current_bl, level);
-		cb(dsi, handle, apl_off, ARRAY_SIZE(apl_off));
-	} else if((current_bl <= APL_THRESHOLD) && (level > APL_THRESHOLD)) {
-		pr_info("%s: enable DIC APL (BL: %d -> %d)\n", __func__, current_bl, level);
-		cb(dsi, handle, apl_on, ARRAY_SIZE(apl_on));
-	}
-
 	if (!( current_bl&& level)) pr_info("backlight changed from %u to %u\n", current_bl, level);
 	else pr_debug("backlight changed from %u to %u\n", current_bl, level);
 
@@ -1407,25 +1394,24 @@ static int mode_switch(struct drm_panel *panel,
 
 static int panel_hbm_set_cmdq(struct lcm *ctx, void *dsi, dcs_grp_write_gce cb, void *handle, uint32_t hbm_state)
 {
-	struct mtk_panel_para_table hbm_on_table = {3, {0x51, 0x3D, 0x4c}}; //15683
-	unsigned int bl_hbm = 15683;
+	struct mtk_panel_para_table hbm_on_table = {3, {0x51, 0x3F, 0xFC}};
 
 	if (hbm_state > 2) return -1;
 
+	atomic_set(&ctx->hbm_mode, hbm_state);
 	switch (hbm_state)
 	{
 		case 0:
 			break;
 		case 1:
-			lcm_setbacklight_cmdq(dsi, cb, handle, bl_hbm);
-			//cb(dsi, handle, &hbm_on_table, 1);
+			cb(dsi, handle, &hbm_on_table, 1);
 			break;
 		case 2:
 			break;
 		default:
 			break;
 	}
-	atomic_set(&ctx->hbm_mode, hbm_state);
+
 	return 0;
 }
 
