@@ -1102,7 +1102,6 @@ static int pe50_send_notification(struct pe50_algo_info *info,
 /* Stop PE5.0 charging and reset parameter */
 static int pe50_stop(struct pe50_algo_info *info, struct pe50_stop_info *sinfo)
 {
-	int ret = 0;
 	struct pe50_algo_data *data = info->data;
 	struct chg_alg_notify notify = {
 		.evt = EVT_ALGO_STOP,
@@ -1131,16 +1130,9 @@ static int pe50_stop(struct pe50_algo_info *info, struct pe50_stop_info *sinfo)
 		PE50_INFO("PE50 stop due to adaptor power change\n");
 	}
 
-	ret = pe50_enable_dvchg_charging(info, PE50_DVCHG_SLAVE, false);
-	if (ret < 0) {
-		PE50_ERR("disable slave dvchg fail(%d)\n", ret);
-		return ret;
-	}
-	ret = pe50_set_dvchg_charging(info, false);
-	if (ret < 0) {
-		PE50_ERR("disable dvchg fail\n");
-		return ret;
-	}
+	pe50_enable_dvchg_charging(info, PE50_DVCHG_SLAVE, false);
+	pe50_set_dvchg_charging(info, false);
+
 	mutex_lock(&data->notify_lock);
 	do_reset = !(data->notify & PE50_RESET_NOTIFY);
 	mutex_unlock(&data->notify_lock);
