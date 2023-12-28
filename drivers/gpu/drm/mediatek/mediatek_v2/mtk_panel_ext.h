@@ -772,4 +772,13 @@ int mtk_lcm_dsi_ddic_handler(struct mipi_dsi_device *dsi_dev,
 				mtk_dsi_ddic_handler_cb handler_cb,
 				struct mtk_lcm_dsi_cmd_packet *packet);
 
+enum dsi_display_mode_group_flag {
+	RRGSFlag_Unrestricted = 0,
+	RRGSFlag_All_No_Duplicated = 1 << 0, //The default refreshrates without duplicated except special idle ones
+	RRGSFlag_120HzBased = 1 << 1,        //Only can switch between 120hz based refreshrates
+	RRGSFlag_90HzBased = 1 << 2,         //Only can switch between 90hz based refreshrates
+	RRGSFlag_Special_Idle_1Hz = 1 << 3,  //Only can selected when idle and brightness high enough
+	RRGSFlag_Special_Idle_10Hz = 1 << 4, //Only can selected when idle and brightness high enough
+};
+
 #endif

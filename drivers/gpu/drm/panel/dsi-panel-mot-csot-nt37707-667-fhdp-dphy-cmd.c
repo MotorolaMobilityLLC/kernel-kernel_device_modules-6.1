@@ -557,7 +557,7 @@ static const struct drm_display_mode switch_mode_24hz = {
 	.vtotal		= VACT + VFP + VSA + VBP,
 };
 static const struct drm_display_mode switch_mode_10hz = {
-	.clock = 31100,
+	.clock = 373000,
 	.hdisplay	= HACT,
 	.hsync_start	= HACT + HFP,
 	.hsync_end	= HACT + HFP + HSA,
@@ -565,10 +565,10 @@ static const struct drm_display_mode switch_mode_10hz = {
 	.vdisplay	= VACT,
 	.vsync_start	= VACT + VFP,
 	.vsync_end	= VACT + VFP + VSA,
-	.vtotal		= VACT + VFP + VSA + VBP,
+	.vtotal		= VACT + VFP + VSA + VBP+1,
 };
 static const struct drm_display_mode switch_mode_1hz = {
-	.clock = 3110,
+	.clock = 373000,
 	.hdisplay	= HACT,
 	.hsync_start	= HACT + HFP,
 	.hsync_end	= HACT + HFP + HSA,
@@ -576,7 +576,7 @@ static const struct drm_display_mode switch_mode_1hz = {
 	.vdisplay	= VACT,
 	.vsync_start	= VACT + VFP,
 	.vsync_end	= VACT + VFP + VSA,
-	.vtotal		= VACT + VFP + VSA + VBP,
+	.vtotal		= VACT + VFP + VSA + VBP+2,
 };
 
 
@@ -1574,6 +1574,7 @@ static int lcm_get_modes(struct drm_panel *panel,
 		return -ENOMEM;
 	}
 	drm_mode_set_name(mode_5);
+	snprintf(mode_5->name,  DRM_DISPLAY_MODE_LEN,  "%s@%d",mode_5->name, RRGSFlag_Special_Idle_1Hz);
 	mode_5->type = DRM_MODE_TYPE_DRIVER ;
 	drm_mode_probed_add(connector, mode_5);
 
@@ -1585,6 +1586,7 @@ static int lcm_get_modes(struct drm_panel *panel,
 		return -ENOMEM;
 	}
 	drm_mode_set_name(mode_4);
+	snprintf(mode_4->name,  DRM_DISPLAY_MODE_LEN,  "%s@%d",mode_4->name, RRGSFlag_Special_Idle_10Hz);
 	mode_4->type = DRM_MODE_TYPE_DRIVER ;
 	drm_mode_probed_add(connector, mode_4);
 
@@ -1596,6 +1598,7 @@ static int lcm_get_modes(struct drm_panel *panel,
 		return -ENOMEM;
 	}
 	drm_mode_set_name(mode_3);
+	snprintf(mode_3->name,  DRM_DISPLAY_MODE_LEN,  "%s@%d",mode_3->name, RRGSFlag_All_No_Duplicated | RRGSFlag_120HzBased);
 	mode_3->type = DRM_MODE_TYPE_DRIVER ;
 	drm_mode_probed_add(connector, mode_3);
 
@@ -1607,6 +1610,7 @@ static int lcm_get_modes(struct drm_panel *panel,
 		return -ENOMEM;
 	}
 	drm_mode_set_name(mode_2);
+	snprintf(mode_2->name,  DRM_DISPLAY_MODE_LEN,  "%s@%d",mode_2->name, RRGSFlag_All_No_Duplicated | RRGSFlag_120HzBased | RRGSFlag_90HzBased);
 	mode_2->type = DRM_MODE_TYPE_DRIVER ;
 	drm_mode_probed_add(connector, mode_2);
 
@@ -1620,6 +1624,7 @@ static int lcm_get_modes(struct drm_panel *panel,
 	}
 	drm_mode_set_name(mode_1);
 	mode_1->type = DRM_MODE_TYPE_DRIVER ;
+	snprintf(mode_1->name,  DRM_DISPLAY_MODE_LEN,  "%s@%d",mode_1->name, RRGSFlag_All_No_Duplicated | RRGSFlag_120HzBased);
 	drm_mode_probed_add(connector, mode_1);
 
 	mode = drm_mode_duplicate(connector->dev, &switch_mode_120hz);
@@ -1630,6 +1635,7 @@ static int lcm_get_modes(struct drm_panel *panel,
 		return -ENOMEM;
 	}
 	drm_mode_set_name(mode);
+	snprintf(mode->name,  DRM_DISPLAY_MODE_LEN,  "%s@%d",mode->name, RRGSFlag_All_No_Duplicated | RRGSFlag_120HzBased);
 	mode->type = DRM_MODE_TYPE_DRIVER | DRM_MODE_TYPE_PREFERRED;
 	drm_mode_probed_add(connector, mode);
 
@@ -1641,6 +1647,7 @@ static int lcm_get_modes(struct drm_panel *panel,
 		return -ENOMEM;
 	}
 	drm_mode_set_name(mode_6);
+	snprintf(mode_6->name,  DRM_DISPLAY_MODE_LEN,  "%s@%d",mode_6->name, RRGSFlag_All_No_Duplicated | RRGSFlag_90HzBased);
 	mode_6->type = DRM_MODE_TYPE_DRIVER ;
 	drm_mode_probed_add(connector, mode_6);
 
