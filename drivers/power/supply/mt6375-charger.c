@@ -874,7 +874,11 @@ static int mt6375_get_chg_status(struct mt6375_chg_data *ddata)
 		else
 			return POWER_SUPPLY_STATUS_NOT_CHARGING;
 	case CHG_STAT_DONE:
+		#ifdef MTK_BASE
 		return POWER_SUPPLY_STATUS_FULL;
+		#else
+		return POWER_SUPPLY_STATUS_CHARGING;
+		#endif
 	case CHG_STAT_SLEEP:
 	case CHG_STAT_FAULT:
 		return POWER_SUPPLY_STATUS_NOT_CHARGING;
