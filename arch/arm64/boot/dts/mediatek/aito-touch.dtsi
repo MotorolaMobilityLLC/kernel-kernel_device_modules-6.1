@@ -46,6 +46,7 @@
 		mmi,power-off-suspend;
 		mmi,usb-charger-detection;
 		mmi,supported_gesture_type = <0x06>;
+		mmi,resolution_boost = <16>;
 		mtk-charger = <&mt6375_chg>;
 	};
 };
@@ -94,6 +95,7 @@
 		mmi,cli-enable-gestures;
 		mmi,supported_gesture_type = <0x06>;
 		mmi,usb-charger-detection;
+		mmi,resolution_boost = <16>;
 		mtk-charger = <&mt6375_chg>;
 	};
 };
