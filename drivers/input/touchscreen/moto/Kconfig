@@ -40,3 +40,8 @@ config BOARD_USES_DOUBLE_TAP_CTRL
 	bool "Support touch wake gesture feature"
 	help
 		Say Y here if support touch wake gesture feature.
+
+config ENABLE_GTP_PALM_CANCEL
+	bool "Support touch palm cancel feature"
+	help
+		Say Y here if support touch palm cancel feature.
