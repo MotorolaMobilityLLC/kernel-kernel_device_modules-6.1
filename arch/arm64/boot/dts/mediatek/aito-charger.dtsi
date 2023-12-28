@@ -135,7 +135,7 @@
 
 &charger {
 	gauge = <&smart_battery>;
-	battery-cv = <4500000>;
+	battery-cv = <4530000>;
 	max-charger-voltage = <14500000>;
 	ac-charger-current = <3000000>;
 	usb-charger-current = <500000>;
@@ -160,23 +160,23 @@
 	/*mmi config*/
 	mmi,typec-rp-max-current = <2000000>;
 	mmi,iterm-ma = <461>;
-	mmi,mmi-temp-zones = <0 4200 800 0>,
-			<10 4250 4000 2000>,
-			<15 0 4000 4000>,
-			<45 4250 12200 8000>,
-			<45 4300 8000 6000>,
-			<45 4500 6000 4000>,
-			<60 4200 4288 0>;
-	mmi,mmi-ffc-zones = <0 4200 461>,
-			<10 4500 461>,
-			<15 4500 461>,
-			<25 4530 772>,
-			<35 4530 829>,
-			<45 4530 1129>,
-			<60 4200 461>;
+	mmi,mmi-temp-zones = <0 4200 810 0>,
+			<10 4250 3240 2024>,
+			<15 0 3240 3240>,
+			<45 4200 6000 4860>,
+			<45 4300 4860 4050>,
+			<45 4400 4050 3519>,
+			<60 4200 3239 0>;
+	mmi,mmi-ffc-zones = <0 4200 203>,
+			<10 4530 203>,
+			<15 4530 203>,
+			<25 4550 450>,
+			<35 4550 450>,
+			<45 4550 450>,
+			<60 4200 203>;
 	mmi,enable-charging-limit;
-	mmi,upper-limit-capacity = <65>;
-	mmi,lower-limit-capacity = <60>;
+	mmi,upper-limit-capacity = <75>;
+	mmi,lower-limit-capacity = <70>;
 	mmi,min-cp-therm-current-ua = <2000000>;
 
 	mmi,pd-pmax-mw = <30000>;
@@ -442,7 +442,7 @@
 	compatible = "mediatek,charger,pe5";
 	gauge = <&smart_battery>;
 	polling-interval = <10000>;
-	vbat-cv = <4530>;
+	vbat-cv = <4550>;
 	start-soc-min = <0>;
 	start-soc-max = <90>;
 	idvchg-term = <500>;
@@ -491,7 +491,7 @@
 	mmi_therm_cur_thres = <500>;
 	mmi_therm_vol_thres = <80>;
 	mmi_therm_step = <3>;
-	mmi_max_ibat = <12200>;
+	mmi_max_ibat = <6000>;
 	mmi_max_hrst_cnt = <1>;
 };
 
@@ -524,26 +524,24 @@
 		mmi,pd-volt-max = <12000000>;
 		mmi,pd-curr-max = <3000000>;
 		mmi,batt-curr-boost = <300000>;
-		mmi,batt-ovp-lmt = <4550000>;
+		mmi,batt-ovp-lmt = <4570000>;
 		mmi,pl-chrg-vbatt-min = <3000000>;
 		mmi,typec-middle-current = <800000>;
 		mmi,step-first-current-comp = <0>;
 		mmi,dont-rerun-aicl;
 		mmi,chrg-temp-zones-num = <5>;
 		mmi,mmi-chrg-temp-zones =
-				<0 4200 1200  0 0 0 0>,
-				<10 4250 3000 4500 1800 0 0>,
-				<15 4500 3000 0 0 0 0>,
-				<45 4300 6000 4400 5200 4530 4000>,
-				<60 4200 5840 0 0 0 0>;
+				<0 4200 810 0 0 0 0 0 0>,
+				<10 4250 3240 4530 2024 0 0 0 0>,
+				<15 4530 3240 0 0 0 0 0 0>,
+				<45 4200 6000 4300 4860 4400 4050 4550 3519>,
+				<60 4200 3239 0 0 0 0 0 0>;
 
-		mmi,mmi-ffc-zones = <4200 292>,
-				<4250 292>,
-				<4450 292>,
-				<4530 776>,
-				<4530 946>,
-				<4530 1379>,
-				<4200 292>;
+		mmi,mmi-ffc-zones = <4200 203>,
+				<4530 203>,
+				<4530 203>,
+				<4550 450>,
+				<4200 203>;
 
 		mmi,thermal-min-level = <1500000>;
 
