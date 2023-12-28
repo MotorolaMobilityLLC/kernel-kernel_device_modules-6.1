@@ -69,6 +69,7 @@ struct board_ntc_info {
 	void __iomem *data_reg;
 	void __iomem *dbg_reg;
 	void __iomem *en_reg;
+	int pre_temp;
 	struct pmic_auxadc_data *adc_data;
 	struct iio_channel *chan_wcn_ntc;
 	struct iio_channel *chan_cam_ntc;
@@ -283,8 +284,15 @@ RETRY:
 		*temp = board_ntc_r_to_temp(ntc_info, r_ntc);
 	}
 
+	if (ntc_info->pre_temp != *temp / 1000) {
+		ntc_info->pre_temp = *temp / 1000;
+		dev_info(ntc_info->dev, "v=0x%x, v/type/ntc/t=%llu/%d/%d/%d\n",
+			val, v_in, r_type, r_ntc, *temp);
+	/*
 	dev_dbg_ratelimited(ntc_info->dev, "val=0x%x, v_in/r_type/r_ntc/t=%llu/%d/%d/%d\n",
 		val, v_in, r_type, r_ntc, *temp);
+	*/
+	}
 
 	return 0;
 }
