@@ -2805,7 +2805,8 @@ static bool charger_init_algo(struct mtk_charger *info)
 			chr_err("Found primary divider charger\n");
 		else {
 			chr_err("*** Error : can't find primary divider charger ***\n");
-			return false;
+			if (!info->mmi.factory_mode)
+				return false;
 		}
 		if (info->config == DUAL_DIVIDER_CHARGERS) {
 			info->dvchg2_dev =
@@ -2814,7 +2815,8 @@ static bool charger_init_algo(struct mtk_charger *info)
 				chr_err("Found secondary divider charger\n");
 			else {
 				chr_err("*** Error : can't find secondary divider charger ***\n");
-				return false;
+				if (!info->mmi.factory_mode)
+					return false;
 			}
 		}
 	} else if (info->config == HVDIVIDER_CHARGER ||
