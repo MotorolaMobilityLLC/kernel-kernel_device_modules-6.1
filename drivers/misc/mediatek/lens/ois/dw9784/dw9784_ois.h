@@ -13,6 +13,9 @@
 #define FUNC_PASS						0
 #define FUNC_FAIL						-1
 
+#define MSC_SIZE_W                                              10240
+#define PID_SIZE_W                                              256
+
 /* gyro offset calibration */
 #define GYRO_OFFSET_CAL_OK              0x00
 #define GYRO_OFS_CAL_DONE_FAIL			0xFF
