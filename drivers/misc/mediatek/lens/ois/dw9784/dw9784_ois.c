@@ -970,11 +970,7 @@ int GenerateFirmwareContexts(void)
 		LOG_INF("get dw9784 firmware sucess,and size = %zu\n",dw9784fw->size);
 
 			g_firmwareContext.version = *(g_firmwareContext.fwContentPtr+FW_VERSION_OFFSET);
-			g_firmwareContext.version = ((g_firmwareContext.version << 8) & 0xff00) |
-	                                  ((g_firmwareContext.version >> 8) & 0xff);
 			g_firmwareContext.checksum = *(g_firmwareContext.fwContentPtr+FW_CHECKSUM_OFFSET);
-			g_firmwareContext.checksum = ((g_firmwareContext.checksum << 8) & 0xff00) |
-	                                   ((g_firmwareContext.checksum >> 8) & 0xff);
 	}
 	g_downloadByForce = 0;
 	return i4RetValue;
@@ -986,7 +982,7 @@ int dw9784_check_if_download(void)
 	int ret = 0;
 
 	/* step 1. Writes 512Byte FW(PID) data to IF flash.	(FMC register check) */
-	ret = ois_i2c_wr_u16(m_client, 0xDE01, 0x0000);
+	ret = ois_i2c_wr_u16(m_client, 0xDE01, 0x1000);
 	ois_mdelay(1);
 	ret = ois_i2c_rd_u16(m_client, 0xDE01, &FMC);
 	ois_mdelay(1);
@@ -1051,41 +1047,71 @@ int dw9784_download_fw(void)
 		LOG_INF("[dw9784] change dw9784 state to shutdown mode");
 	}
 
-	for (i = 0; i < g_firmwareContext.size; i += DATPKT_SIZE)
+	// write to flash
+	for (i = 0; i < MSC_SIZE_W; i += DATPKT_SIZE)
 	{
 		addr = MTP_START_ADDRESS + i;
 		i2c_block_write_reg(addr, g_firmwareContext.fwContentPtr + i, DATPKT_SIZE);
-
-		if (i == g_firmwareContext.size / DATPKT_SIZE + 1) {
-			ret = dw9784_check_if_download();
-			if (ret < 0) {
-				LOG_INF("dw9784 check if download fail");
-					kfree(buf_temp);
-					buf_temp = NULL;
-			}
-		}
 	}
-	LOG_INF("[dw9784_download_fw] write firmware to flash\n");
-	/* step 4: firmware sequential read from flash */
-	for (i = 0; i <  g_firmwareContext.size; i += DATPKT_SIZE)
+#if 0
+        LOG_INF("[dw9784_download_fw] write firmware to flash\n");
+        /* step 4: firmware sequential read from flash */
+        for (i = 0; i < MSC_SIZE_W; i += DATPKT_SIZE)
+        {
+                addr = MTP_START_ADDRESS + i;
+                i2c_block_read_reg(addr, buf_temp + i, DATPKT_SIZE);
+        }
+        LOG_INF("[dw9784_download_fw] read firmware from flash\n");
+        /* step 5: firmware verify */
+        for (i = 0; i < MSC_SIZE_W; i++)
+        {
+                buf_temp[i] = ((buf_temp[i] << 8) & 0xff00) | ((buf_temp[i] >> 8) & 0x00ff);
+                if (g_firmwareContext.fwContentPtr[i] != buf_temp[i])
+                {
+                        LOG_INF("[dw9784_download_fw] firmware verify NG!!! ADDR:%04X -- firmware:%04x -- READ:%04x\n", MTP_START_ADDRESS+i, g_firmwareContext.fwContentPtr[i], buf_temp[i]);
+                        kfree(buf_temp);
+                        buf_temp = NULL;
+                        return OIS_ERROR;
+                }else
+                        ret = EOK;
+        }
+#endif
+	// write  to pid
+	ret = dw9784_check_if_download();
+	if (ret < 0) {
+		LOG_INF("dw9784 check if download fail");
+		kfree(buf_temp);
+		buf_temp = NULL;
+        }
+
+	for (i = 0; i < PID_SIZE_W; i += DATPKT_SIZE)
+        {
+		addr = MTP_START_ADDRESS + i;
+                i2c_block_write_reg(addr, g_firmwareContext.fwContentPtr + MSC_SIZE_W + i, DATPKT_SIZE);
+	}
+#if 0
+	LOG_INF("[dw9784_download_fw] write firmware to PID\n");
+	/* step 4: firmware sequential read from PID */
+	for (i = 0; i < PID_SIZE_W; i += DATPKT_SIZE)
 	{
 		addr = MTP_START_ADDRESS + i;
 		i2c_block_read_reg(addr, buf_temp + i, DATPKT_SIZE);
 	}
-	LOG_INF("[dw9784_download_fw] read firmware from flash\n");
+	LOG_INF("[dw9784_download_fw] read firmware from PID\n");
 	/* step 5: firmware verify */
-	for (i = 0; i < g_firmwareContext.size; i++)
+	for (i = 0; i < PID_SIZE_W; i++)
 	{
 		buf_temp[i] = ((buf_temp[i] << 8) & 0xff00) | ((buf_temp[i] >> 8) & 0x00ff);
-		if (g_firmwareContext.fwContentPtr[i] != buf_temp[i])
+		if (g_firmwareContext.fwContentPtr[i + MSC_SIZE_W] != buf_temp[i])
 		{
-			LOG_INF("[dw9784_download_fw] firmware verify NG!!! ADDR:%04X -- firmware:%04x -- READ:%04x\n", MTP_START_ADDRESS+i, g_firmwareContext.fwContentPtr[i], buf_temp[i]);
+			LOG_INF("[dw9784_download_fw] firmware verify NG!!! ADDR:%04X -- firmware:%04x -- READ:%04x\n", MTP_START_ADDRESS+i, g_firmwareContext.fwContentPtr[i + MSC_SIZE_W], buf_temp[i]);
 			kfree(buf_temp);
 			buf_temp = NULL;
 			return OIS_ERROR;
 		}else
 			ret = EOK;
 	}
+#endif
 
 	dw9784_post_firmware_download();
 	kfree(buf_temp);
