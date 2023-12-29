@@ -26,9 +26,5 @@
 	};
 };
 
-&mt6375_typec {
-       mmi,support_CID;
-};
-
 #include <aito_dvt1/cust.dtsi>
 /*End of this file, DO NOT ADD ANYTHING HERE*/
