@@ -14,14 +14,14 @@ aito-atl-1140mah {
 	serialnum = "SB18E12803";
 	fcc_design = <1140>;
 	//ui_full = <98>;
-	config_profile_info = [ 32 00 00 00 00 00 00 00
-				A9 B8 B6 CE B6 B2 BE 99
-				89 FF F5 BF 96 81 68 57
-				4A 43 35 8B 5C E3 91 FF
-				E6 D2 CD D3 D7 DA D6 D8
-				DB CC D2 BC AC A6 AC A9
-				B8 A8 C2 CE D0 F9 FF 5F
-				20 00 AB 10 00 80 AF 00
-				00 00 64 07 A3 DB 00 00
-				00 00 00 00 00 00 00 F6];
+	config_profile_info = [ 46 00 00 00 00 00 00 00
+				A9 B8 B6 CC B6 B1 BD 99
+				86 FF F7 C1 99 83 6B 59
+				4C 45 38 8D 5C E3 2D FC
+				D4 C6 CB D2 D8 DB D9 DA
+				DE D0 D3 BF B0 A9 AE AD
+				B9 A8 C4 CE D2 FD FF EF
+				20 00 AB 10 00 80 A4 00
+				00 00 64 07 A3 C9 00 00
+				00 00 00 00 00 00 00 F0];
 };
