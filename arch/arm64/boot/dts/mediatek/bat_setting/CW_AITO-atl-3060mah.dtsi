@@ -14,14 +14,14 @@ aito-atl-3060mah {
 	serialnum = "SB18E12803";
 	fcc_design = <3060>;
 	//ui_full = <98>;
-	config_profile_info = [ 32 00 00 00 00 00 00 00
-				AD B9 B3 C4 AF A8 CE B4
-				A2 FF EE C2 96 81 69 58
-				4C 46 3C 9D 81 E3 A2 FF
-				F2 C4 CE D3 D8 D9 D7 D7
-				DD CD D1 BD AE A8 AE A9
-				BA A6 C2 CE D1 FF FF 5E
-				20 00 AB 10 00 A2 E5 00
-				00 00 64 08 B1 C9 00 00
-				00 00 00 00 00 00 00 F8];
+	config_profile_info = [ 46 00 00 00 00 00 00 00
+				AC BA B6 C2 B0 A9 D0 B5
+				A7 FF F1 C3 9A 7F 67 56
+				4A 44 3B 9C 82 E3 43 FF
+				DE C1 CD D3 D8 DA D8 D8
+				DE CF D2 C0 AF AA B0 A9
+				BB A7 C2 CF D2 FE FF D9
+				20 00 AB 10 00 A2 D4 00
+				00 00 64 07 B1 BA 00 00
+				00 00 00 00 00 00 00 5E];
 };
