@@ -1559,6 +1559,7 @@ bool msync_is_on(struct mtk_drm_private *priv,
 	return false;
 }
 
+#if 0
 static bool panel_is_hbm_on(struct drm_crtc *crtc)
 {
 	int32_t hbm_mode = 0;
@@ -1568,7 +1569,6 @@ static bool panel_is_hbm_on(struct drm_crtc *crtc)
 	}
 	return false;
 }
-
 
 static bool panel_set_hbm_backlight(struct drm_crtc *crtc, unsigned int *bl_lvl)
 {
@@ -1611,6 +1611,7 @@ static bool panel_set_hbm_backlight(struct drm_crtc *crtc, unsigned int *bl_lvl)
 	}
 	return false;
 }
+#endif
 
 int mtk_drm_setbacklight(struct drm_crtc *crtc, unsigned int level,
 	unsigned int panel_ext_param, unsigned int cfg_flag, unsigned int lock)
@@ -1629,10 +1630,11 @@ int mtk_drm_setbacklight(struct drm_crtc *crtc, unsigned int level,
 	struct mtk_drm_private *priv = crtc->dev->dev_private;
 	struct mtk_panel_params *panel_ext = mtk_drm_get_lcm_ext_params(crtc);
 
-
+#if 0
 	if (panel_set_hbm_backlight(crtc, &level)) {
 		return 0;
 	}
+#endif
 
 	CRTC_MMP_EVENT_START(index, backlight, (unsigned long)crtc,
 			level);
