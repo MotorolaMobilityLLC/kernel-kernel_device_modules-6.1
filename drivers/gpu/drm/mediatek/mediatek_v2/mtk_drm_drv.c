@@ -8002,8 +8002,8 @@ static int mtk_drm_ioctl_set_panel_feature(struct drm_device *dev, void *data,
 	struct mtk_ddp_comp *comp = NULL;
 	struct mtk_panel_params *panel_ext = NULL;
 	int ret = 0;
-	unsigned int bl_level = 0;
-	unsigned int timeout = 30;
+	//unsigned int bl_level = 0;
+	//unsigned int timeout = 30;
 	unsigned int i;
 
 	for (i = 0 ; i < MAX_CRTC ; ++i) {
@@ -8025,6 +8025,7 @@ static int mtk_drm_ioctl_set_panel_feature(struct drm_device *dev, void *data,
 
 		switch (param_info->param_idx) {
 			case PARAM_HBM:
+			#if 0
 				if (comp && comp->funcs && comp->funcs->io_cmd && (param_info->value ==2))
 					comp->funcs->io_cmd(comp, NULL, PANEL_HBM_WAITFOR_FPS_VALID, &timeout);
 
@@ -8035,7 +8036,7 @@ static int mtk_drm_ioctl_set_panel_feature(struct drm_device *dev, void *data,
 				}
 				ret = mtk_drm_crtc_set_panel_feature(crtc, *param_info);
 				if (!ret) mtk_drm_setbacklight(&mtk_crtc->base, bl_level, 0, (0X1<<SET_BACKLIGHT_LEVEL), 0);
-
+			#endif
 				break;
 			default:
 				ret = mtk_drm_crtc_set_panel_feature(crtc, *param_info);
