@@ -612,8 +612,15 @@ static void mode_switch_to_48(struct drm_panel *panel,
 	if (stage == BEFORE_DSI_POWERDOWN) {
 		struct lcm *ctx = panel_to_lcm(panel);
 
-		lcm_dcs_write_seq_static(ctx, 0x2F, 0x02);
-
+		switch(ctx->version) {
+			case 1:
+				lcm_dcs_write_seq_static(ctx, 0x2F, 0x02);
+				break;
+			case 2:
+			default:
+				lcm_dcs_write_seq_static(ctx, 0x2F, 0x03);
+				break;
+		}
 		atomic_set(&ctx->current_fps, 48);
 	}
 }
@@ -935,7 +942,7 @@ static int lcm_probe(struct mipi_dsi_device *dsi)
 	drm_panel_add(&ctx->panel);
 
 	val = of_get_property(dev->of_node, "panel-version", NULL);
-	ctx->version = val ? be32_to_cpup(val) : 1;
+	ctx->version = val ? be32_to_cpup(val) : 2;
 
 	pr_info("%s: panel version 0x%x\n", __func__, ctx->version);
 
