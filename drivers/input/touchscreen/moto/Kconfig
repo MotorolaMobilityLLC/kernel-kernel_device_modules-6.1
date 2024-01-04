@@ -45,3 +45,8 @@ config ENABLE_GTP_PALM_CANCEL
 	bool "Support touch palm cancel feature"
 	help
 		Say Y here if support touch palm cancel feature.
+
+config INPUT_GOODIX_MMI_ENABLE_PALM
+	bool "Support touch palm sensor"
+	help
+		Say Y here if support touch palm sensor for assist p-sensor detection.
