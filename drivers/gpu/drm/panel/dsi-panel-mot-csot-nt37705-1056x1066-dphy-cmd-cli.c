@@ -995,7 +995,7 @@ static struct mipi_dsi_driver lcm_driver = {
 	.probe = lcm_probe,
 	.remove = lcm_remove,
 	.driver = {
-		.name = "panel-csot-nt37705-cmd-cli",
+		.name = "csot_nt37705_1056_1066",
 		.owner = THIS_MODULE,
 		.of_match_table = lcm_of_match,
 	},
