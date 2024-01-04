@@ -50,3 +50,8 @@ config INPUT_GOODIX_MMI_ENABLE_PALM
 	bool "Support touch palm sensor"
 	help
 		Say Y here if support touch palm sensor for assist p-sensor detection.
+
+config MTK_PROJECT_NAME
+	string "set project name"
+	help
+		This config is set as project name for touch to select configuration.
