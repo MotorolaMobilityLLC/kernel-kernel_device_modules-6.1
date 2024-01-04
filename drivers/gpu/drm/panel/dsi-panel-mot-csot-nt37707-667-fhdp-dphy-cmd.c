@@ -1400,20 +1400,23 @@ static int mode_switch(struct drm_panel *panel,
 	if (cur_mode == dst_mode)
 		return ret;
 
-	if (drm_mode_vrefresh(m) == 1) { /*switch to 1 */
-		mode_switch_to_1(panel, stage);
-	} else if (drm_mode_vrefresh(m) == 10) { /*switch to 10 */
-		mode_switch_to_10(panel, stage);
-	} else if (drm_mode_vrefresh(m) == 24) { /*switch to 24 */
-		mode_switch_to_24(panel, stage);
-	} else if (drm_mode_vrefresh(m) == 30) { /*switch to 30 */
-		mode_switch_to_30(panel, stage);
-	} else if (drm_mode_vrefresh(m) == 60) { /*switch to 60 */
-		mode_switch_to_60(panel, stage);
+	pr_info("%s: change mode %d ->%d (%d hz)\n", __func__, cur_mode, dst_mode, drm_mode_vrefresh(m));
+
+	if (drm_mode_vrefresh(m) == 120) {
+		if (dst_mode == 1) {
+			mode_switch_to_1(panel, stage);/*switch to 1 */
+		} else if (dst_mode == 2) {
+			mode_switch_to_10(panel, stage);/*switch to 10 */
+		} else
+			mode_switch_to_120(panel, stage);/*switch to 120 */
 	} else if (drm_mode_vrefresh(m) == 90) { /*switch to 90 */
 		mode_switch_to_90(panel, stage);
-	} else if (drm_mode_vrefresh(m) == 120) { /*switch to 120 */
-		mode_switch_to_120(panel, stage);
+	} else if (drm_mode_vrefresh(m) == 60) { /*switch to 60 */
+		mode_switch_to_60(panel, stage);
+	} else if (drm_mode_vrefresh(m) == 30) { /*switch to 30 */
+		mode_switch_to_30(panel, stage);
+	} else if (drm_mode_vrefresh(m) == 24) { /*switch to 24 */
+		mode_switch_to_24(panel, stage);
 	} else
 		ret = 1;
 
