@@ -227,6 +227,12 @@ config INPUT_MISC_FPC1020_SAVE_TO_CLASS_DEVICE
 	  Say Y here if you want to use fpc fps class node.
 	  If unsure, say N.
 
+config AAC_RICHTAP_SUPPORT
+	bool "AAC richtap support"
+	help
+	  Say Y here if you want to support aac richtap on awinic haptic.
+	  If unsure, say N.
+
 
 menu "Config File"
 config BUILD_CONFIG_FILE
