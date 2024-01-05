@@ -3716,6 +3716,9 @@ static int mmi_get_pdc_power(struct mtk_charger *info, bool force)
 
 #define MMI_POWER_30W 30
 #define MMI_POWER_15W 15
+#define MMI_POWER_10W 10
+#define MMI_POWER_7W 7
+#define MMI_POWER_2W 2
 static int mmi_check_power_watt(struct mtk_charger *info, bool force)
 {
 	int rc = 0;
@@ -3737,7 +3740,7 @@ static int mmi_check_power_watt(struct mtk_charger *info, bool force)
 			rc = power_supply_get_property(info->wl_psy,
 				POWER_SUPPLY_PROP_POWER_NOW, &val);
 			power_watt = val.intval;
-			return power_watt;
+			goto out;
 		}
 	}
 
@@ -3745,11 +3748,11 @@ static int mmi_check_power_watt(struct mtk_charger *info, bool force)
 	if (rc < 0) {
 		pr_err("[%s]Error get chg online rc = %d\n", __func__, rc);
 		power_watt = 0;
-		return power_watt;
+		goto out;
 	} else if (!val.intval) {
 		pr_info("[%s]usb off line\n", __func__);
 		power_watt = 0;
-		return power_watt;
+		goto out;
 	}
 
 	icl = get_charger_input_current(info, info->chg1_dev) / 1000;
@@ -3766,12 +3769,29 @@ static int mmi_check_power_watt(struct mtk_charger *info, bool force)
 		power_watt = MMI_POWER_30W;
 	} else if (qc_chg_type == USB_TYPE_QC30) {
 		power_watt = MMI_POWER_15W;
-	} else {
-		power_watt = 5 * icl /1000;
+	} else { //BC1.2
+		if (info->mmi.factory_mode) { //never set ICL in factory mode, so use charger type
+			switch (info->chr_type) {
+			case POWER_SUPPLY_TYPE_USB_DCP:
+				power_watt = MMI_POWER_10W;
+				break;
+			case POWER_SUPPLY_TYPE_USB_CDP:
+				power_watt = MMI_POWER_7W;
+				break;
+			case POWER_SUPPLY_TYPE_USB:
+				power_watt = MMI_POWER_2W;
+				break;
+			default:
+				power_watt = 5 * icl /1000;
+				break;
+			}
+		} else
+			power_watt = 5 * icl /1000;
 	}
 
 	power_watt = MAX(power_watt, 1);
 
+out:
 	info->mmi.charger_watt = power_watt;
 	pr_info("[%s] power_watt = %dW\n", __func__, power_watt);
 	return power_watt;
