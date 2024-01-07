@@ -155,6 +155,8 @@ enum {
 	TCP_NOTIFY_MISC_END = TCP_NOTIFY_CC_HI,
 	/*mmi pd vdm verify*/
 	TCP_NOTIFY_PD_VDM_VERIFY,
+	/*mmi cid*/
+	TCP_NOTIFY_CID_STATE,
 };
 
 struct tcp_ny_pd_state {
@@ -335,6 +337,10 @@ struct tcp_ny_wd0_state {
 	bool wd0;
 };
 
+struct tcp_ny_cid_state {
+	bool cid;
+};
+
 struct tcp_ny_vbus_short_cc {
 	bool short_status;
 	u8 short_cc;
@@ -361,6 +367,7 @@ struct tcp_notify {
 		struct tcp_ny_cable_type cable_type;
 		struct tcp_ny_typec_otp typec_otp;
 		struct tcp_ny_wd0_state wd0_state;
+		struct tcp_ny_cid_state cid_state;
 		struct tcp_ny_vbus_short_cc vsc_status;
 		int vbus_level;
 		int cc_hi;

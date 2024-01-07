@@ -354,10 +354,7 @@ static inline void typec_unattached_snk_and_drp_entry(struct tcpc_device *tcpc)
 {
 	TYPEC_NEW_STATE(typec_unattached_snk);
 	tcpci_set_auto_dischg_discnt(tcpc, false);
-	if (!tcpci_is_support_cid(tcpc)) {
-		tcpci_set_cc(tcpc, TYPEC_CC_DRP);
-		TYPEC_INFO("%s, set cc to DRP\n", __func__);
-	}
+	tcpci_set_cc(tcpc, TYPEC_CC_DRP);
 	typec_enable_low_power_mode(tcpc);
 	if (tcpc->typec_vbus_to_cc_en && tcpc->tcpc_flags & TCPC_FLAGS_VBUS_SHORT_CC)
 		tcpci_set_vbus_short_cc_en(tcpc, false, false);
@@ -1974,6 +1971,11 @@ int tcpc_typec_init(struct tcpc_device *tcpc, uint8_t typec_role)
 	} else if (tcpc->tcpc_flags & TCPC_FLAGS_FLOATING_GROUND) {
 		reason = "WD0";
 		typec_role = TYPEC_ROLE_SNK;
+	} else if (tcpci_is_support_cid(tcpc)) {
+		reason = "CID";
+		if (!tcpci_is_cid_plug(tcpc)) {
+			typec_role = TYPEC_ROLE_SNK;
+		}
 	}
 	if (reason) {
 		TYPEC_INFO("%s, typec_init: %s\n",
