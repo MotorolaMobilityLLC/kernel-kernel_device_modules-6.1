@@ -2344,6 +2344,14 @@ static int mt6375_is_support_cid(struct tcpc_device *tcpc)
 	return ddata->support_cid;
 }
 
+static int mt6375_is_cid_plug(struct tcpc_device *tcpc)
+{
+	struct mt6375_tcpc_data *ddata = tcpc_get_dev_data(tcpc);
+
+	dev_info(ddata->dev, "[%s] cid state %s\n", __func__, ddata->mmi_cid_state?"plug":"unplug");
+	return ddata->mmi_cid_state;
+}
+
 static struct tcpc_ops mt6375_tcpc_ops = {
 	.init = mt6375_tcpc_init,
 	.init_alert_mask = mt6375_init_mask,
@@ -2365,6 +2373,7 @@ static struct tcpc_ops mt6375_tcpc_ops = {
 
 	.is_vsafe0v = mt6375_is_vsafe0v,
 	.is_support_cid = mt6375_is_support_cid,
+	.is_cid_plug = mt6375_is_cid_plug,
 	.set_low_power_mode = mt6375_set_low_power_mode,
 
 #if IS_ENABLED(CONFIG_USB_POWER_DELIVERY)
@@ -2441,33 +2450,23 @@ static int mt6375_tcpc_init_irq(struct mt6375_tcpc_data *ddata)
 	return 0;
 }
 
-enum cid_cc_state{
-	CID_TYPEC_CONNECT = 0,        /*int_gpio_level is Low*/
-	CID_TYPEC_DISCONNECT = 1, /*int_gpio_level is High*/
-};
-
 static void mmi_cid_detect_work(struct work_struct *work)
 {
 	struct mt6375_tcpc_data *ddata;
 	int int_gpio_level;
+	int cid_state;
 
 	ddata = container_of(to_delayed_work(work),
 			    struct mt6375_tcpc_data, cid_det_work);
 
 	mutex_lock(&ddata->cid_irq_lock);
 	int_gpio_level = gpio_get_value(ddata->mmi_cid_int);
-	dev_info(ddata->dev, "[%s] IRQ triggered, int_gpio_level=%d\n", __func__, int_gpio_level);
-	if (int_gpio_level != ddata->mmi_cid_state) {
-		if (int_gpio_level) {
-			ddata->mmi_cid_state = CID_TYPEC_DISCONNECT;
-			tcpci_set_cc(ddata->tcpc, TYPEC_CC_RD);
-			dev_info(ddata->dev, "[%s] CID High Level irq, TYPEC cable unplug, set CC to SINK only\n", __func__);
-		}
-		else {
-			tcpci_set_cc(ddata->tcpc, TYPEC_CC_DRP);
-			ddata->mmi_cid_state = CID_TYPEC_CONNECT;
-			dev_info(ddata->dev, "[%s] CID Low Level irq, TYPEC cable pluging,set CC to DRP\n", __func__);
-		}
+	cid_state = !int_gpio_level;
+	dev_info(ddata->dev, "[%s] IRQ triggered, int_gpio_level = %d\n", __func__, int_gpio_level);
+	if (cid_state != ddata->mmi_cid_state) {
+		ddata->mmi_cid_state = cid_state;
+		dev_info(ddata->dev, "[%s] cid state %s\n", __func__, ddata->mmi_cid_state?"plug":"unplug");
+		tcpci_notify_cid_state(ddata->tcpc, ddata->mmi_cid_state);
 	}
 	mutex_unlock(&ddata->cid_irq_lock);
 
@@ -2841,7 +2840,6 @@ static int mt6375_tcpc_probe(struct platform_device *pdev)
 		}
 		else {
 			mmi_cid_irq_handler(ddata->mmi_cid_irq, (void *)ddata);
-			dev_info(ddata->dev, "As CID,set cc to SINK mode\n");
 		}
 	}
 

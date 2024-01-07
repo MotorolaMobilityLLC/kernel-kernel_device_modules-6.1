@@ -376,6 +376,17 @@ int tcpci_is_support_cid(struct tcpc_device *tcpc)
 }
 EXPORT_SYMBOL(tcpci_is_support_cid);
 
+int tcpci_is_cid_plug(struct tcpc_device *tcpc)
+{
+	int ret = 0;
+
+	if (tcpc->ops->is_cid_plug)
+		ret = tcpc->ops->is_cid_plug(tcpc);
+
+	return ret;
+}
+EXPORT_SYMBOL(tcpci_is_cid_plug);
+
 int tcpci_is_vsafe0v(struct tcpc_device *tcpc)
 {
 	int ret = -EOPNOTSUPP;
@@ -495,6 +506,18 @@ int tcpci_notify_wd0_state(struct tcpc_device *tcpc, bool wd0_state)
 				      TCP_NOTIFY_WD0_STATE);
 }
 EXPORT_SYMBOL(tcpci_notify_wd0_state);
+
+int tcpci_notify_cid_state(struct tcpc_device *tcpc, bool cid_state)
+{
+	struct tcp_notify tcp_noti;
+
+	tcp_noti.cid_state.cid = cid_state;
+
+	TCPC_DBG("cid: %d\n", cid_state);
+	return tcpc_check_notify_time(tcpc, &tcp_noti, TCP_NOTIFY_IDX_MISC,
+				      TCP_NOTIFY_CID_STATE);
+}
+EXPORT_SYMBOL(tcpci_notify_cid_state);
 
 #if IS_ENABLED(CONFIG_USB_POWER_DELIVERY)
 
