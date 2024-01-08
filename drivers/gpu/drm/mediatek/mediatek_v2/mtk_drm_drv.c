@@ -6363,6 +6363,10 @@ int mtk_drm_get_display_caps_ioctl(struct drm_device *dev, void *data,
 	caps_info->lcm_degree = 180;
 #endif
 
+	caps_info->lcm_support_ce = false;
+	if (params)
+		caps_info->lcm_support_ce = params->lcm_support_ce;
+
 	/* setting lcm_color_mode to HWC change to DSI_FILL_CONNECTOR_PROP_CAPS */
 	caps_info->lcm_color_mode = MTK_DRM_COLOR_MODE_NATIVE;
 	if (mtk_drm_helper_get_opt(private->helper_opt, MTK_DRM_OPT_OVL_WCG) ||

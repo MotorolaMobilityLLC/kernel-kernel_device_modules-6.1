@@ -4556,6 +4556,7 @@ static int mtk_dsi_create_connector(struct drm_device *drm, struct mtk_dsi *dsi)
 
 	dsi->connector_caps.conn_caps.lcm_degree = params->lcm_degree;
 	dsi->connector_caps.conn_caps.lcm_color_mode = params->lcm_color_mode;
+	dsi->connector_caps.conn_caps.lcm_support_ce = params->lcm_support_ce;
 	drm_connector_helper_add(&dsi->conn, &mtk_dsi_conn_helper_funcs);
 	mtk_drm_connector_attach_property(&dsi->conn);
 
@@ -10973,6 +10974,9 @@ static int mtk_dsi_io_cmd(struct mtk_ddp_comp *comp, struct cmdq_pkt *handle,
 				DDPPR_ERR("%s: failed to get lcm color mode\n", __func__);
 		}
 
+		if (panel_params)
+			connector_caps->conn_caps.lcm_support_ce = panel_params->lcm_support_ce;
+
 		new_blob = drm_property_create_blob(dev,
 			sizeof(struct mtk_drm_connector_caps), &dsi->connector_caps);
 		if (!IS_ERR_OR_NULL(new_blob)) {
@@ -11460,6 +11464,19 @@ static int mtk_dsi_io_cmd(struct mtk_ddp_comp *comp, struct cmdq_pkt *handle,
 		}
 	}
 		break;
+
+	case DSI_PANEL_CE_SET:
+	{
+		panel_ext = mtk_dsi_get_panel_ext(comp);
+		if (!(panel_ext && panel_ext->funcs &&
+		      panel_ext->funcs->panel_ce_set_cmdq))
+			break;
+
+		panel_ext->funcs->panel_ce_set_cmdq(dsi->panel, dsi,
+					       mipi_dsi_dcs_grp_write_gce, handle,
+					       *(bool *)params);
+		break;
+	}
 
 	default:
 		break;

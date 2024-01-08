@@ -109,6 +109,8 @@ static struct mtk_drm_property mtk_crtc_property[CRTC_PROP_MAX] = {
 	{DRM_MODE_PROP_ATOMIC, "BL_SYNC_GAMMA_GAIN", 0, ULONG_MAX, 0},
 	{DRM_MODE_PROP_ATOMIC, "DYNAMIC_WCG_OFF", 0, ULONG_MAX, 0},
 	{DRM_MODE_PROP_ATOMIC, "WCG_BY_COLOR_MODE", 0, ULONG_MAX, 0},
+
+	{DRM_MODE_PROP_ATOMIC, "LCM_CE_ENABLE", 0, ULONG_MAX, 0},
 };
 
 static struct cmdq_pkt *sb_cmdq_handle;
@@ -2241,6 +2243,62 @@ int mtk_drm_crtc_set_panel_hbm(struct drm_crtc *crtc, bool en)
 	return 0;
 }
 
+int mtk_drm_crtc_set_panel_ce(struct drm_crtc *crtc, bool en)
+{
+	struct mtk_drm_crtc *mtk_crtc = to_mtk_crtc(crtc);
+	struct mtk_ddp_comp *comp = mtk_ddp_comp_request_output(mtk_crtc);
+	struct cmdq_pkt *cmdq_handle;
+	struct cmdq_client *client;
+	bool is_frame_mode;
+
+	if (!(comp && comp->funcs && comp->funcs->io_cmd))
+		return -EINVAL;
+
+	if (!(mtk_crtc->enabled)) {
+		DDPMSG("%s: skip, slept\n", __func__);
+		return -EINVAL;
+	}
+
+	mtk_drm_idlemgr_kick(__func__, crtc, 0);
+
+	DDPINFO("%s:set LCM ce en:%d crtc %d\n", __func__, en, drm_crtc_index(crtc));
+
+	is_frame_mode = mtk_crtc_is_frame_trigger_mode(&mtk_crtc->base);
+
+	/* setHBM would use VM CMD in  DSI VDO mode only */
+	client = (is_frame_mode || mtk_crtc->gce_obj.client[CLIENT_DSI_CFG] == NULL) ?
+		mtk_crtc->gce_obj.client[CLIENT_CFG] : mtk_crtc->gce_obj.client[CLIENT_DSI_CFG];
+	cmdq_handle =
+		cmdq_pkt_create(client);
+
+	if (!cmdq_handle) {
+		DDPPR_ERR("%s:%d NULL cmdq handle\n", __func__, __LINE__);
+		return -EINVAL;
+	}
+
+	mtk_crtc_wait_frame_done(mtk_crtc, cmdq_handle, DDP_FIRST_PATH, 0);
+
+	if (is_frame_mode) {
+		cmdq_pkt_clear_event(cmdq_handle,
+				mtk_crtc->gce_obj.event[EVENT_STREAM_BLOCK]);
+		cmdq_pkt_wfe(cmdq_handle,
+				mtk_crtc->gce_obj.event[EVENT_CABC_EOF]);
+	}
+
+	comp->funcs->io_cmd(comp, cmdq_handle, DSI_PANEL_CE_SET, &en);
+
+	if (is_frame_mode) {
+		cmdq_pkt_set_event(cmdq_handle,
+				mtk_crtc->gce_obj.event[EVENT_CABC_EOF]);
+		cmdq_pkt_set_event(cmdq_handle,
+				mtk_crtc->gce_obj.event[EVENT_STREAM_BLOCK]);
+	}
+
+	cmdq_pkt_flush(cmdq_handle);
+	cmdq_pkt_destroy(cmdq_handle);
+
+	return 0;
+}
 
 int mtk_drm_crtc_get_panel_feature(struct drm_crtc *crtc, paramId_t param_id, uint32_t *param_value)
 {
@@ -16217,6 +16275,20 @@ static void mtk_drm_crtc_atomic_flush(struct drm_crtc *crtc,
 
 		if (!mtk_crtc_state->prop_val[CRTC_PROP_DOZE_ACTIVE])
 			mtk_atomic_hbm_bypass_pq(crtc, cmdq_handle, hbm_en);
+	}
+
+	{
+		bool lcm_ce_enable = false;
+		lcm_ce_enable = (bool)mtk_crtc_state->prop_val[CRTC_PROP_LCM_CE_ENABLE];
+
+		if (atomic_read(&mtk_crtc->singal_for_mode_switch)) {
+			DDPINFO("Wait event from mode_switch...\n");
+			wait_event_interruptible(mtk_crtc->mode_switch_end_wq,
+				(atomic_read(&mtk_crtc->singal_for_mode_switch) == 0));
+			DDPINFO("Wait event from mode_switch, end\n");
+		}
+
+		mtk_drm_crtc_set_panel_ce(crtc, lcm_ce_enable);
 	}
 
 	hdr_en = (bool)mtk_crtc_state->prop_val[CRTC_PROP_HDR_ENABLE];
