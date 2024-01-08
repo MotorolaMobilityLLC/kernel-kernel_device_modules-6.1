@@ -805,6 +805,9 @@ struct mtk_drm_disp_caps_info {
 
 	/* Msync2.0 */
 	unsigned int msync_level_num;
+
+	/* panel DIC CE*/
+	bool lcm_support_ce;
 };
 
 enum MTK_CRTC_ABILITY {
@@ -837,6 +840,7 @@ struct mtk_drm_wb_caps {
 struct mtk_drm_conn_caps {
 	unsigned int lcm_degree;
 	int lcm_color_mode;
+	bool lcm_support_ce;
 };
 
 #define MAX_MODES 30

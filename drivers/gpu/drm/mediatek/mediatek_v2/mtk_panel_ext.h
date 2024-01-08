@@ -603,6 +603,8 @@ struct mtk_panel_params {
 
 	int max_bl_level;
 	enum panel_hbm_type hbm_type;
+
+	bool lcm_support_ce;
 };
 
 struct mtk_panel_ext {
@@ -751,6 +753,9 @@ struct mtk_panel_funcs {
 	int (*panel_feature_set)(struct drm_panel *panel, void *dsi_drv,
 		    dcs_grp_write_gce cb, void *handle, struct panel_param_info param_info);
 	int (*panel_feature_get)(struct drm_panel *panel, struct panel_param_info *param_info);
+
+	int (*panel_ce_set_cmdq)(struct drm_panel *panel, void *dsi_drv,
+			    dcs_grp_write_gce cb, void *handle, bool en);
 };
 
 void mtk_panel_init(struct mtk_panel_ctx *ctx);
