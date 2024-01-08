@@ -719,6 +719,9 @@ enum mtk_ddp_io_cmd {
 	DSI_PANEL_FEATURE_SET,
 	DSI_PANEL_FEATURE_GET,
 	PANEL_HBM_WAITFOR_FPS_VALID,
+
+	DSI_PANEL_CE_SET,
+	DSI_PANEL_CE_GET,
 };
 
 enum mtk_ddp_comp_apsrc_crtc_id {
