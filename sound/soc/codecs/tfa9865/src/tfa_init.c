@@ -1349,7 +1349,8 @@ static enum Tfa98xx_Error tfa986x_specific(struct tfa_device *tfa)
 		tfa_reg_write(tfa, 0xdd, 0x0036); //POR=0x005e
 		/* ----- generated code end   ----- */
 		break;
-	
+
+	case 0x13a65:/**TFA9865 MN1A3**/
 	case 0x11a65:/**TFA9865 MN1A1**/
 		/* ----- generated code start(V6) ----- */
 		/* -----  version 19 ----- */
