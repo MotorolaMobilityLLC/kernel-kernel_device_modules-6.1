@@ -364,7 +364,7 @@ void tfa_set_query_info(struct tfa_device *tfa)
 
 	/* TODO use the getfeatures() for retrieving the features [artf103523]
 	tfa->supportDrc = supportNotSet;*/
-
+	pr_err("device type : 0x%02x\n", tfa->rev);
 	switch (tfa->rev & 0xff) {
 	case 0: /* tfanone : non-i2c external DSP device */
 		/* e.g. qc adsp */
@@ -1319,7 +1319,7 @@ tfa98xx_check_ic_rom_version(struct tfa_device *tfa, const unsigned char patchhe
 	 /* check if the revid subtype is in there */
 		if (checkvalue != 0xFFFFFF && checkvalue != 0) {
 			revid = (msb_revid << 8) | lsb_revid; /* full revid */
-			if (revid != tfa->rev) {
+			if ((revid & 0xff) != (tfa->rev & 0xff)) {
 				if (revid != tfa->revid) {
 					pr_err("container patch and HW mismatch: expected: 0x%02x, actual 0x%02x\n",
 						tfa->revid, revid);
@@ -3467,7 +3467,7 @@ enum tfa_error tfa_dev_stop(struct tfa_device *tfa)
 	/* powerdown CF */
 	err = tfa98xx_powerdown(tfa, 1);
 	if (err != Tfa98xx_Error_Ok)
-		return tfa_error_max;;                                   //modify by mono for kernel6.1 20231030
+		return tfa_error_max;                                   //modify by mono for kernel6.1 20231030
 
 	/* disable I2S output on TFA1 devices without TDM */
 	err = tfa98xx_aec_output(tfa, 0);
@@ -4080,7 +4080,7 @@ enum tfa_error tfa_dev_set_state(struct tfa_device *tfa, enum tfa_state state, i
 										* Disable MTP clock to protect memory.
 										* However in case of calibration wait for DSP! (This should be case only during calibration).
 										*/
-		if (TFA_GET_BF(tfa, MTPOTC) == 1 && tfa->tfa_family == 2) {
+		if (TFA_GET_BF(tfa, MTPOTC) == 1 && tfa->tfa_family == 2 && (!tfa->is_probus_device)) {
 			count = MTPEX_WAIT_NTRIES * 4; /* Calibration takes a lot of time */
 			while ((TFA_GET_BF(tfa, MTPEX) != 1) && count) {
 				msleep_interruptible(10);
