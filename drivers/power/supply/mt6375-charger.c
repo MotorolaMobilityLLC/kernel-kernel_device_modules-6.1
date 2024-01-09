@@ -2241,11 +2241,6 @@ void get_qc_charger_type_func_work(struct work_struct *work)
 		pr_err("Force set qc3 5V");
 	}
 
-	if (ddata->qc_chg_type != USB_TYPE_QC3P_27) {
-		mt6375_chg_field_set(ddata, F_IAICR, 3000);
-	} else {
-		mt6375_chg_field_set(ddata, F_IAICR, 500);
-	}
 }
 
 #define DUMP_REG_BUF_SIZE	1024
