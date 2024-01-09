@@ -590,6 +590,7 @@ static struct mtk_panel_params ext_params_30hz = {
 	},
 	.data_rate = 500,
 	.lp_perline_en = 1,
+	.te_delay = 1,
 
 	.cust_esd_check = 1,
 	.esd_check_enable = 1,
@@ -667,6 +668,7 @@ static struct mtk_panel_params ext_params_60hz = {
 	},
 	.data_rate = 500,
 	.lp_perline_en = 1,
+	.te_delay = 1,
 
 	.cust_esd_check = 1,
 	.esd_check_enable = 1,
@@ -745,6 +747,7 @@ static struct mtk_panel_params ext_params_90hz = {
 	},
 	.data_rate = 675,
 	.lp_perline_en = 1,
+	.te_delay = 1,
 
 	.cust_esd_check = 1,
 	.esd_check_enable = 1,
