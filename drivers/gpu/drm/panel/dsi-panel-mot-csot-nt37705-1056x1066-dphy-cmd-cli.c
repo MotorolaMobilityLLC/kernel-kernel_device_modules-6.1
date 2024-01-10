@@ -55,6 +55,7 @@ struct lcm {
 };
 
 static struct lcm *g_ctx = NULL;
+static enum panel_version panel_ver = PANEL_V3;
 
 #define lcm_dcs_write_seq(ctx, seq...)                                         \
 	({                                                                     \
@@ -424,6 +425,54 @@ static const struct drm_display_mode switch_mode_48hz = {
 	.vtotal		= VACT + VFP + VSA + VBP,
 };
 
+static const struct drm_display_mode switch_mode_90hz = {
+	.clock = 105538,
+	.hdisplay	= HACT,
+	.hsync_start	= HACT + HFP,
+	.hsync_end	= HACT + HFP + HSA,
+	.htotal		= HACT + HFP + HSA + HBP,
+	.vdisplay	= VACT,
+	.vsync_start	= VACT + VFP,
+	.vsync_end	= VACT + VFP + VSA,
+	.vtotal		= VACT + VFP + VSA + VBP,
+};
+
+static struct mtk_panel_params ext_params_90hz = {
+	.dyn_fps = {
+		.vact_timing_fps = 90,
+		.data_rate = 750,
+	},
+	.data_rate = 750,
+	.lp_perline_en = 1,
+
+	.cust_esd_check = 1,
+	.esd_check_enable = 1,
+	.lcm_esd_check_table[0] = {
+		.cmd = 0x0a,
+		.count = 1,
+		.para_list[0] = 0x9c,
+	},
+	.lcm_color_mode = MTK_DRM_COLOR_MODE_DISPLAY_P3,
+	.physical_width_um = 68256,
+	.physical_height_um = 151680,
+	.lcm_index = 0,
+	.lcm_degree = 180,
+
+	//.output_mode = MTK_PANEL_DSC_SINGLE_PORT,
+
+	//.max_bl_level = 3514,
+	.hbm_type = HBM_MODE_DCS_ONLY,
+	//.te_delay = 1,
+
+	.panel_cellid_reg = 0xAC,
+	.panel_cellid_offset_reg = 0x6F,
+	.panel_cellid_offset = 0x0D,
+	.panel_cellid_len = 23,
+
+	.panel_ver = 1,
+	.panel_name = "csot_nt37705_1056_1066",
+	.panel_supplier = "csot-nt37705",
+};
 
 #if defined(CONFIG_MTK_PANEL_EXT)
 static struct mtk_panel_params ext_params_60hz = {
@@ -590,10 +639,24 @@ static int mtk_panel_ext_param_set(struct drm_panel *panel,
 		ext->params = &ext_params_60hz;
 	else if (drm_mode_vrefresh(m) == 48)
 		ext->params = &ext_params_48hz;
+	else if (drm_mode_vrefresh(m) == 90)
+		ext->params = &ext_params_90hz;
 	else
 		ret = 1;
 
 	return ret;
+}
+
+static void mode_switch_to_90(struct drm_panel *panel,
+	enum MTK_PANEL_MODE_SWITCH_STAGE stage)
+{
+	if (stage == BEFORE_DSI_POWERDOWN) {
+		struct lcm *ctx = panel_to_lcm(panel);
+
+		lcm_dcs_write_seq_static(ctx, 0x2F, 0x02);
+
+		atomic_set(&ctx->current_fps, 90);
+	}
 }
 
 static void mode_switch_to_60(struct drm_panel *panel,
@@ -641,6 +704,8 @@ static int mode_switch(struct drm_panel *panel,
 		mode_switch_to_60(panel, stage);
 	} else if (drm_mode_vrefresh(m) == 48) {
 		mode_switch_to_48(panel, stage);
+	} else if (drm_mode_vrefresh(m) == 90) {
+		mode_switch_to_90(panel, stage);
 	} else
 		ret = 1;
 
@@ -844,6 +909,7 @@ static int lcm_get_modes(struct drm_panel *panel,
 {
 	struct drm_display_mode *mode;
 	struct drm_display_mode *mode_1;
+	struct drm_display_mode *mode_2;
 
 	mode = drm_mode_duplicate(connector->dev, &switch_mode_60hz);
 	if (!mode) {
@@ -864,8 +930,22 @@ static int lcm_get_modes(struct drm_panel *panel,
 		return -ENOMEM;
 	}
 	drm_mode_set_name(mode_1);
-	mode_1->type = DRM_MODE_TYPE_DRIVER | DRM_MODE_TYPE_PREFERRED;
+	mode_1->type = DRM_MODE_TYPE_DRIVER ;
 	drm_mode_probed_add(connector, mode_1);
+
+	mode_2 = drm_mode_duplicate(connector->dev, &switch_mode_90hz);
+	if (!mode_2) {
+		dev_info(connector->dev->dev, "failed to add mode %ux%ux@%u\n",
+			 switch_mode_90hz.hdisplay, switch_mode_90hz.vdisplay,
+			 drm_mode_vrefresh(&switch_mode_90hz));
+		return -ENOMEM;
+	}
+	drm_mode_set_name(mode_2);
+	mode_2->type = DRM_MODE_TYPE_DRIVER ;
+
+	if (panel_ver== 3) {
+		drm_mode_probed_add(connector, mode_2);
+	}
 
 	connector->display_info.width_mm = 68;
 	connector->display_info.height_mm = 152;
@@ -947,6 +1027,7 @@ static int lcm_probe(struct mipi_dsi_device *dsi)
 	ctx->version = val ? be32_to_cpup(val) : 2;
 
 	pr_info("%s: panel version 0x%x\n", __func__, ctx->version);
+	panel_ver = ctx->version;
 
 	ret = mipi_dsi_attach(dsi);
 	if (ret < 0)
