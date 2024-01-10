@@ -142,6 +142,7 @@
 #define MT6375_MSK_BMCIOOSC_EN	BIT(0)
 #define MT6375_MSK_VBUSDET_EN	BIT(1)
 #define MT6375_MSK_LPWR_EN	BIT(3)
+#define MT6375_MSK_BG_ITRIM_EN	BIT(4)
 /* MT6375_REG_MTINT1: 0x98 */
 #define MT6375_MSK_WAKEUP	BIT(0)
 #define MT6375_MSK_VBUS80	BIT(1)
@@ -218,6 +219,7 @@
 /* MT6375_REG_TYPECOTPCTRL: 0xCD */
 #define MT6375_MSK_TYPECOTP_HWEN	BIT(0)
 #define MT6375_MSK_TYPECOTP_FWEN	BIT(2)
+#define MT6375_MSK_VREFTS_EN	BIT(7)
 /* MT6375_REG_FODCTRL: 0xCF */
 #define MT6375_MSK_FOD_SRC_EN	BIT(3)
 #define MT6375_MSK_FOD_SNK_EN	BIT(6)
@@ -1631,6 +1633,13 @@ static int mt6375_tcpc_init(struct tcpc_device *tcpc, bool sw_reset)
 	mt6375_clr_bits(ddata, TCPC_V10_REG_POWER_CTRL,
 			TCPC_V10_REG_BLEED_DISC_EN);
 
+	if (ddata->desc->en_moto_typec_otp) {
+		/* Enable VREFTS */
+		mt6375_set_bits(ddata, MT6375_REG_TYPECOTPCTRL, MT6375_MSK_VREFTS_EN);
+		/* Off OTP_HW */
+		mt6375_clr_bits(ddata, MT6375_REG_TYPECOTPCTRL, MT6375_MSK_TYPECOTP_HWEN);
+	}
+
 	/* SHIPPING off, AUTOIDLE enable, TIMEOUT = 6.4ms */
 	mt6375_write8(ddata, MT6375_REG_SYSCTRL1, 0xB8);
 	mdelay(1);
@@ -1935,6 +1944,11 @@ static int mt6375_set_low_power_mode(struct tcpc_device *tcpc, bool en,
 		if (ret < 0)
 			return ret;
 		data = MT6375_MSK_LPWR_EN;
+
+		if (ddata->desc->en_moto_typec_otp) {
+			data = MT6375_MSK_BG_ITRIM_EN | MT6375_MSK_LPWR_EN;
+		}
+
 #if CONFIG_TYPEC_CAP_NORP_SRC
 		data |= MT6375_MSK_VBUSDET_EN;
 #endif	/* CONFIG_TYPEC_CAP_NORP_SRC */
@@ -2688,6 +2702,13 @@ static int mt6375_parse_dt(struct mt6375_tcpc_data *ddata)
 			ddata->wd0_tdet = val;
 		}
 	}
+
+	desc->en_moto_typec_otp = device_property_read_bool(dev, "mmi,en-moto-typec-otp");
+	if (desc->en_typec_otp && desc->en_moto_typec_otp) {
+		desc->en_typec_otp = false;
+	}
+	pr_info("%s moto_typec_otp:%d mtk_typec_otp:%d\n",
+			__func__, desc->en_moto_typec_otp, desc->en_typec_otp);
 
 	ddata->support_cid = device_property_read_bool(dev, "mmi,support_CID");
 

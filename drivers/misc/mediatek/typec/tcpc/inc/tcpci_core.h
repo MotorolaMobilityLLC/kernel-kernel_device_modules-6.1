@@ -91,6 +91,7 @@ struct tcpc_desc {
 	bool en_ctd;
 	bool en_fod;
 	bool en_typec_otp;
+	bool en_moto_typec_otp;
 	bool en_floatgnd;
 	bool en_vbus_short_cc;
 	u32 wd_sbu_calib_init;
