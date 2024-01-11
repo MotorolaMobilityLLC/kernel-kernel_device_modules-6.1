@@ -581,6 +581,139 @@ static int mt6369_of_parse_cb(struct device_node *np,
 	return 0;
 }
 
+#define MT6369_RG_STRUP_ANA_CON1_ADDR	0x0989
+#define MT6369_RG_MOSCON1_EN_SHIFT		1
+#define MT6369_RG_MOSCON1_EN_MASK		0x02
+
+static int mt6369_moscon1_regulator_enable(struct regulator_dev *rdev)
+{
+	int ret = 0;
+	unsigned int val = 0;
+
+	ret = regmap_read(rdev->regmap, MT6369_RG_STRUP_ANA_CON1_ADDR, &val);
+	pr_info("%s read ANA_CON1 val=0x%02X ret =%d\n", __func__, val, ret);
+	if (ret < 0) {
+		return ret;
+	}
+
+	val = val | MT6369_RG_MOSCON1_EN_MASK;
+	ret = regmap_write(rdev->regmap, MT6369_RG_STRUP_ANA_CON1_ADDR, val);
+
+	if (ret < 0) {
+		pr_info("%s Enable moscon1 failed. ret=%d\n", __func__, ret);
+	} else {
+		pr_info("%s Enable moscon1 successful. val=0x%02X\n", __func__, val);
+	}
+
+	return ret;
+}
+
+static int mt6369_moscon1_regulator_disable(struct regulator_dev *rdev)
+{
+	int ret = 0;
+	unsigned int val = 0;
+
+	ret = regmap_read(rdev->regmap, MT6369_RG_STRUP_ANA_CON1_ADDR, &val);
+	pr_info("%s read ANA_CON1 val=0x%02X ret =%d\n", __func__, val ,ret);
+	if (ret < 0) {
+		return ret;
+	}
+
+	val = val & (~ MT6369_RG_MOSCON1_EN_MASK);
+	ret = regmap_write(rdev->regmap, MT6369_RG_STRUP_ANA_CON1_ADDR, val);
+
+	if (ret < 0) {
+		pr_info("%s Disable moscon1 failed. ret=%d\n", __func__, ret);
+	} else {
+		pr_info("%s Disable moscon1 successful. val=0x%02X\n", __func__, val);
+	}
+
+	return ret;
+}
+
+static int mt6369_moscon1_regulator_is_enabled(struct regulator_dev *rdev)
+{
+	int ret = 0;
+	unsigned int val = 0;
+
+	ret = regmap_read(rdev->regmap, MT6369_RG_STRUP_ANA_CON1_ADDR, &val);
+	pr_info("%s read ANA_CON1 val=0x%02X ret=%d\n", __func__, val, ret);
+
+	if (ret < 0) {
+		return ret;
+	}
+
+	return (val & MT6369_RG_MOSCON1_EN_MASK) == MT6369_RG_MOSCON1_EN_MASK;
+}
+
+static const struct regulator_ops mt6369_moscon1_ops = {
+	.enable = mt6369_moscon1_regulator_enable,
+	.disable = mt6369_moscon1_regulator_disable,
+	.is_enabled = mt6369_moscon1_regulator_is_enabled,
+};
+
+static const struct regulator_init_data mt6369_moscon1_constraints = {
+	.constraints = {
+		.valid_ops_mask = REGULATOR_CHANGE_STATUS,
+		.apply_uV = 0,
+		.min_uV = 0,
+		.max_uV = 5000000,
+	},
+};
+
+static struct regulator_desc mt6369_moscon1_rdesc = {
+	.name = "mt6369_mos_con1",
+	.of_match = of_match_ptr("mt6369,mos-con1"),
+	.regulators_node = of_match_ptr("regulators"),
+	.ops = &mt6369_moscon1_ops,
+	.owner = THIS_MODULE,
+	.type = REGULATOR_VOLTAGE,
+	.enable_reg = MT6369_RG_STRUP_ANA_CON1_ADDR,
+	.enable_mask = MT6369_RG_MOSCON1_EN_MASK,
+	.enable_val = MT6369_RG_MOSCON1_EN_MASK,
+};
+
+static int mt6369_moscon1_regulator_init(struct platform_device *pdev)
+{
+	struct device_node *np = pdev->dev.parent->of_node;
+	struct regulator_dev *rdev = NULL;
+	struct regulator_config moscon1_config = {};
+	int ret = -EINVAL;
+
+	if (IS_ERR_OR_NULL(np)) {
+		dev_err(&pdev->dev, "np is ERR or NULL\n");
+		return ret;
+	}
+
+	np = of_get_child_by_name(np, "regulators");
+	if (IS_ERR_OR_NULL(np)) {
+		dev_err(&pdev->dev, "not found regulators failed\n");
+		return ret;
+	}
+
+	np = of_get_child_by_name(np, "mos-con1");
+	if (IS_ERR_OR_NULL(np)) {
+		dev_err(&pdev->dev, "not found mos-con1\n");
+		return ret;
+	}
+
+	/*mt6369_moscon1_rdesc has default name*/
+	ret = of_property_read_string(np, "regulator-name", &mt6369_moscon1_rdesc.name);
+	dev_notice(&pdev->dev, "get regulator-name=%s\n", mt6369_moscon1_rdesc.name);
+
+	moscon1_config.dev = pdev->dev.parent;
+	moscon1_config.regmap = dev_get_regmap(pdev->dev.parent, NULL);
+	moscon1_config.init_data = &mt6369_moscon1_constraints;
+	rdev = devm_regulator_register(&pdev->dev, &mt6369_moscon1_rdesc, &moscon1_config);
+	if (IS_ERR(rdev)) {
+		ret = PTR_ERR(rdev);
+		dev_err(&pdev->dev, "failed to register %s, ret=%d\n",
+			mt6369_moscon1_rdesc.name, ret);
+	}
+
+	return ret;
+}
+
 static int mt6369_regulator_probe(struct platform_device *pdev)
 {
 	struct regulator_config config = {};
@@ -618,6 +751,8 @@ static int mt6369_regulator_probe(struct platform_device *pdev)
 			continue;
 		}
 	}
+
+	mt6369_moscon1_regulator_init(pdev);
 
 	return 0;
 }
