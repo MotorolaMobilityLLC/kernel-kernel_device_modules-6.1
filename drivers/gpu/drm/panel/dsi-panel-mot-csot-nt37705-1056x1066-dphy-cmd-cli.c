@@ -451,7 +451,7 @@ static struct mtk_panel_params ext_params_60hz = {
 
 	//.max_bl_level = 3514,
 	.hbm_type = HBM_MODE_DCS_ONLY,
-	//.te_delay = 1,
+	.te_delay = 1,
 
 	.panel_cellid_reg = 0xAC,
 	.panel_cellid_offset_reg = 0x6F,
@@ -489,7 +489,7 @@ static struct mtk_panel_params ext_params_48hz = {
 
 	//.max_bl_level = 3514,
 	.hbm_type = HBM_MODE_DCS_ONLY,
-	//.te_delay = 1,
+	.te_delay = 1,
 
 	.panel_cellid_reg = 0xAC,
 	.panel_cellid_offset_reg = 0x6F,
