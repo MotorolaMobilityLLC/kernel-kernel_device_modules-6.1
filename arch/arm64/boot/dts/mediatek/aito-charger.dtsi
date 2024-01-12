@@ -123,10 +123,10 @@
 	pre_charge_current = <400>;
 
 	temp-t4-threshold = <60>;
-	boot-battery-voltage = <3300000>;
-	boot-battery-voltage-max = <3300000>;
+	boot-battery-voltage = <3500000>;
+	boot-battery-voltage-max = <3500000>;
 	/*boot battery voltage when using AC charger*/
-	ac_charger_boot_battery_voltage = <3200000>;
+	ac_charger_boot_battery_voltage = <3400000>;
 };
 
 &mtk_ctd {
