@@ -871,6 +871,15 @@ int charger_dev_config_qc_charger(struct charger_device *chg_dev)
 }
 EXPORT_SYMBOL(charger_dev_config_qc_charger);
 
+int charger_dev_enable_mos_short(struct charger_device *chg_dev, bool en)
+{
+	if (chg_dev != NULL && chg_dev->ops != NULL && chg_dev->ops->enable_mos_short)
+		return chg_dev->ops->enable_mos_short(chg_dev, en);
+
+	return -EOPNOTSUPP;
+}
+EXPORT_SYMBOL(charger_dev_enable_mos_short);
+
 static DEVICE_ATTR_RO(name);
 
 static struct attribute *charger_class_attrs[] = {
