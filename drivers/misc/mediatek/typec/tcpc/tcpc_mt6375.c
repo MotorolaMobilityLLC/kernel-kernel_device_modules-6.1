@@ -2337,6 +2337,15 @@ static int mt6375_get_vbus_voltage(struct tcpc_device *tcpc, u32 *vbus)
 	return 0;
 }
 
+static int mt6375_set_cid(struct tcpc_device *tcpc, bool en)
+{
+	struct mt6375_tcpc_data *ddata = tcpc_get_dev_data(tcpc);
+
+	ddata->support_cid = en;
+
+	return 0;
+}
+
 static int mt6375_is_support_cid(struct tcpc_device *tcpc)
 {
 	struct mt6375_tcpc_data *ddata = tcpc_get_dev_data(tcpc);
@@ -2374,6 +2383,7 @@ static struct tcpc_ops mt6375_tcpc_ops = {
 	.is_vsafe0v = mt6375_is_vsafe0v,
 	.is_support_cid = mt6375_is_support_cid,
 	.is_cid_plug = mt6375_is_cid_plug,
+	.set_cid = mt6375_set_cid,
 	.set_low_power_mode = mt6375_set_low_power_mode,
 
 #if IS_ENABLED(CONFIG_USB_POWER_DELIVERY)

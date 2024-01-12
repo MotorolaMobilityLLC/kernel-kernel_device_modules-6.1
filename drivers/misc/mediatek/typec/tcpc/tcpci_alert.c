@@ -456,7 +456,13 @@ static int tcpci_set_wake_lock_pd(struct tcpc_device *tcpc, bool pd_lock)
 static inline int tcpci_report_usb_port_attached(struct tcpc_device *tcpc)
 {
 	TCPC_INFO("usb_port_attached\n");
-
+	if (tcpci_is_support_cid(tcpc) && !tcpci_is_cid_plug(tcpc)) {
+		/*Not detect cid plug, maybe cid is abnormal, cid can't report a typec cable plug-in irq,
+		  set cc role back to try.sink mode. and disable CID function*/
+		tcpci_notify_cid_state(tcpc, true);
+		TCPC_INFO("set typec_role_new to try.sink\n");
+		tcpci_set_cid(tcpc, false);
+	}
 	tcpci_set_wake_lock_pd(tcpc, true);
 
 #if IS_ENABLED(CONFIG_USB_POWER_DELIVERY)

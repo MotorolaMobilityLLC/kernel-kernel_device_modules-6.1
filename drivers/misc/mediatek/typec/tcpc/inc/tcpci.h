@@ -115,7 +115,7 @@ int tcpci_notify_typec_otp(struct tcpc_device *tcpc);
 
 int tcpci_set_cc_hidet(struct tcpc_device *tcpc, bool en);
 int tcpci_notify_wd0_state(struct tcpc_device *tcpc, bool wd0_state);
-
+int tcpci_set_cid(struct tcpc_device *tcpc, bool en);
 int tcpci_is_support_cid(struct tcpc_device *tcpc);
 int tcpci_is_cid_plug(struct tcpc_device *tcpc);
 int tcpci_notify_cid_state(struct tcpc_device *tcpc, bool cid_state);
