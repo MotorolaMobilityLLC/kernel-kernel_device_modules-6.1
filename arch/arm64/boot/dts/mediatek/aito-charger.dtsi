@@ -82,7 +82,7 @@
 		wls_det_int {
 			pinmux = <PINMUX_GPIO36__FUNC_GPIO36>;
 			input-enable;
-			bias-pull-down;
+			bias-disable;
 		};
 		wls_mode_select {
 			pinmux = <PINMUX_GPIO170__FUNC_GPIO170>;
