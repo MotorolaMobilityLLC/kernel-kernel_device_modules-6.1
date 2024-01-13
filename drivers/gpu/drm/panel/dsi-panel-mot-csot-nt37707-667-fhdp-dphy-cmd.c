@@ -462,6 +462,12 @@ static int lcm_prepare(struct drm_panel *panel)
 	lcm_panel_get_data(ctx);
 #endif
 
+	atomic_set(&ctx->hbm_mode, 0);
+	atomic_set(&ctx->dc_mode, 0);
+	atomic_set(&ctx->apl_mode, 0);
+	atomic_set(&ctx->current_bl, 0);
+	atomic_set(&ctx->current_fps, 120);
+
 	pr_info("%s-\n", __func__);
 	return ret;
 error:
