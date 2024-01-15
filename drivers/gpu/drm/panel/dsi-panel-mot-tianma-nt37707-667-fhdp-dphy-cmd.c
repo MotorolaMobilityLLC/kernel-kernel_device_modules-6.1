@@ -150,77 +150,117 @@ static void lcm_dcs_write(struct lcm *ctx, const void *data, size_t len)
 
 static void lcm_panel_init(struct lcm *ctx)
 {
-lcm_dcs_write_seq_static(ctx, 0x5A, 0x01);
-lcm_dcs_write_seq_static(ctx, 0xFF, 0xAA, 0x55, 0xA5, 0x80);
-//Power seq
-lcm_dcs_write_seq_static(ctx, 0x6F, 0x0A);
-lcm_dcs_write_seq_static(ctx, 0xF6, 0x70, 0x70, 0x70, 0x70, 0x70);
-//TEopt
-lcm_dcs_write_seq_static(ctx, 0xFF, 0xAA, 0x55, 0xA5, 0x81);
-lcm_dcs_write_seq_static(ctx, 0x6F, 0x0D);
-lcm_dcs_write_seq_static(ctx, 0xFB, 0x80);
-//DDIC internal setting
-lcm_dcs_write_seq_static(ctx, 0xFF, 0xAA, 0x55, 0xA5, 0x81);
-lcm_dcs_write_seq_static(ctx, 0x6F, 0x0C);
-lcm_dcs_write_seq_static(ctx, 0xFD, 0x08);
-lcm_dcs_write_seq_static(ctx, 0x6F, 0x02);
-lcm_dcs_write_seq_static(ctx, 0xF9, 0x84);
-lcm_dcs_write_seq_static(ctx, 0x6F, 0x10);
-lcm_dcs_write_seq_static(ctx, 0xFB, 0x04);
-//LVDET skip frame off
-lcm_dcs_write_seq_static(ctx, 0xFF, 0xAA, 0x55, 0xA5, 0x80);
-lcm_dcs_write_seq_static(ctx, 0x6F, 0x48);
-lcm_dcs_write_seq_static(ctx, 0xF2, 0x00);
+	lcm_dcs_write_seq_static(ctx, 0x5A, 0x01);
+	lcm_dcs_write_seq_static(ctx, 0xFF, 0xAA, 0x55, 0xA5, 0x80);
+	//Power seq
+	lcm_dcs_write_seq_static(ctx, 0x6F, 0x0A);
+	lcm_dcs_write_seq_static(ctx, 0xF6, 0x70, 0x70, 0x70, 0x70, 0x70);
+	//TEopt
+	lcm_dcs_write_seq_static(ctx, 0xFF, 0xAA, 0x55, 0xA5, 0x81);
+	lcm_dcs_write_seq_static(ctx, 0x6F, 0x0D);
+	lcm_dcs_write_seq_static(ctx, 0xFB, 0x80);
+	if(ctx->version == 1) {
+		//for EM_DT=0 condition
+		lcm_dcs_write_seq_static(ctx, 0xF0, 0x55, 0xAA, 0x52, 0x08, 0x01);
+		lcm_dcs_write_seq_static(ctx, 0xE5, 0x00);
+		//EMITBU Dengfensheding
+		lcm_dcs_write_seq_static(ctx, 0xF0, 0x55, 0xAA, 0x52, 0x08, 0x01);
+		lcm_dcs_write_seq_static(ctx, 0x6F, 0x01);
+		lcm_dcs_write_seq_static(ctx, 0xE7, 0x20, 0x10);
+		lcm_dcs_write_seq_static(ctx, 0x6F, 0x07);
+		lcm_dcs_write_seq_static(ctx, 0xE7, 0x00);
+		lcm_dcs_write_seq_static(ctx, 0x6F, 0x0C);
+		lcm_dcs_write_seq_static(ctx, 0xE7, 0x00);
+		lcm_dcs_write_seq_static(ctx, 0x6F, 0x11);
+		lcm_dcs_write_seq_static(ctx, 0xE7, 0x00);
+	}
 
-lcm_dcs_write_seq_static(ctx, 0xFF, 0xAA, 0x55, 0xA5, 0x80);
-//ASR on
-lcm_dcs_write_seq_static(ctx, 0x6F, 0x16);
-lcm_dcs_write_seq_static(ctx, 0xF4, 0x20, 0x74);
+	//DDIC internal setting
+	lcm_dcs_write_seq_static(ctx, 0xFF, 0xAA, 0x55, 0xA5, 0x81);
+	lcm_dcs_write_seq_static(ctx, 0x6F, 0x0C);
+	lcm_dcs_write_seq_static(ctx, 0xFD, 0x08);
+	lcm_dcs_write_seq_static(ctx, 0x6F, 0x02);
+	lcm_dcs_write_seq_static(ctx, 0xF9, 0x84);
+	lcm_dcs_write_seq_static(ctx, 0x6F, 0x10);
+		if(ctx->version == 1)
+			lcm_dcs_write_seq_static(ctx, 0xFB, 0x04);
+		else
+			lcm_dcs_write_seq_static(ctx, 0xFB, 0x40);
+	//LVDET skip frame off
+	lcm_dcs_write_seq_static(ctx, 0xFF, 0xAA, 0x55, 0xA5, 0x80);
+	lcm_dcs_write_seq_static(ctx, 0x6F, 0x48);
+	lcm_dcs_write_seq_static(ctx, 0xF2, 0x00);
 
-lcm_dcs_write_seq_static(ctx, 0xFF, 0xAA, 0x55, 0xA5, 0x81);
-lcm_dcs_write_seq_static(ctx, 0x6F, 0x0B);
-lcm_dcs_write_seq_static(ctx, 0xFD, 0x04);
+	lcm_dcs_write_seq_static(ctx, 0xFF, 0xAA, 0x55, 0xA5, 0x80);
+	//ASR on
+	lcm_dcs_write_seq_static(ctx, 0x6F, 0x16);
 
-//internal
-lcm_dcs_write_seq_static(ctx, 0xFF, 0xAA, 0x55, 0xA5, 0x80);
-lcm_dcs_write_seq_static(ctx, 0x6F, 0x42);
-lcm_dcs_write_seq_static(ctx, 0xF4, 0x00);
+	lcm_dcs_write_seq_static(ctx, 0xF4, 0x02, 0x74);
 
-//internal
-lcm_dcs_write_seq_static(ctx, 0xFF, 0xAA, 0x55, 0xA5, 0x80);
-lcm_dcs_write_seq_static(ctx, 0x6F, 0x49);
-lcm_dcs_write_seq_static(ctx, 0xF2, 0x10);
+	lcm_dcs_write_seq_static(ctx, 0xFF, 0xAA, 0x55, 0xA5, 0x81);
+	lcm_dcs_write_seq_static(ctx, 0x6F, 0x0B);
+	lcm_dcs_write_seq_static(ctx, 0xFD, 0x04);
 
-//DDIC internal setting
-//RM=1, DM=0
-lcm_dcs_write_seq_static(ctx, 0x17, 0x30);
-lcm_dcs_write_seq_static(ctx, 0x2F, 0x02);
-lcm_dcs_write_seq_static(ctx, 0x5F, 0x00, 0x00);
+	//internal
+	lcm_dcs_write_seq_static(ctx, 0xFF, 0xAA, 0x55, 0xA5, 0x80);
+	lcm_dcs_write_seq_static(ctx, 0x6F, 0x42);
+	lcm_dcs_write_seq_static(ctx, 0xF4, 0x00);
 
-//TEon
-lcm_dcs_write_seq_static(ctx, 0x35, 0x00);
-lcm_dcs_write_seq_static(ctx, 0x51, 0x00, 0x00);
-lcm_dcs_write_seq_static(ctx, 0x6F, 0x04);
-lcm_dcs_write_seq_static(ctx, 0x51, 0x08, 0x26);
-lcm_dcs_write_seq_static(ctx, 0x53, 0x20);
-lcm_dcs_write_seq_static(ctx, 0x2A, 0x00, 0x00, 0x04, 0x37);
-lcm_dcs_write_seq_static(ctx, 0x2B, 0x00, 0x00, 0x0A, 0x4F);
-lcm_dcs_write_seq_static(ctx, 0x90, 0x03);
-lcm_dcs_write_seq_static(ctx, 0x6F, 0x01);
-lcm_dcs_write_seq_static(ctx, 0x90, 0x43);
+	//internal
+	lcm_dcs_write_seq_static(ctx, 0xFF, 0xAA, 0x55, 0xA5, 0x80);
+	lcm_dcs_write_seq_static(ctx, 0x6F, 0x49);
+	lcm_dcs_write_seq_static(ctx, 0xF2, 0x10);
+	if(ctx->version != 1) {
+		//VINITN2Trimcode=0
+		lcm_dcs_write_seq_static(ctx, 0xFF, 0xAA, 0x55, 0xA5, 0x80);
+		lcm_dcs_write_seq_static(ctx, 0x6F, 0x3D);
+		lcm_dcs_write_seq_static(ctx, 0xF8, 0x00);
+		lcm_dcs_write_seq_static(ctx, 0xF0, 0x55, 0xAA, 0x52, 0x08, 0x01);
+		lcm_dcs_write_seq_static(ctx, 0x6F, 0x06);
+		lcm_dcs_write_seq_static(ctx, 0xC5, 0x0A, 0x0A);
+		//internal
+		lcm_dcs_write_seq_static(ctx, 0xFF, 0xAA, 0x55, 0xA5, 0x81);
+		lcm_dcs_write_seq_static(ctx, 0x6F, 0x05);
+		lcm_dcs_write_seq_static(ctx, 0xFE, 0x3C, 0x3C);
 
-//3.75 dsc
-lcm_dcs_write_seq_static(ctx, 0x91, 0xAB, 0x28, 0x00, 0x0C, 0xC2, 0x00, 0x02, 0x0E, 0x01, 0x1F, 0x00, 0x07, 0x08, 0xBB, 0x08, 0x7A, 0x10, 0xF0);
-//LVDET ON
-lcm_dcs_write_seq_static(ctx, 0xF0, 0x55, 0xAA, 0x52, 0x08, 0x01);
-lcm_dcs_write_seq_static(ctx, 0x6F, 0x02);
-lcm_dcs_write_seq_static(ctx, 0xC7, 0x03, 0x47);
-//GC=1
-lcm_dcs_write_seq_static(ctx, 0x26, 0x00);
+		//internal
+		lcm_dcs_write_seq_static(ctx, 0xFF, 0xAA, 0x55, 0xA5, 0x82);
+		lcm_dcs_write_seq_static(ctx, 0x6F, 0x09);
+		lcm_dcs_write_seq_static(ctx, 0xF2, 0xFF);
+	}
+	//DDIC internal setting
+	//RM=1, DM=0
+	lcm_dcs_write_seq_static(ctx, 0x17, 0x30);
+	lcm_dcs_write_seq_static(ctx, 0x2F, 0x02);
+	lcm_dcs_write_seq_static(ctx, 0x5F, 0x00, 0x00);
 
-lcm_dcs_write_seq_static(ctx, 0x11);
-usleep_range(120 * 1000, 121 * 1000);
-lcm_dcs_write_seq_static(ctx, 0x29);
+	//TEon
+	lcm_dcs_write_seq_static(ctx, 0x35, 0x00);
+	lcm_dcs_write_seq_static(ctx, 0x51, 0x00, 0x00);
+	lcm_dcs_write_seq_static(ctx, 0x6F, 0x04);
+	if(ctx->version == 1)
+		lcm_dcs_write_seq_static(ctx, 0x51, 0x08, 0x26);
+	else
+		lcm_dcs_write_seq_static(ctx, 0x51, 0x20, 0x98);
+	lcm_dcs_write_seq_static(ctx, 0x53, 0x20);
+	lcm_dcs_write_seq_static(ctx, 0x2A, 0x00, 0x00, 0x04, 0x37);
+	lcm_dcs_write_seq_static(ctx, 0x2B, 0x00, 0x00, 0x0A, 0x4F);
+	lcm_dcs_write_seq_static(ctx, 0x90, 0x03);
+	lcm_dcs_write_seq_static(ctx, 0x6F, 0x01);
+	lcm_dcs_write_seq_static(ctx, 0x90, 0x43);
+
+	//3.75 dsc
+	lcm_dcs_write_seq_static(ctx, 0x91, 0xAB, 0x28, 0x00, 0x0C, 0xC2, 0x00, 0x02, 0x0E, 0x01, 0x1F, 0x00, 0x07, 0x08, 0xBB, 0x08, 0x7A, 0x10, 0xF0);
+	//LVDET ON
+	lcm_dcs_write_seq_static(ctx, 0xF0, 0x55, 0xAA, 0x52, 0x08, 0x01);
+	lcm_dcs_write_seq_static(ctx, 0x6F, 0x02);
+	lcm_dcs_write_seq_static(ctx, 0xC7, 0x03, 0x47);
+	//GC=1
+	lcm_dcs_write_seq_static(ctx, 0x26, 0x00);
+
+	lcm_dcs_write_seq_static(ctx, 0x11);
+	usleep_range(120 * 1000, 121 * 1000);
+	lcm_dcs_write_seq_static(ctx, 0x29);
 
 	atomic_set(&ctx->hbm_mode, 0);
 	atomic_set(&ctx->dc_mode, 0);
@@ -337,6 +377,12 @@ static int lcm_prepare(struct drm_panel *panel)
 	lcm_panel_get_data(ctx);
 #endif
 
+	atomic_set(&ctx->hbm_mode, 0);
+	atomic_set(&ctx->dc_mode, 0);
+	atomic_set(&ctx->apl_mode, 0);
+	atomic_set(&ctx->current_bl, 0);
+	atomic_set(&ctx->current_fps, 120);
+
 	pr_info("%s-\n", __func__);
 	return ret;
 error:
@@ -385,7 +431,6 @@ static const struct drm_display_mode switch_mode_120hz = {
 	.vtotal		= VACT + VFP + VSA + VBP,
 };
 
-#if 0
 static const struct drm_display_mode switch_mode_90hz = {
 	.clock = 279750,
 	.hdisplay	= HACT,
@@ -454,11 +499,10 @@ static const struct drm_display_mode switch_mode_1hz = {
 	.vsync_end	= VACT + VFP + VSA,
 	.vtotal		= VACT + VFP + VSA + VBP+2,
 };
-#endif
+
 
 #if defined(CONFIG_MTK_PANEL_EXT)
 
-#if 0
 static struct mtk_panel_params ext_params_30hz = {
 	.dyn_fps = {
 		.switch_en = 1,
@@ -467,6 +511,7 @@ static struct mtk_panel_params ext_params_30hz = {
 	},
 	.data_rate = 500,
 	.lp_perline_en = 1,
+	.te_delay = 1,
 
 	.cust_esd_check = 1,
 	.esd_check_enable = 1,
@@ -544,6 +589,7 @@ static struct mtk_panel_params ext_params_60hz = {
 	},
 	.data_rate = 500,
 	.lp_perline_en = 1,
+	.te_delay = 1,
 
 	.cust_esd_check = 1,
 	.esd_check_enable = 1,
@@ -622,6 +668,7 @@ static struct mtk_panel_params ext_params_90hz = {
 	},
 	.data_rate = 675,
 	.lp_perline_en = 1,
+	.te_delay = 1,
 
 	.cust_esd_check = 1,
 	.esd_check_enable = 1,
@@ -690,7 +737,6 @@ static struct mtk_panel_params ext_params_90hz = {
 	.panel_name = "tianma_nt37707_667_1080_2640",
 	.panel_supplier = "tianma-nt37707",
 };
-#endif
 
 static struct mtk_panel_params ext_params_120hz = {
 	.dyn_fps = {
@@ -769,7 +815,6 @@ static struct mtk_panel_params ext_params_120hz = {
 	.panel_supplier = "tianma-nt37707",
 };
 
-#if 0
 static struct mtk_panel_params ext_params_24hz = {
 	.dyn_fps = {
 		.switch_en = 1,
@@ -1000,7 +1045,6 @@ static struct mtk_panel_params ext_params_1hz = {
 	.panel_name = "tianma_nt37707_667_1080_2640",
 	.panel_supplier = "tianma-nt37707",
 };
-#endif
 
 static int panel_ata_check(struct drm_panel *panel)
 {
@@ -1012,6 +1056,8 @@ static int lcm_setbacklight_cmdq(void *dsi, dcs_write_gce cb, void *handle,
 				 unsigned int level)
 {
 	char bl_tb0[] = { 0x51, 0x0f, 0xff};
+	char apl_on[] = { 0x5F, 0x00, 0x01};
+	char apl_off[] = { 0x5F, 0x00, 0x00};
 	struct lcm *ctx = g_ctx;
 	unsigned int current_bl;
 
@@ -1021,6 +1067,16 @@ static int lcm_setbacklight_cmdq(void *dsi, dcs_write_gce cb, void *handle,
 	}
 
 	current_bl = atomic_read(&ctx->current_bl);
+
+	if (atomic_read(&ctx->apl_mode) && (level <= APL_THRESHOLD)) {
+		pr_info("%s: disable DIC APL (BL: %d -> %d)\n", __func__, current_bl, level);
+		cb(dsi, handle, apl_off, ARRAY_SIZE(apl_off));
+		atomic_set(&ctx->apl_mode, 0);
+	} else if(!(atomic_read(&ctx->apl_mode))  && (level > APL_THRESHOLD)) {
+		pr_info("%s: enable DIC APL (BL: %d -> %d)\n", __func__, current_bl, level);
+		cb(dsi, handle, apl_on, ARRAY_SIZE(apl_on));
+		atomic_set(&ctx->apl_mode, 1);
+	}
 
 	if (!( current_bl&& level)) pr_info("backlight changed from %u to %u\n", current_bl, level);
 	else pr_debug("backlight changed from %u to %u\n", current_bl, level);
@@ -1069,7 +1125,6 @@ static int mtk_panel_ext_param_set(struct drm_panel *panel,
 	int ret = 0;
 	struct drm_display_mode *m = get_mode_by_id(connector, mode);
 
-#if 0
 	if (drm_mode_vrefresh(m) == 1)
 		ext->params = &ext_params_1hz;
 	else if (drm_mode_vrefresh(m) == 10)
@@ -1084,16 +1139,12 @@ static int mtk_panel_ext_param_set(struct drm_panel *panel,
 		ext->params = &ext_params_90hz;
 	else if (drm_mode_vrefresh(m) == 120)
 		ext->params = &ext_params_120hz;
-#endif
-	if (drm_mode_vrefresh(m) == 120)
-		ext->params = &ext_params_120hz;
 	else
 		ret = 1;
 
 	return ret;
 }
 
-#if 0
 static void mode_switch_to_90(struct drm_panel *panel,
 	enum MTK_PANEL_MODE_SWITCH_STAGE stage)
 {
@@ -1109,7 +1160,6 @@ static void mode_switch_to_90(struct drm_panel *panel,
 		atomic_set(&ctx->current_fps, 90);
 	}
 }
-#endif
 
 static void mode_switch_to_120(struct drm_panel *panel,
 	enum MTK_PANEL_MODE_SWITCH_STAGE stage)
@@ -1127,7 +1177,6 @@ static void mode_switch_to_120(struct drm_panel *panel,
 	}
 }
 
-#if 0
 static void mode_switch_to_60(struct drm_panel *panel,
 	enum MTK_PANEL_MODE_SWITCH_STAGE stage)
 {
@@ -1149,6 +1198,10 @@ static void mode_switch_to_60(struct drm_panel *panel,
 		lcm_dcs_write_seq_static(ctx, 0x6F, 0x08);
 
 		lcm_dcs_write_seq_static(ctx, 0xB2, 0x80);
+
+		lcm_dcs_write_seq_static(ctx, 0xF0, 0x55, 0xAA, 0x52, 0x08, 0x00);
+		lcm_dcs_write_seq_static(ctx, 0x6F, 0xD9);
+		lcm_dcs_write_seq_static(ctx, 0xBA, 0x00);
 
 		atomic_set(&ctx->current_fps, 60);
 	}
@@ -1195,7 +1248,7 @@ static void mode_switch_to_24(struct drm_panel *panel,
 		lcm_dcs_write_seq_static(ctx, 0x2F, 0x30);
 		lcm_dcs_write_seq_static(ctx, 0x6D, 0x02, 0x00);
 		lcm_dcs_write_seq_static(ctx, 0x6F, 0x06);
-		lcm_dcs_write_seq_static(ctx, 0xD, 0X00);
+		lcm_dcs_write_seq_static(ctx, 0x6D, 0X00);
 		lcm_dcs_write_seq_static(ctx, 0xF0, 0x55, 0xAA, 0x52, 0x08, 0x00);
 		lcm_dcs_write_seq_static(ctx, 0x6F, 0x08);
 
@@ -1263,7 +1316,6 @@ static void mode_switch_to_1(struct drm_panel *panel,
 		atomic_set(&ctx->current_fps, 1);
 	}
 }
-#endif
 
 static int mode_switch(struct drm_panel *panel,
 		struct drm_connector *connector, unsigned int cur_mode,
@@ -1271,48 +1323,59 @@ static int mode_switch(struct drm_panel *panel,
 {
 	int ret = 0;
 	struct drm_display_mode *m = get_mode_by_id(connector, dst_mode);
+	struct lcm *ctx = panel_to_lcm(panel);
 
 	if (cur_mode == dst_mode)
 		return ret;
-#if 0
-	if (drm_mode_vrefresh(m) == 1) { /*switch to 1 */
-		mode_switch_to_1(panel, stage);
-	} else if (drm_mode_vrefresh(m) == 10) { /*switch to 10 */
-		mode_switch_to_10(panel, stage);
-	} else if (drm_mode_vrefresh(m) == 24) { /*switch to 24 */
-		mode_switch_to_24(panel, stage);
-	} else if (drm_mode_vrefresh(m) == 30) { /*switch to 30 */
-		mode_switch_to_30(panel, stage);
-	} else if (drm_mode_vrefresh(m) == 60) { /*switch to 60 */
-		mode_switch_to_60(panel, stage);
-	} else if (drm_mode_vrefresh(m) == 90) { /*switch to 90 */
-		mode_switch_to_90(panel, stage);
-	} else if (drm_mode_vrefresh(m) == 120) { /*switch to 120 */
-		mode_switch_to_120(panel, stage);
-#endif
-	if (drm_mode_vrefresh(m) == 120) { /*switch to 120 */
-		mode_switch_to_120(panel, stage);
-	} else
-		ret = 1;
+
+	pr_info("%s: change mode %d ->%d (%d hz)\n", __func__, cur_mode, dst_mode, drm_mode_vrefresh(m));
+
+	if (ctx->version == 1) {
+		if (drm_mode_vrefresh(m) == 120)
+			mode_switch_to_120(panel, stage);
+		else
+			ret = 1;
+	} else {
+		if (drm_mode_vrefresh(m) == 120) {
+			if (dst_mode == 1) {
+				mode_switch_to_1(panel, stage);/*switch to 1 */
+			} else if (dst_mode == 2) {
+				mode_switch_to_10(panel, stage);/*switch to 10 */
+			} else
+				mode_switch_to_120(panel, stage);/*switch to 120 */
+		} else if (drm_mode_vrefresh(m) == 90) { /*switch to 90 */
+			mode_switch_to_90(panel, stage);
+		} else if (drm_mode_vrefresh(m) == 60) { /*switch to 60 */
+			mode_switch_to_60(panel, stage);
+		} else if (drm_mode_vrefresh(m) == 30) { /*switch to 30 */
+			mode_switch_to_30(panel, stage);
+		} else if (drm_mode_vrefresh(m) == 24) { /*switch to 24 */
+			mode_switch_to_24(panel, stage);
+		} else
+			ret = 1;
+	}
 
 	return ret;
 }
-#if 0
-static int pane_hbm_set_cmdq(struct lcm *ctx, void *dsi, dcs_grp_write_gce cb, void *handle, uint32_t hbm_state)
-{
-	struct mtk_panel_para_table hbm_on_table = {3, {0x51, 0xFF, 0xFF}};
 
+static struct mtk_panel_para_table hbm_on_table[] = {
+	{3, {0x51, 0x3D, 0x4c}},
+	{3, {0x5F, 0x00, 0x01}},
+};
+
+static int panel_hbm_set_cmdq(struct lcm *ctx, void *dsi, dcs_grp_write_gce cb, void *handle, uint32_t hbm_state)
+{
 	if (hbm_state > 2) return -1;
+
 	switch (hbm_state)
 	{
 		case 0:
 			break;
 		case 1:
-			cb(dsi, handle, &hbm_on_table, 1);
+			cb(dsi, handle, hbm_on_table, 2);
 			atomic_set(&ctx->apl_mode , 1);
 			break;
 		case 2:
-			cb(dsi, handle, &hbm_on_table, 1);
 			break;
 		default:
 			break;
@@ -1321,35 +1384,16 @@ static int pane_hbm_set_cmdq(struct lcm *ctx, void *dsi, dcs_grp_write_gce cb, v
 	return 0;
 }
 
-
 static struct mtk_panel_para_table panel_dc_off[] = {
-
-	{6, {0xF0, 0x55, 0xAA, 0x52, 0x08, 0x00}},
-	{2, {0xB2, 0x11}},
-	{2, {0x6F, 0x0F}},
-	{7, {0xB2, 0x60, 0x50, 0x66, 0x91, 0x86, 0x91}},
-	{13, {0xB3, 0x00, 0x08, 0x01, 0x5F, 0x01, 0x5F, 0x02, 0xA4, 0x02, 0xA4, 0x03, 0xBB}},
-	{2, {0x6F, 0x0C}},
-	{13, {0xB3, 0x03, 0xBB, 0x05, 0x2F, 0x05, 0x2F, 0x06, 0x91, 0x06, 0x91, 0x06, 0x92}},
-	{2, {0x6F, 0x18}},
-	{13, {0xB3, 0x06, 0x92, 0x0A, 0x2F, 0x0A, 0x2F, 0x0D, 0xB9, 0x0D, 0xB9, 0x0F, 0xFF}},
-	{2, {0x58, 0x00}},
-
+	{2, {0x6F, 0x01}},
+	{2, {0x8B, 0x00}},
+	{3, {0x6D, 0x00, 0x00}},
 };
 
 static struct mtk_panel_para_table panel_dc_on[] = {
-
-	{6, {0xF0, 0x55, 0xAA, 0x52, 0x08, 0x00}},
-	{2, {0xB2, 0x91}},
-	{2, {0x6F, 0x0F}},
-	{7, {0xB2, 0x60, 0x50, 0x60, 0x00, 0x80, 0x00}},
-	{13, {0xB3, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}},
-	{2, {0x6F, 0x0C}},
-	{13, {0xB3, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}},
-	{2, {0x6F, 0x18}},
-	{13, {0xB3, 0x06, 0x92, 0x0A, 0x2F, 0x0A, 0x2F, 0x0D, 0xB9, 0x0D, 0xB9, 0x0F, 0xFF}},
-	{2, {0x58, 0x01}},
-
+	{2, {0x6F, 0x01}},
+	{2, {0x8B, 0x81}},
+	{3, {0x6D, 0x00, 0x00}},
 };
 
 static int pane_dc_set_cmdq(struct lcm *ctx, void *dsi, dcs_grp_write_gce cb, void *handle, uint32_t dc_state)
@@ -1363,6 +1407,18 @@ static int pane_dc_set_cmdq(struct lcm *ctx, void *dsi, dcs_grp_write_gce cb, vo
 	} else {
 		para_count = sizeof(panel_dc_off) / sizeof(struct mtk_panel_para_table);
 		pTable = panel_dc_off;
+	}
+
+	switch (atomic_read(&ctx->current_fps)) {
+		case 30:
+			pTable[para_count-1].para_list[1] = 0x01;
+			break;
+		case 24:
+			pTable[para_count-1].para_list[1] = 0x02;
+			break;
+		default:
+			pTable[para_count-1].para_list[1] = 0x00;
+			break;
 	}
 
 	pr_info("%s: current_fps %d(pTable[%d] = 0x%x)\n", __func__, atomic_read(&ctx->current_fps), para_count-1, pTable[para_count-1].para_list[1]);
@@ -1401,7 +1457,6 @@ static int panel_feature_set(struct drm_panel *panel, void *dsi,
 	pr_info("%s: set feature %d to %d success\n", __func__, param_info.param_idx, param_info.value);
 	return 0;
 }
-#endif
 
 static int panel_ext_init_power(struct drm_panel *panel)
 {
@@ -1441,7 +1496,7 @@ static struct mtk_panel_funcs ext_funcs = {
 	.ata_check = panel_ata_check,
 	.ext_param_set = mtk_panel_ext_param_set,
 	.mode_switch = mode_switch,
-	//.panel_feature_set = panel_feature_set,
+	.panel_feature_set = panel_feature_set,
 };
 #endif
 
@@ -1449,75 +1504,14 @@ static int lcm_get_modes(struct drm_panel *panel,
 					struct drm_connector *connector)
 {
 	struct drm_display_mode *mode;
-#if 0
 	struct drm_display_mode *mode_1;
 	struct drm_display_mode *mode_2;
 	struct drm_display_mode *mode_3;
 	struct drm_display_mode *mode_4;
 	struct drm_display_mode *mode_5;
 	struct drm_display_mode *mode_6;
+	struct lcm *ctx = panel_to_lcm(panel);
 
-	mode_5 = drm_mode_duplicate(connector->dev, &switch_mode_1hz);
-	if (!mode_5) {
-		dev_info(connector->dev->dev, "failed to add mode %ux%ux@%u\n",
-			 switch_mode_1hz.hdisplay, switch_mode_1hz.vdisplay,
-			 drm_mode_vrefresh(&switch_mode_1hz));
-		return -ENOMEM;
-	}
-	drm_mode_set_name(mode_5);
-	snprintf(mode_5->name,  DRM_DISPLAY_MODE_LEN,  "%s@%d",mode_5->name, RRGSFlag_Special_Idle_1Hz);
-	mode_5->type = DRM_MODE_TYPE_DRIVER ;
-	drm_mode_probed_add(connector, mode_5);
-
-	mode_4 = drm_mode_duplicate(connector->dev, &switch_mode_10hz);
-	if (!mode_4) {
-		dev_info(connector->dev->dev, "failed to add mode %ux%ux@%u\n",
-			 switch_mode_10hz.hdisplay, switch_mode_10hz.vdisplay,
-			 drm_mode_vrefresh(&switch_mode_10hz));
-		return -ENOMEM;
-	}
-	drm_mode_set_name(mode_4);
-	snprintf(mode_4->name,  DRM_DISPLAY_MODE_LEN,  "%s@%d",mode_4->name, RRGSFlag_Special_Idle_10Hz);
-	mode_4->type = DRM_MODE_TYPE_DRIVER ;
-	drm_mode_probed_add(connector, mode_4);
-
-	mode_3 = drm_mode_duplicate(connector->dev, &switch_mode_24hz);
-	if (!mode_3) {
-		dev_info(connector->dev->dev, "failed to add mode %ux%ux@%u\n",
-			 switch_mode_24hz.hdisplay, switch_mode_24hz.vdisplay,
-			 drm_mode_vrefresh(&switch_mode_24hz));
-		return -ENOMEM;
-	}
-	drm_mode_set_name(mode_3);
-	snprintf(mode_3->name,  DRM_DISPLAY_MODE_LEN,  "%s@%d",mode_3->name, RRGSFlag_All_No_Duplicated | RRGSFlag_120HzBased);
-	mode_3->type = DRM_MODE_TYPE_DRIVER ;
-	drm_mode_probed_add(connector, mode_3);
-
-	mode_2 = drm_mode_duplicate(connector->dev, &switch_mode_30hz);
-	if (!mode_2) {
-		dev_info(connector->dev->dev, "failed to add mode %ux%ux@%u\n",
-			 switch_mode_30hz.hdisplay, switch_mode_30hz.vdisplay,
-			 drm_mode_vrefresh(&switch_mode_30hz));
-		return -ENOMEM;
-	}
-	drm_mode_set_name(mode_2);
-	snprintf(mode_2->name,  DRM_DISPLAY_MODE_LEN,  "%s@%d",mode_2->name, RRGSFlag_All_No_Duplicated | RRGSFlag_120HzBased | RRGSFlag_90HzBased);
-	mode_2->type = DRM_MODE_TYPE_DRIVER ;
-	drm_mode_probed_add(connector, mode_2);
-
-
-	mode_1 = drm_mode_duplicate(connector->dev, &switch_mode_60hz);
-	if (!mode_1) {
-		dev_info(connector->dev->dev, "failed to add mode %ux%ux@%u\n",
-			 switch_mode_60hz.hdisplay, switch_mode_60hz.vdisplay,
-			 drm_mode_vrefresh(&switch_mode_60hz));
-		return -ENOMEM;
-	}
-	drm_mode_set_name(mode_1);
-	mode_1->type = DRM_MODE_TYPE_DRIVER ;
-	snprintf(mode_1->name,  DRM_DISPLAY_MODE_LEN,  "%s@%d",mode_1->name, RRGSFlag_All_No_Duplicated | RRGSFlag_120HzBased);
-	drm_mode_probed_add(connector, mode_1);
-#endif
 	mode = drm_mode_duplicate(connector->dev, &switch_mode_120hz);
 	if (!mode) {
 		dev_info(connector->dev->dev, "failed to add mode %ux%ux@%u\n",
@@ -1529,19 +1523,82 @@ static int lcm_get_modes(struct drm_panel *panel,
 	snprintf(mode->name,  DRM_DISPLAY_MODE_LEN,  "%s@%d",mode->name, RRGSFlag_All_No_Duplicated | RRGSFlag_120HzBased);
 	mode->type = DRM_MODE_TYPE_DRIVER | DRM_MODE_TYPE_PREFERRED;
 	drm_mode_probed_add(connector, mode);
-#if 0
-	mode_6 = drm_mode_duplicate(connector->dev, &switch_mode_90hz);
-	if (!mode_6) {
-		dev_info(connector->dev->dev, "failed to add mode %ux%ux@%u\n",
-			 switch_mode_90hz.hdisplay, switch_mode_90hz.vdisplay,
-			 drm_mode_vrefresh(&switch_mode_90hz));
-		return -ENOMEM;
+
+	if (ctx->version != 1) {
+		mode_5 = drm_mode_duplicate(connector->dev, &switch_mode_1hz);
+		if (!mode_5) {
+			dev_info(connector->dev->dev, "failed to add mode %ux%ux@%u\n",
+				 switch_mode_1hz.hdisplay, switch_mode_1hz.vdisplay,
+				 drm_mode_vrefresh(&switch_mode_1hz));
+			return -ENOMEM;
+		}
+		drm_mode_set_name(mode_5);
+		snprintf(mode_5->name,  DRM_DISPLAY_MODE_LEN,  "%s@%d",mode_5->name, RRGSFlag_Special_Idle_1Hz);
+		mode_5->type = DRM_MODE_TYPE_DRIVER ;
+		drm_mode_probed_add(connector, mode_5);
+
+		mode_4 = drm_mode_duplicate(connector->dev, &switch_mode_10hz);
+		if (!mode_4) {
+			dev_info(connector->dev->dev, "failed to add mode %ux%ux@%u\n",
+				 switch_mode_10hz.hdisplay, switch_mode_10hz.vdisplay,
+				 drm_mode_vrefresh(&switch_mode_10hz));
+			return -ENOMEM;
+		}
+		drm_mode_set_name(mode_4);
+		snprintf(mode_4->name,  DRM_DISPLAY_MODE_LEN,  "%s@%d",mode_4->name, RRGSFlag_Special_Idle_10Hz);
+		mode_4->type = DRM_MODE_TYPE_DRIVER ;
+		drm_mode_probed_add(connector, mode_4);
+
+		mode_3 = drm_mode_duplicate(connector->dev, &switch_mode_24hz);
+		if (!mode_3) {
+			dev_info(connector->dev->dev, "failed to add mode %ux%ux@%u\n",
+				 switch_mode_24hz.hdisplay, switch_mode_24hz.vdisplay,
+				 drm_mode_vrefresh(&switch_mode_24hz));
+			return -ENOMEM;
+		}
+		drm_mode_set_name(mode_3);
+		snprintf(mode_3->name,  DRM_DISPLAY_MODE_LEN,  "%s@%d",mode_3->name, RRGSFlag_All_No_Duplicated | RRGSFlag_120HzBased);
+		mode_3->type = DRM_MODE_TYPE_DRIVER ;
+		drm_mode_probed_add(connector, mode_3);
+
+		mode_2 = drm_mode_duplicate(connector->dev, &switch_mode_30hz);
+		if (!mode_2) {
+			dev_info(connector->dev->dev, "failed to add mode %ux%ux@%u\n",
+				 switch_mode_30hz.hdisplay, switch_mode_30hz.vdisplay,
+				 drm_mode_vrefresh(&switch_mode_30hz));
+			return -ENOMEM;
+		}
+		drm_mode_set_name(mode_2);
+		snprintf(mode_2->name,  DRM_DISPLAY_MODE_LEN,  "%s@%d",mode_2->name, RRGSFlag_All_No_Duplicated | RRGSFlag_120HzBased | RRGSFlag_90HzBased);
+		mode_2->type = DRM_MODE_TYPE_DRIVER ;
+		drm_mode_probed_add(connector, mode_2);
+
+
+		mode_1 = drm_mode_duplicate(connector->dev, &switch_mode_60hz);
+		if (!mode_1) {
+			dev_info(connector->dev->dev, "failed to add mode %ux%ux@%u\n",
+				 switch_mode_60hz.hdisplay, switch_mode_60hz.vdisplay,
+				 drm_mode_vrefresh(&switch_mode_60hz));
+			return -ENOMEM;
+		}
+		drm_mode_set_name(mode_1);
+		mode_1->type = DRM_MODE_TYPE_DRIVER ;
+		snprintf(mode_1->name,  DRM_DISPLAY_MODE_LEN,  "%s@%d",mode_1->name, RRGSFlag_All_No_Duplicated | RRGSFlag_120HzBased);
+		drm_mode_probed_add(connector, mode_1);
+
+		mode_6 = drm_mode_duplicate(connector->dev, &switch_mode_90hz);
+		if (!mode_6) {
+			dev_info(connector->dev->dev, "failed to add mode %ux%ux@%u\n",
+				 switch_mode_90hz.hdisplay, switch_mode_90hz.vdisplay,
+				 drm_mode_vrefresh(&switch_mode_90hz));
+			return -ENOMEM;
+		}
+		drm_mode_set_name(mode_6);
+		snprintf(mode_6->name,  DRM_DISPLAY_MODE_LEN,  "%s@%d",mode_6->name, RRGSFlag_All_No_Duplicated | RRGSFlag_90HzBased);
+		mode_6->type = DRM_MODE_TYPE_DRIVER ;
+		drm_mode_probed_add(connector, mode_6);
 	}
-	drm_mode_set_name(mode_6);
-	snprintf(mode_6->name,  DRM_DISPLAY_MODE_LEN,  "%s@%d",mode_6->name, RRGSFlag_All_No_Duplicated | RRGSFlag_90HzBased);
-	mode_6->type = DRM_MODE_TYPE_DRIVER ;
-	drm_mode_probed_add(connector, mode_6);
-#endif
+
 	connector->display_info.width_mm = 68;
 	connector->display_info.height_mm = 152;
 
