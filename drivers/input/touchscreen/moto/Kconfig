@@ -55,3 +55,13 @@ config MTK_PROJECT_NAME
 	string "set project name"
 	help
 		This config is set as project name for touch to select configuration.
+
+config MOTO_BUILD_VARIANT
+	string "set build variant"
+	help
+		This config is set as build variant for touch.
+
+config GTP_GHOST_LOG_CAPTURE
+	bool "Support ghost touch log capture feature"
+	help
+		Say Y here if support ghost touch log capture feature.
