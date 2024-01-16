@@ -74,7 +74,7 @@ static int cali_state = -1;
 
 struct cali_result_t {
 	char state;
-	char result[16];
+	char result[24];
 };
 
 struct cali_result_t g_cali_result;
