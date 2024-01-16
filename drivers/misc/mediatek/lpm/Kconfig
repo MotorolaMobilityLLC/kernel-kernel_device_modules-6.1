@@ -131,3 +131,10 @@ config MTK_SYS_RES_DBG_SUPPORT
 	  MediaTek system resource debug information dump.
 	  Select "m" if you want to enable.
 	  Select "n" if unsure.
+
+config MMI_GPIO_DUMP
+	bool "MMI GPIOs dump operations during system resume"
+	default n
+	help
+	  Set MMI_GPIO_DUMP to
+	  dump gpio status during system suspend/resume procedure.
