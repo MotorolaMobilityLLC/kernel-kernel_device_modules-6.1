@@ -125,7 +125,7 @@ int lpm_suspend_s2idle_prompt(int cpu,
 		pr_info("[name:spm&][%s:%d] - suspend enter\n",
 			__func__, __LINE__);
 
-#if IS_ENABLED(CONFIG_DEBUG_FS)
+#if IS_ENABLED(CONFIG_MMI_GPIO_DUMP)
 	gpio_dump_regs();
 #endif
 
