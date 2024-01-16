@@ -559,3 +559,7 @@
 		};
 	};
 };
+
+&mt6363_dynamic_loading_throttling {
+	bob-check-flag = <0>;
+};
