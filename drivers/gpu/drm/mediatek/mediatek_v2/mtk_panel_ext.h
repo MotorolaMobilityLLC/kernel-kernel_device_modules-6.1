@@ -756,6 +756,7 @@ struct mtk_panel_funcs {
 
 	int (*panel_ce_set_cmdq)(struct drm_panel *panel, void *dsi_drv,
 			    dcs_grp_write_gce cb, void *handle, bool en);
+	int (*panel_ce_get)(struct drm_panel *panel, bool *state);
 };
 
 void mtk_panel_init(struct mtk_panel_ctx *ctx);

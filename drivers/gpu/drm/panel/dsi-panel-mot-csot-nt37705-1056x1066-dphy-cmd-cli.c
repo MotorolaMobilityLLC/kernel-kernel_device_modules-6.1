@@ -857,6 +857,15 @@ static struct mtk_panel_para_table panel_ce_off[] = {
 	{2, {0x55, 0x00}},
 };
 
+static int panel_ce_get(struct drm_panel *panel, bool *state)
+{
+	struct lcm *ctx = panel_to_lcm(panel);
+
+	*state = atomic_read(&ctx->ce_mode);
+
+	return 0;
+}
+
 static int panel_ce_set_cmdq(struct drm_panel *panel, void *dsi,
 			      dcs_grp_write_gce cb, void *handle, bool en)
 {
@@ -926,7 +935,8 @@ static struct mtk_panel_funcs ext_funcs = {
 	.ext_param_set = mtk_panel_ext_param_set,
 	.mode_switch = mode_switch,
 	.panel_feature_set = panel_feature_set,
-	.panel_ce_set_cmdq = panel_ce_set_cmdq
+	.panel_ce_set_cmdq = panel_ce_set_cmdq,
+	.panel_ce_get = panel_ce_get,
 };
 #endif
 
