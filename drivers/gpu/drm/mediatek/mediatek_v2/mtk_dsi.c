@@ -11477,6 +11477,16 @@ static int mtk_dsi_io_cmd(struct mtk_ddp_comp *comp, struct cmdq_pkt *handle,
 					       *(bool *)params);
 		break;
 	}
+	case DSI_PANEL_CE_GET:
+	{
+		panel_ext = mtk_dsi_get_panel_ext(comp);
+		if (!(panel_ext && panel_ext->funcs &&
+		      panel_ext->funcs->panel_ce_get))
+			break;
+
+		panel_ext->funcs->panel_ce_get(dsi->panel, (bool *)params);
+		break;
+	}
 
 	default:
 		break;

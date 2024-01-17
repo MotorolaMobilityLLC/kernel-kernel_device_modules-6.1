@@ -2250,6 +2250,7 @@ int mtk_drm_crtc_set_panel_ce(struct drm_crtc *crtc, bool en)
 	struct cmdq_pkt *cmdq_handle;
 	struct cmdq_client *client;
 	bool is_frame_mode;
+	bool state = false;
 
 	if (!(comp && comp->funcs && comp->funcs->io_cmd))
 		return -EINVAL;
@@ -2257,6 +2258,17 @@ int mtk_drm_crtc_set_panel_ce(struct drm_crtc *crtc, bool en)
 	if (!(mtk_crtc->enabled)) {
 		DDPMSG("%s: skip, slept\n", __func__);
 		return -EINVAL;
+	}
+
+	comp->funcs->io_cmd(comp, NULL, DSI_PANEL_CE_GET, &state);
+	if (state == en)
+		return 0;
+
+	if (atomic_read(&mtk_crtc->singal_for_mode_switch)) {
+		DDPINFO("Wait event from mode_switch...\n");
+		wait_event_interruptible(mtk_crtc->mode_switch_end_wq,
+			(atomic_read(&mtk_crtc->singal_for_mode_switch) == 0));
+		DDPINFO("Wait event from mode_switch, end\n");
 	}
 
 	mtk_drm_idlemgr_kick(__func__, crtc, 0);
@@ -16280,14 +16292,6 @@ static void mtk_drm_crtc_atomic_flush(struct drm_crtc *crtc,
 	{
 		bool lcm_ce_enable = false;
 		lcm_ce_enable = (bool)mtk_crtc_state->prop_val[CRTC_PROP_LCM_CE_ENABLE];
-
-		if (atomic_read(&mtk_crtc->singal_for_mode_switch)) {
-			DDPINFO("Wait event from mode_switch...\n");
-			wait_event_interruptible(mtk_crtc->mode_switch_end_wq,
-				(atomic_read(&mtk_crtc->singal_for_mode_switch) == 0));
-			DDPINFO("Wait event from mode_switch, end\n");
-		}
-
 		mtk_drm_crtc_set_panel_ce(crtc, lcm_ce_enable);
 	}
 
