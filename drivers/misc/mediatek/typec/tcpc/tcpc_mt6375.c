@@ -300,6 +300,7 @@ struct mt6375_tcpc_data {
 	int mmi_cid_int;
 	int mmi_cid_irq;
 	bool support_cid;
+	bool is_water_detected;
 	struct delayed_work cid_det_work;
 	struct mutex cid_irq_lock;
 };
@@ -1341,6 +1342,7 @@ static int mt6375_enable_wd_protection(struct mt6375_tcpc_data *ddata, bool en)
 			mt6375_enable_wd_one_minute_timer(ddata, true);
 			atomic_set(&ddata->wd_one_min_cnt, 1);
 		}
+		ddata->is_water_detected = true;
 	} else {
 		cancel_delayed_work_sync(&ddata->wd_polling_dwork);
 		if (atomic_read(&ddata->wd_one_min_cnt) > 0) {
@@ -1352,6 +1354,7 @@ static int mt6375_enable_wd_protection(struct mt6375_tcpc_data *ddata, bool en)
 				(MT6375_MSK_WD_TDET | MT6375_MSK_WD_TSLEEP),
 				MT6375_WD_SETTING2(MT6375_WD_TDET_10MS,
 						   MT6375_WD_TSLEEP_1024X));
+		ddata->is_water_detected = false;
 	}
 
 	return mt6375_write8(ddata, MT6375_REG_WD12MODECTRL,
@@ -2490,7 +2493,10 @@ static void mmi_cid_detect_work(struct work_struct *work)
 	if (cid_state != ddata->mmi_cid_state) {
 		ddata->mmi_cid_state = cid_state;
 		dev_info(ddata->dev, "[%s] cid state %s\n", __func__, ddata->mmi_cid_state?"plug":"unplug");
-		tcpci_notify_cid_state(ddata->tcpc, ddata->mmi_cid_state);
+		if (!ddata->is_water_detected)
+			tcpci_notify_cid_state(ddata->tcpc, ddata->mmi_cid_state);
+		else
+			dev_info(ddata->dev, "[%s] is_water_detected, Don't change typec Role\n", __func__);
 	}
 	mutex_unlock(&ddata->cid_irq_lock);
 
@@ -2873,6 +2879,7 @@ static int mt6375_tcpc_probe(struct platform_device *pdev)
 			mmi_cid_irq_handler(ddata->mmi_cid_irq, (void *)ddata);
 		}
 	}
+	ddata->is_water_detected = false;
 
 	dev_info(ddata->dev, "%s successfully!\n", __func__);
 	return 0;
