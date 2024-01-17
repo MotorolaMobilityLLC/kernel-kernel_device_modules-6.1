@@ -52,3 +52,8 @@
 	};
 };
 /*vol+/- keys swap end*/
+
+&mt6375_typec {
+	/* Remove mtk typec otp */
+	/delete-property/ tcpc,en-typec-otp;
+};
