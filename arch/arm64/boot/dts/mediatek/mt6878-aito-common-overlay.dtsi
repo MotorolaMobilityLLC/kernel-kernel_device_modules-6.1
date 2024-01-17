@@ -89,6 +89,7 @@
 		gpio-power_nreset = <40>;
 		gpio-power_nreset-std = <&pio 40 0x00>;
 		power_mode = "ST54J";
+		bootmode = <&chosen>;
 		pinctrl-names = "pinctrl_state_mode_spi",
 				"pinctrl_state_mode_idle";
 		pinctrl-0 = <&nfc_spi_cs_mode_spi>;
@@ -121,6 +122,7 @@
 		reg = <0x08>;
 		interrupt-parent = <&pio>;
 		interrupts = <109  0>;
+		bootmode = <&chosen>;
 		reset-gpios = <&pio 108 0x0>;
 		irq-gpios = <&pio 109 0x0>;
 		clkreq-gpios = <&pio 151 0x0>;
