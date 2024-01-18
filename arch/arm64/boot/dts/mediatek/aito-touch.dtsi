@@ -85,7 +85,7 @@
 		goodix,config-name = "gdx_cfg_group.bin";
 		goodix,gesture-wait-pm;
 		goodix,stowed-mode-ctrl;
-
+		goodix,pocket-mode-ctrl;
 		pinctrl-names = "pmx_ts_active","pmx_ts_suspend","pmx_ts_release";
 		pinctrl-0 = <&ctp_gt9615_int_active &ctp_gt9615_reset_active>;
 		pinctrl-1 = <&ctp_gt9615_int_suspend &ctp_gt9615_reset_suspend>;
