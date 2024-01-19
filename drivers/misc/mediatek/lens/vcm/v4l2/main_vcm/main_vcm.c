@@ -19,7 +19,6 @@
 
 #define MAIN_VCM_NAME				"main_vcm"
 #define MAIN_VCM_MAX_FOCUS_POS			1023
-
 #if IS_ENABLED(MOT_AK7377_HALL_TEST)
 #define AFIOC_G_AFPOS _IOWR('A', 35, int)
 #endif
@@ -30,7 +29,7 @@
 #define MAIN_VCM_FOCUS_STEPS			1
 
 #define REGULATOR_MAXSIZE			16
-
+#define DELAY_10MS                              10000
 #if IS_ENABLED(MOT_AK7377_HALL_TEST)
 typedef struct {
 	int max_val;
