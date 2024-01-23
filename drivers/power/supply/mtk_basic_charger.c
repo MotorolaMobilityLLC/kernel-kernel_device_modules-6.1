@@ -467,7 +467,7 @@ static int do_algorithm(struct mtk_charger *info)
 #ifdef MTK_BASE
 	charger_dev_is_charging_done(info->chg1_dev, &chg_done);
 #else
-	if (info->mmi.pres_chrg_step == STEP_FULL)
+	if (info->mmi.sm_param[BASE_BATT].pres_chrg_step == STEP_FULL)
 		chg_done = true;
 #endif
 	is_basic = select_charging_current_limit(info, &info->setting);
