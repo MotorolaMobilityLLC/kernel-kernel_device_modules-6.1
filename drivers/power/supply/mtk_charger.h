@@ -306,10 +306,10 @@ struct charger_data {
 };
 
 /*moto mmi Functionality start*/
-struct mmi_ffc_zone  {
+struct mmi_zone  {
 	int		temp;
-	int		ffc_max_mv;
-	int		ffc_chg_iterm;
+	int		max_mv;
+	int		chg_iterm;
 };
 
 struct mmi_temp_zone {
@@ -345,6 +345,40 @@ enum charging_limit_modes {
 	CHARGING_LIMIT_UNKNOWN,
 };
 
+enum {
+	BASE_BATT = 0,
+	MAIN_BATT,
+	FLIP_BATT,
+};
+
+struct mmi_chg_status {
+	int batt_mv;
+	int batt_ma;
+	int batt_soc;
+	int batt_temp;
+	int usb_mv;
+	int charger_present;
+};
+
+struct mmi_sm_params {
+	int			num_temp_zones;
+	int			num_normal_zones;
+	int			num_ffc_zones;
+	struct mmi_zone     *normal_zones;
+	struct mmi_zone     *ffc_zones;
+	struct mmi_temp_zone	*temp_zones;
+	enum mmi_temp_zones	pres_temp_zone;
+	enum mmi_chrg_step	pres_chrg_step;
+
+	int			max_fv_mv;
+	int			chrg_taper_cnt;
+	int			batt_health;
+	int			chrg_iterm;
+	int			target_fcc;
+	int			target_fv;
+	int			demo_mode_prev_soc;
+};
+
 struct mmi_params {
 	bool			init_done;
 	bool			factory_mode;
@@ -360,17 +394,9 @@ struct mmi_params {
 	bool battery_charging_disable;
 
 	/* Charge Profile */
-	int			num_temp_zones;
-	struct mmi_temp_zone	*temp_zones;
-	enum mmi_temp_zones	pres_temp_zone;
-	enum mmi_chrg_step	pres_chrg_step;
-	int			chrg_taper_cnt;
+	struct mmi_sm_params	sm_param[3];
 	int			temp_state;
-	int			chrg_iterm;
 	int			back_chrg_iterm;
-
-	int			num_ffc_zones;
-	struct mmi_ffc_zone	*ffc_zones;
 
 	bool			enable_charging_limit;
 	bool			is_factory_image;
@@ -466,6 +492,8 @@ struct mtk_charger {
 	struct power_supply  *wl_psy;
 	struct power_supply  *bc12_psy;
 	struct power_supply  *bat_psy;
+	struct power_supply	*main_batt_psy;
+	struct power_supply	*flip_batt_psy;
 	struct adapter_device *pd_adapter;
 	struct notifier_block pd_nb;
 	struct mutex pd_lock;
@@ -608,6 +636,9 @@ struct mtk_charger {
 	struct thermal_cooling_device *tcd;
 	unsigned long typec_otp_max_state;
 	unsigned long typec_otp_cur_state;
+
+	struct charger_device *blance_dev;
+	bool	blance_can_charging;
 };
 
 static inline int mtk_chg_alg_notify_call(struct mtk_charger *info,
