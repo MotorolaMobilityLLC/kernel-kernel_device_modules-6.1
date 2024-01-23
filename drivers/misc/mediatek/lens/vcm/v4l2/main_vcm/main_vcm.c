@@ -199,7 +199,32 @@ static void register_setting(struct i2c_client *client, char table[][3], int tab
 		udelay(100);
 	}
 }
+#if IS_ENABLED(CONFIG_MOT_DW9784_AF_DRIFT)
+#define DW9784_OIS_I2C_SLAVE_ADDR 0xE4
+int write_reg_16bit_value_16bit(struct i2c_client *i2c_client, unsigned short regAddr, unsigned short regData)
+{
+	int i4RetValue = 0;
+	struct i2c_msg msgs;
+	char puSendCmd[4] = { (char)(regAddr>>8), (char)(regAddr&0xff),
+	                      (char)(regData >> 8),
+	                      (char)(regData&0xFF) };
+	unsigned short addr = i2c_client->addr;
 
+	LOG_INF("DW9784 I2C reg:%04x, data:%04x", regAddr, regData);
+
+	msgs.addr  = addr;
+	msgs.flags = 0;
+	msgs.len   = 4;
+	msgs.buf   = puSendCmd;
+
+	i4RetValue = i2c_transfer(i2c_client->adapter, &msgs, 1);
+	if (i4RetValue != 1) {
+		printk("I2C send failed!!\n");
+		return -1;
+	}
+	return 0;
+}
+#endif
 static int main_vcm_set_position(struct main_vcm_device *main_vcm, u16 val)
 {
 	struct i2c_client *client = v4l2_get_subdevdata(&main_vcm->sd);
@@ -242,6 +267,14 @@ static int main_vcm_set_position(struct main_vcm_device *main_vcm, u16 val)
 
 		while (retry-- > 0) {
 			ret = i2c_master_send(client, puSendCmd, nCommNum);
+			LOG_INF("dw9784 af_drift val %d, ret = %d, client->addr 0x%x\n", val, ret, client->addr);
+#if IS_ENABLED(CONFIG_MOT_DW9784_AF_DRIFT)
+			client->addr = DW9784_OIS_I2C_SLAVE_ADDR >> 1;
+			LOG_INF("dw9784 af_drift client->addr 0x%x, val<<2 %d\n", client->addr, val<<2);
+			write_reg_16bit_value_16bit(client, 0x7070, val<<2);
+			client->addr = MAIN_VCM_I2C_SLAVE_ADDR >> 1;
+			LOG_INF("dw9784 af_drift client->addr 0x%x, val %d\n", client->addr, val);
+#endif
 			if (ret >= 0)
 				break;
 		}
