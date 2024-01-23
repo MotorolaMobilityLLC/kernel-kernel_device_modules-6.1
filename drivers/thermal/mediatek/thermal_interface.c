@@ -1811,8 +1811,6 @@ static ssize_t user_vsensor0_store(struct kobject *kobj,
 		if (strncmp(cmd, "U_VSENSOR", 9) == 0) {
 			u_vsensor0.temp = temp;
 			len = snprintf(u_vsensor0.user_vsensor_name, USER_VSENSOR_NAME, "%s", name);
-			if (len != USER_VSENSOR_NAME)
-				pr_info("user_vsensor_name write fail, %d\n", len);
 			return count;
 		}
 	}
@@ -1847,8 +1845,6 @@ static ssize_t user_vsensor1_store(struct kobject *kobj,
 		if (strncmp(cmd, "U_VSENSOR", 9) == 0) {
 			u_vsensor1.temp = temp;
 			len = snprintf(u_vsensor1.user_vsensor_name, USER_VSENSOR_NAME, "%s", name);
-			if (len != USER_VSENSOR_NAME)
-				pr_info("user_vsensor_name write fail, %d\n", len);
 			return count;
 		}
 	}
@@ -1883,8 +1879,6 @@ static ssize_t user_vsensor2_store(struct kobject *kobj,
 		if (strncmp(cmd, "U_VSENSOR", 9) == 0) {
 			u_vsensor2.temp = temp;
 			len = snprintf(u_vsensor2.user_vsensor_name, USER_VSENSOR_NAME, "%s", name);
-			if (len != USER_VSENSOR_NAME)
-				pr_info("user_vsensor_name write fail, %d\n", len);
 			return count;
 		}
 	}
@@ -1919,8 +1913,6 @@ static ssize_t user_vsensor3_store(struct kobject *kobj,
 		if (strncmp(cmd, "U_VSENSOR", 9) == 0) {
 			u_vsensor3.temp = temp;
 			len = snprintf(u_vsensor3.user_vsensor_name, USER_VSENSOR_NAME, "%s", name);
-			if (len != USER_VSENSOR_NAME)
-				pr_info("user_vsensor_name write fail, %d\n", len);
 			return count;
 		}
 	}
@@ -1955,8 +1947,6 @@ static ssize_t user_vsensor4_store(struct kobject *kobj,
 		if (strncmp(cmd, "U_VSENSOR", 9) == 0) {
 			u_vsensor4.temp = temp;
 			len = snprintf(u_vsensor4.user_vsensor_name, USER_VSENSOR_NAME, "%s", name);
-			if (len != USER_VSENSOR_NAME)
-				pr_info("user_vsensor_name write fail, %d\n", len);
 			return count;
 		}
 	}
@@ -1991,8 +1981,6 @@ static ssize_t user_vsensor5_store(struct kobject *kobj,
 		if (strncmp(cmd, "U_VSENSOR", 9) == 0) {
 			u_vsensor5.temp = temp;
 			len = snprintf(u_vsensor5.user_vsensor_name, USER_VSENSOR_NAME, "%s", name);
-			if (len != USER_VSENSOR_NAME)
-				pr_info("user_vsensor_name write fail, %d\n", len);
 			return count;
 		}
 	}
