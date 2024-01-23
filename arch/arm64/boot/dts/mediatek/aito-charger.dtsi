@@ -159,21 +159,7 @@
 
 	/*mmi config*/
 	mmi,typec-rp-max-current = <2000000>;
-	mmi,iterm-ma = <461>;
-	mmi,mmi-temp-zones = <0 4200 810 0>,
-			<10 4250 3240 2024>,
-			<15 0 3240 3240>,
-			<45 4200 6000 4860>,
-			<45 4300 4860 4050>,
-			<45 4400 4050 3519>,
-			<60 4200 3239 0>;
-	mmi,mmi-ffc-zones = <0 4200 203>,
-			<10 4530 203>,
-			<15 4530 203>,
-			<25 4550 450>,
-			<35 4550 450>,
-			<45 4550 450>,
-			<60 4200 203>;
+
 	mmi,enable-charging-limit;
 	mmi,upper-limit-capacity = <75>;
 	mmi,lower-limit-capacity = <70>;
@@ -182,6 +168,52 @@
 	mmi,pd-pmax-mw = <30000>;
 	mmi,pd_vbus_low_bound = <5000000>;
 	mmi,pd_vbus_upper_bound = <9000000>;
+
+	mmi,main-batt-psy = "main_battery";
+	mmi,mmi-normal-zones-main = <0 4200 148>,
+			<10 4530 148>,
+			<15 4530 148>,
+			<25 4530 148>,
+			<35 4530 148>,
+			<45 4530 148>,
+			<60 4200 148>;
+	mmi,mmi-temp-zones-main = <0 4200 591 0>,
+			<10 4250 2364 1477>,
+			<15 0 2364 2364>,
+			<45 4200 4378 3546>,
+			<45 4300 3546 2955>,
+			<45 4400 2955 2643>,
+			<60 4200 2364 0>;
+	mmi,mmi-ffc-zones-main = <0 4200 148>,
+			<10 4530 148>,
+			<15 4530 148>,
+			<25 4550 367>,
+			<35 4550 441>,
+			<45 4550 737>,
+			<60 4200 148>;
+
+	mmi,flip-batt-psy = "flip_battery";
+	mmi,mmi-normal-zones-flip = <0 4200 55>,
+			<10 4530 55>,
+			<15 4530 55>,
+			<25 4530 55>,
+			<35 4530 55>,
+			<45 4530 110>,
+			<60 4200 55>;
+	mmi,mmi-temp-zones-flip = <0 4200 219 0>,
+			<10 4250 876 547>,
+			<15 0 876 876>,
+			<45 4200 1622 1314>,
+			<45 4300 1314 1095>,
+			<45 4400 1095 876>,
+			<60 4200 875 0>;
+	mmi,mmi-ffc-zones-flip = <0 4200 55>,
+			<10 4530 55>,
+			<15 4530 55>,
+			<25 4550 150>,
+			<35 4550 190>,
+			<45 4550 335>,
+			<60 4200 55>;
 
 };
 
@@ -237,10 +269,11 @@
 		pinctrl-2 = <&sc760x_disable>;
 
 		sc,sc760x,bat-chg-lim-disable = <0>;
-		sc,sc760x,bat-chg-lim = <39>; /*50 + val * 50*/
+		sc,sc760x,bat-chg-lim = <31>; /*50 + val * 50*/
 		sc,sc760x,pow-lim-disable = <0>;
 		sc,sc760x,ilim-disable = <0>;
-		sc,sc760x,load-switch-disable = <0>;
+		sc,sc760x,load-switch-disable = <1>;
+		sc,sc760x,auto-bsm-disable = <0>;
 		sc,sc760x,low-power-mode-enable = <0>;
 		sc,sc760x,itrichg = <3>; /*12.5 + val * 12.5*/
 		sc,sc760x,iprechg = <2>; /*50 + val * 50*/
@@ -263,7 +296,7 @@
 		vchg-max-microvolt = <4600000>;
 		ichg-microamp = <700000>;
 		vchg-microvolt = <4400000>;
-		chg_name = "sc7603_master";
+		chg_name = "blance_charger";
 	};
 
 	wt6670f@35 {
@@ -529,18 +562,22 @@
 		mmi,typec-middle-current = <800000>;
 		mmi,step-first-current-comp = <0>;
 		mmi,dont-rerun-aicl;
-		mmi,chrg-temp-zones-num = <5>;
+		mmi,chrg-temp-zones-num = <7>;
 		mmi,mmi-chrg-temp-zones =
 				<0 4200 810 0 0 0 0 0 0>,
 				<10 4250 3240 4530 2024 0 0 0 0>,
 				<15 4530 3240 0 0 0 0 0 0>,
+				<25 4200 6000 4300 4860 4400 4050 4550 3519>,
+				<35 4200 6000 4300 4860 4400 4050 4550 3519>,
 				<45 4200 6000 4300 4860 4400 4050 4550 3519>,
 				<60 4200 3239 0 0 0 0 0 0>;
 
 		mmi,mmi-ffc-zones = <4200 203>,
 				<4530 203>,
 				<4530 203>,
-				<4550 450>,
+				<4550 517>,
+				<4550 631>,
+				<4550 1072>,
 				<4200 203>;
 
 		mmi,thermal-min-level = <1500000>;
