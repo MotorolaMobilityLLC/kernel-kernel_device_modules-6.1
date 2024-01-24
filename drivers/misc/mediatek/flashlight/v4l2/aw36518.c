@@ -59,7 +59,7 @@
  */
 #define aw36518_FLASH_TOUT_MIN 40
 #define aw36518_FLASH_TOUT_STEP 40
-#define aw36518_FLASH_TOUT_MAX 600
+#define aw36518_FLASH_TOUT_MAX 280
 
 /*  TORCH BRT
  *	min 750uA, step 1510uA, max 386000uA
@@ -173,11 +173,13 @@ static int aw36518_enable_ctrl(struct aw36518_flash *flash,
 
 	pr_info_ratelimited("%s led:%d enable:%d", __func__, led_no, on);
 
+#if IS_ENABLED(CONFIG_MTK_FLASHLIGHT_DLPT)
 	flashlight_kicker_pbm(on);
 	if (flashlight_pt_is_low()) {
 		pr_info_ratelimited("pt is low\n");
 		return 0;
 	}
+#endif
 	if (on)
 	{
 		rval = regmap_update_bits(flash->regmap,
@@ -250,17 +252,17 @@ static int aw36518_flash_tout_ctrl(struct aw36518_flash *flash,
 	int rval;
 	u8 tout_bits;
 	pr_info_ratelimited("%s tout=%d", __func__, tout);
-        if (tout <= 40)
+        if (tout <= aw36518_FLASH_TOUT_MIN)
         {
-		tout_bits = 0x00;
+		tout_bits = 0x00;   //The register value represents 40ms
 	}
-	else if (tout <= 400)
+	else if (tout <= aw36518_FLASH_TOUT_MAX)
 	{
 		tout_bits = (tout / aw36518_FLASH_TOUT_STEP)-1;
 	}
 	else
 	{
-		tout_bits = 0x09;  //400ms
+		tout_bits = 0x06;  //The register value represents 280ms
 	}
 	rval = regmap_update_bits(flash->regmap,
 				  REG_FLASH_TOUT, 0x0f, tout_bits);
