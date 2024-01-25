@@ -15,6 +15,13 @@
 #include <dt-bindings/iio/mt635x-auxadc.h>
 
 &pio {
+	bq25960_int_default: bq25960_int_default {
+		pinmux = <PINMUX_GPIO11__FUNC_GPIO11>;
+		slew-rate= <0>;
+		input-enable;
+		bias-pull-up;
+	};
+
 	sc760x_irq_default: sc760x_irq_default {
 		pins-cmd-dat {
 			pinmux = <PINMUX_GPIO50__FUNC_GPIO50>;
@@ -366,6 +373,20 @@
 		    sc,sc8546d,ibat-regulation-threshold = <1>;/*0:200 mA 1:300 mA 2:400 mA 3:500 mA*/
 		    sc,sc8546d,vbat-regulation-threshold = <0>;/*0:50 mV 1:100 mV 2:150 mV 3:200 mV*/
 		};
+	};
+
+	bq25960-standalone@65 {
+		status = "okay";
+		compatible = "ti,bq25960-standalone";
+		reg = <0x65>;
+
+		interrupt-parent = <&pio>;
+		interrupts = <11 IRQ_TYPE_EDGE_FALLING 11 0>;
+		interrupt-names = "bq25960_irq";
+		pinctrl-names = "default";
+		pinctrl-0 = <&bq25960_int_default>;
+
+		sc8541-addr = <0x6a>;
 	};
 
 	cps_wls_charger@30 {
