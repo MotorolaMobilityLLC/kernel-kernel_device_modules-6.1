@@ -475,3 +475,24 @@
 	/*Vsensor name should be CASE DIFFERENT with the name in config file*/
 	mmi,temperature-names = "BACK_TEMP", "FRONT_TEMP";/*for "back_temp" in config file*/
 };
+
+&low_battery_throttling {
+	thd-volts-l = <
+		3483 3345 3241
+		3974 3693 3549
+		4400 3962 3828>;
+	thd-volts-h = <
+		3583 3483 3345
+		4074 3974 3693
+		4500 4400 3962>;
+	lvsys-thd-volt-l = <3241>;
+	lvsys-thd-volt-h = <3345>;
+};
+
+&bp_thl {
+	soc-limit-threshold = <10>;
+};
+
+&mt6375_batoc_throttle {
+	status = "disabled";
+};
