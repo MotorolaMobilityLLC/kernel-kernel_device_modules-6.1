@@ -10498,7 +10498,7 @@
 		compatible = "mediatek,usb-logger";
 	};
 
-	low-battery-throttling {
+	low_battery_throttling: low-battery-throttling {
 		compatible = "mediatek,low_battery_throttling";
 
 		lvsys-thd-enable = <1>;
