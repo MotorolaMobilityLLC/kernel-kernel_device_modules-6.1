@@ -361,7 +361,6 @@ static int transceiver_translate(struct transceiver_device *dev,
 		case SENSOR_TYPE_LIGHT:
 		case SENSOR_TYPE_PRESSURE:
 		case SENSOR_TYPE_PROXIMITY:
-		case SENSOR_TYPE_MOT_PICK_UP_GESTURE:
 		case SENSOR_TYPE_STEP_COUNTER:
 			dst->word[0] = src->value[0];
 			break;
