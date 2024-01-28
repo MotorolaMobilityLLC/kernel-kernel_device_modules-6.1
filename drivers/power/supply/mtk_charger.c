@@ -2634,6 +2634,12 @@ stop_charging:
 }
 
 #define IBAT_CHG_LIM_BASE               50
+enum {
+	CHARGE_STATE_UNKONW,
+	CHARGE_STATE_CC,
+	CHARGE_STATE_CV,
+	CHARGE_STATE_MAX,
+};
 static void mmi_blance_charger_check_status(struct mtk_charger *info)
 {
 	struct mmi_sm_params *prm = &info->mmi.sm_param[FLIP_BATT];
@@ -2643,6 +2649,7 @@ static void mmi_blance_charger_check_status(struct mtk_charger *info)
 	int blance_ibat_limit = 0; //mA
 	int batt_mv = 0;
 	int ret = 0;
+	int flip_chg_state = CHARGE_STATE_UNKONW;
 
 	if (!info->blance_dev)
 		return;
@@ -2654,30 +2661,42 @@ static void mmi_blance_charger_check_status(struct mtk_charger *info)
 	} else
 		batt_mv = pval.intval / 1000;
 
-	ret = charger_dev_get_charging_current(info->blance_dev, &blance_ibat_limit);
-	if (ret < 0)
-		blance_ibat_limit = target_fcc;
+	if ((prm->target_fv > 0)
+		&& (info->blance_can_charging == true)
+		&& ((batt_mv + 50) > prm->target_fv))
+		flip_chg_state = CHARGE_STATE_CV;
 	else
-		blance_ibat_limit = blance_ibat_limit / 1000;
+		flip_chg_state = CHARGE_STATE_CC;
 
-	if ((prm->target_fv > 0) && ((batt_mv + 5) > prm->target_fv)) {
-		blance_ibat_limit -= IBAT_CHG_LIM_BASE;
-		pr_info("update new blance_ibat_limit %dmA, batt_mv %d+5 > target_fv %d\n",
-			blance_ibat_limit, batt_mv, prm->target_fv);
-	} else {
-		if (blance_ibat_limit > (target_fcc + IBAT_CHG_LIM_BASE)) {
+	pr_info("balance ic chg state %d, target fv %d, batt_mv %d\n", flip_chg_state, prm->target_fv, batt_mv);
+
+	switch (flip_chg_state) {
+
+	case CHARGE_STATE_CC:
+		blance_ibat_limit = target_fcc;
+		pr_info("Blance config ichg %d ma\n", blance_ibat_limit);
+		blance_ibat_limit = (blance_ibat_limit >= 0) ? blance_ibat_limit : 0;
+		charger_dev_set_charging_current(info->blance_dev, blance_ibat_limit * 1000);
+		break;
+	case CHARGE_STATE_CV:
+		if ((prm->target_fv > 0) && ((batt_mv +5) > prm->target_fv)) {
+			ret = charger_dev_get_charging_current(info->blance_dev, &blance_ibat_limit);
+			if (ret < 0)
+				blance_ibat_limit = target_fcc;
+			else
+				blance_ibat_limit = blance_ibat_limit / 1000;
+
 			blance_ibat_limit -= IBAT_CHG_LIM_BASE;
-			pr_info("Blance to decrease ichg, update new blance_ibat_limit %d\n",
-				blance_ibat_limit);
-		} else if (blance_ibat_limit < (target_fcc - IBAT_CHG_LIM_BASE)) {
-			blance_ibat_limit += IBAT_CHG_LIM_BASE;
-			pr_info("Blance to increase ichg, update new blance_ibat_limit %d\n",
-				blance_ibat_limit);
-		}
-	}
+			pr_info("update new blance_ibat_limit %dmA, batt_mv %d+5 > target_fv %d\n",
+				blance_ibat_limit, batt_mv, prm->target_fv);
 
-	blance_ibat_limit = (blance_ibat_limit >= 0) ? blance_ibat_limit : 0;
-	charger_dev_set_charging_current(info->blance_dev, blance_ibat_limit * 1000);
+			blance_ibat_limit = (blance_ibat_limit >= 0) ? blance_ibat_limit : 0;
+			charger_dev_set_charging_current(info->blance_dev, blance_ibat_limit * 1000);
+		}
+		break;
+	default:
+		break;
+	}
 
 	if (info->mmi.batt_statues == POWER_SUPPLY_STATUS_CHARGING) {
 		charging = true;
@@ -4512,32 +4531,16 @@ static void mmi_dual_charge_control(struct mtk_charger *chg,
 		target_fv = DEMO_MODE_VOLTAGE;
 		target_fcc = main_p->target_fcc;
 		goto vote_now;
-	/* Check for Charge FULL from each */
-	} else if ((main_p->pres_chrg_step == STEP_FULL) &&
-		   (flip_p->pres_chrg_step == STEP_FULL)) {
+	/* Check for Charge FULL from main battery, because main battery can't be disabled charging separately */
+	} else if (main_p->pres_chrg_step == STEP_FULL) {
 		mmi->sm_param[BASE_BATT].pres_chrg_step = STEP_FULL;
 		target_fcc = -EINVAL;
 		target_fv = max_fv_mv;
 		goto vote_now;
 	/* Align FULL between batteries */
-	} else if ((main_p->pres_chrg_step == STEP_FULL) &&
-		   ((flip_p->pres_chrg_step == STEP_MAX) ||
-		    (flip_p->pres_chrg_step == STEP_NORM)) &&
-		   (chg_stat_flip.batt_soc >= 95) &&
-		   ((chg_stat_flip.batt_mv + HYST_STEP_FLIP_MV) >=
-		    max_fv_mv)) {
-		mmi->sm_param[BASE_BATT].pres_chrg_step =
-			flip_p->pres_chrg_step;
-		target_fcc = flip_p->target_fcc;
-		target_fv = flip_p->target_fv;
-		pr_info("Align Flip to Main FULL\n");
-		goto vote_now;
 	} else if ((flip_p->pres_chrg_step == STEP_FULL) &&
 		   ((main_p->pres_chrg_step == STEP_MAX) ||
-		    (main_p->pres_chrg_step == STEP_NORM)) &&
-		   (chg_stat_main.batt_soc >= 95) &&
-		   ((chg_stat_main.batt_mv + HYST_STEP_MV) >=
-		    max_fv_mv)) {
+		    (main_p->pres_chrg_step == STEP_NORM))) {
 		mmi->sm_param[BASE_BATT].pres_chrg_step =
 			main_p->pres_chrg_step;
 		target_fcc = main_p->target_fcc;
