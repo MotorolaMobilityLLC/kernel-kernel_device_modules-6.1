@@ -37,7 +37,7 @@
 #define MTK_DRM_ASYNC_HANDLE
 
 #define KERNEL_POWER_OFF_CHARGING_BOOT 8
-
+extern unsigned int secondary_ovl_lye_num;
 struct device;
 struct device_node;
 struct drm_crtc;
@@ -64,17 +64,20 @@ struct mtk_fake_eng_data {
 
 struct mtk_mmsys_driver_data {
 	const struct mtk_crtc_path_data *main_path_data;
+	const struct mtk_crtc_path_data *main_dynamic_path_data;
 	const struct mtk_crtc_path_data *ext_path_data;
 	const struct mtk_crtc_path_data *ext_alter_path_data;
 	const struct mtk_crtc_path_data *third_path_data;
 	const struct mtk_crtc_path_data *third_path_data_wo_tdshp;
 	const struct mtk_crtc_path_data *fourth_path_data_secondary;
+	const struct mtk_crtc_path_data *fourth_path_data_secondary_dynamic;
 	const struct mtk_crtc_path_data *fourth_path_data_discrete;
 	enum mtk_mmsys_id mmsys_id;
 	bool shadow_register;
 	const struct mtk_session_mode_tb *mode_tb;
 	void (*sodi_config)(struct drm_device *drm, enum mtk_ddp_comp_id id,
 			struct cmdq_pkt *handle, void *data);
+	void (*dynamic_sodi_config)(struct drm_crtc *crtc, struct cmdq_pkt *handle);
 	void (*sodi_apsrc_config)(struct drm_crtc *crtc,
 			struct cmdq_pkt *_cmdq_handle, bool first_init, bool check_reset,
 			unsigned int crtc_id, bool enable);
@@ -263,6 +266,8 @@ struct mtk_drm_private {
 
 	unsigned int seg_id;
 	unsigned int boot_mode;
+
+	bool enable_dual_disp_dynamic_ovl;
 };
 
 struct mtk_drm_property {

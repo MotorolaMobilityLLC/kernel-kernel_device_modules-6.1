@@ -6466,9 +6466,12 @@ static void mtk_crtc_update_ddp_state(struct drm_crtc *crtc,
 				}
 
 				if (mtk_crtc->ovl_usage_status != req_ovl) {
-					DDPINFO("req_ovl %x usage_list %x\n", req_ovl, usage_list);
+					DDPINFO("%s: CRTC%d ovl_usage update from 0x%x to 0x%x usage_list 0x%x\n", __func__, index,
+						mtk_crtc->ovl_usage_status, req_ovl, usage_list);
 					mtk_crtc_ovl_connect_change(crtc, req_ovl, cmdq_handle);
 					mtk_crtc->ovl_usage_status = req_ovl;
+					if (priv->enable_dual_disp_dynamic_ovl && priv->data->dynamic_sodi_config)
+						priv->data->dynamic_sodi_config(crtc, cmdq_handle);
 				}
 				// set DISP_ENABLE if this display is checked in hrt
 				old_mtk_state->pending_usage_update = true;
@@ -11503,7 +11506,7 @@ static void mtk_drm_crtc_path_adjust(struct mtk_drm_private *priv, struct drm_cr
 			continue;
 		}
 
-		if (priv->usage[i] == DISP_ENABLE)
+		if (priv->usage[i] == DISP_ENABLE || priv->usage[i] == DISP_OPENING)
 			occupied_ovl |= priv->ovlsys_usage[i];
 	}
 
@@ -11546,6 +11549,10 @@ static void mtk_drm_crtc_path_adjust(struct mtk_drm_private *priv, struct drm_cr
 	mtk_crtc->ddp_ctx[ddp_mode].ovl_comp_nr[DDP_FIRST_PATH] = ovl_comp_idx + 1;
 
 	mtk_crtc->ovl_usage_status = ovl_res;
+
+	/* enable dynamic ovl sodi config */
+	if (priv->enable_dual_disp_dynamic_ovl && priv->data->dynamic_sodi_config)
+		priv->data->dynamic_sodi_config(crtc, NULL);
 
 	if (mtk_crtc->dual_pipe_ddp_ctx.ovl_comp_nr[DDP_FIRST_PATH] == 0)
 		return;
@@ -12008,6 +12015,18 @@ static void mtk_drm_crtc_update_interface(struct drm_crtc *crtc,
 	}
 }
 
+static void mtk_drm_crtc_usage_update_first(struct drm_crtc *crtc)
+{
+	struct drm_device *dev = crtc->dev;
+	struct drm_crtc *crtc0 = list_first_entry(&(dev)->mode_config.crtc_list,
+				typeof(*crtc), head);
+	struct mtk_drm_crtc *mtk_crtc0 = to_mtk_crtc(crtc0);
+	struct mtk_drm_private *priv = crtc->dev->dev_private;
+
+	DDPMSG("%s: crtc0 original ovl_usage=0x%x\n", __func__, mtk_crtc0->ovl_usage_status);
+	mtk_drm_crtc_path_adjust(priv, crtc0, mtk_crtc0->ddp_mode);
+}
+
 void mtk_drm_crtc_atomic_resume(struct drm_crtc *crtc,
 				struct drm_atomic_state *atomic_state)
 {
@@ -12069,6 +12088,16 @@ void mtk_drm_crtc_atomic_resume(struct drm_crtc *crtc,
 
 		priv->usage[index] = mtk_drm_crtc_usage_enable(priv, index);
 		CRTC_MMP_MARK(index, crtc_usage, priv->usage[index], 0);
+
+		/*
+		 for flip/fold both display will be enabled from lk
+		 so we need update ovl_usage of primary display
+		 */
+		if (priv->enable_dual_disp_dynamic_ovl &&
+			mtk_crtc->enabled && index > 0 &&
+			mtk_disp_num_from_atag() > 0)
+			mtk_drm_crtc_usage_update_first(crtc);
+
 
 		if (priv->usage[index] == DISP_OPENING) {
 			DDPMSG("%s %d wait for opening\n", __func__, index);
@@ -17799,8 +17828,10 @@ int mtk_drm_crtc_create(struct drm_device *drm_dev,
 		mtk_crtc->layer_nr = EXTERNAL_INPUT_LAYER_NR;
 	else if (pipe == 2)
 		mtk_crtc->layer_nr = MEMORY_INPUT_LAYER_NR;
-	else if (pipe == 3)
-		mtk_crtc->layer_nr = SP_INPUT_LAYER_NR;
+	else if (pipe == 3) {
+		mtk_crtc->layer_nr = secondary_ovl_lye_num;
+		DDPMSG("%s:CRTC3 secondary_ovl_lye_num=%u\n", __func__, secondary_ovl_lye_num);
+	}
 
 	mutex_init(&mtk_crtc->lock);
 	mutex_init(&mtk_crtc->cwb_lock);

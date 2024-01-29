@@ -1227,6 +1227,7 @@ void mt6985_mtk_sodi_config(struct drm_device *drm, enum mtk_ddp_comp_id id,
 			    struct cmdq_pkt *handle, void *data);
 void mt6878_mtk_sodi_config(struct drm_device *drm, enum mtk_ddp_comp_id id,
 			    struct cmdq_pkt *handle, void *data);
+void mt6878_mtk_dynamic_ovl_sodi_config(struct drm_crtc *crtc, struct cmdq_pkt *handle);
 void mt6989_mtk_sodi_config(struct drm_device *drm, enum mtk_ddp_comp_id id,
 			    struct cmdq_pkt *handle, void *data);
 void mt6895_mtk_sodi_config(struct drm_device *drm, enum mtk_ddp_comp_id id,
