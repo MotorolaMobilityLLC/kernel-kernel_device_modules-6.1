@@ -265,9 +265,11 @@ static int dlpt_check_power_off(void)
 	} else
 		dlpt_power_off_cnt = 0;
 
+#ifdef MTK_BASE
 	/* TODO: do we need to get system_transition_mutex */
 	if (dlpt_power_off_cnt >= 4)
 		kernel_restart("DLPT reboot system");
+#endif
 	return ret;
 }
 
