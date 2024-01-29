@@ -23,7 +23,7 @@
 #include "inc/std_tcpci_v10.h"
 
 #define MT6375_INFO_EN		1
-#define MT6375_DBGINFO_EN	CONFIG_WD_DURING_PLUGGED_IN
+#define MT6375_DBGINFO_EN	1
 #define MT6375_WD1_EN		1
 #define MT6375_WD2_EN		1
 #define CC_SHORT_DEBOUNCE	100
