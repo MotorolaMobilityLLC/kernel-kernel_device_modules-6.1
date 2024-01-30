@@ -1,0 +1,477 @@
+/* Copyright (c) 2023, Motorola Mobility Inc. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
+#include "mediatek/mt6878-moto-common-overlay.dtsi"
+
+#include "mediatek/aito-wl2864c.dtsi"
+#include "mediatek/cust_aito_camera_v4l2.dtsi"
+#include "mediatek/aito-charger.dtsi"
+#include "mediatek/aito-fps.dtsi"
+#include "mediatek/aito-ntc.dtsi"
+#include "mediatek/aito-display.dtsi"
+#include "mediatek/aito-touch.dtsi"
+
+&pio {
+	gpio1_input_pull_up: gpio1_input_pull_up {
+		pins_cmd_dat {
+			pinmux = <PINMUX_GPIO7__FUNC_GPIO7>;
+			slew-rate = <0>;
+			bias-pull-up = <00>;
+		};
+	};
+
+	nfc_spi_cs_mode_spi: nfc_spi_cs_mode_spi {
+		pins_cmd_dat {
+			pinmux = <PINMUX_GPIO73__FUNC_SPI5_CSB>;
+			bias-disable;
+		};
+	};
+
+	nfc_spi_cs_mode_idle: nfc_spi_cs_mode_idle {
+		pins_cmd_dat {
+			pinmux = <PINMUX_GPIO73__FUNC_GPIO73>;
+			bias-disable;
+		};
+	};
+
+	sar_int_default: sar_int_default {
+		pins_cmd_dat {
+			pinmux = <PINMUX_GPIO10__FUNC_GPIO10>;
+			input-enable;
+			drive-strength = <2>;
+			bias-pull-up;
+		};
+	};
+
+	sar_int_sleep: sar_int_sleep {
+		pins_cmd_dat {
+			pinmux = <PINMUX_GPIO10__FUNC_GPIO10>;
+			input-enable;
+			drive-strength = <2>;
+			bias-pull-up;
+		};
+	};
+
+	sar_int_default_sub: sar_int_default_sub {
+		pins_cmd_dat {
+			pinmux = <PINMUX_GPIO116__FUNC_GPIO116>;
+			input-enable;
+			drive-strength = <2>;
+			bias-pull-up;
+		};
+	};
+
+	sar_int_sleep_sub: sar_int_sleep_sub {
+		pins_cmd_dat {
+			pinmux = <PINMUX_GPIO116__FUNC_GPIO116>;
+			input-enable;
+			drive-strength = <2>;
+			bias-pull-up;
+		};
+	};
+};
+
+
+&spi5 {
+	st54spi: st54spi@0 {
+		compatible = "st,st54spi";
+		reg = <0>;
+		spi-max-frequency = <1000000>;
+		gpio-power_nreset = <40>;
+		gpio-power_nreset-std = <&pio 40 0x00>;
+		power_mode = "ST54J";
+		bootmode = <&chosen>;
+		pinctrl-names = "pinctrl_state_mode_spi",
+				"pinctrl_state_mode_idle";
+		pinctrl-0 = <&nfc_spi_cs_mode_spi>;
+		pinctrl-1 = <&nfc_spi_cs_mode_idle>;
+		status = "okay";
+	};
+};
+
+&u2port0{
+	mediatek,eye-vrt = <7>;
+	mediatek,eye-term = <7>;
+	mediatek,rev6 = <3>;
+};
+
+/* BOB */
+&i2c5 {
+	hl7603@77 {
+		status = "ok";
+		compatible = "hl7603";
+		reg = <0x77>;
+		/* hl7603_vout_voltage = <0x0B>; //3.4v */
+	};
+};
+
+&i2c12 {
+	status = "okay";
+	clock-frequency = <400000>;
+	st21nfc: st21nfc@08 {
+		compatible = "st,st21nfc";
+		reg = <0x08>;
+		interrupt-parent = <&pio>;
+		interrupts = <109  0>;
+		bootmode = <&chosen>;
+		reset-gpios = <&pio 108 0x0>;
+		irq-gpios = <&pio 109 0x0>;
+		clkreq-gpios = <&pio 151 0x0>;
+		status = "okay";
+	};
+};
+
+
+&i2c12 {
+	status = "ok";
+	sx937x@2c { /* SAR sensor */
+		compatible = "Semtech,sx937x";
+		reg = <0x2c>;
+		Semtech,power-supply-type = <0>;
+		cap_vdd-supply = <&mt6363_vio18>;
+		pinctrl-names = "default","sleep";
+		pinctrl-0 = <&sar_int_default>;
+		pinctrl-1 = <&sar_int_sleep>;
+		interrupt-parent = <&pio>;
+		interrupts = <116 0x02>;
+		interrupt-names = "capsense0_irq";
+		Semtech,nirq-gpio= <&pio 116 0x02>;
+		/*use PH4/5/6 as the reference sensor
+		set it to 0xff if the ref-phases-x is not used*/
+		Semtech,ref-phases-a = <0>;
+		Semtech,ref-phases-b = <2>;
+		Semtech,ref-phases-c = <5>;
+		Semtech,button-flag = <0x1a>;
+		Semtech,button-names = "Moto CapSense Ch1","Moto CapSense Ch3","Moto CapSense Ch4";
+		Semtech,debug-name = "capsense0";
+		Semtech,flip_operation_num = <3>;
+		Semtech,flip_operation_far_num = <3>;
+		Semtech,flip_near_init = <
+			0x80F8 0x8130
+			0x8024 0x0800
+			0x4280 0xE
+		>;
+		Semtech,flip_far_init = <
+			0x80F8 0x8830
+			0x8024 0x7F00
+			0x4280 0xE
+		>;
+		Semtech,reg-num = <76>;
+		Semtech,reg-init = <
+			0x8024 0x7F00
+			0x4004 0x74
+			0x8008 0x0
+			0x4280 0x0
+			0x8020 0x32
+			0x8028 0x456
+			0x8034 0x456
+			0x8040 0x456
+			0x804C 0x456
+			0x8058 0x456
+			0x8064 0x456
+			0x8070 0x456
+			0x807C 0x456
+			0x8030 0xFFF9FD
+			0x803C 0xFFF9EF
+			0x8048 0xFFD9FF
+			0x8054 0xF6F9FF
+			0x8060 0xBFF9FF
+			0x806C 0xFFF97F
+			0x8078 0xFFF9FF
+			0x8084 0x0
+			0x802C 0x0
+			0x8038 0x0
+			0x8044 0x0
+			0x8050 0x0
+			0x805C 0x0
+			0x8068 0x0
+			0x8074 0x0
+			0x8080 0x0
+			0x8098 0x0
+			0x80B8 0x5D3C
+			0x80D8 0x0
+			0x80F8 0x7651
+			0x8118 0x3A3A
+			0x8138 0x0
+			0x8158 0x0
+			0x8178 0x0
+			0x80A0 0x0
+			0x80C0 0x0
+			0x80E0 0x0
+			0x8100 0x0
+			0x8120 0x0
+			0x8140 0x0
+			0x8160 0x0
+			0x8180 0x0
+			0x8188 0x8000010
+			0x818C 0x8000012
+			0x8190 0x8000014
+			0x8194 0x0
+			0x8090 0x2AD67000
+			0x80B0 0x2AD67000
+			0x80D0 0x2AD67000
+			0x80F0 0x2AD67000
+			0x8110 0x2AD67000
+			0x8130 0x2AD67000
+			0x8150 0x2AD67000
+			0x8170 0x0
+			0x8088 0x300000
+			0x80A8 0x300000
+			0x80C8 0x300000
+			0x80E8 0x300000
+			0x8108 0x300000
+			0x8128 0x300000
+			0x8148 0x300000
+			0x8168 0x0
+			0x808C 0x18
+			0x80AC 0x18
+			0x80CC 0x18
+			0x80EC 0x18
+			0x810C 0x18
+			0x812C 0x18
+			0x814C 0x18
+			0x816C 0x18
+			0x4280 0xE
+			0x8024 0x7F7F
+			0x4280 0xF
+		>;
+		status = "ok";
+	};
+
+	sx937x@24 { /* SAR sensor */
+		compatible = "Semtech,sx937x";
+		reg = <0x24>;
+		Semtech,power-supply-type = <0>;
+		cap_vdd-supply = <&mt6363_vio18>;
+		pinctrl-names = "default","sleep";
+		pinctrl-0 = <&sar_int_default_sub>;
+		pinctrl-1 = <&sar_int_sleep_sub>;
+		interrupt-parent = <&pio>;
+		interrupts = <10 0x02>;
+		interrupt-names = "capsense1_irq";
+		Semtech,nirq-gpio= <&pio 10 0x02>;
+		/*use PH4/5/6 as the reference sensor
+		set it to 0xff if the ref-phases-x is not used*/
+		Semtech,ref-phases-a = <1>;
+		Semtech,ref-phases-b = <3>;
+		Semtech,ref-phases-c = <0xff>;
+		Semtech,button-flag = <0x45>;
+		Semtech,button-names = "Moto CapSense Ch0","Moto CapSense Ch2","Moto CapSense Ch6";
+		Semtech,debug-name = "capsense1";
+		Semtech,flip_operation_num = <2>;
+		Semtech,flip_operation_far_num = <2>;
+		Semtech,flip_near_init = <
+			0x8024 0x0400
+			0x4280 0xE
+		>;
+		Semtech,flip_far_init = <
+			0x8024 0x7F00
+			0x4280 0xE
+		>;
+		Semtech,reg-num = <76>;
+		Semtech,reg-init = <
+			0x8024 0x7F00
+			0x4004 0x74
+			0x8008 0x0
+			0x4280 0x0
+			0x8020 0x32
+			0x8028 0x476
+			0x8034 0x476
+			0x8040 0x876
+			0x804C 0x876
+			0x8058 0x476
+			0x8064 0x476
+			0x8070 0x476
+			0x807C 0x476
+			0x8030 0xFFD9FF
+			0x803C 0xFEF9FF
+			0x8048 0xFFF9EF
+			0x8054 0xFFF9FD
+			0x8060 0xF7F9FF
+			0x806C 0xBFF9FF
+			0x8078 0xFFF9EF
+			0x8084 0x0
+			0x802C 0x0
+			0x8038 0x0
+			0x8044 0x0
+			0x8050 0x0
+			0x805C 0x0
+			0x8068 0x0
+			0x8074 0x0
+			0x8080 0x0
+			0x8098 0x7651
+			0x80B8 0x0
+			0x80D8 0x7651
+			0x80F8 0x0
+			0x8118 0x0
+			0x8138 0x0
+			0x8158 0xDA51
+			0x8178 0x0
+			0x80A0 0x0
+			0x80C0 0x0
+			0x80E0 0x0
+			0x8100 0x0
+			0x8120 0x0
+			0x8140 0x0
+			0x8160 0x0
+			0x8180 0x0
+			0x8188 0x8000011
+			0x818C 0x8000013
+			0x8190 0x8000015
+			0x8194 0x0
+			0x8090 0x2AD67000
+			0x80B0 0x2AD67000
+			0x80D0 0x2AD67000
+			0x80F0 0x2AD67000
+			0x8110 0x2AD67000
+			0x8130 0x2AD67000
+			0x8150 0x2AD67000
+			0x8170 0x0
+			0x8088 0x300000
+			0x80A8 0x300000
+			0x80C8 0x300000
+			0x80E8 0x300000
+			0x8108 0x300000
+			0x8128 0x300000
+			0x8148 0x3300000
+			0x8168 0x0
+			0x808C 0x18
+			0x80AC 0x18
+			0x80CC 0x18
+			0x80EC 0x18
+			0x810C 0x18
+			0x812C 0x18
+			0x814C 0x18
+			0x816C 0x0
+			0x4280 0xE
+			0x8024 0x7F7F
+			0x4280 0xF
+		>;
+		status = "ok";
+	};
+};
+
+&i2c11 {
+	clock-frequency = <400000>;
+	status = "okay";
+	haptic_hv@5A {
+		status = "okay";
+		compatible = "awinic,haptic_hv";
+		reg = <0x5A>;
+		irq-gpio = <&pio 7 0>;
+		reset-gpio = <&pio 100 0>;
+		pinctrl-names = "irq_active";
+		pinctrl-0 = <&gpio1_input_pull_up>;
+		f0_pre = < 1700 >;
+		mode = /bits/ 8 < 5 >;
+
+		aw8692x_f0_cali_percent = /bits/ 8 < 7 >;
+		aw8692x_gain_bypass = /bits/ 8 < 1 >;
+		aw8692x_cont_drv1_lvl = /bits/ 8 < 0x7F >;
+		aw8692x_cont_lra_vrms = < 1500 >;
+		aw8692x_cont_drv1_time = /bits/ 8 < 0x04 >;
+		aw8692x_cont_drv2_time = /bits/ 8 < 0x66 >;
+		aw8692x_cont_track_margin = /bits/ 8 < 0x0F >;
+		aw8692x_cont_brk_gain = /bits/ 8 < 0x08 >;
+		aw8692x_cont_brk_time = /bits/ 8 < 0x08 >;
+		aw8692x_duration_time = /bits/ 8 < 34 67 101 >;
+		aw8692x_d2s_gain = /bits/ 8 < 0x04 >;
+		aw8692x_trig_config = /bits/ 8 < 0 0 0 1 0 2 0 0
+						 0 0 0 1 0 2 0 0
+						 0 0 0 1 0 2 0 0 >;
+		aw8692x_bst_vol_default = < 8500 >;
+		aw8692x_is_enabled_track_en;
+		/* aw8692x_is_enabled_auto_bst; */
+		/* aw8692x_is_enabled_one_wire; */
+	};
+};
+
+&regulator_vibrator {
+	status = "disabled";
+};
+
+&mmc1 {
+	status = "disabled";
+};
+
+&i2c11 {
+	status = "okay";
+	clock-frequency = <400000>;
+
+	spk: tfa98xx@35 {
+		compatible = "tfa,tfa98xx";
+		#address-cells = <1>;
+		#size-cells = <0>;
+		#sound-dai-cells = <0>;
+		reg = <0x35>;
+		reset-gpio= <&pio 149 0>;
+		reset-polarity=<0>;
+		status = "okay";
+	};
+
+	rcv: tfa98xx@34 {
+		compatible = "tfa,tfa98xx";
+		#address-cells = <1>;
+		#size-cells = <0>;
+		#sound-dai-cells = <0>;
+		reg = <0x34>;
+		reset-gpio= <&pio 164 0>;
+		reset-polarity=<0>;
+		status = "okay";
+	};
+};
+
+&sound {
+	mediatek,spk-i2s = <25 24>;
+	mediatek,speaker-codec {
+		sound-dai = <&spk &rcv>;
+	};
+};
+
+&afe {
+	mediatek,ap-dmic = <1>;
+};
+
+&swtp {
+	interrupt-parent = <&pio>;
+	interrupts = <101 IRQ_TYPE_LEVEL_HIGH 101 0>;
+	deb-gpios = <&pio 101 0>;
+	debounce = <512>;
+	status = "okay";
+};
+
+&swtp_1 {
+	interrupt-parent = <&pio>;
+	interrupts = <102 IRQ_TYPE_LEVEL_HIGH 102 0>;
+	deb-gpios = <&pio 102 0>;
+	debounce = <512>;
+	status = "okay";
+};
+&swtp_2 {
+	interrupt-parent = <&pio>;
+	interrupts = <103 IRQ_TYPE_LEVEL_HIGH 103 0>;
+	deb-gpios = <&pio 103 0>;
+	debounce = <512>;
+	status = "okay";
+};
+&swtp_3 {
+	interrupt-parent = <&pio>;
+	interrupts = <104 IRQ_TYPE_LEVEL_HIGH 104 0>;
+	deb-gpios = <&pio 104 0>;
+	debounce = <512>;
+	status = "okay";
+};
+
+&therm_intf {
+	/*Vsensor name should be CASE DIFFERENT with the name in config file*/
+	mmi,temperature-names = "BACK_TEMP", "FRONT_TEMP";/*for "back_temp" in config file*/
+};

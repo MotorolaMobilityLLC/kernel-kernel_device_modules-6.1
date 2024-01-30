@@ -1,0 +1,39 @@
+/* Copyright (c) 2023, Motorola Mobility Inc. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
+/dts-v1/;
+/plugin/;
+
+#include "mediatek/mt6878-vienna-common-overlay.dtsi"
+
+/* Board match root node */
+/ {
+	fragment@model {
+		target-path = "/";
+		__overlay__ {
+			mot,model = "vienna";
+			mot,board-id = <0x41 0xA100>;
+		};
+	};
+};
+
+&st21nfc {
+	clkreq-gpios = <&pio 152 0x0>;
+};
+
+&spi3 {
+	goodix_ts_spi@0 {
+		goodix,iovdd-gpio = <&pio 151 0x0>;
+	};
+};
+#include <vienna_evb/cust.dtsi>
+/*End of this file, DO NOT ADD ANYTHING HERE*/
