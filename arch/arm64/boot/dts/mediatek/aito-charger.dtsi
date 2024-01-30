@@ -250,6 +250,7 @@
 	status = "okay";
 	compatible = "mmi,smart-battery";
 	mmi,gauge_names = "main_battery", "flip_battery";
+	mmi,ui_full_soc = <97>;
 };
 
 &i2c0 {
