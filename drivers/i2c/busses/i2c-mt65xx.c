@@ -1263,8 +1263,8 @@ static int mtk_i2c_set_speed_v2(struct mtk_i2c *i2c, unsigned int parent_clk)
 				(target_speed / I2C_MAX_STANDARD_MODE_FREQ * 1000000);
 			if (l_ext_time > MAX_LS_EXT_TIME)
 				continue;
-			target_speed = (target_speed / 100) *
-				(100 - 3 + target_speed / I2C_MAX_STANDARD_MODE_FREQ);
+			//target_speed = (target_speed / 100) *       //moto camera modify,this algorithm will increase the setting rate of i2c,
+				//(100 - 3 + target_speed / I2C_MAX_STANDARD_MODE_FREQ); //and the setting rate of 1M will increase by 7%
 			l_cal_para.max_step = MAX_STEP_CNT_DIV;
 			l_cal_para.best_mul = (parent_clk + clk_div * target_speed - 1) /
 				(clk_div * target_speed) + 1;
