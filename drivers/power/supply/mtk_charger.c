@@ -4503,6 +4503,9 @@ static void mmi_dual_charge_control(struct mtk_charger *chg,
 		bool voltage_full;
 		static int demo_full_soc = 100;
 		static int usb_suspend = 0;
+
+		mmi->sm_param[BASE_BATT].pres_chrg_step = STEP_DEMO;
+
 		pr_info("Battery in Demo Mode charging limited "
 			"%d%%\n", chg->mmi.demo_mode);
 
@@ -4540,7 +4543,8 @@ static void mmi_dual_charge_control(struct mtk_charger *chg,
 	/* Align FULL between batteries */
 	} else if ((flip_p->pres_chrg_step == STEP_FULL) &&
 		   ((main_p->pres_chrg_step == STEP_MAX) ||
-		    (main_p->pres_chrg_step == STEP_NORM))) {
+		    (main_p->pres_chrg_step == STEP_NORM) ||
+		    (main_p->pres_chrg_step == STEP_FLOAT))) {
 		mmi->sm_param[BASE_BATT].pres_chrg_step =
 			main_p->pres_chrg_step;
 		target_fcc = main_p->target_fcc;
@@ -4548,11 +4552,19 @@ static void mmi_dual_charge_control(struct mtk_charger *chg,
 		pr_info("Align Main to Flip FULL\n");
 		goto vote_now;
 	/* Check for Charge Disable from each */
-	} else if ((main_p->target_fcc < 0) ||
-		   (flip_p->target_fcc < 0)) {
+	} else if (main_p->pres_chrg_step == STEP_STOP) {
 		mmi->sm_param[BASE_BATT].pres_chrg_step = STEP_STOP;
 		target_fcc = -EINVAL;
 		target_fv = max_fv_mv;
+		goto vote_now;
+	} else if ((flip_p->pres_chrg_step == STEP_STOP) &&
+			((main_p->pres_chrg_step == STEP_MAX) ||
+			(main_p->pres_chrg_step == STEP_NORM) ||
+			(main_p->pres_chrg_step == STEP_FLOAT))) {
+		mmi->sm_param[BASE_BATT].pres_chrg_step =
+			main_p->pres_chrg_step;
+		target_fcc = main_p->target_fcc;
+		target_fv = main_p->target_fv;
 		goto vote_now;
 	}
 
