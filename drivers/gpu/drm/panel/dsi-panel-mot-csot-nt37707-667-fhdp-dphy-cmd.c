@@ -305,6 +305,12 @@ static void lcm_panel_init(struct lcm *ctx)
 		lcm_dcs_write_seq_static(ctx, 0xB2, 0x00);
 	}
 
+	if (ctx->version != 1) {
+		lcm_dcs_write_seq_static(ctx, 0xF0, 0x55, 0xAA, 0x52, 0x08, 0x00);
+		lcm_dcs_write_seq_static(ctx, 0x6F, 0x0C);
+		lcm_dcs_write_seq_static(ctx, 0xC3, 0x04);
+	}
+
 	lcm_dcs_write_seq_static(ctx, 0x17, 0x10);
 	lcm_dcs_write_seq_static(ctx, 0x2A, 0x00, 0x00, 0x04, 0x37);
 	lcm_dcs_write_seq_static(ctx, 0x2B, 0x00, 0x00, 0x0A, 0x4F);
