@@ -89,7 +89,7 @@ struct mtk_vcm_info {
 	struct VcmDriverConfig *p_vcm_info;
 };
 
-struct VcmDriverConfig g_vcmconfig;
+struct VcmDriverConfig g_vcmconfig = {.ctrl_delay_us=5000,};
 
 /* Control commnad */
 #define VIDIOC_MTK_S_LENS_INFO _IOWR('V', BASE_VIDIOC_PRIVATE + 3, struct mtk_vcm_info)
