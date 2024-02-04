@@ -51,6 +51,27 @@ static u32 ufshcd_get_crypto_para(const union ufs_crypto_cfg_entry *cfg, int slo
 	return crypto_para;
 }
 
+static bool check_wrapped_key_corrupted(const u8 *wrapped_key,
+					u32 wrapped_key_size, u32 actual_size)
+{
+	u32 pos = actual_size;
+
+	/* All the remaining fields are padded with 0x01, see the export_key()
+	 * interface in keymaster HAL. This looks odd but for the time being
+	 * Android has no specific format in terms of the storage key which is
+	 * highly reliant upon the TEE implementation such that in our case we
+	 * actually pad additional 24 bytes 0x01 to satify the fscrypt keyring
+	 * process whereby the high level filesystem will require 64 bytes in total.
+	 */
+	if (wrapped_key_size > actual_size) {
+		for (; pos < wrapped_key_size; pos++) {
+			if (*(wrapped_key + pos) != 0x01)
+				return true;
+		}
+	}
+	return false;
+}
+
 static int ufshcd_program_wrapped_key(struct ufs_hba *hba,
 			      const union ufs_crypto_cfg_entry *cfg, int slot)
 {
@@ -128,6 +149,16 @@ static int ufshcd_moto_crypto_keyslot_program(struct blk_crypto_profile *profile
 	if (WARN_ON(cap_idx < 0)) {
 		pr_notice("Moto HWKM: Error: No valid capabitlity index can be found!");
 		return -EOPNOTSUPP;
+	}
+
+	/* Validate the exported AES wrapped key format, as per VTS corrupted key case
+	 * we should fail the test as if in our TEE export operation, the last 24 bytes
+	 * must be 0x01.
+	 */
+	if (check_wrapped_key_corrupted(key->raw, key->size,
+			UFS_CRYPTO_KEY_MAX_SIZE/2 + WRAPPED_STORAGE_KEY_HEADER_SIZE)) {
+		pr_notice("Moto HWKM: Error: invalid wrapped key format!");
+		return -EINVAL;
 	}
 
 	cfg.data_unit_size = data_unit_mask;
