@@ -262,7 +262,8 @@ int hwkm_derive_raw_secret(const u8 *wrapped_key, u32 wrapped_key_size,
 	 */
 	if (check_wrapped_key_corrupted(wrapped_key,
 			wrapped_key_size, hwkm_wrapped_key_size)) {
-		pr_notice("wrapped key padding with zero bytes!");
+		mc_dev_err(mc_ret, "wrapped key padding with invalid bytes!");
+		return -EINVAL;
 	}
 
 	/* Open the sesssion with mcDaemon */
@@ -279,14 +280,14 @@ int hwkm_derive_raw_secret(const u8 *wrapped_key, u32 wrapped_key_size,
 	mc_ret = mc_map(&g_km_session, (void*)wrapped_key, hwkm_wrapped_key_size, &wrapped_key_map);
 	if (mc_ret != MC_DRV_OK) {
 		mc_dev_err(mc_ret, "mc_map failed, wrapped key buf returned: 0x%08x", mc_ret);
-        hwkm_close_session();
+		hwkm_close_session();
 		return -EINVAL;
 	}
 	mc_ret = mc_map(&g_km_session, (void*)raw_secret, raw_secret_size, &raw_secret_map);
 	if (mc_ret != MC_DRV_OK) {
 		mc_dev_err(mc_ret, "mc_map failed, raw secret buf returned: 0x%08x", mc_ret);
 		mc_unmap(&g_km_session, (void*)wrapped_key, &wrapped_key_map);
-        hwkm_close_session();
+		hwkm_close_session();
 		return -EINVAL;
 	}
 
