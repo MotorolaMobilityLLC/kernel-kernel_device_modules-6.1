@@ -98,4 +98,6 @@ obj-y += sound/soc/mediatek/
 
 obj-y += drivers/pci/controller/
 
+obj-y += drivers/moto/
+
 endif
