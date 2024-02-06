@@ -587,6 +587,8 @@ mgk_64_k61_device_modules = [
     "drivers/regulator/mtk-vmm-isp71-regulator.ko",
     "drivers/regulator/rt4803.ko",
     "drivers/regulator/rt5133-regulator.ko",
+    "drivers/regulator/et5904.ko",
+    "drivers/regulator/et59041c.ko",
     "drivers/regulator/rt6160-regulator.ko",
     "drivers/regulator/wl2864c-regulator.ko",
     "drivers/regulator/hl7603-regulator.ko",
