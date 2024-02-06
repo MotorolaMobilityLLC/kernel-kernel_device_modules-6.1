@@ -28,5 +28,7 @@ obj-$(CONFIG_REGULATOR_MT6878_ALPHA_SUPPORT) += k6878v1_64_alpha/
 endif
 obj-$(CONFIG_MOTO_WL2864C)  += wl2864c-regulator.o
 obj-$(CONFIG_MOTO_HL7603)   += hl7603-regulator.o
+obj-$(CONFIG_MOTO_ET5904) += et5904.o
+obj-$(CONFIG_MOTO_ET59041C) += et59041c.o
 
 ccflags-$(CONFIG_REGULATOR_DEBUG) += -DDEBUG
