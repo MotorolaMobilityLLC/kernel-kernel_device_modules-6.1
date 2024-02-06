@@ -61,8 +61,8 @@
 		compatible = "st,st54spi";
 		reg = <0>;
 		spi-max-frequency = <1000000>;
-		gpio-power_nreset = <40>;
-		gpio-power_nreset-std = <&pio 40 0x00>;
+		gpio-power_nreset = <35>;
+		gpio-power_nreset-std = <&pio 35 0x00>;
 		power_mode = "ST54J";
 		bootmode = <&chosen>;
 		pinctrl-names = "pinctrl_state_mode_spi",
@@ -119,6 +119,18 @@
 
 &i2c10 {
 	status = "ok";
+	
+	st_st21nfc@0x08 {
+		compatible = "st,st21nfc";
+		reg = <0x08>;
+		interrupt-parent = <&pio>;
+		interrupts = <2 0>;
+		reset-gpios = <&pio 40 0x00>;
+		irq-gpios = <&pio 2 0x00>;
+		clkreq-gpios = <&pio 151 0x00>;
+		status = "ok";
+	};
+	
 	sx937x@2c { /* SAR sensor */
 		compatible = "Semtech,sx937x";
 		reg = <0x2c>;
