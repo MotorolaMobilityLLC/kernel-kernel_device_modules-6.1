@@ -4208,6 +4208,10 @@
 			status = "okay";
 		};
 
+		irq_nfc: irq_nfc {
+			compatible = "mediatek,irq_nfc-eint";
+		};
+
 		pwm@11008000 {
 			compatible = "mediatek,pwm";
 			reg = <0 0x11008000 0 0x1000>;
