@@ -1,0 +1,74 @@
+/*et5094 pinctrl*/
+&pio {
+	et5904_gpio_en0: et5904_gpio_en0 {
+		pins_cmd_dat {
+			pinmux = <PINMUX_GPIO115__FUNC_GPIO115>;
+			slew-rate = <1>;
+			output-low;
+		};
+	};
+
+	et5904_gpio_en1: et5904_gpio_en1 {
+		pins_cmd_dat {
+			pinmux = <PINMUX_GPIO115__FUNC_GPIO115>;
+			slew-rate = <1>;
+			output-high;
+		};
+	};
+	et5904_gpio_ext_buck_en0: et5904_gpio_ext_buck_en0 {
+		pins_cmd_dat {
+			pinmux = <PINMUX_GPIO191__FUNC_GPIO191>;
+			slew-rate = <1>;
+			output-low;
+		};
+	};
+
+	et5904_gpio_ext_buck_en1: et5904_gpio_ext_buck_en1 {
+		pins_cmd_dat {
+			pinmux = <PINMUX_GPIO191__FUNC_GPIO191>;
+			slew-rate = <1>;
+			output-high;
+		};
+	};
+};
+
+
+
+&i2c3{
+    et5904: et5904@28 {
+	status = "okay";
+	compatible = "etek,et5904";
+	reg = <0x28>;
+	pinctrl-names = "et5904_gpio_en0","et5904_gpio_en1","et5904_gpio_ext_buck_en0","et5904_gpio_ext_buck_en1";
+	pinctrl-0 = <&et5904_gpio_en0>;
+	pinctrl-1 = <&et5904_gpio_en1>;
+	pinctrl-2 = <&et5904_gpio_ext_buck_en0>;
+	pinctrl-3 = <&et5904_gpio_ext_buck_en1>;
+	regulators {
+			et5904_ldo1: et5904_ldo1 {
+				regulator-name = "et5904_ldo1";
+                		regulator-min-microvolt = <1100000>;
+				regulator-max-microvolt = <1300000>;
+				regulator-boot-on;
+			};
+			et5904_ldo2: et5904_ldo2 {
+				regulator-name = "et5904_ldo2";
+                		regulator-min-microvolt = <1050000>;
+				regulator-max-microvolt = <1300000>;
+				regulator-boot-on;
+			};
+			et5904_ldo3: et5904_ldo3 {
+				regulator-name = "et5904_ldo3";
+				regulator-min-microvolt = <2800000>;
+				regulator-max-microvolt = <3000000>;
+				regulator-boot-on;
+			};
+			et5904_ldo4: et5904_ldo4 {
+				regulator-name = "et5904_ldo4";
+				regulator-min-microvolt = <2800000>;
+				regulator-max-microvolt = <3000000>;
+				regulator-boot-on;
+			};
+		};
+	};
+};

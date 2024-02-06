@@ -238,5 +238,20 @@ config REGULATOR_MT6878_ALPHA_SUPPORT
 	  To compile this dirver for used touch IC.
 	  Set Y or M to select this feature for specific platform-mt6878,
 	  and set N to disable.
+config MOTO_ET5904
+	tristate "ETEK ET5904 Four Output Power regulators"
+	depends on I2C
+	select REGMAP_I2C
+	help
+	  This driver supports ETEK ET5904 Four LDO output
+	  support the voltage and current regulators .
+
+config MOTO_ET59041C
+	tristate "ETEK ET59041C Four Output Power regulators"
+	depends on I2C
+	select REGMAP_I2C
+	help
+	  This driver supports ETEK ET5904 Four LDO output
+	  support the voltage and current regulators .
 endif
 
