@@ -98,6 +98,8 @@ mgk_64_k61_kleaf_modules = [
     "//motorola/kernel/modules/drivers/input/touchscreen/goodix_berlin_u_mmi:goodix_brl_u_mmi",
     "//motorola/kernel/modules/drivers/input/touchscreen/touchscreen_u_mmi:touchscreen_u_mmi",
     "//motorola/kernel/modules/drivers/input/touchscreen/goodix_gt96x_u_mmi:goodix_gt96x_u_mmi",
+    "//motorola/kernel/modules/drivers/input/misc/ets_fod_mmi_u:ets_fod_mmi_u",
+    "//motorola/kernel/modules/drivers/input/misc/anc_fps_mmi:anc_fps_mmi",
 ]
 
 mgk_64_k61_kleaf_eng_modules = [
