@@ -1,0 +1,136 @@
+// SPDX-License-Identifier: GPL-2.0
+//
+// Copyright (c) 2023 Motorola Inc.
+&pio {
+
+	fingerfp_rst_high: fingerfp_rst_high {
+		pins_cmd_dat {
+			pinmux = <PINMUX_GPIO155__FUNC_GPIO155>;
+			slew-rate = <1>;
+			output-high;
+		};
+	};
+
+	fingerfp_rst_low: fingerfp_rst_low {
+		pins_cmd_dat {
+			pinmux = <PINMUX_GPIO155__FUNC_GPIO155>;
+			slew-rate = <1>;
+			output-low;
+		};
+	};
+
+	fingerfp_irq_active: fingerfp_irq_active {
+		pins_cmd_dat {
+			pinmux = <PINMUX_GPIO8__FUNC_GPIO8>;
+			slew-rate = <0>;
+			bias-disable;
+		};
+	};
+
+	fingerfp_spi_active: fingerfp_spi_active {
+		pins_cmd_dat {
+			pinmux = <PINMUX_GPIO63__FUNC_SPI1_MI>, <PINMUX_GPIO61__FUNC_SPI1_CSB>, <PINMUX_GPIO62__FUNC_SPI1_MO>, <PINMUX_GPIO60__FUNC_SPI1_CLK>;
+			drive-strength = <2>;
+		};
+	};
+
+	fingerfp_spi_default: fingerfp_spi_default {
+		pins_cmd_dat {
+			pinmux = <PINMUX_GPIO63__FUNC_GPIO63>, <PINMUX_GPIO61__FUNC_GPIO61>, <PINMUX_GPIO62__FUNC_GPIO62>, <PINMUX_GPIO60__FUNC_GPIO60>;
+			slew-rate = <1>;
+			output-low;
+		};
+	};
+	jiiov_fp_reset_output_low: jiiov_fp_reset_output_low {
+		pins_cmd_dat {
+		    pinmux = <PINMUX_GPIO155__FUNC_GPIO155>;
+		    slew-rate = <1>;
+		    output-low;
+		};
+	};
+
+	jiiov_fp_reset_output_high: jiiov_fp_reset_output_high {
+		pins_cmd_dat {
+		    pinmux = <PINMUX_GPIO155__FUNC_GPIO155>;
+		    slew-rate = <1>;
+		    output-high;
+		};
+	};
+
+	jiiov_fp_irq_default: jiiov_fp_irq_default {
+		pins_cmd_dat {
+		    pinmux = <PINMUX_GPIO8__FUNC_GPIO8>;
+		    slew-rate = <0>;
+		    bias-disable;
+		};
+	};
+
+	jiiov_fp_spi_active: jiiov_fp_spi_active {
+		pins_cmd_dat {
+			pinmux = <PINMUX_GPIO63__FUNC_SPI1_MI>, <PINMUX_GPIO61__FUNC_SPI1_CSB>, <PINMUX_GPIO62__FUNC_SPI1_MO>, <PINMUX_GPIO60__FUNC_SPI1_CLK>;
+			slew-rate = <0>;
+			bias-disable;
+		};
+	};
+};
+
+// SPI node start
+&spi1 {
+	status = "okay";
+	tee-only;
+	mediatek,pad-select =  <0>, <1>;
+	//egis spi
+	fingerprint@0 {
+		compatible = "mediatek,fingerprint";
+		reg = <0>;
+		spi-max-frequency = <8000000>;
+		status = "okay";
+	};
+
+	jiiov_tee@1 {
+		status = "okay";
+		compatible = "jiiov,fingerprint","mediatec,fingerprint-jiiov";
+		reg = <1>;
+		spi-max-frequency = <8000000>;
+		netlink-event = <30>;
+		interrupt-parent = <&pio>;
+		interrupts = <8 IRQ_TYPE_EDGE_RISING 8 0>;
+		anc,gpio_rst = <&pio 155 0x00>;
+		anc,gpio_irq = <&pio 8 0x00>;
+		anc,enable-on-boot;
+		// anc,vdd_use_gpio;
+		// anc,gpio_pwr = <&pio 51 0x0>;
+		anc,vdd_use_pmic;
+		//mt6369_vfp
+		vdd-supply = <&mt6369_vfp>;
+		anc,vdd_config = <3300000 3300000 150000>;
+		pinctrl-names = "anc_reset_low", "anc_reset_high", "anc_irq_default";
+		pinctrl-0 = <&jiiov_fp_reset_output_low>;
+		pinctrl-1 = <&jiiov_fp_reset_output_high>, <&jiiov_fp_spi_active>;
+		pinctrl-2 = <&jiiov_fp_irq_default>;
+	};
+};
+&odm {
+	fp_egistec {
+	status="okay";
+		compatible = "fp-egistec";
+		interrupt-parent = <&pio>;
+		interrupts = <8 IRQ_TYPE_EDGE_RISING 8 0>;
+		fp-ctrl-power;
+		egistec,gpio_reset = <&pio 155 0x0>;
+		egistec,gpio_irq = <&pio 8 0x0>;
+
+		vcc_fp-supply = <&mt6369_vfp>;	// ldo for support module vcc
+		egis-fp,vcc-voltage = <3300000 3300000>;	// ldo voltage default 3.3V
+		egis-fp,vcc-current = <100000>;
+
+		pinctrl-names = "egis_rst_high", "egis_rst_low", "egis_irq_active", "egis_spi_active", "egis_spi_default";
+		pinctrl-0 = <&fingerfp_rst_high>;
+		pinctrl-1 = <&fingerfp_rst_low>;
+		pinctrl-2 = <&fingerfp_irq_active>;
+		pinctrl-3 = <&fingerfp_spi_active>;
+		pinctrl-4 = <&fingerfp_spi_default>;
+	};
+};
+
+
