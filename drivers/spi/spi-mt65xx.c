@@ -1544,6 +1544,7 @@ static int mtk_spi_probe(struct platform_device *pdev)
 				goto err_put_master;
 			}
 		}
+		master->num_chipselect = mdata->pad_num;
 	}
 
 	platform_set_drvdata(pdev, master);
@@ -1621,13 +1622,15 @@ static int mtk_spi_probe(struct platform_device *pdev)
 			ret = -EINVAL;
 			goto err_put_master;
 		}
-
+//Moto Dual fps
+#if 0
 		if (!master->cs_gpiods && master->num_chipselect > 1) {
 			dev_err(&pdev->dev,
 				"cs_gpiods not specified and num_chipselect > 1\n");
 			ret = -EINVAL;
 			goto err_put_master;
 		}
+#endif
 	}
 
 	if (mdata->dev_comp->dma_ext)
