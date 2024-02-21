@@ -1,4 +1,4 @@
-#include "dw9784_i2c.h"
+#include "mot_dw9784_i2c.h"
 
 #define DW9784_DEBUG
 #ifdef DW9784_DEBUG

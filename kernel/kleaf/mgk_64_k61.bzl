@@ -360,7 +360,7 @@ mgk_64_k61_device_modules = [
     "drivers/misc/mediatek/lens/vcm/v4l2/main4_vcm/main4_vcm.ko",
     "drivers/misc/mediatek/lens/ois/dw9781c/dw9781c.ko",
     "drivers/misc/mediatek/lens/ois/dw9781d/dw9781d.ko",
-    "drivers/misc/mediatek/lens/ois/dw9784/dw9784.ko",
+    "drivers/misc/mediatek/lens/ois/mot_dw9784/mot_dw9784.ko",
     "drivers/misc/mediatek/lens/vcm/v4l2/media/camera_af_media.ko",
     "drivers/misc/mediatek/lens/vcm/v4l2/sub_vcm/sub_vcm.ko",
     "drivers/misc/mediatek/log_store/log_store.ko",
