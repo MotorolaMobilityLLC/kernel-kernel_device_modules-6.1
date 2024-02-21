@@ -475,3 +475,9 @@
 	/*Vsensor name should be CASE DIFFERENT with the name in config file*/
 	mmi,temperature-names = "BACK_TEMP", "FRONT_TEMP";/*for "back_temp" in config file*/
 };
+
+&consys {
+	/* GPIO92: HWID_3. GPIO 131 and 132 are CONSYS_ID1/CONSYS_ID2 on the reference schematlc but on Vienna they are used for SCL3/SDA3 */
+	hwid-node= <92>;
+	adie-sku = <0 1>; /* mt6637 = 0, mt6631 = 1*/
+};
