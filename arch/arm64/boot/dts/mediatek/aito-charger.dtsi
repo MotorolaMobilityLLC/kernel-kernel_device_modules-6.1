@@ -112,6 +112,7 @@
 &mt6375_typec {
        tcpc,en_wd;
        mmi_cid_int = <&pio 33 0x0>;
+       mmi,en-moto-typec-otp;
 };
 
 &mt6375_chg {
