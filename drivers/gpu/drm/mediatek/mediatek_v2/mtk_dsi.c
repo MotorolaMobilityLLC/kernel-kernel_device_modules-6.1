@@ -9687,8 +9687,7 @@ static void mtk_dsi_cmd_timing_change(struct mtk_dsi *dsi,
 		int dst_fresh = drm_mode_vrefresh(dst_m);
 		DDPINFO("%s: fps is from %d to %d, delay 1 frame for te\n",
 			__func__, src_fresh, dst_fresh);
-		if (src_fresh > dst_fresh)  mdelay(1000/src_fresh);
-		else mdelay(1000/dst_fresh);
+		mdelay(1000/dst_fresh);
 	}
 
 	CRTC_MMP_MARK((int) drm_crtc_index(crtc), mode_switch, 2, 4);
