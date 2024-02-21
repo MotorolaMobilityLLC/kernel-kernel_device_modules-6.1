@@ -307,7 +307,6 @@ static void lcm_panel_init(struct lcm *ctx)
 
 	if (ctx->version != 1) {
 		lcm_dcs_write_seq_static(ctx, 0xF0, 0x55, 0xAA, 0x52, 0x08, 0x00);
-		lcm_dcs_write_seq_static(ctx, 0x6F, 0x0C);
 		lcm_dcs_write_seq_static(ctx, 0xC3, 0x04);
 	}
 
