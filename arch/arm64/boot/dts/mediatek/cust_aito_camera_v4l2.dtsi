@@ -325,11 +325,12 @@
 	};
 
 	camera_ois_main@72 {
-		compatible = "mediatek,dw9784";
+		compatible = "mediatek,mot_dw9784";
 		camera-type = "main";
 		reg = <0x72>;
 		vin-supply = <&cam_main_afdd_ldo>;
 		vdd-supply = <&cam_main_ois_vdd_ldo>;
+		rst-supply = <&cam_iovdd_ldo>;
 		status = "okay";
 		port {
 			main_ois: endpoint {
