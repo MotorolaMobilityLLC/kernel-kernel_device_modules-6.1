@@ -177,6 +177,8 @@
 	mmi,pd_vbus_low_bound = <5000000>;
 	mmi,pd_vbus_upper_bound = <9000000>;
 
+	mmi,power-max-design-mw = <30000>;
+
 	mmi,main-batt-psy = "main_battery";
 	mmi,mmi-normal-zones-main = <0 4200 148>,
 			<10 4530 148>,
