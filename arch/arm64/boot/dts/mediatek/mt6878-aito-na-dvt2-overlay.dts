@@ -38,5 +38,14 @@
 	};
 };
 
+&charger {
+	/*pe5 && pdc && wlc*/
+	fast_charging_indicator = <0x8014>;
+};
+
+&mmi_pehv {
+	status = "disabled";
+};
+
 #include <aito_dvt2/cust.dtsi>
 /*End of this file, DO NOT ADD ANYTHING HERE*/
