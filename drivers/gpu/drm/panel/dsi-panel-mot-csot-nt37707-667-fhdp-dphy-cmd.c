@@ -655,6 +655,8 @@ static struct mtk_panel_params ext_params_30hz = {
 	.panel_ver = 1,
 	.panel_name = "csot_nt37707_667_1080_2640",
 	.panel_supplier = "csot-nt37707",
+
+	.check_panel_feature = 1,
 };
 
 static struct mtk_panel_params ext_params_60hz = {
@@ -733,6 +735,8 @@ static struct mtk_panel_params ext_params_60hz = {
 	.panel_ver = 1,
 	.panel_name = "csot_nt37707_667_1080_2640",
 	.panel_supplier = "csot-nt37707",
+
+	.check_panel_feature = 1,
 };
 
 
@@ -812,6 +816,8 @@ static struct mtk_panel_params ext_params_90hz = {
 	.panel_ver = 1,
 	.panel_name = "csot_nt37707_667_1080_2640",
 	.panel_supplier = "csot-nt37707",
+
+	.check_panel_feature = 1,
 };
 
 static struct mtk_panel_params ext_params_120hz = {
@@ -889,6 +895,8 @@ static struct mtk_panel_params ext_params_120hz = {
 	.panel_ver = 1,
 	.panel_name = "csot_nt37707_667_1080_2640",
 	.panel_supplier = "csot-nt37707",
+
+	.check_panel_feature = 1,
 };
 
 static struct mtk_panel_params ext_params_24hz = {
@@ -966,6 +974,8 @@ static struct mtk_panel_params ext_params_24hz = {
 	.panel_ver = 1,
 	.panel_name = "csot_nt37707_667_1080_2640",
 	.panel_supplier = "csot-nt37707",
+
+	.check_panel_feature = 1,
 };
 
 static struct mtk_panel_params ext_params_10hz = {
@@ -1043,6 +1053,8 @@ static struct mtk_panel_params ext_params_10hz = {
 	.panel_ver = 1,
 	.panel_name = "csot_nt37707_667_1080_2640",
 	.panel_supplier = "csot-nt37707",
+
+	.check_panel_feature = 1,
 };
 
 static struct mtk_panel_params ext_params_1hz = {
@@ -1120,6 +1132,8 @@ static struct mtk_panel_params ext_params_1hz = {
 	.panel_ver = 1,
 	.panel_name = "csot_nt37707_667_1080_2640",
 	.panel_supplier = "csot-nt37707",
+
+	.check_panel_feature = 1,
 };
 
 static int panel_ata_check(struct drm_panel *panel)
@@ -1154,7 +1168,7 @@ static int lcm_setbacklight_cmdq(void *dsi, dcs_write_gce cb, void *handle,
 		atomic_set(&ctx->apl_mode, 1);
 	}
 
-	if (!( current_bl&& level)) pr_info("backlight changed from %u to %u\n", current_bl, level);
+	if (!( current_bl&& level)) pr_info("primary_disp: backlight changed from %u to %u\n", current_bl, level);
 	else pr_debug("backlight changed from %u to %u\n", current_bl, level);
 
 	bl_tb0[1] = (u8)((level>>8)&0x3F);
@@ -1328,7 +1342,7 @@ static void mode_switch_to_24(struct drm_panel *panel,
 		lcm_dcs_write_seq_static(ctx, 0x6F, 0x08);
 
 		lcm_dcs_write_seq_static(ctx, 0xB2, 0XC0);
-		
+
 		lcm_dcs_write_seq_static(ctx, 0xF0, 0x55, 0xAA, 0x52, 0x08, 0x00);
 		lcm_dcs_write_seq_static(ctx, 0x6F, 0xD9);
 		lcm_dcs_write_seq_static(ctx, 0xBA, 0x00);
@@ -1527,6 +1541,29 @@ static int panel_feature_set(struct drm_panel *panel, void *dsi,
 	return 0;
 }
 
+static int panel_feature_get(struct drm_panel *panel, struct panel_param_info *param_info)
+{
+	struct lcm *ctx = panel_to_lcm(panel);
+	int ret = 0;
+
+	switch (param_info->param_idx) {
+		case PARAM_CABC:
+		case PARAM_ACL:
+			ret = -1;
+			break;
+		case PARAM_HBM:
+			ret = -1;
+			break;
+		case PARAM_DC:
+			param_info->value = atomic_read(&ctx->dc_mode);
+			break;
+		default:
+			ret = -1;
+			break;
+	}
+	return ret;
+}
+
 static int panel_ext_init_power(struct drm_panel *panel)
 {
 	int ret;
@@ -1566,6 +1603,7 @@ static struct mtk_panel_funcs ext_funcs = {
 	.ext_param_set = mtk_panel_ext_param_set,
 	.mode_switch = mode_switch,
 	.panel_feature_set = panel_feature_set,
+	.panel_feature_get = panel_feature_get,
 };
 #endif
 
