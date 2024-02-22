@@ -478,15 +478,15 @@
 
 &low_battery_throttling {
 	thd-volts-l = <
-		3483 3345 3241
-		3974 3693 3549
-		4400 3962 3828>;
+		3391 3136 3042
+		3836 3459 3317
+		4324 3822 3631>;
 	thd-volts-h = <
-		3583 3483 3345
-		4074 3974 3693
-		4500 4400 3962>;
-	lvsys-thd-volt-l = <3241>;
-	lvsys-thd-volt-h = <3345>;
+		3491 3391 3136
+		3936 3836 3459
+		4424 4324 3822>;
+	lvsys-thd-volt-l = <3042>;
+	lvsys-thd-volt-h = <3136>;
 };
 
 &bp_thl {
@@ -494,5 +494,9 @@
 };
 
 &mt6375_batoc_throttle {
+	status = "disabled";
+};
+
+&md_power_throttling {
 	status = "disabled";
 };
