@@ -93,7 +93,6 @@ mgk_64_k61_kleaf_modules = [
     "//motorola/kernel/modules/drivers/power/wt6670f_qc3p_mmi:wt6670f_qc3p_mmi",
     "//motorola/kernel/modules/drivers/power/sc8549d:sc8546d_charger",
     "//motorola/kernel/modules/drivers/power/bq25980_mmi:bq25980_mmi",
-    "//motorola/kernel/modules/drivers/power/mmi_decrete_charger_cp_qc3p:mmi_decrete_charger_cp_qc3p",
     "//motorola/kernel/modules/drivers/power/mmi_pephv:mmi_pephv",
     "//motorola/kernel/modules/drivers/power/cps4041_mmi:cps4041_mmi",
     "//motorola/kernel/modules/drivers/input/touchscreen/goodix_berlin_u_mmi:goodix_brl_u_mmi",

@@ -38,11 +38,5 @@
 	};
 };
 
-&odm {
-	mmi_chrg_manager {
-		status = "disabled";
-	};
-};
-
 #include <aito_dvt2/cust.dtsi>
 /*End of this file, DO NOT ADD ANYTHING HERE*/
