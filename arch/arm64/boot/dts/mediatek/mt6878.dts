@@ -86,7 +86,7 @@
 
 	/* chosen */
 	chosen: chosen {
-		bootargs = "console=tty0 root=/dev/ram \
+		bootargs = "root=/dev/ram \
 			    nosoftlockup \
 			    8250.nr_uarts=3\
 			    androidboot.hardware=mt6878 \
