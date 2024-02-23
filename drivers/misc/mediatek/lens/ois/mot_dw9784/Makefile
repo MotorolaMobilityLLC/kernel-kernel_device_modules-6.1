@@ -4,6 +4,9 @@
 
 OIS_DRIVER_PATH  := $(DEVICE_MODULES_PATH)/drivers/misc/mediatek
 
+ccflags-y += -I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/include/mt-plat/
+ccflags-y += -I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/sensor/2.0/core
+
 subdir-ccflags-y += -I$(OIS_DRIVER_PATH)/lens/ois/mot_dw9784/
 
 obj-$(CONFIG_MTK_V4L2_LENS) += mot_dw9784.o
