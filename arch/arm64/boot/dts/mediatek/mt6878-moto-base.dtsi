@@ -10,6 +10,7 @@
 	moto_chg_tcmd: moto_chg_tcmd { };
 	smart_battery: smart_battery { };
 	moto_wlc: moto_wlc { };
+	mmi_pehv: mmi_pehv{};
 	mt6363_thermistor2: mt6363_thermistor2 { };
 	mt6363_thermistor3: mt6363_thermistor3 { };
 	mt6363_thermistor4: mt6363_thermistor4 { };
