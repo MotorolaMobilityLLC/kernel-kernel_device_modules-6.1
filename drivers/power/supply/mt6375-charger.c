@@ -269,6 +269,7 @@ struct mt6375_chg_data {
 	char                *batt_uenvp[2];
 	struct regulator *otp_mos_reg;
 	const char *otp_mos_reg_name;
+	struct regulator *otg;
 };
 
 struct mt6375_chg_platform_data {
@@ -2098,6 +2099,44 @@ out:
 	return ret;
 }
 
+static int mt6375_config_otg(struct charger_device *chgdev, u32 otg_vol, u32 otg_cur)
+{
+	int ret = 0;
+	struct mt6375_chg_data *ddata = charger_get_data(chgdev);
+
+	if (IS_ERR_OR_NULL(ddata)) {
+		pr_err("%s:ddata is ERR or NULL\n", __func__);
+		return -EINVAL;
+	}
+
+	if (!ddata->otg) {
+		ddata->otg = devm_regulator_get(ddata->dev, "usb-otg-vbus");
+		if (IS_ERR_OR_NULL(ddata->otg)) {
+			pr_err("%s:failed to get usb-otg-vbus regulator\n", __func__);
+			return -EINVAL;
+		} else {
+			pr_info("%s:get usb-otg-vbus regulator success!\n", __func__);
+		}
+	}
+
+	if (IS_ERR_OR_NULL(ddata->otg)) {
+		pr_err("%s:failed to get otg regulator\n", __func__);
+		return -EINVAL;
+	}
+
+	ret = regulator_set_voltage(ddata->otg, otg_vol, otg_vol);
+	if (ret) {
+		pr_err("%s:otg regulator set voltage failed\n", __func__);
+	} else {
+		ret = regulator_set_current_limit(ddata->otg, otg_cur, otg_cur);
+		if (ret) {
+			pr_err("%s:otg regulator set current failed\n", __func__);
+		}
+	}
+
+	return ret;
+}
+
 static int mt6375_enable_otg(struct charger_device *chgdev, bool en)
 {
 	int ret = 0;
@@ -2815,6 +2854,7 @@ static const struct charger_ops mt6375_chg_ops = {
 	.reset_ta = mt6375_reset_pe_ta,
 	.enable_cable_drop_comp = mt6375_enable_pe_cable_drop_comp,
 	/* OTG */
+	.config_otg = mt6375_config_otg,
 	.enable_otg = mt6375_enable_otg,
 	.enable_discharge = mt6375_enable_discharge,
 	/* charger type detection */
