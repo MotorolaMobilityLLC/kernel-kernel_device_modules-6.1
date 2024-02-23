@@ -43,7 +43,7 @@ int ois_i2c_rd_u16(struct i2c_client *i2c_client, u16 reg, u16 *val)
 
 	return 0;
 }
-/*
+
 int ois_i2c_rd_u32(struct i2c_client *i2c_client, u16 reg, u32 *val)
 {
 	int ret;
@@ -71,7 +71,7 @@ int ois_i2c_rd_u32(struct i2c_client *i2c_client, u16 reg, u32 *val)
 
 	return 0;
 }
-*/
+
 int ois_i2c_wr_u16(struct i2c_client *i2c_client, u16 reg, u16 val)
 {
 	int ret;
