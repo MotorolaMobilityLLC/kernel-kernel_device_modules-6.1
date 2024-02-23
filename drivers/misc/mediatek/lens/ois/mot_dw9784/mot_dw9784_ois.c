@@ -11,9 +11,16 @@
 #include <media/v4l2-ctrls.h>
 #include <media/v4l2-device.h>
 #include <media/v4l2-subdev.h>
+
+#if IS_ENABLED(CONFIG_MTK_AEE_FEATURE)
+#include <aee.h>
+#endif
+
 #include <linux/firmware.h>
 #include "mot_dw9784_i2c.h"
 #include "mot_dw9784_ois.h"
+
+#include "hf_manager.h"
 
 #define DRIVER_NAME "dw9784"
 
@@ -66,6 +73,14 @@ static motOISGOffsetResult dw9784GyroOffsetResult;
 #define DW9784_REG_OIS_USER_WRITE_PROTECT 0xEBF1
 #define DW9784_REG_OIS_CTRL               0x7011
 #define DW9784_REG_OIS_MODE               0x7012
+#define DW9784_REG_OIS_GYROX              0x7110   // X_GYRO
+#define DW9784_REG_OIS_GYROY              0x7140   // Y_GYRO
+#define DW9784_REG_OIS_TARGETX            0x7106   // X_TARGET
+#define DW9784_REG_OIS_TARGETY            0x7136   // Y_TARGET
+#define DW9784_REG_OIS_LENS_POSX          0x70FE   // X_LENS_POS
+#define DW9784_REG_OIS_LENS_POSY          0x70FF   // Y_LENS_POS
+#define DW9784_REG_OIS_CL_TARGETX         0x7110
+#define DW9784_REG_OIS_CL_TARGETY         0x7130
 #define OIS_ON                   0x0000   // OIS ON/SERVO ON
 #define SERVO_ON                 0x0001   // OIS OFF/SERVO ON
 #define SERVO_OFF                0x0002   // OIS OFF/SERVO OFF
@@ -111,6 +126,7 @@ struct dw9784_device {
 	struct pinctrl *pio;
 	struct pinctrl_state *pio_state[PINCTRL_MAXSIZE];
 	struct clk *clk[CLK_MAXSIZE];
+	struct hf_device hf_dev;
 };
 
 #define OIS_DATA_NUMBER 32
@@ -128,6 +144,47 @@ struct mtk_ois_pos_info {
 };
 
 static struct i2c_client *m_client;
+
+enum {
+	OIS_MODEINIT,
+	OIS_LOCKMODE,
+	OIS_OISMODE,
+	OIS_USERMODE,
+};
+
+enum {
+	OIS_UNLOCK = 0,
+	OIS_LOCK = 5,
+	OIS_MANUAL_CTL = 13,
+};
+
+enum {
+	OIS_GAIN_AND_DELAY = 128,
+	OIS_MODE_CONFIG,
+	OIS_AF_FB_CONFIG,
+	OIS_POSTURE_CONFIG,
+	OIS_NEED_HALL_CONFIG,
+	OIS_SAVING_GAIN,
+	OIS_FREEZE_MODE,
+	OIS_REG_DEBUG,
+	OIS_EE2PPROM_DEBUG,
+};
+
+static u16 ois_ctrl_data;
+static int32_t ois_echo_en;
+static int32_t ois_log_dbg_en;
+static int32_t ois_data_dbg_en;
+static int32_t ois_fw_update;
+static int32_t ois_hall_check;
+static int32_t ois_hall_cnt;
+static int32_t ois_hall_warn;
+static int32_t ois_debug_en;
+static int32_t ois_hfmgr_test;
+#if 1
+static u16 dw_ois_mode;
+#endif
+static struct hf_manager_event hf_mgr_event;
+
 /* Control commnad */
 #define VIDIOC_MTK_S_OIS_MODE _IOW('V', BASE_VIDIOC_PRIVATE + 2, int32_t)
 
@@ -725,6 +782,7 @@ static int dw9784_release(struct dw9784_device *dw9784)
 
 	ret = ois_i2c_wr_u16(client, DW9784_REG_OIS_CTRL, SERVO_OFF);
 	I2C_OPERATION_CHECK(ret);
+	ois_ctrl_data = SERVO_OFF;
 	ois_mdelay(4);
 	ret = ois_i2c_wr_u16(client, DW9784_REG_CHIP_CTRL, OFF);
 	I2C_OPERATION_CHECK(ret);
@@ -1199,6 +1257,26 @@ int dw9784_check_fw_download(void)
 	return g_downloadByForce;
 }
 
+#if 1
+static void fixmode(u16 code_x, u16 code_y)
+{
+	int ret = 0;
+
+	// set ic servo on / ois off
+	ret = ois_i2c_wr_u16(m_client, DW9784_REG_OIS_CTRL, SERVO_ON);
+	ois_ctrl_data = SERVO_ON;
+	LOG_INF("targetX (%d), targetY (%d)", code_x, code_y);
+
+	// set targetX
+	ret = ois_i2c_wr_u16(m_client, DW9784_REG_OIS_CL_TARGETX, code_x);
+	I2C_OPERATION_CHECK(ret);
+
+	// set targetY
+	ret = ois_i2c_wr_u16(m_client, DW9784_REG_OIS_CL_TARGETY, code_y);
+	I2C_OPERATION_CHECK(ret);
+}
+#endif
+
 static int dw9784_init(struct dw9784_device *dw9784)
 {
 	// Initial parameters
@@ -1412,14 +1490,14 @@ static long dw9784_ops_core_ioctl(struct v4l2_subdev *sd, unsigned int cmd, void
 		LOG_INF("VIDIOC_MTK_S_OIS_MODE mode = %d\n",*ois_mode);
 		if (*ois_mode)
 		{
-			ois_i2c_wr_u16(client, 0x70D9, 0x0102);
-			ois_i2c_wr_u16(client, 0x70DA, 0x0000);
 			ois_i2c_wr_u16(client, 0x7012, 0x0001);
 			ois_i2c_wr_u16(client, 0x7011, 0x0000);
+			ois_ctrl_data = OIS_ON;
 			LOG_INF("VIDIOC_MTK_S_OIS_MODE Enable\n");
 		} else {
 			ois_i2c_wr_u16(client, 0x7012, 0x0001);
 			ois_i2c_wr_u16(client, 0x7011, 0x0001);
+			ois_ctrl_data = SERVO_ON;
 			LOG_INF("VIDIOC_MTK_S_OIS_MODE Disable\n");
 		}
 	}
@@ -1494,6 +1572,264 @@ static long dw9784_ops_core_ioctl(struct v4l2_subdev *sd, unsigned int cmd, void
 
 	return ret;
 }
+
+static int dw9784_enable(struct hf_device *hfdev, int sensor_type, int en)
+{
+	int err = 0;
+
+	LOG_INF("id:%d en:%d\n", sensor_type, en);
+
+	ois_hall_cnt = 0;
+	memset(&hf_mgr_event, 0, sizeof(struct hf_manager_event));
+
+	return err;
+}
+
+static int dw9784_batch(struct hf_device *hfdev, int sensor_type,
+							int64_t delay, int64_t latency)
+{
+	LOG_INF("id:%d delay:%lld latency:%lld\n", sensor_type,
+				delay, latency);
+	return 0;
+}
+
+static int64_t prv_sample_ts;
+
+static int dw9784_sample(struct hf_device *hfdev)
+{
+	struct device *dev = hf_device_get_private_data(hfdev);
+	struct i2c_client *client = to_i2c_client(dev);
+	struct v4l2_subdev *sd = i2c_get_clientdata(client);
+	struct dw9784_device *dw9784 = sd_to_dw9784_ois(sd);
+	struct hf_manager *manager = dw9784->hf_dev.manager;
+
+	s16 len_x = 0, len_y = 0;
+	u32 reg_val = 0;
+	u16 reg_val_1 = 0, reg_val_2 = 0;
+	int32_t w0 = 0, w1 = 0, w2 = 0, w3 = 0;
+
+	if (ois_echo_en > 0) {
+		s16 gyro_x = 0, gyro_y = 0;
+		s16 target_x = 0, target_y = 0;
+
+		int64_t ts1 = 0;
+
+		if (ois_debug_en == 1)
+			ts1 = ktime_get_boottime_ns();
+
+		if (ois_hfmgr_test == 0)
+			ois_i2c_rd_u32(m_client, DW9784_REG_OIS_LENS_POSX, &reg_val);
+
+		hf_mgr_event.timestamp = ktime_get_boottime_ns();
+
+		if (ois_debug_en == 1) {
+			len_x = (hf_mgr_event.timestamp - prv_sample_ts) / 100000;
+			len_y = (hf_mgr_event.timestamp - ts1) / 100000;
+			prv_sample_ts = hf_mgr_event.timestamp;
+		} else {
+			len_x = (s16)((reg_val >> 16) & 0xffff);
+			len_y = (s16)(reg_val & 0xffff);
+		}
+
+		if (ois_data_dbg_en == 1) {
+			ois_i2c_rd_u16(m_client, DW9784_REG_OIS_GYROX, &gyro_x);
+			ois_i2c_rd_u16(m_client, DW9784_REG_OIS_GYROY, &gyro_y);
+			LOG_INF("dw9784 sample gyro_x %d, gyro_y %d", gyro_x, gyro_y);
+			LOG_INF("dw9784 sample ois_ctrl_data %d", ois_ctrl_data);
+			if (ois_ctrl_data == OIS_ON) {
+				ois_i2c_rd_u16(m_client, DW9784_REG_OIS_TARGETX, &reg_val_1);
+				ois_i2c_rd_u16(m_client, DW9784_REG_OIS_TARGETY, &reg_val_2);
+				LOG_INF("dw9784 sample DW9784_REG_OIS_TARGETXY reg_val_1 %d, reg_val_2 %d", reg_val_1, reg_val_2);
+			} else {
+				ois_i2c_rd_u16(m_client, DW9784_REG_OIS_CL_TARGETX, &reg_val_1);
+				ois_i2c_rd_u16(m_client, DW9784_REG_OIS_CL_TARGETY, &reg_val_2);
+				LOG_INF("dw9784 sample DW9784_REG_OIS_CL_TARGETX reg_val_1 %d reg_val_2 %d", reg_val_1, reg_val_2);
+			}
+			target_x = (s16)(reg_val_1);
+			target_y = (s16)(reg_val_2);
+
+			LOG_INF("dw9784 sample target_x %d, target_y %d", target_x, target_y);
+			w0 = gyro_x * 1000 / 16 * 1000;	// ois gyro x
+			w1 = gyro_y * 1000 / 16 * 1000;	// ois gyro y
+			w2 = target_x * 1000000;		// target x
+			w3 = target_y * 1000000;		// target y
+			LOG_INF("dw9784 sample ois_gyro_x/w0 %d, ois_gyro_y/w1 %d target_x/w2 %d target_y/w3 %d",
+					w0, w1, w2, w3);
+		}
+		LOG_INF("dw9784 sample ois_log_dbg_en %d", ois_log_dbg_en);
+		if (ois_log_dbg_en == 1) {
+			LOG_INF("Ts(%lld),  Gyro(%d/%d), Target(%d/%d), Lens position(%d/%d)\n",
+				hf_mgr_event.timestamp, gyro_x, gyro_y,
+				target_x, target_y, len_x, len_y);
+		}
+
+		if (ois_hall_check == 1) {
+			ois_hall_cnt++;
+			if ((ois_hall_warn == 1 && ois_hall_cnt > 5000) &&
+			    (abs(len_x) > 1000 || abs(len_y) > 1000)) {
+				aee_kernel_warning("OV64B-OIS check fail",
+					"\nCRDISPATCH_KEY:OIS_CHECK\nLEVEL Hall pos");
+				ois_hall_warn = 0;
+			}
+		}
+	} else {
+		ois_i2c_rd_u32(m_client, DW9784_REG_OIS_LENS_POSX, &reg_val);
+		hf_mgr_event.timestamp = ktime_get_boottime_ns();
+		len_x = (s16)((reg_val >> 16) & 0xffff);
+		len_y = (s16)(reg_val & 0xffff);
+		LOG_INF("dw9784 sample hf_mgr_event.timestamp %lld, len_x %d, len_y %d",
+				hf_mgr_event.timestamp, len_x, len_y);
+	}
+
+	hf_mgr_event.sensor_type = dw9784->hf_dev.support_list[0].sensor_type;
+	hf_mgr_event.accurancy = SENSOR_ACCURANCY_HIGH;
+	hf_mgr_event.action = DATA_ACTION;
+	// unit transform, full scale is +-250dps, 65536/500=131(code/dps)
+	hf_mgr_event.word[0] = w0;		// ois gyro x
+	hf_mgr_event.word[1] = w1;		// ois gyro y
+	hf_mgr_event.word[2] = w2;		// target x
+	hf_mgr_event.word[3] = w3;		// target y
+	hf_mgr_event.word[4] = len_x * 1000000;	// HALL_X
+	hf_mgr_event.word[5] = len_y * 1000000;	// HALL_Y
+	manager->report(manager, &hf_mgr_event);
+	manager->complete(manager);
+
+	return 0;
+}
+
+static int dw9784_custom_cmd(struct hf_device *hfdev, int sensor_type,
+		struct custom_cmd *cust_cmd)
+{
+	int ret = 0;
+#ifdef FOR_DEBUG
+	LOG_INF("command%d, data%d\n", cust_cmd->command, cust_cmd->data[0]);
+#endif
+
+	switch (cust_cmd->command) {
+	case OIS_MODE_CONFIG:
+		if (cust_cmd->data[0] == OIS_UNLOCK) {
+#ifdef FOR_DEBUG
+			LOG_INF("unlock\n");
+#endif
+			dw_ois_mode = OIS_OISMODE;
+			ret = ois_i2c_wr_u16(m_client, DW9784_REG_OIS_CTRL, OIS_ON); // OIS ON/SERVO ON
+			ois_ctrl_data = OIS_ON;
+			I2C_OPERATION_CHECK(ret);
+
+		} else if (cust_cmd->data[0] == OIS_LOCK) {
+			if (dw_ois_mode == OIS_USERMODE)
+				break;
+#ifdef FOR_DEBUG
+			LOG_INF("lock!\n");
+#endif
+			dw_ois_mode = OIS_LOCKMODE;
+			fixmode(0, 0);
+
+		} else if (cust_cmd->data[0] == OIS_MANUAL_CTL) {
+			dw_ois_mode = OIS_USERMODE;
+		}
+		break;
+
+	case OIS_POSTURE_CONFIG:
+		if (dw_ois_mode != OIS_USERMODE)
+			break;
+
+		// manual control
+		LOG_INF("manual control, targetX (%d), targetY (%d)",
+			cust_cmd->data[0] >> 16,
+			cust_cmd->data[0] & 0xFFFF);
+
+		fixmode((cust_cmd->data[0] >> 16), (cust_cmd->data[0] & 0xFFFF));
+		break;
+
+	case OIS_FREEZE_MODE:
+		if (dw_ois_mode == OIS_USERMODE)
+			break;
+
+		if (cust_cmd->data[0] == 0) {
+#ifdef FOR_DEBUG
+			LOG_INF("unlock\n");
+#endif
+			dw_ois_mode = OIS_OISMODE;
+			ret = ois_i2c_wr_u16(m_client, DW9784_REG_OIS_CTRL, OIS_ON); // OIS ON/SERVO ON
+			ois_ctrl_data = OIS_ON;
+			I2C_OPERATION_CHECK(ret);
+		} else {
+#ifdef FOR_DEBUG
+			LOG_INF("lock!\n");
+#endif
+			dw_ois_mode = OIS_LOCKMODE;
+			fixmode(0, 0);
+		}
+		break;
+	}
+
+#ifdef FOR_DEBUG
+	switch (dw_ois_mode) {
+	case OIS_MODEINIT:
+		LOG_INF("dw_ois_mode is OIS_MODEINIT\n");
+		break;
+	case OIS_LOCKMODE:
+		LOG_INF("dw_ois_mode is OIS_LOCKMODE\n");
+		break;
+	case OIS_OISMODE:
+		LOG_INF("dw_ois_mode is OIS_OISMODE\n");
+		break;
+	case OIS_USERMODE:
+		LOG_INF("dw_ois_mode is OIS_USERMODE\n");
+		break;
+	}
+#endif
+
+	return ret;
+}
+
+static struct class *ois_class;
+static struct device *ois_device;
+static dev_t ois_devno;
+/* torch status sysfs */
+static ssize_t ois_debug_show(
+		struct device *dev, struct device_attribute *attr, char *buf)
+{
+	return 0;
+}
+static ssize_t ois_debug_store(struct device *dev,
+		struct device_attribute *attr, const char *buf, size_t size)
+{
+	int val = 0, ret = 0;
+
+	ret = kstrtoint(buf, 10, &val);
+	LOG_INF("dw9784_ois_debug ret = %d, val = %d\n", ret, val);
+	if (ret < 0)
+		LOG_INF("dw9784_ois_debug ret fail\n");
+
+	ois_echo_en = val;
+	ois_log_dbg_en = val & 0x1;
+	ois_data_dbg_en = (val >> 1) & 0x1;
+	ois_fw_update = (val >> 2) & 0x1;
+	ois_hall_check = (val >> 3) & 0x1;
+	ois_debug_en = (val >> 4) & 0x1;
+	ois_hfmgr_test = (val >> 5) & 0x1;
+
+	if (ois_hall_check)
+		ois_hall_warn = 1;
+
+	LOG_INF("dw9784_ois_debug hfmgr(%d) dbg(%d) hall(%d) fw(%d) log(%d), data(%d), buf:%s\n",
+		ois_hfmgr_test, ois_debug_en, ois_hall_check, ois_fw_update,
+		ois_log_dbg_en, ois_data_dbg_en, buf);
+
+	return size;
+}
+static DEVICE_ATTR_RW(ois_debug);
+
+static struct sensor_info support_sensors[] = {
+	{
+		.sensor_type = SENSOR_TYPE_OIS,
+		.gain = 1000000,
+		.name = {'o', 'i', 's'},
+		.vendor = {'m', 't', 'k'},
+	}
+};
 
 static const struct v4l2_subdev_internal_ops dw9784_int_ops = {
 	.open = dw9784_open,
@@ -1589,6 +1925,26 @@ static int dw9784_probe(struct i2c_client *client)
 		}
 	}
 
+    LOG_INF("hf manager +\n");
+	// hf manager porting
+	dw9784->hf_dev.dev_name = DW9784_NAME;
+	dw9784->hf_dev.device_poll = HF_DEVICE_IO_POLLING;
+	dw9784->hf_dev.device_bus = HF_DEVICE_IO_SYNC;
+	dw9784->hf_dev.support_list = support_sensors;
+	dw9784->hf_dev.support_size = ARRAY_SIZE(support_sensors);
+	dw9784->hf_dev.enable = dw9784_enable;
+	dw9784->hf_dev.batch = dw9784_batch;
+	dw9784->hf_dev.sample = dw9784_sample;
+	dw9784->hf_dev.custom_cmd = dw9784_custom_cmd;
+	hf_device_set_private_data(&dw9784->hf_dev, dev);
+	LOG_INF("dw9784_probe dw9784->hf_dev.dev_name %s", dw9784->hf_dev.dev_name);
+	ret = hf_device_register_manager_create(&dw9784->hf_dev);
+	if (ret < 0) {
+		LOG_INF("%s hf_manager_create fail\n", __func__);
+		ret = -1;
+		goto err_cleanup;
+	}
+
 	v4l2_i2c_subdev_init(&dw9784->sd, client, &dw9784_ops);
 	dw9784->sd.flags |= V4L2_SUBDEV_FL_HAS_DEVNODE;
 	dw9784->sd.internal_ops = &dw9784_int_ops;
@@ -1612,6 +1968,28 @@ static int dw9784_probe(struct i2c_client *client)
 
 	pm_runtime_enable(dev);
 
+	/* create class */
+	ois_class = class_create(THIS_MODULE, DW9784_NAME);
+	if (IS_ERR(ois_class)) {
+		pr_info("dw9784_probe Failed to create class (%d)\n",
+				(int)PTR_ERR(ois_class));
+		goto err_create_ois_class;
+	}
+
+	/* create device */
+	ois_device =
+	    device_create(ois_class, NULL, ois_devno,
+				NULL, DW9784_NAME);
+	if (!ois_device) {
+		pr_info("dw9784_probe Failed to create device\n");
+		goto err_create_ois_device;
+	}
+
+	if (device_create_file(ois_device, &dev_attr_ois_debug)) {
+		pr_info("dw9784_probe Failed to create device file(ois_debug)\n");
+		goto err_create_ois_device_file;
+	}
+
 	LOG_INF("dw9784_probe dw9784_download_fw E!");
 	ret = pm_runtime_get_sync(dev);
 	if (ret < 0) {
@@ -1630,7 +2008,20 @@ static int dw9784_probe(struct i2c_client *client)
 
 	return 0;
 
+err_create_ois_device_file:
+	device_destroy(ois_class, ois_devno);
+	class_destroy(ois_class);
+	return 0;
+
+err_create_ois_device:
+	class_destroy(ois_class);
+	return 0;
+
+err_create_ois_class:
+	return 0;
+
 err_cleanup:
+	hf_device_unregister_manager_destroy(&dw9784->hf_dev);
 	dw9784_subdev_cleanup(dw9784);
 	return ret;
 }
@@ -1642,11 +2033,16 @@ static void dw9784_remove(struct i2c_client *client)
 
 	LOG_INF("+\n");
 
+	hf_device_unregister_manager_destroy(&dw9784->hf_dev);
 	dw9784_subdev_cleanup(dw9784);
 	pm_runtime_disable(&client->dev);
 	if (!pm_runtime_status_suspended(&client->dev))
 		dw9784_power_off(dw9784);
 	pm_runtime_set_suspended(&client->dev);
+
+	device_remove_file(&client->dev, &dev_attr_ois_debug);
+	device_destroy(ois_class, ois_devno);
+	class_destroy(ois_class);
 
 	LOG_INF("-\n");
 }
