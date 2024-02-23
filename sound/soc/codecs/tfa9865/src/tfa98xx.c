@@ -11,7 +11,6 @@
  *
  */
 
-
 #define pr_fmt(fmt) "%s(): " fmt, __func__
 
 #include <linux/module.h>
@@ -71,6 +70,16 @@ static int tfa98xx_ftrace_regs = 0;
 
 static int tfa98xx_cali_l = 458752;
 static int tfa98xx_cali_r = 393216;
+static uint8_t fade_status = 0;
+static uint8_t is_fading = 0;
+static uint8_t is_need_fade = 0;
+static uint8_t g_step = 16;
+static uint8_t mute_status = 1;
+struct task_struct *fade_thrd;
+unsigned char tfa98xx_volume_tab[33] =
+{
+  250, 95, 91, 87, 83, 79, 75, 71, 67, 63, 59, 55, 50, 43, 30, 18, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+};
 
 static char *fw_name = "tfa98xx.cnt";
 module_param(fw_name, charp, S_IRUGO | S_IWUSR);
@@ -101,6 +110,7 @@ module_param(pcm_no_constraint, int, S_IRUGO);
 MODULE_PARM_DESC(pcm_no_constraint, "do not use constraints for PCM parameters\n");
 
 static int tfa98xx_get_fssel(unsigned int rate);
+static int tfa98xx_fade_task(void);
 
 static int get_profile_from_list(char *buf, int id);
 static int get_profile_id_for_sr(int id, unsigned int rate);
@@ -141,6 +151,7 @@ struct tfa98xx_rate {
 
 #ifdef TFA_NON_DSP_SOLUTION
 static int tfa98xx_send_mute_cmd(void);
+static int tfa98xx_send_volume(uint8_t volume_l, uint8_t volume_r);
 int tfa98xx_send_data_to_dsp(int8_t *buffer, int16_t DataLength)
 {
 	int result = 0;
@@ -1440,6 +1451,13 @@ static int tfa98xx_set_profile(struct snd_kcontrol *kcontrol,
 			tfa98xx->rate, profile, new_profile);
 		return 0;
 	}
+
+	if(prof_idx == 0){
+		is_need_fade = 1;
+	}else{
+		is_need_fade = 0;
+	}
+
 	pr_debug("selected container profile [%d -> %d]\n", cur_prof_idx, prof_idx);
 	pr_debug("switch profile [%s -> %s]\n",
 		tfa_cont_profile_name(tfa98xx, cur_prof_idx),
@@ -1651,6 +1669,101 @@ static int tfa98xx_set_algo_ctl(struct snd_kcontrol *kcontrol,
 	return 1;
 }
 
+static int tfa98xx_info_fade_ctl(struct snd_kcontrol *kcontrol,
+	struct snd_ctl_elem_info *uinfo)
+{
+	uinfo->type = SNDRV_CTL_ELEM_TYPE_INTEGER;
+	mutex_lock(&tfa98xx_mutex);
+	uinfo->count = 1;
+	mutex_unlock(&tfa98xx_mutex);
+	uinfo->value.integer.min = 0;
+	uinfo->value.integer.max = 2;  /* 16 bit value */
+
+	return 0;
+}
+
+static int tfa98xx_get_fade_ctl(struct snd_kcontrol *kcontrol,
+	struct snd_ctl_elem_value *ucontrol)
+{
+	mutex_lock(&tfa98xx_mutex);
+	ucontrol->value.integer.value[0] = fade_status;
+	mutex_unlock(&tfa98xx_mutex);
+
+	return 0;
+}
+
+static int tfa98xx_set_fade_ctl(struct snd_kcontrol *kcontrol,
+	struct snd_ctl_elem_value *ucontrol)
+{
+	if(is_fading ==1) {
+	    return 1;
+	}
+
+	mutex_lock(&tfa98xx_mutex);
+
+	pr_debug("value: %ld\n", ucontrol->value.integer.value[0]);
+	if(2 == ucontrol->value.integer.value[0]) {
+	    if (fade_status == 0 ) {
+	        if(mute_status == 0) {
+		        tfa98xx_fade_task();
+		} else {
+	            fade_status  = 1;
+		}
+	    }
+	} else {
+        if(mute_status == 0) {
+	        fade_status = 0;
+        } else {
+            fade_status = ucontrol->value.integer.value[0];
+        }
+    }
+
+	mutex_unlock(&tfa98xx_mutex);
+
+	return 1;
+}
+
+uint8_t tfadsp_volume;
+static int tfa98xx_info_volume_ctl(struct snd_kcontrol *kcontrol,
+	struct snd_ctl_elem_info *uinfo)
+{
+	uinfo->type = SNDRV_CTL_ELEM_TYPE_INTEGER;
+	mutex_lock(&tfa98xx_mutex);
+	uinfo->count = 1;
+	mutex_unlock(&tfa98xx_mutex);
+	uinfo->value.integer.min = 0;
+	uinfo->value.integer.max = 0xFF;  /* 16 bit value */
+
+	return 0;
+}
+
+static int tfa98xx_get_volume_ctl(struct snd_kcontrol *kcontrol,
+	struct snd_ctl_elem_value *ucontrol)
+{
+	mutex_lock(&tfa98xx_mutex);
+	ucontrol->value.integer.value[0] = tfadsp_volume;
+	mutex_unlock(&tfa98xx_mutex);
+
+	return 0;
+}
+
+static int tfa98xx_set_volume_ctl(struct snd_kcontrol *kcontrol,
+	struct snd_ctl_elem_value *ucontrol)
+{
+
+	mutex_lock(&tfa98xx_mutex);
+
+	tfadsp_volume = ucontrol->value.integer.value[0];
+	if (tfadsp_volume >=0 && tfadsp_volume <= 255){
+		tfa98xx_send_volume(tfadsp_volume, tfadsp_volume);
+	}else
+		pr_err("%s out of range %d\n", __func__, tfadsp_volume);
+
+	mutex_unlock(&tfa98xx_mutex);
+
+	return 1;
+}
+
 static int tfa98xx_info_cal_ctl(struct snd_kcontrol *kcontrol,
 	struct snd_ctl_elem_info *uinfo)
 {
@@ -1719,7 +1832,7 @@ static int tfa98xx_create_controls(struct tfa98xx *tfa98xx)
 	 *  - Stop control on TFA1 devices
 	 */
 
-	nr_controls = 3; /* Profile and stop control and Algo Bypass */
+	nr_controls = 5; /* Profile and stop control and Algo Bypass */
 
 	if (tfa98xx->flags & TFA98XX_FLAG_CALIBRATION_CTL)
 		nr_controls += 1; /* calibration */
@@ -1816,7 +1929,21 @@ static int tfa98xx_create_controls(struct tfa98xx *tfa98xx)
 	tfa98xx_controls[mix_index].put = tfa98xx_set_stop_ctl;
 	mix_index++;
 
-	/* Create a mixer item for bypass algo control */
+	/* Create a mixer item for Fade control */
+	name = devm_kzalloc(tfa98xx->codec->dev, MAX_CONTROL_NAME, GFP_KERNEL);
+	if (!name)
+		return -ENOMEM;
+
+//	scnprintf(name, MAX_CONTROL_NAME, "%s Fade", tfa98xx->fw.name);
+//	tfa98xx_controls[mix_index].name = name;
+	tfa98xx_controls[mix_index].name = "Mot Ramp";
+	tfa98xx_controls[mix_index].iface = SNDRV_CTL_ELEM_IFACE_MIXER;
+	tfa98xx_controls[mix_index].info = tfa98xx_info_fade_ctl;
+	tfa98xx_controls[mix_index].get = tfa98xx_get_fade_ctl;
+	tfa98xx_controls[mix_index].put = tfa98xx_set_fade_ctl;
+	mix_index++;
+
+		/* Create a mixer item for bypass algo control */
 	name = devm_kzalloc(tfa98xx->codec->dev, MAX_CONTROL_NAME, GFP_KERNEL);
 	if (!name)
 		return -ENOMEM;
@@ -1827,6 +1954,19 @@ static int tfa98xx_create_controls(struct tfa98xx *tfa98xx)
 	tfa98xx_controls[mix_index].info = tfa98xx_info_algo_ctl;
 	tfa98xx_controls[mix_index].get = tfa98xx_get_algo_ctl;
 	tfa98xx_controls[mix_index].put = tfa98xx_set_algo_ctl;
+	mix_index++;
+
+		/* Create a mixer item for Fade control */
+	name = devm_kzalloc(tfa98xx->codec->dev, MAX_CONTROL_NAME, GFP_KERNEL);
+	if (!name)
+		return -ENOMEM;
+
+	scnprintf(name, MAX_CONTROL_NAME, "%s Volume", tfa98xx->fw.name);
+	tfa98xx_controls[mix_index].name = name;
+	tfa98xx_controls[mix_index].iface = SNDRV_CTL_ELEM_IFACE_MIXER;
+	tfa98xx_controls[mix_index].info = tfa98xx_info_volume_ctl;
+	tfa98xx_controls[mix_index].get = tfa98xx_get_volume_ctl;
+	tfa98xx_controls[mix_index].put = tfa98xx_set_volume_ctl;
 	mix_index++;
 
 	if (tfa98xx->flags & TFA98XX_FLAG_CALIBRATION_CTL) {
@@ -2616,6 +2756,35 @@ static void tfa98xx_dsp_init_work(struct work_struct *work)
 	tfa98xx_dsp_init(tfa98xx);
 }
 
+static int tfa98xx_fade_thread(void *data)
+{
+	unsigned int times = 0;
+	is_fading = 1;
+	for(times = 1; times < g_step; times++){
+        pr_info("tfa98xx_send_volume %d times =%d",tfa98xx_volume_tab[times],times);
+		tfa98xx_send_volume(tfa98xx_volume_tab[times], 0x00);
+		msleep(tfa98xx_volume_tab[0]);
+		//TODO
+	}
+	is_fading = 0;
+	return 0;
+}
+
+static int tfa98xx_fade_task(void)
+{
+    /* create and run update thread */
+	fade_thrd = kthread_run(tfa98xx_fade_thread,
+			NULL, "tfa98xx-fade");
+	if (IS_ERR_OR_NULL(fade_thrd)) {
+		pr_err("Failed to create fade thread:%ld",
+				PTR_ERR(fade_thrd));
+		return -EFAULT;
+	}
+
+	pr_info("success fade thread");
+	return 0;
+}
+
 static void tfa98xx_interrupt(struct work_struct *work)
 {
 	struct tfa98xx *tfa98xx = container_of(work, struct tfa98xx, interrupt_work.work);
@@ -2829,6 +2998,12 @@ static int tfa98xx_hw_params(struct snd_pcm_substream *substream,
 	/* update 'real' profile (container profile) */
 	tfa98xx->profile = prof_idx;
 
+	if(prof_idx == 0){
+		is_need_fade = 1;
+	}else{
+		is_need_fade = 0;
+	}
+
 	/* update to new rate */
 	tfa98xx->rate = tfa98xx->tfa->rate = rate;
 
@@ -2939,7 +3114,7 @@ enum Tfa98xx_Error tfa98xx_adsp_send_calib_values_from_hal(void)
 	}else{
 		pr_err("load calibration data from HAL failed.\n");
 		cali_value[0]  = 0;
-		ret = Tfa98xx_Error_Bad_Parameter;
+		//ret = Tfa98xx_Error_Bad_Parameter;
 	}
 
 	pr_info("tfa98xx_device_count=%d  cali_value[0]=%d\n",
@@ -2968,6 +3143,19 @@ enum Tfa98xx_Error tfa98xx_adsp_send_calib_values_from_hal(void)
 	return ret;
 }
 
+static int tfa98xx_send_volume(uint8_t volume_l, uint8_t volume_r)
+{
+	uint8_t cmd[9] = {0x00, 0x81, 0x04, 0x00, 0x00, 0xff, 0x00, 0x00, 0xff};
+	cmd[5] = volume_l;
+	cmd[8] = volume_r;
+
+	if (tfa98xx_device_count == 1)
+		cmd[0] = 0x04;
+
+	pr_info("send volume_l 0x%x volume_r 0x%x to host DSP.\n",  volume_l,volume_r);
+	return tfa98xx_send_data_to_dsp(&cmd[0], sizeof(cmd));
+}
+
 static int tfa98xx_send_mute_cmd(void)
 {
 	//uint8_t cmd[9] = {0x04, 0x81, 0x04, 0x00, 0x00, 0xff, 0x00, 0x00, 0xff};
@@ -2988,6 +3176,7 @@ static int tfa98xx_mute(struct snd_soc_dai *dai, int mute, int stream)
 	struct tfa98xx *tfa98xx = snd_soc_codec_get_drvdata(codec);
 #endif
 	dev_dbg(&tfa98xx->i2c->dev, "%s: state: %d\n", __func__, mute);
+	mute_status = mute;
 
 	if (no_start) {
 		pr_debug("no_start parameter set no tfa_dev_start or tfa_dev_stop, returning\n");
@@ -3053,7 +3242,17 @@ static int tfa98xx_mute(struct snd_soc_dai *dai, int mute, int stream)
 #else
 		tfa98xx_dsp_init(tfa98xx);
 #endif//
-	     if(tfa98xx->flags & TFA98XX_FLAG_ADAPT_NOISE_MODE)
+
+		if (tfa98xx->dsp_init != TFA98XX_DSP_INIT_DONE){
+			if(fade_status == 1 && is_need_fade == 1){
+				tfa98xx_fade_task();
+				fade_status = 0;
+			}
+		}else {
+			pr_info(" Fade Fail as DSP NOT work\n");
+		}
+
+		if(tfa98xx->flags & TFA98XX_FLAG_ADAPT_NOISE_MODE)
 		 	queue_delayed_work(tfa98xx->tfa98xx_wq,
 						&tfa98xx->nmodeupdate_work,
 						0);	
@@ -3404,6 +3603,43 @@ static ssize_t tfa98xx_cal_send(struct file *filp, struct kobject *kobj,
 	return error;
 }
 
+static ssize_t tfa98xx_volume_read(struct file *filp, struct kobject *kobj,
+	struct bin_attribute *bin_attr,
+	char *buf, loff_t off, size_t count)
+{
+
+	//TODO NULL;
+	return 0;
+}
+static ssize_t tfa98xx_volume_send(struct file *filp, struct kobject *kobj,
+	struct bin_attribute *bin_attr,
+	char *buf, loff_t off, size_t count)
+{
+
+    char *volume_data = (char*)tfa98xx_volume_tab;
+	int error = 0;
+
+	if (count == 0 || count > 33)
+	{
+		pr_debug("err !count is 0 or > 33\n");
+		return 0;
+	}
+/*
+	volume_data = kmalloc(count, GFP_KERNEL);
+	if (data == NULL) {
+		pr_debug("can not allocate memory\n");
+		return  -ENOMEM;
+	}
+*/
+
+	memcpy(volume_data, buf, count);
+
+	g_step = count;
+
+	return error;
+}
+
+
 static ssize_t tfa98xx_rw_write(struct file *filp, struct kobject *kobj,
 	struct bin_attribute *bin_attr,
 	char *buf, loff_t off, size_t count)
@@ -3506,6 +3742,16 @@ static struct bin_attribute dev_attr_cal = {
 	.size = 0,
 	.read = tfa98xx_cal_read,
 	.write = tfa98xx_cal_send,
+};
+
+static struct bin_attribute dev_attr_vol = {
+	.attr = {
+		.name = "vol",
+		.mode = S_IRUSR | S_IWUSR,
+	},
+	.size = 0,
+	.read = tfa98xx_volume_read,
+	.write = tfa98xx_volume_send,
 };
 /*
 static struct bin_attribute dev_attr_rpc = {
@@ -3760,6 +4006,9 @@ static int tfa98xx_i2c_probe(struct i2c_client *i2c,
 	ret = device_create_bin_file(&i2c->dev, &dev_attr_cal);
 	if (ret)
 		dev_info(&i2c->dev, "error creating sysfs files\n");
+	ret = device_create_bin_file(&i2c->dev, &dev_attr_vol);
+	if (ret)
+		dev_info(&i2c->dev, "error creating sysfs files\n");
 	//modify by mono for rpc climax
 	//ret = device_create_bin_file(&i2c->dev, &dev_attr_rpc);
 	//if (ret)
@@ -3791,6 +4040,7 @@ void tfa98xx_i2c_remove(struct i2c_client *i2c)           //modify by mono for k
 	device_remove_bin_file(&i2c->dev, &dev_attr_reg);
 	device_remove_bin_file(&i2c->dev, &dev_attr_rw);
 	device_remove_bin_file(&i2c->dev, &dev_attr_cal);
+	device_remove_bin_file(&i2c->dev, &dev_attr_vol);
 //	device_remove_bin_file(&i2c->dev, &dev_attr_rpc);    //modify by mono for rpc climax
 
 	tfa98xx_debug_remove(tfa98xx);

@@ -364,7 +364,7 @@ void tfa_set_query_info(struct tfa_device *tfa)
 
 	/* TODO use the getfeatures() for retrieving the features [artf103523]
 	tfa->supportDrc = supportNotSet;*/
-	pr_err("device type : 0x%02x\n", tfa->rev);
+    pr_err("device type : 0x%02x\n", tfa->rev);
 	switch (tfa->rev & 0xff) {
 	case 0: /* tfanone : non-i2c external DSP device */
 		/* e.g. qc adsp */
@@ -1357,7 +1357,7 @@ enum Tfa98xx_Error
 	if (!status)
 		return Tfa98xx_Error_NoClock; // Only test when we have a clock.
 			/******MCH_TO_TEST**************/
-	if (error == Tfa98xx_Error_Ok) {
+	if ((error == Tfa98xx_Error_Ok) && (!tfa->is_probus_device)) {
 		error = tfaRunColdboot(tfa, 1);
 		if (error)
 			return Tfa98xx_Error_DSP_not_running;
