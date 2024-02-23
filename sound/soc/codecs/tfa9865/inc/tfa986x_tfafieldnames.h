@@ -68,7 +68,6 @@ typedef enum tfa986xBfEnumList {
     TFA986X_BF_AMPS  = 0x11a0,    /*!< Amplifier enable                                   */
     TFA986X_BF_AREFS = 0x11b0,    /*!< References enable                                  */
     TFA986X_BF_CLIPS = 0x11c0,    /*!< Amplifier clipping                                 */
-    TFA986X_BF_LDMS  = 0x11d0,    /*!< Lowdrive mode                                      */
     TFA986X_BF_VGBS  = 0x11e0,    /*!< Vddp greater than vbat                             */
     TFA986X_BF_FLGBSS= 0x11f0,    /*!< BSS flag                                           */
     TFA986X_BF_MANSTATE= 0x1203,    /*!< Device manager status                              */
@@ -76,7 +75,7 @@ typedef enum tfa986xBfEnumList {
     TFA986X_BF_TDMSTAT= 0x1282,    /*!< TDM status bits                                    */
     TFA986X_BF_QPCLKSTS= 0x12b1,    /*!< QPUMP clock status                                 */
     TFA986X_BF_WAITSYNC= 0x12d0,    /*!< CGU and PLL synchronisation status flag from CGU   */
-    TFA986X_BF_NRPSSTS= 0x12e0,    /*!< Number of power stage sections                     */
+    TFA986X_BF_LDMS  = 0x12e0,    /*!< Lowdrive mode                                      */
     TFA986X_BF_BODNOK= 0x1300,    /*!< BOD Flag VDD NOT OK (sticky flag,  clear on write a '1') */
     TFA986X_BF_QPFAIL= 0x1310,    /*!< QPUMP Fail Flag (sticky flag,  clear on write a '1') */
     TFA986X_BF_BATS  = 0x1509,    /*!< Battery voltage monitoring (V)                     */
@@ -274,7 +273,6 @@ typedef enum tfa986xBfEnumList {
    { 0x11a0, "AMPS"},    /* Amplifier enable                                  , */\
    { 0x11b0, "AREFS"},    /* References enable                                 , */\
    { 0x11c0, "CLIPS"},    /* Amplifier clipping                                , */\
-   { 0x11d0, "LDMS"},    /* Lowdrive mode                                     , */\
    { 0x11e0, "VGBS"},    /* Vddp greater than vbat                            , */\
    { 0x11f0, "FLGBSS"},    /* BSS flag                                          , */\
    { 0x1203, "MANSTATE"},    /* Device manager status                             , */\
@@ -282,7 +280,7 @@ typedef enum tfa986xBfEnumList {
    { 0x1282, "TDMSTAT"},    /* TDM status bits                                   , */\
    { 0x12b1, "QPCLKSTS"},    /* QPUMP clock status                                , */\
    { 0x12d0, "WAITSYNC"},    /* CGU and PLL synchronisation status flag from CGU  , */\
-   { 0x12e0, "NRPSSTS"},    /* Number of power stage sections                    , */\
+   { 0x12e0, "LDMS"},    /* Flag in Low drive mode                            , */\
    { 0x1300, "BODNOK"},    /* BOD Flag VDD NOT OK (sticky flag,  clear on write a '1'), */\
    { 0x1310, "QPFAIL"},    /* QPUMP Fail Flag (sticky flag,  clear on write a '1'), */\
    { 0x1509, "BATS"},    /* Battery voltage monitoring (V)                    , */\
@@ -486,7 +484,7 @@ typedef enum tfa986xBfEnumList {
    { 0x11a0, "flag_enbl_amp"},    /* Amplifier enable                                  , */\
    { 0x11b0, "flag_enbl_ref"},    /* References enable                                 , */\
    { 0x11c0, "flag_clip"},    /* Amplifier clipping                                , */\
-   { 0x11d0, "flag_low_drive_mode"},    /* Lowdrive mode                                     , */\
+   { 0x11d0, "flag_low_drive_mode"},    /* VBAT to VBST switch state                         , */\
    { 0x11e0, "flag_vddp_gt_vbat"},    /* Vddp greater than vbat                            , */\
    { 0x11f0, "flag_bss"},    /* BSS flag                                          , */\
    { 0x1203, "man_state"},    /* Device manager status                             , */\
@@ -494,7 +492,7 @@ typedef enum tfa986xBfEnumList {
    { 0x1282, "flag_tdm_status"},    /* TDM status bits                                   , */\
    { 0x12b1, "flag_qpump_clk_freq"},    /* QPUMP clock status                                , */\
    { 0x12d0, "flag_waiting_for_sync"},    /* CGU and PLL synchronisation status flag from CGU  , */\
-   { 0x12e0, "flag_active_pst_sections"},    /* Number of power stage sections                    , */\
+   { 0x12e0, "flag_active_pst_sections"},    /* Flag in Low drive mode                            , */\
    { 0x1300, "flag_bod_vddd_nok"},    /* BOD Flag VDD NOT OK (sticky flag,  clear on write a '1'), */\
    { 0x1310, "flag_qpump_fail"},    /* QPUMP Fail Flag (sticky flag,  clear on write a '1'), */\
    { 0x1509, "bat_adc"},    /* Battery voltage monitoring (V)                    , */\
@@ -645,7 +643,8 @@ typedef enum tfa986xBfEnumList {
    { 0x6962, "tdm_sourcee_frame_sel"},    /* Sensed value E                                    , */\
    { 0x6b00, "disable_auto_engage"},    /* Disable auto engage                               , */\
    { 0x6b10, "disable_engage"},    /* Disable engage                                    , */\
-   { 0x6c69, "spare_out"},    /* Spare control bits for future use                 , */\
+   { 0x6c60, "rst_bss_rst"},    /* delay bss reset                                   , */\
+   { 0x6c78, "spare_out"},    /* Spare control bits for future use                 , */\
    { 0x6d09, "spare_in"},    /* Spare control bit - read only                     , */\
    { 0x6e00, "flag_idle_power_mode"},    /* Idle power mode                                   , */\
    { 0x6f72, "pwm_clip_lvl"},    /* clip detect threshold control                     , */\
@@ -957,6 +956,18 @@ typedef enum tfa986xBfEnumList {
 };
 
 enum tfa986x_irq {
+	tfa986x_irq_stvdds = 0,
+	tfa986x_irq_stbstoc = 1,
+	tfa986x_irq_stotds = 2,
+	tfa986x_irq_stocpr = 3,
+	tfa986x_irq_stuvds = 4,
+	tfa986x_irq_sttdmer = 5,
+	tfa986x_irq_stnoclk = 6,
+	tfa986x_irq_stdcth = 7,
+	tfa986x_irq_stbodnok = 8,
+	tfa986x_irq_stcoor = 9,
+	tfa986x_irq_stovds = 10,
+	tfa986x_irq_stqpfail = 11,
 	tfa986x_irq_max = -1,
 	tfa986x_irq_all = -1 /* all irqs */};
 

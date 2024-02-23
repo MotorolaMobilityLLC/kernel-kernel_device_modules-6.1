@@ -680,8 +680,8 @@ enum Tfa98xx_Error tfaContWriteFile(struct tfa_device *tfa, TfaFileDsc_t *file, 
 
         if ((subversion > 0) &&
             (((hdr->customer[0]) == 'A') && ((hdr->customer[1]) == 'P') &&
-             ((hdr->customer[2]) == 'I') && ((hdr->customer[3]) == 'V')))
-		{			
+             ((hdr->customer[2]) == 'I') && ((hdr->customer[3]) == 'V'))) {
+			if (tfa->is_probus_device) {
                 /* Temporary workaround (example: For climax --calibrate scenario for probus devices) */
                 err = tfaGetFwApiVersion(tfa, (unsigned char *)&tfa->fw_itf_ver[0]);
                 if (err) {
@@ -693,7 +693,6 @@ enum Tfa98xx_Error tfaContWriteFile(struct tfa_device *tfa, TfaFileDsc_t *file, 
 					if (tfa->fw_itf_ver[1] >= 34)    // HSS-2353 : SB5.0 and greater 
 						if (i == 2)					  // ITF version check skipped in the 3rd field, update field 
 							continue;
-
 					if (tfa->fw_itf_ver[i] != hdr->customer[i + 4]) //+4 to skip "?PIV" string part in the .msg file.
 					{
 						ERRORMSG("Error: tfaContWriteFile: Expected FW API version = %d.%d.%d.%d, Msg File version: %d.%d.%d.%d \n",
@@ -708,7 +707,16 @@ enum Tfa98xx_Error tfaContWriteFile(struct tfa_device *tfa, TfaFileDsc_t *file, 
 						return Tfa98xx_Error_Bad_Parameter;
 					}
 				}
-
+			} else if ((tfa->fw_itf_ver[2] != hdr->customer[4]) || (tfa->fw_itf_ver[1] != hdr->customer[5]) || ((tfa->fw_itf_ver[0] >> 6) & 0x03) != hdr->customer[6]) {
+				ERRORMSG("Error: tfaContWriteFile: Expected FW API version = %d.%d.%d, Msg File version: %d.%d.%d \n",
+					(tfa->fw_itf_ver[2]) & 0xff,
+					(tfa->fw_itf_ver[1]) & 0xff,
+					(tfa->fw_itf_ver[0] >> 6) & 0x03,
+					hdr->customer[4],
+					hdr->customer[5],
+					hdr->customer[6]);
+				return Tfa98xx_Error_Bad_Parameter;
+			}
 		}
 	}
 
