@@ -30,5 +30,12 @@
        mmi,support_CID;
 };
 
+&cps_wls_charger {
+	wireless-tx-support;
+	config-otg-support;
+	config-otg-vout = <5500000>;
+	config-otg-iout = <1800000>;
+};
+
 #include <aito_dvt2/cust.dtsi>
 /*End of this file, DO NOT ADD ANYTHING HERE*/
