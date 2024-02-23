@@ -258,6 +258,7 @@ struct mt6375_chg_data {
 
 	/*for external qc protocol ic such as wt6670f*/
 	struct delayed_work detect_qc_dwork;
+	struct mutex dpdm_lock;
 	int pulse_cnt;
 	struct adapter_device *qc_dev;
 	bool	qc_is_detect;
@@ -2716,6 +2717,49 @@ static int mmi_get_protocol(struct charger_device *chgdev, int *val)
 	return 0;
 }
 
+static int mmi_set_dp_dm(struct charger_device *chgdev, int val)
+{
+	int ret = -1;
+	struct mt6375_chg_data *ddata = charger_get_data(chgdev);
+
+	mutex_lock(&ddata->dpdm_lock);
+	switch (val) {
+	case DP_DM_DP_PULSE:
+		if (ddata->qc_dev) {
+			ret = adapter_dev_dp_dm(ddata->qc_dev, DP_DM_DP_PULSE);
+			if (ret < 0)
+				dev_err(ddata->dev, "qc protocol ic set vbus up failed\n");
+			else
+				ddata->pulse_cnt++;
+		}
+		break;
+	case DP_DM_DM_PULSE:
+		if (ddata->qc_dev) {
+			ret = adapter_dev_dp_dm(ddata->qc_dev, DP_DM_DM_PULSE);
+			if (ret < 0)
+				dev_err(ddata->dev, "qc protocol ic set vbus down failed\n");
+			else if (ddata->pulse_cnt > 0)
+				ddata->pulse_cnt--;
+		}
+		break;
+	default:
+		break;
+	}
+
+	mutex_unlock(&ddata->dpdm_lock);
+	return ret;
+}
+
+static int mmi_get_dp_dm(struct charger_device *chgdev, int *val)
+{
+	int ret = 0;
+	struct mt6375_chg_data *ddata = charger_get_data(chgdev);
+
+	*val = ddata->pulse_cnt;
+
+	return ret;
+}
+
 static const struct charger_properties mt6375_chg_props = {
 	.alias_name = "mt6375_chg",
 };
@@ -2793,6 +2837,8 @@ static const struct charger_ops mt6375_chg_ops = {
 	.qc_is_detect = mmi_qc_is_detect,
 	.get_protocol = mmi_get_protocol,
 	.config_qc_charger = mt6375_config_qc_charger,
+	.set_dp_dm = mmi_set_dp_dm,
+	.get_dp_dm = mmi_get_dp_dm,
 	/*typec otp mos*/
 	.enable_mos_short = mt6375_enable_mos_short,
 	.is_power_ready = mt6375_chg_is_power_ready,
@@ -3388,6 +3434,7 @@ static int mt6375_chg_probe(struct platform_device *pdev)
 	mutex_init(&ddata->cv_lock);
 	mutex_init(&ddata->hm_lock);
 	mutex_init(&ddata->pwr_rdy_dwork_lock);
+	mutex_init(&ddata->dpdm_lock);
 	ddata->pwr_rdy = false;
 	atomic_set(&ddata->eoc_cnt, 0);
 	atomic_set(&ddata->no_6pin_used, 0);
@@ -3471,6 +3518,7 @@ out_attr:
 out_wq:
 	destroy_workqueue(ddata->wq);
 out:
+	mutex_destroy(&ddata->dpdm_lock);
 	mutex_destroy(&ddata->pwr_rdy_dwork_lock);
 	mutex_destroy(&ddata->hm_lock);
 	mutex_destroy(&ddata->cv_lock);
@@ -3490,6 +3538,7 @@ static int mt6375_chg_remove(struct platform_device *pdev)
 		device_remove_file(ddata->dev, &dev_attr_shipping_mode);
 		cancel_delayed_work_sync(&ddata->pwr_rdy_dwork);
 		destroy_workqueue(ddata->wq);
+		mutex_destroy(&ddata->dpdm_lock);
 		mutex_destroy(&ddata->pwr_rdy_dwork_lock);
 		mutex_destroy(&ddata->hm_lock);
 		mutex_destroy(&ddata->cv_lock);

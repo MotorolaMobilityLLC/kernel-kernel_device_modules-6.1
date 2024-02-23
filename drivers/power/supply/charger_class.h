@@ -229,6 +229,8 @@ struct charger_ops {
 	int (*qc_is_detect)(struct charger_device *dev, bool *val);
 	int (*get_protocol)(struct charger_device *dev, int *val);
 	int (*config_qc_charger)(struct charger_device *dev);
+	int (*set_dp_dm)(struct charger_device *dev, int val);
+	int (*get_dp_dm)(struct charger_device *dev, int *val);
 	/*typec otp mos*/
 	int (*enable_mos_short)(struct charger_device *dev, bool en);
 	int (*is_power_ready)(struct charger_device *dev);
@@ -435,6 +437,8 @@ extern int charger_dev_config_mux(struct charger_device *chg_dev,
 extern int charger_dev_qc_is_detect(struct charger_device *chg_dev, bool *val);
 extern int charger_dev_get_protocol(struct charger_device *chg_dev, int *val);
 extern int charger_dev_config_qc_charger(struct charger_device *chg_dev);
+extern int charger_dev_set_dp_dm(struct charger_device *chg_dev, int val);
+extern int charger_dev_get_dp_dm(struct charger_device *chg_dev, int *val);
 extern int charger_dev_enable_mos_short(
 	struct charger_device *charger_dev, bool en);
 extern int charger_dev_is_power_ready(struct charger_device *chg_dev);
