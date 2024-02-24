@@ -615,6 +615,10 @@
 /*SIV*/
 #define SENSOR_DRVNAME_SIV121D_YUV              "siv121d_yuv"
 #define SENSOR_DRVNAME_SIV120B_YUV              "siv120b_yuv"
+
+#define MOT_VIENNA_IMX896_SENSOR_ID                        0x0896
+#define SENSOR_DRVNAME_MOT_VIENNA_IMX896_MIPI_RAW          "mot_vienna_imx896_mipi_raw"
+
 /*PAS (PixArt Image)*/
 #define SENSOR_DRVNAME_PAS6180_SERIAL_YUV       "pas6180_serial_yuv"
 /*Panasoic*/
