@@ -16,6 +16,10 @@
 #include "mkp_demo.h"
 #endif
 
+#ifdef MOTO_RKP
+#include "moto_rkp.h"
+#endif
+
 #include "mkp.h"
 
 /* ext policies */
@@ -49,13 +53,19 @@ static int __init mkp_init(void)
 	/* - mkp_request_new_specified_policy   */
 	/****************************************/
 
-	/* Try to protect per cpu data */
+	/* Try to protect per cpu data, ignore for NUMA system */
+#ifndef MOTO_RKP
 	ret = mkp_protect_percpu_data();
 	if (ret)
 		pr_info("%s:%d failed, ret: %d\n", __func__, __LINE__, ret);
+#endif
 
 #ifdef DEMO_MKP
 	ret = mkp_demo_init();
+#endif
+
+#ifdef MOTO_RKP
+	ret = moto_rkp_init();
 #endif
 
 	if (ret)

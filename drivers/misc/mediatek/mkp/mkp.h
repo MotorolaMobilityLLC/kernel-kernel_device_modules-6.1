@@ -42,6 +42,12 @@
 #include "mkp_hvc.h"
 #include "helper.h"
 #include "mkp_module.h"
+#ifdef DEMO_MKP
 #include "mkp_demo.h"
+#endif
+
+#ifdef MOTO_RKP
+#include "moto_rkp.h"
+#endif
 
 #endif /* _MKP_H */
