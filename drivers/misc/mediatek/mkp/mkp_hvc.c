@@ -322,3 +322,20 @@ int __init mkp_start_granting_hvc_call(void)
 
 	return ret;
 }
+
+/* Tell MKP service the sensitive HVC calls must be locked down */
+int mkp_lockdown_hvc_call(mkp_boot_stage_t stage)
+{
+	struct arm_smccc_res res;
+	int mkp_hvc_fast_call_id;
+	int ret = -1;
+
+	mkp_hvc_fast_call_id = MKP_HVC_CALL_ID(0, HVC_FUNC_KERNEL_LOCK_MKP);
+	mkp_smccc_hvc(mkp_hvc_fast_call_id, stage, 0, 0, 0, 0, 0, 0, &res);
+
+	/* Success */
+	if (res.a0 == 0)
+		ret = 0;
+
+	return ret;
+}

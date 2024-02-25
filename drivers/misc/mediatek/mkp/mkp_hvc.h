@@ -74,7 +74,18 @@ enum mkp_hvc_func_num {
 	/* Essential for MKP service */
 	HVC_FUNC_ESS_0 = 96,
 	HVC_FUNC_ESS_1 = 97,
+
+	/* Enforce EL2 MKP from BL */
+	HVC_FUNC_BL_ENFORCE_ESS = 100,
+	/* Lock down EL2 MKP from kernel once setup */
+	HVC_FUNC_KERNEL_LOCK_MKP = 101,
 };
+
+/* MKP HVC stage */
+typedef enum mkp_boot_stage {
+	MKP_INIT = 0x1,
+	MKP_BOOT_COMPLETED = 0x2,
+} mkp_boot_stage_t;
 
 int mkp_set_mapping_ro_hvc_call(uint32_t policy, uint32_t handle);
 int mkp_set_mapping_rw_hvc_call(uint32_t policy, uint32_t handle);
@@ -110,5 +121,6 @@ int __init mkp_setup_essential_hvc_call(unsigned long phys_offset, unsigned long
 	unsigned long fixaddr_real_start);
 
 int __init mkp_start_granting_hvc_call(void);
+int mkp_lockdown_hvc_call(mkp_boot_stage_t mkp_stage);
 
 #endif /* _MKP_HVC_H */
