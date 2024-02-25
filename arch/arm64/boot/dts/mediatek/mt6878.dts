@@ -293,6 +293,11 @@
 		compatible = "mediatek,tfa_debug";
 	};
 
+	mkp {
+		compatible = "mediatek,mkp-drv";
+		memory-region = <&mkp_mem>;
+	};
+
 	psci {
 		compatible = "arm,psci-1.0";
 		method = "smc";
@@ -462,6 +467,12 @@
 		#address-cells = <2>;
 		#size-cells = <2>;
 		ranges;
+
+		mkp_mem: mkp-kernel-code-protection-memory {
+			compatible = "mkp-kernel-protection";
+			size = <0 0x10000>;
+			alloc-ranges = <0 0x40000000 0 0x10000>;
+		};
 
 		dpmaif_resv_cache_mem: ccci-dpmaif-cache-memory {
 			compatible = "mediatek,dpmaif-resv-cache-mem";
