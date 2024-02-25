@@ -10,7 +10,8 @@
 # See http://www.gnu.org/licenses/gpl-2.0.html for more details.
 #
 #
-demo_mkp = true
+moto_rkp = true
+#demo_mkp = true
 ifdef demo_mkp
 ccflags-y += -DDEMO_MKP
 ccflags-y += -DDEBUG_MKP_ENABLED
@@ -36,3 +37,12 @@ mkp-$(CONFIG_MTK_MKP) += helper.o
 mkp-$(CONFIG_MTK_MKP) += mkp_module.o
 endif
 mkp-$(CONFIG_MTK_MKP) += ext/mkp_pcpu.o
+
+ifdef moto_rkp
+ccflags-y += -DMOTO_RKP
+ccflags-y += -DDEBUG_MKP_ENABLED
+mkp-$(CONFIG_MTK_MKP) += moto_rkp.o
+mkp-$(CONFIG_MTK_MKP) += mkp_rbtree.o
+mkp-$(CONFIG_MTK_MKP) += helper.o
+mkp-$(CONFIG_MTK_MKP) += mkp_module.o
+endif

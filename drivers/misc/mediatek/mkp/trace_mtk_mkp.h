@@ -43,6 +43,7 @@
 #include <linux/dma-mapping.h>
 #include <linux/dma-direct.h>
 
+#ifdef MKP_DEMO
 const char *mkp_trace_print_array(void);
 #define __print_mkp_array() \
 ({ \
@@ -69,6 +70,7 @@ TRACE_EVENT(mkp_trace_event_test,
 	TP_printk("mkp_test: %s\n", __print_mkp_array())
 );
 
+#endif
 #endif /* _TRACE_MTK_MKP_H */
 
 #undef TRACE_INCLUDE_PATH
