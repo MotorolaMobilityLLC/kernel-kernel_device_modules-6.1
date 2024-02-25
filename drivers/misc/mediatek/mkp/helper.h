@@ -9,7 +9,13 @@
 #include "mkp_api.h"
 #include "mkp.h"
 #include "debug.h"
+#ifdef DEMO_MKP
 #include "mkp_demo.h"
+#endif
+
+#ifdef MOTO_RKP
+#include "moto_rkp.h"
+#endif
 
 int is_vmalloc_or_module_addr(/*unsigned long x */const void *x);
 
