@@ -618,6 +618,8 @@
 
 #define MOT_VIENNA_IMX896_SENSOR_ID                        0x0896
 #define SENSOR_DRVNAME_MOT_VIENNA_IMX896_MIPI_RAW          "mot_vienna_imx896_mipi_raw"
+#define MOT_VIENNA_S5KJD1_SENSOR_ID                        0x3841
+#define SENSOR_DRVNAME_MOT_VIENNA_S5KJD1_MIPI_RAW          "mot_vienna_s5kjd1_mipi_raw"
 
 /*PAS (PixArt Image)*/
 #define SENSOR_DRVNAME_PAS6180_SERIAL_YUV       "pas6180_serial_yuv"
