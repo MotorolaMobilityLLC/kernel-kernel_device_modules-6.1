@@ -150,8 +150,8 @@
 		Semtech,ref-phases-a = <0>;
 		Semtech,ref-phases-b = <2>;
 		Semtech,ref-phases-c = <5>;
-		Semtech,button-flag = <0x1a>;
-		Semtech,button-names = "Moto CapSense Ch1","Moto CapSense Ch3","Moto CapSense Ch4";
+		Semtech,button-flag = <0x9a>;
+		Semtech,button-names = "Moto CapSense Ch1","Moto CapSense Ch3","Moto CapSense Ch4","Moto CapSense Ch7";
 		Semtech,debug-name = "capsense0";
 		Semtech,flip_operation_num = <3>;
 		Semtech,flip_operation_far_num = <3>;
