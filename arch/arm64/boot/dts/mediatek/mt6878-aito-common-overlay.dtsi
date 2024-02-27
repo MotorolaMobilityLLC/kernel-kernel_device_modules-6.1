@@ -394,6 +394,26 @@
 		/* aw8692x_is_enabled_one_wire; */
 	};
 };
+/* disable irtx due to not used at glory*/
+&irtx_pwm {
+	status = "disabled";
+};
+/* force set vio28 to 3v3 due to the hall sensors spec*/
+&spmi {
+    second_pmic@5 {
+        regulators {
+            mt6369_vio28: vio28 {
+                regulator-compatible = "VIO28";
+                regulator-name = "mt6369_vio28";
+                regulator-min-microvolt = <3300000>;
+                regulator-max-microvolt = <3300000>;
+                regulator-enable-ramp-delay = <680>;
+                regulator-allowed-modes = <0 2>;
+                regulator-always-on;
+            };
+        };
+    };
+};
 
 &regulator_vibrator {
 	status = "disabled";
