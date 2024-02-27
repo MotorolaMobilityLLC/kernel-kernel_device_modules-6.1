@@ -478,15 +478,15 @@
 
 &low_battery_throttling {
 	thd-volts-l = <
-		3391 3136 3042
+		3391 3290 3042
 		3836 3459 3317
 		4324 3822 3631>;
 	thd-volts-h = <
-		3491 3391 3136
+		3491 3391 3290
 		3936 3836 3459
 		4424 4324 3822>;
 	lvsys-thd-volt-l = <3042>;
-	lvsys-thd-volt-h = <3136>;
+	lvsys-thd-volt-h = <3290>;
 };
 
 &bp_thl {
