@@ -16,7 +16,6 @@
 
 #define LOG_INF(format, args...)                                               \
 	pr_info(DRIVER_NAME " [%s] " format, __func__, ##args)
-
 #define MAIN2_VCM_NAME				"main2_vcm"
 #define MAIN2_VCM_MAX_FOCUS_POS			1023
 /*
@@ -93,6 +92,42 @@ struct VcmDriverConfig g_vcmconfig = {.ctrl_delay_us=5000,};
 
 /* Control commnad */
 #define VIDIOC_MTK_S_LENS_INFO _IOWR('V', BASE_VIDIOC_PRIVATE + 3, struct mtk_vcm_info)
+
+/* Control command for af & vib issue */
+#ifdef CONFIG_AF_NOISE_ELIMINATION
+#define AF_NOISE_TAG "AF_NOISE"
+#define LOG_AFNE(format, args...)                                               \
+	pr_err(AF_NOISE_TAG " [main2_vcm]-[%s] " format, __func__, ##args)
+
+struct af_vib_lens_info {
+  unsigned int holder;
+  unsigned int lens_lock_pos;
+};
+
+struct af_vib_lens_info *ab_lens_info;
+struct main2_vcm_device *ab_main2_vcm;
+
+#define VIDIOC_MTK_S_SETOPENER  _IOWR('V', BASE_VIDIOC_PRIVATE + 21 , struct af_vib_lens_info)
+#define VIDIOC_MTK_S_SETCLOSER _IOWR('V', BASE_VIDIOC_PRIVATE + 22 , struct af_vib_lens_info)
+#define VIDIOC_MTK_S_SETVCMPOS  _IOWR('V', BASE_VIDIOC_PRIVATE + 23 , struct af_vib_lens_info)
+#define VIDIOC_MTK_S_GETVCMSUBDEV  _IOWR('V', BASE_VIDIOC_PRIVATE + 24 , struct af_vib_lens_info)
+
+#define NO_HOLD 0x0b00
+#define CAM_HOLD 0x0b01
+#define VIB_HOLD 0x0b10
+#define ALL_HOLD 0x0b11
+#define FIND_VCM 0x0b11
+#define SUIT_POS 0x01ba
+
+//Directly set len to Target Pos will cause noise
+//Through several set_pos to Target Pos
+#define SEGMENT_LENGTH 0x07
+
+static unsigned short af_len = SUIT_POS;
+static unsigned int Open_holder = NO_HOLD;
+static unsigned int Close_holder = NO_HOLD;
+static spinlock_t g_vcm_SpinLock;
+#endif
 
 static inline struct main2_vcm_device *to_main2_vcm_vcm(struct v4l2_ctrl *ctrl)
 {
@@ -258,13 +293,19 @@ static int main2_vcm_release(struct main2_vcm_device *main2_vcm)
 	struct i2c_client *client = v4l2_get_subdevdata(&main2_vcm->sd);
 
 	diff_dac = g_vcmconfig.origin_focus_pos - main2_vcm->focus->val;
-
 	nStep_count = (diff_dac < 0 ? (diff_dac*(-1)) : diff_dac) /
 		g_vcmconfig.move_steps;
 
 	val = main2_vcm->focus->val;
 
 	for (i = 0; i < nStep_count; ++i) {
+#ifdef CONFIG_AF_NOISE_ELIMINATION
+	if(Open_holder == VIB_HOLD || Open_holder == CAM_HOLD)
+	{
+		LOG_AFNE("Skip Diff Reset Action for Open_holder=0x0%x, nStep_count=%d.\n",Open_holder, nStep_count);
+		break;
+	}
+#endif
 		val += (diff_dac < 0 ? (g_vcmconfig.move_steps*(-1)) :
 			g_vcmconfig.move_steps);
 
@@ -278,14 +319,42 @@ static int main2_vcm_release(struct main2_vcm_device *main2_vcm)
 			g_vcmconfig.move_delay_us + 1000);
 	}
 
+#ifdef CONFIG_AF_NOISE_ELIMINATION
+	//Segmented set pos for VIB release VCM
+	if(Open_holder == VIB_HOLD)
+	{
+		int i = 0;
+		int af_step_count = 0;
+		diff_dac = g_vcmconfig.origin_focus_pos - SUIT_POS;
+		af_step_count = (af_len < 0 ? (af_len*(-1)) : diff_dac) / SEGMENT_LENGTH;
+		af_len = SUIT_POS;
+		LOG_AFNE("Reset pos to (%d) with %d Segments, echo segment long:0x0%x. Open_holder%x\n", g_vcmconfig.origin_focus_pos, af_step_count,\
+			SEGMENT_LENGTH, Open_holder);
+
+		for(i = 0;i < af_step_count; i++)
+		{
+			af_len += (diff_dac < 0 ? (SEGMENT_LENGTH*(-1)) : SEGMENT_LENGTH);
+			if(af_len > g_vcmconfig.origin_focus_pos)
+				af_len = g_vcmconfig.origin_focus_pos;
+
+			ret = main2_vcm_set_position(ab_main2_vcm, af_len);
+		}
+		LOG_AFNE("MTK_S_SETVCMPOS, reset target pos=0x%x, ret=%d. Open_holder=0x0%x\n", af_len, ret, Open_holder);
+	}
+	else
+	{
+		// last step to origin
+		ret = main2_vcm_set_position(main2_vcm, g_vcmconfig.origin_focus_pos);
+	}
+#else
 	// last step to origin
 	ret = main2_vcm_set_position(main2_vcm, g_vcmconfig.origin_focus_pos);
+#endif
 	if (ret < 0) {
 		LOG_INF("%s I2C failure: %d\n",
 			__func__, ret);
 		return ret;
 	}
-
 	register_setting(client, g_vcmconfig.wr_rls_table, 8);
 
 	return 0;
@@ -392,6 +461,37 @@ static int main2_vcm_open(struct v4l2_subdev *sd, struct v4l2_subdev_fh *fh)
 
 	LOG_INF("+\n");
 
+#ifdef CONFIG_AF_NOISE_ELIMINATION
+	ab_main2_vcm = main2_vcm;
+	LOG_AFNE("Open_holder=0x0%x\n", Open_holder);
+	spin_lock(&g_vcm_SpinLock);
+	if(Open_holder == CAM_HOLD)
+	{
+		//holder == CAM_HOLD while CAM working
+		spin_unlock(&g_vcm_SpinLock);
+		LOG_AFNE("open by VIB. Now VCM is ON!!!  open_hold=0x0%x, return -CAM_HOLD \n", Open_holder);
+		return -CAM_HOLD;
+	}else if(Open_holder == VIB_HOLD)
+	{
+		//holder == VIB_HOLD, VIB working && CAM start
+		spin_unlock(&g_vcm_SpinLock);
+		LOG_AFNE("open by CAM. Start to ON VCM, close VIB fdVCM first, Open_holder=0x0%x\n", Open_holder);
+		//Close fdVCM by VIB, then power on for CAM
+		main2_vcm_power_off(main2_vcm);
+		spin_lock(&g_vcm_SpinLock);
+		Open_holder = CAM_HOLD;
+		spin_unlock(&g_vcm_SpinLock);
+		ret = main2_vcm_power_on(main2_vcm);
+		if (ret < 0) {
+			LOG_INF("power on fail, ret = %d\n", ret);
+			return ret;
+		}
+		LOG_AFNE("open by CAM. RepowerStart to ON VCM, close VIB fdVCM first, open_hold=0x0%x\n", Open_holder);
+		return 0;
+	}
+	spin_unlock(&g_vcm_SpinLock);
+#endif
+
 	ret = main2_vcm_power_on(main2_vcm);
 	if (ret < 0) {
 		LOG_INF("power on fail, ret = %d\n", ret);
@@ -406,8 +506,22 @@ static int main2_vcm_close(struct v4l2_subdev *sd, struct v4l2_subdev_fh *fh)
 	struct main2_vcm_device *main2_vcm = sd_to_main2_vcm_vcm(sd);
 
 	LOG_INF("+\n");
-
+#ifdef CONFIG_AF_NOISE_ELIMINATION
+	LOG_AFNE("Open_holder=0x0%x\n", Open_holder);
+	if(Open_holder == CAM_HOLD && Close_holder != CAM_HOLD)
+	{
+		LOG_AFNE("Close VCM subdev by VIB, only close fd, not change Open_holder=0x0%x\n", Open_holder);
+		return 0;
+	}
+	LOG_INF("Close vcm subdev, open_hold=0x0%x, set to NO_HOLD 0x0b00\n", Open_holder);
 	main2_vcm_power_off(main2_vcm);
+	spin_lock(&g_vcm_SpinLock);
+	Open_holder = NO_HOLD;
+	Close_holder = NO_HOLD;
+	spin_unlock(&g_vcm_SpinLock);
+#else
+	main2_vcm_power_off(main2_vcm);
+#endif
 
 	return 0;
 }
@@ -417,6 +531,9 @@ static long main2_vcm_ops_core_ioctl(struct v4l2_subdev *sd, unsigned int cmd, v
 	int ret = 0;
 	struct main2_vcm_device *main2_vcm = sd_to_main2_vcm_vcm(sd);
 
+#ifdef CONFIG_AF_NOISE_ELIMINATION
+	ab_main2_vcm = main2_vcm;
+#endif
 	switch (cmd) {
 
 	case VIDIOC_MTK_S_LENS_INFO:
@@ -441,6 +558,58 @@ static long main2_vcm_ops_core_ioctl(struct v4l2_subdev *sd, unsigned int cmd, v
 			LOG_INF("init error\n");
 	}
 	break;
+#ifdef CONFIG_AF_NOISE_ELIMINATION
+	case VIDIOC_MTK_S_SETOPENER:
+        {
+		ab_lens_info = arg;
+		spin_lock(&g_vcm_SpinLock);
+		Open_holder = ab_lens_info->holder;
+		spin_unlock(&g_vcm_SpinLock);
+		LOG_AFNE("MTK_S_SETOPENER  Open_holder = 0x0%x\n",Open_holder);
+	}
+	break;
+	case VIDIOC_MTK_S_SETCLOSER:
+	{
+		ab_lens_info = arg;
+		spin_lock(&g_vcm_SpinLock);
+		Close_holder = ab_lens_info->holder;
+		spin_unlock(&g_vcm_SpinLock);
+		LOG_AFNE("MTK_S_SETCLOSER, Close_holder = 0x0%x\n", Close_holder);
+	}
+	break;
+	case VIDIOC_MTK_S_SETVCMPOS:
+	{
+		//set lens pos
+		unsigned int i = 0;
+		ab_lens_info = arg;
+		spin_lock(&g_vcm_SpinLock);
+		if(Open_holder != CAM_HOLD)
+		Open_holder = ab_lens_info->holder;
+		spin_unlock(&g_vcm_SpinLock);
+
+		//Segmented set pos for VIB ioctl VCM
+		af_len = g_vcmconfig.origin_focus_pos - SUIT_POS;
+		i = af_len / SEGMENT_LENGTH;
+		for(;i > 0; i--)
+		{
+			af_len = SUIT_POS + i * SEGMENT_LENGTH;
+			if(af_len > g_vcmconfig.origin_focus_pos)
+				af_len = g_vcmconfig.origin_focus_pos;
+
+			ret = main2_vcm_set_position(ab_main2_vcm, af_len);
+		}
+		LOG_AFNE("MTK_S_SETVCMPOS, target pos=0x%x, ret=%d. Open_holder=0x0%x\n", af_len, ret, Close_holder);
+		return ret;
+	}
+        break;
+        case VIDIOC_MTK_S_GETVCMSUBDEV:
+	{
+                LOG_AFNE("Found main2 vcm dev \n");
+		return 0;
+        }
+        break;
+
+#endif
 	default:
 		ret = -ENOIOCTLCMD;
 		break;
