@@ -1223,6 +1223,8 @@ static void mt6375_chg_bc12_work_func(struct work_struct *work)
 		ddata->psy_desc.type = POWER_SUPPLY_TYPE_USB_DCP;
 		ddata->psy_type[active_idx] = POWER_SUPPLY_TYPE_USB_DCP;
 		ddata->psy_usb_type[active_idx] = POWER_SUPPLY_USB_TYPE_DCP;
+		if (ddata->qc_dev)
+			schedule_delayed_work(&ddata->detect_qc_dwork, 0);
 		break;
 	case PORT_STAT_DCP:
 		ddata->psy_desc.type = POWER_SUPPLY_TYPE_USB_DCP;
