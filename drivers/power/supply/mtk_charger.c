@@ -3608,8 +3608,19 @@ void mmi_charge_rate_check(struct mtk_charger *info)
 	}
 
 	rp_level = adapter_dev_get_property(info->pd_adapter, TYPEC_RP_LEVEL);
-	if (rp_level == 3000
-		|| info->pd_type == MTK_PD_CONNECT_PE_READY_SNK
+	if (rp_level == 3000) {
+		if (info->mmi.typec_rp_max_current) {
+			if (info->mmi.typec_rp_max_current / 1000 >= TURBO_CHRG_THRSH) {
+				info->mmi.charge_rate = POWER_SUPPLY_CHARGE_RATE_TURBO;
+				goto end_rate_check;
+			}
+		} else {
+			info->mmi.charge_rate = POWER_SUPPLY_CHARGE_RATE_TURBO;
+			goto end_rate_check;
+		}
+	}
+
+	if (info->pd_type == MTK_PD_CONNECT_PE_READY_SNK
 		|| info->pd_type == MTK_PD_CONNECT_PE_READY_SNK_PD30
 		|| info->pd_type == MTK_PD_CONNECT_PE_READY_SNK_APDO) {
 		info->mmi.charge_rate = POWER_SUPPLY_CHARGE_RATE_TURBO;
