@@ -87,6 +87,7 @@ mgk_64_k61_kleaf_modules = [
     "//motorola/kernel/modules/drivers/power/mmi_gauge_class:mmi_gauge_class",
     "//motorola/kernel/modules/drivers/power/smart_battery:smart_battery",
     "//motorola/kernel/modules/drivers/power/cw2217b_fg_mmi:cw2217b_fg_mmi",
+    "//motorola/kernel/modules/drivers/power/nfg1000_fg_mmi:nfg1000_fg_mmi",
     "//motorola/kernel/modules/drivers/sensors:sensors_class",
     "//motorola/kernel/modules/drivers/misc/sx937x_multi:sx937x_multi",
     "//motorola/kernel/modules/drivers/misc/sx937x:sx937x_sar",
