@@ -89,6 +89,8 @@ mgk_64_k61_kleaf_modules = [
     "//motorola/kernel/modules/drivers/power/cw2217b_fg_mmi:cw2217b_fg_mmi",
     "//motorola/kernel/modules/drivers/sensors:sensors_class",
     "//motorola/kernel/modules/drivers/misc/sx937x_multi:sx937x_multi",
+    "//motorola/kernel/modules/drivers/misc/sx937x:sx937x_sar",
+    "//motorola/kernel/modules/drivers/misc/awinic/sarsensor:awinic_sar",
     "//motorola/kernel/modules/drivers/power/sc760x_charger_mmi:sc760x_charger_mmi",
     "//motorola/kernel/modules/drivers/power/wt6670f_qc3p_mmi:wt6670f_qc3p_mmi",
     "//motorola/kernel/modules/drivers/power/sc8549d:sc8546d_charger",
