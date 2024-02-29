@@ -169,11 +169,6 @@ static bool select_charging_current_limit(struct mtk_charger *info,
 	pdata_dvchg = &info->chg_data[DVCHG1_SETTING];
 	pdata_dvchg2 = &info->chg_data[DVCHG2_SETTING];
 
-	if (info->atm_enabled == true) {
-		is_basic = true;
-		goto done;
-	}
-
 	if (info->usb_unlimited) {
 		pdata->input_current_limit =
 					info->data.ac_charger_input_current;
