@@ -227,38 +227,46 @@
 	};
 };
 
-&i2c11 {
+&i2c12 {
 	clock-frequency = <400000>;
 	status = "okay";
-	haptic_hv@5A {
-		status = "okay";
-		compatible = "awinic,haptic_hv";
-		reg = <0x5A>;
-		irq-gpio = <&pio 7 0>;
-		reset-gpio = <&pio 100 0>;
-		//pinctrl-names = "irq_active";
-		//pinctrl-0 = <&gpio1_input_pull_up>;
-		f0_pre = < 1700 >;
-		mode = /bits/ 8 < 5 >;
+		fshaptic@34{
+		compatible="foursemi,fshaptic";
+		reg=<0x34>;
+		fs3001_i2c_addr=<0x34>;
+		reset-gpio=<&pio 41 0>;//In pio section, please set the gpio based on the platform
+		irq-gpio=<&pio 9 0>;//In pio section, please set the gpio based on the platform
 
-		aw8692x_f0_cali_percent = /bits/ 8 < 7 >;
-		aw8692x_gain_bypass = /bits/ 8 < 1 >;
-		aw8692x_cont_drv1_lvl = /bits/ 8 < 0x7F >;
-		aw8692x_cont_lra_vrms = < 1500 >;
-		aw8692x_cont_drv1_time = /bits/ 8 < 0x04 >;
-		aw8692x_cont_drv2_time = /bits/ 8 < 0x66 >;
-		aw8692x_cont_track_margin = /bits/ 8 < 0x0F >;
-		aw8692x_cont_brk_gain = /bits/ 8 < 0x08 >;
-		aw8692x_cont_brk_time = /bits/ 8 < 0x08 >;
-		aw8692x_duration_time = /bits/ 8 < 34 67 101 >;
-		aw8692x_d2s_gain = /bits/ 8 < 0x04 >;
-		aw8692x_trig_config = /bits/ 8 < 0 0 0 1 0 2 0 0
-						 0 0 0 1 0 2 0 0
-						 0 0 0 1 0 2 0 0 >;
-		aw8692x_bst_vol_default = < 8500 >;
-		aw8692x_is_enabled_track_en;
-		/* aw8692x_is_enabled_auto_bst; */
-		/* aw8692x_is_enabled_one_wire; */
+		fs3001_f0_ref=< 2350 >;
+		fs3001_auto_brake=< 0 >;
+		fs3001_f0_cali_mode=< 0 >;
+		fs3001_cont_drv1_lvl=< 127 >;
+		fs3001_cont_drv2_lvl=< 54 >;
+		fs3001_cont_drv1_time=< 4 >;
+		fs3001_cont_drv2_time=< 20 >;
+		fs3001_cont_1_period=< 612 >;
+		fs3001_brk_slopeth=< 20 >;
+		fs3001_brk_gain=< 128 >;
+		fs3001_brk_times=< 20 >;
+		fs3001_brk_noise_gate=< 16 >;
+		fs3001_brk_1_period=< 408 >;
+		fs3001_brk_pgagain=< 5 >;
+		fs3001_brk_margin=< 48 >;
+		fs3001_play_ram_srate=< 0 >;
+		fs3001_play_rtp_srate=< 1 >;
+		fs3001_lk_f0_cali=< 0 >;
+		fs3001_default_vib_mode=< 3 >;
+		fs3001_vbat_mode=< 0 >;
+		fs3001_bypass_system_gain=< 1 >;
+		fs3001_f0_cali_data_mode=< 0 >;
+		fs3001_lr_pgagain=< 5 >;
+		fs3001_gain_adjust=< 0 >;
+		fs3001_rtp_max=< 3 >;
+		fs3001_rtp_time=< 20 20 20 >;
+		fs3001_reg_inits=< 0xffffff 0xffffff 0xffffff 0xffffff 0xffffff 0xffffff 0xffffff 0xffffff 0xffffff 0xffffff >;
+		fs3001_rtp_id_boundary=< 0 >;
+		fs3001_duration_time=< 20 40 60 >;
+		status = "okay";
 	};
 };
 
