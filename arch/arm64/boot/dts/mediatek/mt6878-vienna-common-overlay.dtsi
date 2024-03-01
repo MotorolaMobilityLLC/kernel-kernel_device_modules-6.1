@@ -10,14 +10,14 @@
  * GNU General Public License for more details.
  */
 
-#include "mediatek/mt6878-moto-common-overlay.dtsi"
+#include "mediatek/mt6878-moto-common-overlay-single-panel.dtsi"
 
 #include "mediatek/aito-wl2864c.dtsi"
 #include "mediatek/cust_vienna_camera_v4l2.dtsi"
 #include "mediatek/vienna-charger.dtsi"
 #include "mediatek/vienna-fps.dtsi"
 #include "mediatek/vienna-ntc.dtsi"
-#include "mediatek/aito-display.dtsi"
+#include "mediatek/vienna-display.dtsi"
 #include "mediatek/aito-touch.dtsi"
 
 &pio {
