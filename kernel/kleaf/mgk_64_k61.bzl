@@ -76,6 +76,7 @@ mgk_64_k61_kleaf_modules = [
     "//vendor/mediatek/kernel_modules/sched_cus:sched_cus",
     "//vendor/mediatek/kernel_modules/sched_int:sched_int",
     "//motorola/kernel/modules/drivers/misc/awinic/aw86927:aw86927",
+    "//motorola/kernel/modules/drivers/misc/foursemi/fs3001:fs3001",
     "//motorola/kernel/modules/drivers/misc/utag:utags",
     "//motorola/kernel/modules/drivers/mmi_info:mmi_info",
     "//motorola/kernel/modules/drivers/mmi_relay:mmi_relay",
