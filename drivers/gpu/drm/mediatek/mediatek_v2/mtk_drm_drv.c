@@ -8017,7 +8017,10 @@ static int mtk_drm_ioctl_set_panel_feature(struct drm_device *dev, void *data,
 	for (i = 0 ; i < MAX_CRTC ; ++i) {
 		crtc = private->crtc[i];
 		mtk_crtc = to_mtk_crtc(crtc);
-		if (!mtk_crtc->enabled) {
+		if (!mtk_crtc) {
+			DDPINFO("%s: mtk_crtc is NULL\n", __func__);
+			continue;
+		}else if (!mtk_crtc->enabled) {
 			DDPINFO("%s: CRTC %d, slepted\n", __func__, drm_crtc_index(crtc));
 			continue;
 		}
