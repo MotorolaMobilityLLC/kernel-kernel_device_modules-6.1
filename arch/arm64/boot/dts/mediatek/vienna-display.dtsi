@@ -1,0 +1,118 @@
+/* Copyright (c) 2023, Motorola Mobility Inc. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+#include "mediatek/mt6369.dtsi"
+
+&mtk_leds {
+	backlight {
+		/delete-property/ max-hw-brightness;
+		/delete-property/ max-brightness;
+		max-brightness = <16380>;
+		max-hw-brightness = <16380>;
+	};
+};
+
+&mipi_tx_config0 {
+	mipi-volt = <11>;
+};
+
+&dsi0 {
+	status = "okay";
+
+	panel1@0 {
+		/delete-property/ compatible;
+		/delete-property/ pm-enable-gpios;
+		/delete-property/ reset-gpios;
+		/delete-property/ gate-ic;
+
+		compatible = "csot,vtdr6130,cmd,636";
+		reg = <1>;
+		vddi-gpios = <&pio 188 0>;
+		dvdd-gpios = <&pio 28 0>;
+		oled-vci-supply = <&mt6369_vmch>;
+		reset-gpios = <&pio 90 0>;
+		pinctrl-names = "default";
+	};
+
+	panel2@1 {
+		/delete-property/ compatible;
+		/delete-property/ pm-enable-gpios;
+		/delete-property/ reset-gpios;
+		/delete-property/ gate-ic;
+		/delete-property/ swap-from-dts;
+		/delete-property/ lane-swap-setting;
+		/delete-property/ pn-swap-setting;
+
+		/*compatible = "mot,dummy,vdo,60hz";*/
+	};
+};
+
+&mtkfb {
+	/delete-property/ pinctrl-names;
+	/delete-property/ pinctrl-0;
+	/delete-property/ pinctrl-1;
+	/delete-property/ pinctrl-2;
+	/delete-property/ pinctrl-3;
+	/delete-property/ pinctrl-4;
+	/delete-property/ pinctrl-5;
+	/delete-property/ pinctrl-6;
+	/delete-property/ pinctrl-7;
+	/delete-property/ pinctrl-8;
+
+	pinctrl-names = "lcm_rst_out0_gpio", "mode_te_te",
+		"oled_vci_en_gpio", "oled_vio_en_gpio",
+		"oled_dvdd_en_gpio";
+
+	pinctrl-0 = <&mtkfb_pins_lcm_rst_out_gpio>;
+	pinctrl-1 = <&mtkfb_pins_lcm_dsi_te>;
+	pinctrl-2 = <&mtkfb_pins_oled_vci_en>;
+	pinctrl-3 = <&mtkfb_pins_oled_vio_en>;
+	pinctrl-4 = <&mtkfb_pins_oled_avdd_en0>;
+
+	status = "okay";
+
+};
+
+
+&pio {
+	mtkfb_pins_oled_vci_en: oled_vci_en_gpio {
+		pins_cmd_dat {
+			pinmux = <PINMUX_GPIO153__FUNC_GPIO153>;
+			slew-rate = <1>;
+			output-low;
+		};
+	};
+
+	mtkfb_pins_oled_vio_en: oled_vio_en_gpio {
+		pins_cmd_dat {
+			pinmux = <PINMUX_GPIO188__FUNC_GPIO188>;
+			slew-rate = <1>;
+			output-low;
+		};
+	};
+
+	mtkfb_pins_oled_avdd_en0: oled_dvdd_en_gpio {
+		pins_cmd_dat {
+			pinmux = <PINMUX_GPIO28__FUNC_GPIO28>;
+			slew-rate = <1>;
+			output-low;
+		};
+	};
+
+	mtkfb_pins_lcm_rst_out_gpio: lcm_rst_out_gpio {
+		pins_cmd_dat {
+			pinmux = <PINMUX_GPIO90__FUNC_GPIO90>;
+			slew-rate = <1>;
+			output-low;
+		};
+	};
+};
+
