@@ -209,3 +209,9 @@ config MOTO_WLC_ALG_SUPPORT
 	tristate "moto wlc interface driver for charger"
 	help
 	  This is to enable MOTO supports of wlc charger INTERFACE.
+
+config MOTO_CHANNEL_SWITCH
+        bool "WIRELESS CHANNEL SWITCH CHARGER  control support"
+        default n
+        help
+          This is to enable MOTO supports of charger channel switch.
