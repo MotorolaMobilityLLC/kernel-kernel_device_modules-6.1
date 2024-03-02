@@ -169,4 +169,19 @@ config SND_SOC_MT6681_ACCDET
 	  detection mechanism. Select N if you don't
 	  have jack on board.
 
+config SND_SOC_FS1XXX
+	tristate "FourSemi FS1XXX speaker amplifier"
+	depends on I2C
+	help
+	  FS1XXX speaker
+
+config FSA4480_I2C_DF
+	tristate "analog audio switch"
+	depends on I2C
+	help
+	  The FSA4480 is a high-performance USB Type-C port
+	  multimedia switch. The FSA4480 supports USB2.0
+	  signal, analog audio, sideband use wires and analog
+	  microphone signal.
+
 endmenu
