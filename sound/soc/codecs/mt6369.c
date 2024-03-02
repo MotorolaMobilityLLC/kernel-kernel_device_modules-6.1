@@ -2300,7 +2300,7 @@ static int mt_mic_bias_0_event(struct snd_soc_dapm_widget *w,
 		/* MISBIAS0 = 1P9V */
 		regmap_update_bits(priv->regmap, MT6369_AUDENC_ANA_CON17,
 				   RG_AUDMICBIAS0VREF_MASK_SFT,
-				   MIC_BIAS_1P9 << RG_AUDMICBIAS0VREF_SFT);
+				   MIC_BIAS_2P7 << RG_AUDMICBIAS0VREF_SFT);
 		/* vow low power select */
 		regmap_update_bits(priv->regmap, MT6369_AUDENC_ANA_CON17,
 				   RG_AUDMICBIAS0LOWPEN_MASK_SFT,
