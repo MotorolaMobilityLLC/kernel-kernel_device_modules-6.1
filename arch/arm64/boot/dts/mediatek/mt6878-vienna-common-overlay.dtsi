@@ -270,42 +270,40 @@
 	status = "disabled";
 };
 
-&i2c11 {
-	status = "okay";
-	clock-frequency = <400000>;
-
-	spk: tfa98xx@35 {
-		compatible = "tfa,tfa98xx";
-		#address-cells = <1>;
-		#size-cells = <0>;
-		#sound-dai-cells = <0>;
-		reg = <0x35>;
-		reset-gpio= <&pio 149 0>;
-		reset-polarity=<0>;
-		status = "okay";
-	};
-
-	rcv: tfa98xx@34 {
-		compatible = "tfa,tfa98xx";
-		#address-cells = <1>;
-		#size-cells = <0>;
-		#sound-dai-cells = <0>;
+&i2c6 {
+ 	status = "okay";
+	fs16xx_smartpa_0: fs16xx@34 {
+		compatible = "foursemi,fs16xx";
+ 		#sound-dai-cells = <0>;
+		fsm,rst-gpio = <&pio 80 0>;
+		fsm,irq-gpio = <&pio 10 0>;
 		reg = <0x34>;
-		reset-gpio= <&pio 164 0>;
-		reset-polarity=<0>;
+ 		status = "okay";
+ 	};
+	fs16xx_smartpa_1: fs16xx@35 {
+		compatible = "foursemi,fs16xx";
+ 		#sound-dai-cells = <0>;
+		fsm,rst-gpio = <&pio 193 0>;
+		fsm,irq-gpio = <&pio 17 0>;
+		reg = <0x35>;
+ 		status = "okay";
+ 	};
+	fsa4480: fsa4480@42 {
+		compatible = "fsa,fsa4480-i2c";
+		reg = <0x42>;
 		status = "okay";
-	};
-};
+    };
+ };
 
 &sound {
 	mediatek,spk-i2s = <25 24>;
 	mediatek,speaker-codec {
-		sound-dai = <&spk &rcv>;
+		sound-dai = <&fs16xx_smartpa_0>;
 	};
 };
 
 &afe {
-	mediatek,ap-dmic = <1>;
+	mediatek,ap-dmic = <0>;
 };
 
 &swtp {
