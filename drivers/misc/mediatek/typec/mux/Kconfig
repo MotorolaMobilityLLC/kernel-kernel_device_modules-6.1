@@ -61,3 +61,12 @@ config TYPEC_MUX_PI3DPX1205A
 	  SSRX1/SSTX1/SSRX2/SSTX2 pins.
 	  Say Y to enable TYPEC DP Mux
 	  If unsure, say N.
+
+config FSA4480_I2C
+	tristate "analog audio switch"
+	depends on I2C
+	help
+	  The FSA4480 is a high-performance USB Type-C port
+	  multimedia switch. The FSA4480 supports USB2.0
+	  signal, analog audio, sideband use wires and analog
+	  microphone signal.

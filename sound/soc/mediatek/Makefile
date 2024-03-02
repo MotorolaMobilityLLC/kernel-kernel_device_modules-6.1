@@ -42,3 +42,5 @@ obj-$(CONFIG_SND_SOC_MTK_AUDIO_DSP) += audio_scp/
 subdir-ccflags-y += -Werror -I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/include/mt-plat
 subdir-ccflags-y += -Werror -I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/include
 subdir-ccflags-y += -Werror -I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/pbm
+
+subdir-ccflags-$(CONFIG_SND_SOC_FS19XX) += -DCONFIG_SND_SOC_FS19XX
