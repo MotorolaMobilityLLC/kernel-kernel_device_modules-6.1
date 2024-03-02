@@ -288,11 +288,28 @@
 &mtk_composite_v4l2_2 {
 	#address-cells = <1>;
 	#size-cells = <0>;
+	port@0 {
+		reg = <0>;
+		main_af_endpoint: endpoint {
+			remote-endpoint = <&main_af>;
+		};
+	};
 };
 
 &i2c8 {
 	status = "okay";
 	clock-frequency = <1000000>;
+
+	camera-af-main@a {
+		compatible = "mediatek,main_vcm";
+		reg = <0x0a>;
+		vin-supply = <&mt6369_vtp>;
+		port {
+			main_af: endpoint {
+				remote-endpoint = <&main_af_endpoint>;
+			};
+		};
+	};
 
 	sensor0: sensor0@20 {
 		compatible = "mediatek,imgsensor";
@@ -323,6 +340,7 @@
 
 		dvdd-supply = <&et5904_ldo1>;
 		avdd-supply = <&et5904_ldo3>;
+		afvdd-supply = <&mt6369_vtp>;
 
 		clocks = <&topckgen_clk CLK_TOP_UVPLL192M_D32>,
 			<&topckgen_clk CLK_TOP_UVPLL192M_D16>,
