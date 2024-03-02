@@ -235,6 +235,7 @@ struct charger_ops {
 	/*typec otp mos*/
 	int (*enable_mos_short)(struct charger_device *dev, bool en);
 	int (*is_power_ready)(struct charger_device *dev);
+	int (*get_vmos_chg)(struct charger_device *chg_dev, bool type, int *uV);
 };
 
 static inline void *charger_dev_get_drvdata(
@@ -445,4 +446,5 @@ extern int charger_dev_get_dp_dm(struct charger_device *chg_dev, int *val);
 extern int charger_dev_enable_mos_short(
 	struct charger_device *charger_dev, bool en);
 extern int charger_dev_is_power_ready(struct charger_device *chg_dev);
+extern int charger_dev_get_vmos_adc(struct charger_device *chg_dev, bool type, int *uV);
 #endif /*LINUX_POWER_CHARGER_CLASS_H*/

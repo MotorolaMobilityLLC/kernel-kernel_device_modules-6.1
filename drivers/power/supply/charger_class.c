@@ -584,6 +584,15 @@ int charger_dev_config_mux(struct charger_device *chg_dev,
 }
 EXPORT_SYMBOL(charger_dev_config_mux);
 
+int charger_dev_get_vmos_adc(struct charger_device *chg_dev, bool type, int *uV)
+{
+	if (chg_dev != NULL && chg_dev->ops != NULL &&
+	    chg_dev->ops->get_vmos_chg)
+		return chg_dev->ops->get_vmos_chg(chg_dev, type, uV);
+	return -EOPNOTSUPP;
+}
+EXPORT_SYMBOL(charger_dev_get_vmos_adc);
+
 int charger_dev_reset_vbatovp_alarm(struct charger_device *chg_dev)
 {
 	if (chg_dev != NULL && chg_dev->ops != NULL &&
