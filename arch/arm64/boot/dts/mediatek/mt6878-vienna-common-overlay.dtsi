@@ -18,7 +18,7 @@
 #include "mediatek/vienna-fps.dtsi"
 #include "mediatek/vienna-ntc.dtsi"
 #include "mediatek/vienna-display.dtsi"
-#include "mediatek/aito-touch.dtsi"
+#include "mediatek/vienna-touch.dtsi"
 
 &pio {
 	nfc_spi_cs_mode_spi: nfc_spi_cs_mode_spi {
