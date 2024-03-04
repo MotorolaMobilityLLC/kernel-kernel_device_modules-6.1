@@ -301,6 +301,21 @@ static struct power_supply *get_mtk_gauge_psy(void)
 	return NULL;
 }
 
+static struct power_supply *get_motorola_gauge_psy(void)
+{
+	static struct power_supply *psy = NULL;
+
+	if (!psy) {
+		psy = power_supply_get_by_name("battery");
+		if (!psy) {
+			pr_info("%s psy is not rdy\n", __func__);
+			return NULL;
+		}
+	}
+
+	return psy;
+}
+
 static void dlpt_set_shutdown_condition(void)
 {
 	struct power_supply *psy;
@@ -308,7 +323,10 @@ static void dlpt_set_shutdown_condition(void)
 	int ret;
 
 	psy = get_mtk_gauge_psy();
-	/* gauge disabled */
+	/* mtk gauge disabled */
+	if (!psy)
+		psy = get_motorola_gauge_psy();
+	/* motorola gauge is also disabled */
 	if (!psy)
 		return;
 
