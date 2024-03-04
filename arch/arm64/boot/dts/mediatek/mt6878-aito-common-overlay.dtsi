@@ -508,7 +508,7 @@
 };
 
 &bp_thl {
-	soc-limit-threshold = <10>;
+	soc-limit-threshold = <5>;
 };
 
 &mt6375_batoc_throttle {
@@ -516,5 +516,15 @@
 };
 
 &md_power_throttling {
-	status = "disabled";
+	lbat-max-level = <3>;
+	lbat-reduce-tx-lv1 = <0>;
+	lbat-reduce-tx-lv2 = <0>;
+	lbat-reduce-tx-lv3 = <0>;
+
+	oc-max-level = <2>;
+	oc-reduce-tx-lv1 = <0>;
+	oc-reduce-tx-lv2 = <0>;
+
+	soc-max-level = <1>;
+	soc-reduce-tx-lv1 = <6>;
 };
