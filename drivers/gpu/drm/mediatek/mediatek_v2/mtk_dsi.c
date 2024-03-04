@@ -4147,16 +4147,38 @@ static ssize_t panelCellId_show(struct device *device,
 	return written;
 }
 
+static ssize_t panelDC_show(struct device *device,
+			struct device_attribute *attr,
+			char *buf)
+{
+	struct drm_connector *connector = dev_get_drvdata(device);
+	struct mtk_dsi *dsi = connector_to_dsi(connector);
+	int written = 0;
+	struct panel_param_info param_info;
+
+	param_info.param_idx = PARAM_DC;
+	if (dsi && dsi->ext && dsi->ext->funcs->panel_feature_get) {
+		dsi->ext->funcs->panel_feature_get(dsi->panel, &param_info);
+		mutex_lock(&connector->dev->mode_config.mutex);
+		written = snprintf(buf, PAGE_SIZE, "%d\n", param_info.value);
+		mutex_unlock(&connector->dev->mode_config.mutex);
+	} else
+		written = snprintf(buf, PAGE_SIZE, "%s\n", "Invalid");
+	return written;
+}
+
 static DEVICE_ATTR_RO(panelVer);
 static DEVICE_ATTR_RO(panelName);
 static DEVICE_ATTR_RO(panelSupplier);
 static DEVICE_ATTR_RO(panelCellId);
+static DEVICE_ATTR_RO(panelDC);
 
 static const struct attribute *conn_panel_attrs[] = {
 	&dev_attr_panelVer.attr,
 	&dev_attr_panelName.attr,
 	&dev_attr_panelSupplier.attr,
 	&dev_attr_panelCellId.attr,
+	&dev_attr_panelDC.attr,
 	NULL
 };
 
