@@ -294,6 +294,12 @@
 			remote-endpoint = <&main_af>;
 		};
 	};
+	port@1 {
+		reg = <1>;
+		wide_af_endpoint: endpoint {
+			remote-endpoint = <&wide_af>;
+		};
+	};
 };
 
 &i2c8 {
@@ -414,6 +420,16 @@
 &i2c2 {
 	status = "okay";
 	clock-frequency = <1000000>;
+	camera-af-wide@b {
+		compatible = "mediatek,main2_vcm";
+		reg = <0x0b>;
+		vin-supply = <&mt6369_vio28>;
+		port {
+			wide_af: endpoint {
+				remote-endpoint = <&wide_af_endpoint>;
+			};
+		};
+	};
 
 	sensor2: sensor2@10 {
 		compatible = "mediatek,imgsensor";
@@ -440,6 +456,7 @@
 
 		avdd-supply = <&et59041c_ldo3>;
 		dvdd-supply = <&et59041c_ldo1>;
+		afvdd-supply = <&mt6369_vio28>;
 
 		clocks = <&topckgen_clk CLK_TOP_UVPLL192M_D32>,
 			<&topckgen_clk CLK_TOP_UVPLL192M_D16>,
