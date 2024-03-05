@@ -133,6 +133,7 @@ enum chg_alg_props {
 	ALG_LOG_LEVEL,
 	ALG_REF_VBAT,
 	ALG_WLC_STATE,
+	ALG_WLC_TX_MODE,
 };
 
 struct chg_alg_ops {
