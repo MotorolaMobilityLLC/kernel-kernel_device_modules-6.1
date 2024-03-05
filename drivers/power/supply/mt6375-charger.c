@@ -2111,7 +2111,7 @@ static int mt6375_config_otg(struct charger_device *chgdev, u32 otg_vol, u32 otg
 		return -EINVAL;
 	}
 
-	if (!ddata->otg) {
+	if (IS_ERR_OR_NULL(ddata->otg)) {
 		ddata->otg = devm_regulator_get(ddata->dev, "usb-otg-vbus");
 		if (IS_ERR_OR_NULL(ddata->otg)) {
 			pr_err("%s:failed to get usb-otg-vbus regulator\n", __func__);
@@ -2142,12 +2142,11 @@ static int mt6375_config_otg(struct charger_device *chgdev, u32 otg_vol, u32 otg
 static int mt6375_enable_otg(struct charger_device *chgdev, bool en)
 {
 	int ret = 0;
-	static struct regulator *regulator = NULL;
 	struct mt6375_chg_data *ddata = charger_get_data(chgdev);
 
-	if (!regulator) {
-		regulator = devm_regulator_get(ddata->dev, "usb-otg-vbus");
-		if (IS_ERR_OR_NULL(regulator)) {
+	if (IS_ERR_OR_NULL(ddata->otg)) {
+		ddata->otg = devm_regulator_get(ddata->dev, "usb-otg-vbus");
+		if (IS_ERR_OR_NULL(ddata->otg)) {
 			dev_err(ddata->dev, "failed to get otg regulator\n");
 			return -EINVAL;
 		} else {
@@ -2157,10 +2156,12 @@ static int mt6375_enable_otg(struct charger_device *chgdev, bool en)
 
 	if (en) {
 		mt_dbg(ddata->dev, "enable usb-otg-vbus\n");
-		ret = regulator_enable(regulator);
+		ret = regulator_enable(ddata->otg);
 	} else {
 		mt_dbg(ddata->dev, "disable usb-otg-vbus\n");
-		ret = regulator_disable(regulator);
+		ret = regulator_disable(ddata->otg);
+		devm_regulator_put(ddata->otg);
+		ddata->otg = NULL;
 	}
 
 	dev_info(ddata->dev, "en=%d ret=%d\n", en, ret);
