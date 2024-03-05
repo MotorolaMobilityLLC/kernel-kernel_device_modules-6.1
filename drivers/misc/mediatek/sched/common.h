@@ -30,7 +30,6 @@ struct vip_task_struct {
 	bool			vvip;
 };
 
-#if IS_ENABLED(CONFIG_SCHED_MOTO_UNFAIR)
 extern int set_moto_sched_enabled(int enable);
 
 struct msched_ops {
@@ -45,6 +44,7 @@ struct msched_ops {
 extern struct msched_ops *moto_sched_ops;
 extern void set_moto_sched_ops(struct msched_ops *ops);
 
+#if IS_ENABLED(CONFIG_SCHED_MOTO_UNFAIR)
 static inline int moto_task_get_mvp_prio(struct task_struct *p, bool with_inherit) {
 	if (moto_sched_ops != NULL && moto_sched_ops->task_get_mvp_prio != NULL)
 		return moto_sched_ops->task_get_mvp_prio(p, with_inherit);
