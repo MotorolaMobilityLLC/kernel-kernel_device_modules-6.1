@@ -640,6 +640,7 @@ struct mtk_charger {
 
 	struct charger_device *blance_dev;
 	bool	blance_can_charging;
+	bool wls_boost_using_otg;
 };
 
 static inline int mtk_chg_alg_notify_call(struct mtk_charger *info,

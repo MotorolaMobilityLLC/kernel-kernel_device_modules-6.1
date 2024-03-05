@@ -711,6 +711,11 @@ int _wlc_set_prop(struct chg_alg_device *alg,
 			}
 		}
 		break;
+	case ALG_WLC_TX_MODE:
+		if (!IS_ERR_OR_NULL(wls_chg_ops) && wls_chg_ops->wls_set_tx_mode) {
+			wls_chg_ops->wls_set_tx_mode(!!value);
+		}
+		break;
 	default:
 		break;
 	}
