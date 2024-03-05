@@ -22,7 +22,6 @@ bool vip_enable;
 
 DEFINE_PER_CPU(struct vip_rq, vip_rq);
 
-#if IS_ENABLED(CONFIG_SCHED_MOTO_UNFAIR)
 int moto_sched_enabled = 0;
 int set_moto_sched_enabled(int enable) {
 	moto_sched_enabled = enable;
@@ -35,7 +34,6 @@ void set_moto_sched_ops(struct msched_ops *ops) {
 	moto_sched_ops = ops;
 }
 EXPORT_SYMBOL_GPL(set_moto_sched_ops);
-#endif
 
 inline unsigned int num_vvip_in_cpu(int cpu)
 {
