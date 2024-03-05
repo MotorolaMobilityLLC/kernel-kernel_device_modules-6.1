@@ -41,10 +41,18 @@
 &charger {
 	/*pe5 && pdc && wlc*/
 	fast_charging_indicator = <0x8014>;
+	mmi,wls-boost-using-otg;
 };
 
 &mmi_pehv {
 	status = "disabled";
+};
+
+&cps_wls_charger {
+	wireless-tx-support;
+	config-otg-support;
+	config-otg-vout = <5500000>;
+	config-otg-iout = <1800000>;
 };
 
 #include <aito_dvt2/cust.dtsi>

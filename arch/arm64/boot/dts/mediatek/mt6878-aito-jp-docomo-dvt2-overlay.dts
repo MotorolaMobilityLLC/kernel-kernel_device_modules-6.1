@@ -36,6 +36,7 @@
 &charger {
 	/*typec_otp*/
 	mmi,typecotp-charger;
+	mmi,wls-boost-using-otg;
 };
 
 &spmi {
@@ -50,6 +51,13 @@
 
 &mt6375_chg {
 	mmi,otp-mos-regulator-name = "mt6369_mos_con1";
+};
+
+&cps_wls_charger {
+	wireless-tx-support;
+	config-otg-support;
+	config-otg-vout = <5500000>;
+	config-otg-iout = <1800000>;
 };
 
 #include <aito_dvt2/cust.dtsi>
