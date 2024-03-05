@@ -1391,18 +1391,25 @@ static int pe50_calculate_rcable_by_swchg(struct pe50_algo_info *info)
 static int pe50_adjust_vta_with_ta_cv(struct pe50_algo_info *info)
 {
 	int ret, cnt = PE50_WHILE_LOOP_ITERATION_MAX;
-	bool err;
+	bool vbuslow = false, vbushigh = false;
 	u32 idvchg_lmt, vta, ita, ita_gap_per_vstep;
 	struct pe50_algo_data *data = info->data;
 	struct pe50_ta_auth_data *auth_data = &data->ta_auth_data;
 
 	while (cnt-- > 0) {
-		ret = pe50_hal_is_vbuslowerr(info->alg, DVCHG1, &err);
+		ret = pe50_hal_is_vbuslowerr(info->alg, DVCHG1, &vbuslow);
 		if (ret < 0) {
 			PE50_ERR("get vbuslowerr fail(%d)\n", ret);
 			return ret;
 		}
-		if (!err)
+
+		ret = pe50_hal_is_vbushigherr(info->alg, DVCHG1, &vbushigh);
+		if (ret < 0) {
+			PE50_ERR("get vbushigherr fail(%d)\n", ret);
+			return ret;
+		}
+
+		if (!vbuslow && !vbushigh)
 			break;
 
 		ita_gap_per_vstep = data->ita_gap_per_vstep > 0 ?
@@ -1410,9 +1417,15 @@ static int pe50_adjust_vta_with_ta_cv(struct pe50_algo_info *info)
 				    auth_data->ita_gap_per_vstep;
 		idvchg_lmt = pe50_get_idvchg_lmt(info);
 
-		vta = data->vta_setting + auth_data->vta_step;
+		if (vbuslow) {
+			vta = data->vta_setting + auth_data->vta_step;
+			ita = data->ita_setting + ita_gap_per_vstep;
+		} else if (vbushigh) {
+			vta = data->vta_setting - auth_data->vta_step;
+			ita = data->ita_setting - ita_gap_per_vstep;
+		}
+
 		vta = min_t(u32, vta, auth_data->vcap_max);
-		ita = data->ita_setting + ita_gap_per_vstep;
 		ita = min(ita, idvchg_lmt);
 		ret = pe50_set_ta_cap_cv(info, vta, ita);
 		if (ret < 0) {
