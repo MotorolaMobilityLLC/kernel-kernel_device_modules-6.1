@@ -90,7 +90,7 @@
 #define FHD_VBP_90            (35)
 
 struct mtk_mode_switch_cmd cmd_table_120fps[] = {
-	{2, {0x6C, 0x00}},
+	{2, {0x6C, 0x01}},
 	{2, {0x71, 0x00}}
 };
 
@@ -100,27 +100,27 @@ struct mtk_mode_switch_cmd cmd_table_90fps[] = {
 };
 
 struct mtk_mode_switch_cmd cmd_table_60fps[] = {
-	{2, {0x6C, 0x00}},
+	{2, {0x6C, 0x01}},
 	{4, {0x71,0x01,0x01,0x00}}
 };
 
 struct mtk_mode_switch_cmd cmd_table_30fps[] = {
-	{2, {0x6C, 0x00}},
+	{2, {0x6C, 0x01}},
 	{4, {0x71,0x01,0x03,0x00}}
 };
 
 struct mtk_mode_switch_cmd cmd_table_24fps[] = {
-	{2, {0x6C, 0x00}},
+	{2, {0x6C, 0x01}},
 	{4, {0x71,0x01,0x04,0x00}}
 };
 
 struct mtk_mode_switch_cmd cmd_table_10fps[] = {
-	{2, {0x6C, 0x00}},
+	{2, {0x6C, 0x01}},
 	{4, {0x71,0x01,0x0B,0x00}}
 };
 
 struct mtk_mode_switch_cmd cmd_table_1fps[] = {
-	{2, {0x6C, 0x00}},
+	{2, {0x6C, 0x01}},
 	{4, {0x71,0x01,0x77,0x00}}
 };
 
@@ -370,7 +370,7 @@ static void lcm_panel_init(struct lcm *ctx)
 	lcm_dcs_write_seq_static(ctx, 0x51,0x07,0xff);//Normal mode
 	lcm_dcs_write_seq_static(ctx, 0x59,0x09);  //Demura oN
 	lcm_dcs_write_seq_static(ctx, 0x5e,0x00);
-	lcm_dcs_write_seq_static(ctx, 0x6c,0x00);//120HZ
+	lcm_dcs_write_seq_static(ctx, 0x6c,0x01);//120HZ
 	//lcm_dcs_write_seq_static(ctx, 0x71,0x01,0x01,0x00);//60hz
 	lcm_dcs_write_seq_static(ctx, 0x6d,0x00);
 	lcm_dcs_write_seq_static(ctx, 0x6f,0x02);
@@ -392,7 +392,7 @@ static void lcm_panel_init(struct lcm *ctx)
 	pr_info("%s current_fps:%d\n", __func__, current_fps);
 	switch (current_fps) {
 	case 120:
-		lcm_dcs_write_seq_static(ctx, 0x6C, 0x00);
+		lcm_dcs_write_seq_static(ctx, 0x6C, 0x01);
 		lcm_dcs_write_seq_static(ctx, 0x71, 0x00);
 		break;
 	case 90:
@@ -400,19 +400,19 @@ static void lcm_panel_init(struct lcm *ctx)
 		//lcm_dcs_write_seq_static(ctx, 0x71,0x01,0x01,0x00);
 		break;
 	case 60:
-		lcm_dcs_write_seq_static(ctx, 0x6C, 0x00);
+		lcm_dcs_write_seq_static(ctx, 0x6C, 0x01);
 		lcm_dcs_write_seq_static(ctx, 0x71,0x01,0x01,0x00);
 		break;
 	case 30:
-		lcm_dcs_write_seq_static(ctx, 0x6C, 0x00);
+		lcm_dcs_write_seq_static(ctx, 0x6C, 0x01);
 		lcm_dcs_write_seq_static(ctx, 0x71,0x01,0x03,0x00);
 		break;
 	case 24:
-		lcm_dcs_write_seq_static(ctx, 0x6C, 0x00);
+		lcm_dcs_write_seq_static(ctx, 0x6C, 0x01);
 		lcm_dcs_write_seq_static(ctx, 0x71,0x01,0x04,0x00);
 		break;
 	case 10:
-		lcm_dcs_write_seq_static(ctx, 0x6C, 0x00);
+		lcm_dcs_write_seq_static(ctx, 0x6C, 0x01);
 		lcm_dcs_write_seq_static(ctx, 0x71,0x01,0x0B,0x00);
 		break;
 	default:
