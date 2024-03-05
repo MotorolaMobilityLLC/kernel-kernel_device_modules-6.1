@@ -224,6 +224,21 @@ static int mtk_usb_extcon_set_vbus(struct mtk_extcon_info *extcon,
 	struct device *dev = extcon->dev;
 	int ret;
 
+	if (IS_ERR_OR_NULL(extcon->vbus)) {
+		extcon->vbus = devm_regulator_get(dev, "vbus");
+		if (IS_ERR_OR_NULL(extcon->vbus)) {
+			/* try to get by name */
+			extcon->vbus = devm_regulator_get(dev, "usb-otg-vbus");
+			if (IS_ERR_OR_NULL(extcon->vbus)) {
+				dev_err(dev, "failed to get vbus\n");
+				ret = PTR_ERR(extcon->vbus);
+				extcon->vbus = NULL;
+				return 0;
+			}
+		}
+		vbus = extcon->vbus;
+	}
+
 	/* vbus is optional */
 	if (!vbus || extcon->vbus_on == is_on)
 		return 0;
@@ -255,14 +270,21 @@ static int mtk_usb_extcon_set_vbus(struct mtk_extcon_info *extcon,
 			dev_info(dev, "vbus regulator enable failed\n");
 			return ret;
 		}
+		extcon->vbus_on = regulator_is_enabled(extcon->vbus);
 	} else {
 		regulator_disable(vbus);
+		extcon->vbus_on = regulator_is_enabled(extcon->vbus);
+		dev_info(dev, "vbus regulator release, extcon->vbus_on=%d\n", extcon->vbus_on);
+		devm_regulator_put(extcon->vbus);
+		extcon->vbus = NULL;
 		mmi_mux_typec_otg_chan(MMI_MUX_CHANNEL_TYPEC_OTG, false);
 		/* Restore to default state */
 		extcon->vbus_cur_inlimit = 0;
 	}
 
-	extcon->vbus_on = is_on;
+	if (extcon->vbus_on != is_on) {
+		dev_err(dev, "vbus regulator %s otg failed\n", is_on?"enable":"disable");
+	}
 
 	return 0;
 }
