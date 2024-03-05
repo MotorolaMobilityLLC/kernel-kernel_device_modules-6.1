@@ -30,6 +30,10 @@
        mmi,support_CID;
 };
 
+&charger {
+	mmi,wls-boost-using-otg;
+};
+
 &cps_wls_charger {
 	wireless-tx-support;
 	config-otg-support;
