@@ -5168,6 +5168,9 @@ static int parse_mmi_dt(struct mtk_charger *info, struct device *dev)
 	info->typecotp_charger = of_property_read_bool(node, "mmi,typecotp-charger");
 	pr_info("%s typecotp_charger:%d \n", __func__, info->typecotp_charger);
 
+	info->wls_boost_using_otg = of_property_read_bool(node, "mmi,wls-boost-using-otg");
+	pr_info("%s wls_boost_using_otg:%d \n", __func__, info->wls_boost_using_otg);
+
 	return rc;
 }
 

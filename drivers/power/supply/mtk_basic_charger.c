@@ -847,7 +847,7 @@ static const struct mmi_mux_configure config_mmi_mux[MMI_MUX_CHANNEL_MAX] = {
 	[MMI_MUX_CHANNEL_TYPEC_CHG] = MMI_MUX(MMI_DVCHG_MUX_CHG_OPEN, MMI_DVCHG_MUX_CLOSE, false, false, false),
 	[MMI_MUX_CHANNEL_TYPEC_OTG] = MMI_MUX(MMI_DVCHG_MUX_OTG_OPEN, MMI_DVCHG_MUX_CLOSE, false, true, false),
 	[MMI_MUX_CHANNEL_WLC_CHG] = MMI_MUX(MMI_DVCHG_MUX_CLOSE, MMI_DVCHG_MUX_CHG_OPEN, false, false, true),
-	[MMI_MUX_CHANNEL_WLC_OTG] = MMI_MUX(MMI_DVCHG_MUX_DISABLE, MMI_DVCHG_MUX_DISABLE, true, true, true),
+	[MMI_MUX_CHANNEL_WLC_OTG] = MMI_MUX(MMI_DVCHG_MUX_DISABLE, MMI_DVCHG_MUX_DISABLE, true, false, true),
 	[MMI_MUX_CHANNEL_TYPEC_CHG_WLC_OTG] = MMI_MUX(MMI_DVCHG_MUX_CHG_OPEN, MMI_DVCHG_MUX_CLOSE, true, true, true),
 	[MMI_MUX_CHANNEL_TYPEC_CHG_WLC_CHG] = MMI_MUX(MMI_DVCHG_MUX_CHG_OPEN, MMI_DVCHG_MUX_CLOSE, false, false, false),
 	[MMI_MUX_CHANNEL_TYPEC_OTG_WLC_CHG] = MMI_MUX(MMI_DVCHG_MUX_OTG_OPEN, MMI_DVCHG_MUX_CLOSE, false, true, false),
@@ -880,6 +880,21 @@ static int mmi_mux_config(struct mtk_charger *info, enum mmi_mux_channel channel
 		gpio_set_value(info->mmi.wls_boost_en, config_mmi_mux[channel].wls_boost_en);
 	if(gpio_is_valid(info->mmi.wls_switch_en))
 		gpio_set_value(info->mmi.wls_switch_en, config_mmi_mux[channel].wls_loadswtich_en);
+
+	return 0;
+}
+
+static int mmi_wlc_set_prop(struct mtk_charger *info, enum chg_alg_props s, int en)
+{
+	struct chg_alg_device *alg = NULL;
+
+	alg = get_chg_alg_by_name("wlc");
+	if (!IS_ERR_OR_NULL(alg) && (alg->alg_id & info->fast_charging_indicator)) {
+		pr_info("[%s] %d %d\n", __func__, s, en);
+		chg_alg_set_prop(alg, s, en);
+	} else {
+		pr_info("[%s] not found wlc\n", __func__);
+	}
 
 	return 0;
 }
@@ -929,8 +944,14 @@ static int mmi_mux_switch(struct mtk_charger *info, enum mmi_mux_channel channel
 					info->mmi.mux_channel.chan = MMI_MUX_CHANNEL_TYPEC_CHG_WLC_CHG;
 					info->mmi.mux_channel.on = true;
 				} else if (pre_chan == MMI_MUX_CHANNEL_WLC_OTG) {
-					mmi_mux_config(info, MMI_MUX_CHANNEL_TYPEC_CHG_WLC_OTG);
-					info->mmi.mux_channel.chan = MMI_MUX_CHANNEL_TYPEC_CHG_WLC_OTG;
+					if (info->wls_boost_using_otg) {
+						mmi_wlc_set_prop(info, ALG_WLC_TX_MODE, 0);
+						mmi_mux_config(info, MMI_MUX_CHANNEL_TYPEC_CHG);
+						info->mmi.mux_channel.chan = MMI_MUX_CHANNEL_TYPEC_CHG;
+					} else {
+						mmi_mux_config(info, MMI_MUX_CHANNEL_TYPEC_CHG_WLC_OTG);
+						info->mmi.mux_channel.chan = MMI_MUX_CHANNEL_TYPEC_CHG_WLC_OTG;
+					}
 					info->mmi.mux_channel.on = true;
 				} else {
 					mmi_mux_config(info, MMI_MUX_CHANNEL_TYPEC_CHG);
@@ -960,9 +981,15 @@ static int mmi_mux_switch(struct mtk_charger *info, enum mmi_mux_channel channel
 					info->mmi.mux_channel.chan = MMI_MUX_CHANNEL_TYPEC_OTG_WLC_CHG;
 					info->mmi.mux_channel.on = true;
 				} else if (pre_chan == MMI_MUX_CHANNEL_WLC_OTG) {
-					mmi_mux_config(info, MMI_MUX_CHANNEL_TYPEC_OTG_WLC_OTG);
-					info->mmi.mux_channel.chan = MMI_MUX_CHANNEL_TYPEC_OTG_WLC_OTG;
-					info->mmi.mux_channel.on = true;
+					if (info->wls_boost_using_otg) {
+						mmi_wlc_set_prop(info, ALG_WLC_TX_MODE, 0);
+						mmi_mux_config(info, MMI_MUX_CHANNEL_TYPEC_OTG);
+						info->mmi.mux_channel.chan = MMI_MUX_CHANNEL_TYPEC_OTG;
+					} else {
+						mmi_mux_config(info, MMI_MUX_CHANNEL_TYPEC_OTG_WLC_OTG);
+						info->mmi.mux_channel.chan = MMI_MUX_CHANNEL_TYPEC_OTG_WLC_OTG;
+					}
+ 					info->mmi.mux_channel.on = true;
 				} else {
 					mmi_mux_config(info, MMI_MUX_CHANNEL_TYPEC_OTG);
 					info->mmi.mux_channel.chan = MMI_MUX_CHANNEL_TYPEC_OTG;
