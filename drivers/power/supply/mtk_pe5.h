@@ -336,6 +336,8 @@ extern int pe50_hal_get_aicr(struct chg_alg_device *alg, enum chg_idx chgidx,
 			     u32 *mA);
 extern int pe50_hal_is_vbuslowerr(struct chg_alg_device *alg,
 				  enum chg_idx chgidx, bool *err);
+extern int pe50_hal_is_vbushigherr(struct chg_alg_device *alg,
+				  enum chg_idx chgidx, bool *err);
 extern int pe50_hal_get_adc_accuracy(struct chg_alg_device *alg,
 				     enum chg_idx chgidx,
 				     enum pe50_adc_channel chan, int *val);
