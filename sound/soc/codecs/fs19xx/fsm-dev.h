@@ -22,7 +22,9 @@
 #define CONFIG_FSM_I2C
 //#define CONFIG_FSM_Q6AFE
 //#define CONFIG_FSM_SYSCAL
+#ifdef CONFIG_SND_SOC_FS19XX
 #define CONFIG_FSM_MTK
+#endif
 #endif
 
 /* device chip select: */

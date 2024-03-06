@@ -184,4 +184,10 @@ config FSA4480_I2C_DF
 	  signal, analog audio, sideband use wires and analog
 	  microphone signal.
 
+config SND_SOC_FS19XX
+	tristate "FourSemi FS19xx speaker amplifier"
+	depends on I2C
+	default n
+	help
+	  Config of FourSemi FS19xx speaker amplifier.
 endmenu
