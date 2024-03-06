@@ -396,7 +396,7 @@ static int fsm_mute_stream(struct snd_soc_dai *dai, int mute, int stream)
 	} else {
 		fsm_monitor_switch(fsm_get_config()->next_scene, true);
 		fsm_speaker_onn();
-		//fsm_afe_mod_ctrl(true);
+		fsm_afe_mod_ctrl(true);
 	}
 
 	return 0;
