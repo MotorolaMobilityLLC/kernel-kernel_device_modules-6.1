@@ -1282,7 +1282,7 @@ static void mode_switch_to_60(struct drm_panel *panel,
 		lcm_dcs_write_seq_static(ctx, 0x6D, 0x00, 0x00);
 
 		lcm_dcs_write_seq_static(ctx, 0x6F, 0x06);
-		lcm_dcs_write_seq_static(ctx, 0x6D, 0x07);
+		lcm_dcs_write_seq_static(ctx, 0x6D, 0x03);
 
 		lcm_dcs_write_seq_static(ctx, 0xF0, 0x55, 0xAA, 0x52, 0x08, 0x00);
 		lcm_dcs_write_seq_static(ctx, 0x6F, 0x08);
