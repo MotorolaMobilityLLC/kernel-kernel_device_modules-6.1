@@ -1692,9 +1692,12 @@ static int tfa98xx_get_fade_ctl(struct snd_kcontrol *kcontrol,
 	return 0;
 }
 
+//value = 1 , set flag to let mute 0 start ramp thread.
+//value = 2 , force ramp even speaker had opened.
 static int tfa98xx_set_fade_ctl(struct snd_kcontrol *kcontrol,
 	struct snd_ctl_elem_value *ucontrol)
 {
+
 	if(is_fading ==1) {
 	    return 1;
 	}
@@ -1705,18 +1708,22 @@ static int tfa98xx_set_fade_ctl(struct snd_kcontrol *kcontrol,
 	if(2 == ucontrol->value.integer.value[0]) {
 	    if (fade_status == 0 ) {
 	        if(mute_status == 0) {
-		        tfa98xx_fade_task();
-		} else {
+	            if (!IS_ERR_OR_NULL(fade_thrd)) {
+	                kthread_stop(fade_thrd);
+	                fade_thrd = NULL;
+	            }
+	            tfa98xx_fade_task();
+	        } else {
 	            fade_status  = 1;
-		}
+	        }
 	    }
 	} else {
-        if(mute_status == 0) {
+            if(mute_status == 0) {
 	        fade_status = 0;
-        } else {
-            fade_status = ucontrol->value.integer.value[0];
+            } else {
+                fade_status = ucontrol->value.integer.value[0];
+            }
         }
-    }
 
 	mutex_unlock(&tfa98xx_mutex);
 
@@ -2761,12 +2768,19 @@ static int tfa98xx_fade_thread(void *data)
 	unsigned int times = 0;
 	is_fading = 1;
 	for(times = 1; times < g_step; times++){
-        pr_info("tfa98xx_send_volume %d times =%d",tfa98xx_volume_tab[times],times);
+                pr_info("tfa98xx_send_volume %d times =%d",tfa98xx_volume_tab[times],times);
 		tfa98xx_send_volume(tfa98xx_volume_tab[times], 0x00);
 		msleep(tfa98xx_volume_tab[0]);
-		//TODO
 	}
+
 	is_fading = 0;
+
+	do {
+	    msleep(1000);
+	}while(!kthread_should_stop());
+
+	pr_info("success stop fade thread");
+
 	return 0;
 }
 
@@ -3158,11 +3172,14 @@ static int tfa98xx_send_volume(uint8_t volume_l, uint8_t volume_r)
 
 static int tfa98xx_send_mute_cmd(void)
 {
-	//uint8_t cmd[9] = {0x04, 0x81, 0x04, 0x00, 0x00, 0xff, 0x00, 0x00, 0xff};
+	uint8_t cmd[9] = {0x00, 0x81, 0x04, 0x00, 0x00, 0xff, 0x00, 0x00, 0xff};
 
-	//pr_info("send mute command to host DSP.\n");
-	//return tfa98xx_send_data_to_dsp(&cmd[0], sizeof(cmd));
-	return 0;
+	if (tfa98xx_device_count == 1)
+		cmd[0] = 0x04;
+
+	pr_info("send mute command to host DSP.\n");
+	return tfa98xx_send_data_to_dsp(&cmd[0], sizeof(cmd));
+	//return 0;
 }
 #endif
 
@@ -3187,6 +3204,12 @@ static int tfa98xx_mute(struct snd_soc_dai *dai, int mute, int stream)
 		/* stop DSP only when both playback and capture streams
 		 * are deactivated
 		 */
+
+		if (!IS_ERR_OR_NULL(fade_thrd)) {
+			kthread_stop(fade_thrd);
+			fade_thrd = NULL;
+		}
+
 		if (stream == SNDRV_PCM_STREAM_PLAYBACK)
 			tfa98xx->pstream = 0;
 		else
