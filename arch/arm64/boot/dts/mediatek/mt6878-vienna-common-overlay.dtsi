@@ -74,9 +74,12 @@
 };
 
 &u2port0{
-	mediatek,eye-vrt = <7>;
-	mediatek,eye-term = <7>;
-	mediatek,rev6 = <3>;
+	mediatek,eye-vrt = <0x64>;
+	mediatek,eye-vrt-host = <0x64>;
+	mediatek,eye-term = <0x64>;
+	mediatek,eye-term-host = <0x64>;
+	mediatek,rev6 = <0xa>;
+	mediatek,rev6-host = <0xa>;
 };
 
 /* BOB */
