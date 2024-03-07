@@ -33,8 +33,9 @@
 #define CAM_CAL_ERR_DUMP_FAILED     0x00200000
 #define CAM_CAL_ERR_NO_LENS_ID      0x00400000
 #define CAM_CAL_ERR_NO_SHADING_16_9 0x00800000
+#define CAM_CAL_ERR_NO_MOT_MNF_INFO 0x01000000
 
-#define CamCalReturnErr_MAX 8
+#define CamCalReturnErr_MAX 9
 
 /*****************************************************************************
  * Enums
@@ -305,7 +306,8 @@ static const unsigned int CamCalReturnErr[CAMERA_CAM_CAL_DATA_LIST] = {
 	CAM_CAL_ERR_NO_Stereo_Data,
 	CAM_CAL_ERR_DUMP_FAILED,
 	CAM_CAL_ERR_NO_LENS_ID,
-	CAM_CAL_ERR_NO_SHADING_16_9
+	CAM_CAL_ERR_NO_SHADING_16_9,
+	CAM_CAL_ERR_NO_MOT_MNF_INFO
 };
 
 static const char CamCalErrString[CAMERA_CAM_CAL_DATA_LIST][24] = {
@@ -317,7 +319,8 @@ static const char CamCalErrString[CAMERA_CAM_CAL_DATA_LIST][24] = {
 	{"ERR_NO_Stereo_Data"},
 	{"ERR_Dump_Failed"},
 	{"ERR_NO_LENS_ID"},
-	{"ERR_NO_SHADING_16_9"}
+	{"ERR_NO_SHADING_16_9"},
+	{"ERR_NO_MOT_MNF_INFO"}
 };
 
 #endif /* __CAM_CAL_FORMAT_H */
