@@ -1479,6 +1479,13 @@ static int mtk_drm_idlemgr_monitor_thread(void *data)
 
 		DDP_MUTEX_LOCK(&mtk_crtc->lock, __func__, __LINE__);
 
+		if (mtk_crtc->skip_idle == 1)
+		{
+		    DDP_MUTEX_UNLOCK(&mtk_crtc->lock, __func__, __LINE__);
+		    DDPMSG("[LP] Skip enter idle\n");
+		    continue;
+		}
+
 		if (!mtk_crtc->enabled) {
 			DDP_MUTEX_UNLOCK(&mtk_crtc->lock, __func__, __LINE__);
 			mtk_crtc_wait_status(crtc, 1, MAX_SCHEDULE_TIMEOUT);
