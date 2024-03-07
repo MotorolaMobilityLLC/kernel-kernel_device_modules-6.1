@@ -138,7 +138,7 @@
 		"oled_vci_en_gpio", "oled_vio_en_gpio",
 		"oled_dvdd_en0_gpio", "oled_dvdd_en1_gpio",
 
-		"lcm1_rst_out0_gpio", "lcm1_mode_te_te",
+		"lcm1_rst_out0_gpio", "mode_te_te1",
 		"oled1_vci_en_gpio", "oled1_vio_en_gpio",
 		"oled1_dvdd_en0_gpio", "oled1_dvdd_en1_gpio";
 
