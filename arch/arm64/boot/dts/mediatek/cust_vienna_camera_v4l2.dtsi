@@ -317,6 +317,12 @@
 		};
 	};
 
+	mtk_camera_eeprom0:camera-eeprom0@50 {
+		compatible = "mediatek,camera_eeprom";
+		reg = <0x50>;
+		status = "okay";
+	};
+
 	sensor0: sensor0@20 {
 		compatible = "mediatek,imgsensor";
 		sensor-names = "mot_vienna_imx896_mipi_raw";
