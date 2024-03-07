@@ -75,39 +75,6 @@ mgk_64_k61_kleaf_modules = [
     "//vendor/mediatek/kernel_modules/mtkcam/scpsys/mtk-aov:mtk_aov",
     "//vendor/mediatek/kernel_modules/sched_cus:sched_cus",
     "//vendor/mediatek/kernel_modules/sched_int:sched_int",
-    "//motorola/kernel/modules/drivers/misc/awinic/aw86927:aw86927",
-    "//motorola/kernel/modules/drivers/misc/foursemi/fs3001:fs3001",
-    "//motorola/kernel/modules/drivers/misc/utag:utags",
-    "//motorola/kernel/modules/drivers/mmi_info:mmi_info",
-    "//motorola/kernel/modules/drivers/mmi_relay:mmi_relay",
-    "//motorola/kernel/modules/drivers/moto_swap:moto_swap",
-    "//motorola/kernel/modules/drivers/moto_sched:moto_sched",
-    "//motorola/kernel/modules/drivers/moto_mmap_fault:moto_mmap_fault",
-    "//motorola/kernel/modules/drivers/moto_f_usbnet:moto_f_usbnet",
-    "//motorola/kernel/modules/drivers/input/misc/fpc_fps_mmi:fpc_mtk_tee",
-    "//motorola/kernel/modules/drivers/nfc/st54lnfc/st21nfc:st54lnfc",
-    "//motorola/kernel/modules/drivers/nfc/st54lnfc/st54spi:st54lspi",
-    "//motorola/kernel/modules/drivers/power/mmi_gauge_class:mmi_gauge_class",
-    "//motorola/kernel/modules/drivers/power/smart_battery:smart_battery",
-    "//motorola/kernel/modules/drivers/power/cw2217b_fg_mmi:cw2217b_fg_mmi",
-    "//motorola/kernel/modules/drivers/power/nfg1000_fg_mmi:nfg1000_fg_mmi",
-    "//motorola/kernel/modules/drivers/sensors:sensors_class",
-    "//motorola/kernel/modules/drivers/misc/sx937x_multi:sx937x_multi",
-    "//motorola/kernel/modules/drivers/misc/sx937x:sx937x_sar",
-    "//motorola/kernel/modules/drivers/misc/awinic/sarsensor:awinic_sar",
-    "//motorola/kernel/modules/drivers/power/sc760x_charger_mmi:sc760x_charger_mmi",
-    "//motorola/kernel/modules/drivers/power/wt6670f_qc3p_mmi:wt6670f_qc3p_mmi",
-    "//motorola/kernel/modules/drivers/power/sc8549d:sc8546d_charger",
-    "//motorola/kernel/modules/drivers/power/bq25980_mmi:bq25980_mmi",
-    "//motorola/kernel/modules/drivers/power/mmi_pephv:mmi_pephv",
-    "//motorola/kernel/modules/drivers/power/cps4041_mmi:cps4041_mmi",
-    "//motorola/kernel/modules/drivers/power/cps4038_mmi:cps4038_mmi",
-    "//motorola/kernel/modules/drivers/power/qpnp_adaptive_charge:qpnp_adaptive_charge",
-    "//motorola/kernel/modules/drivers/input/touchscreen/goodix_berlin_u_mmi:goodix_brl_u_mmi",
-    "//motorola/kernel/modules/drivers/input/touchscreen/touchscreen_u_mmi:touchscreen_u_mmi",
-    "//motorola/kernel/modules/drivers/input/touchscreen/goodix_gt96x_u_mmi:goodix_gt96x_u_mmi",
-    "//motorola/kernel/modules/drivers/input/misc/ets_fod_mmi_u:ets_fod_mmi_u",
-    "//motorola/kernel/modules/drivers/input/misc/anc_fps_mmi:anc_fps_mmi",
 ]
 
 mgk_64_k61_kleaf_eng_modules = [
@@ -210,12 +177,6 @@ mgk_64_k61_device_modules = [
     "drivers/gpu/drm/panel/panel-boe-ts127qfmll1dkp0-120hz.ko",
     "drivers/gpu/drm/panel/panel-nt37707-667-fhdp-dphy-cmd.ko",
     "drivers/gpu/drm/panel/panel-nt37705-1056-1068-dphy-cmd.ko",
-    "drivers/gpu/drm/panel/dsi-panel-mot-csot-nt37707-667-fhdp-dphy-cmd.ko",
-    "drivers/gpu/drm/panel/dsi-panel-mot-tianma-nt37707-667-fhdp-dphy-cmd.ko",
-    "drivers/gpu/drm/panel/dsi-panel-mot-csot-nt37705-1056x1066-dphy-cmd-cli.ko",
-    "drivers/gpu/drm/panel/dsi-panel-mot-csot-vtdr6130-636-fhdp-dphy-cmd-120hz.ko",
-    "drivers/gpu/drm/panel/dsi-panel-mot-dummy-vdo-60hz.ko",
-    "drivers/gpu/drm/panel/dsi-panel-mot-dummy-cmd-60hz.ko",
     "drivers/gpu/mediatek/ged/ged.ko",
     "drivers/gpu/mediatek/gpu_bm/mtk_gpu_qos.ko",
     "drivers/gpu/mediatek/gpueb/gpueb.ko",
@@ -324,11 +285,9 @@ mgk_64_k61_device_modules = [
     "drivers/misc/mediatek/extcon/extcon-mtk-usb.ko",
     "drivers/misc/mediatek/flashlight/flashlight.ko",
     "drivers/misc/mediatek/flashlight/mtk-composite.ko",
-    "drivers/misc/mediatek/flashlight/flashlights-ocp81373.ko",
     "drivers/misc/mediatek/flashlight/v4l2/k6983v1_64_alpha/sy7806.ko",
     "drivers/misc/mediatek/flashlight/v4l2/lm3643.ko",
     "drivers/misc/mediatek/flashlight/v4l2/lm3644.ko",
-    "drivers/misc/mediatek/flashlight/v4l2/aw36518.ko",
     "drivers/misc/mediatek/gate_ic/rt4831a_drv.ko",
     "drivers/misc/mediatek/geniezone/gz_main_mod.ko",
     "drivers/misc/mediatek/geniezone/gz-trusty/gz_ipc_mod.ko",
@@ -370,8 +329,6 @@ mgk_64_k61_device_modules = [
     "drivers/misc/mediatek/lens/vcm/v4l2/main4_vcm/main4_vcm.ko",
     "drivers/misc/mediatek/lens/ois/dw9781c/dw9781c.ko",
     "drivers/misc/mediatek/lens/ois/dw9781d/dw9781d.ko",
-    "drivers/misc/mediatek/lens/ois/mot_dw9784/mot_dw9784.ko",
-    "drivers/misc/mediatek/lens/ois/mot_tele_dw9784/mot_tele_dw9784.ko",
     "drivers/misc/mediatek/lens/vcm/v4l2/media/camera_af_media.ko",
     "drivers/misc/mediatek/lens/vcm/v4l2/sub_vcm/sub_vcm.ko",
     "drivers/misc/mediatek/log_store/log_store.ko",
@@ -517,7 +474,6 @@ mgk_64_k61_device_modules = [
     "drivers/misc/mediatek/typec/tcpc/tcpc_mt6360.ko",
     "drivers/misc/mediatek/typec/tcpc/tcpc_mt6375.ko",
     "drivers/misc/mediatek/typec/tcpc/tcpc_rt1711h.ko",
-    "drivers/misc/mediatek/typec/mux/fsa4480-i2c.ko",
     "drivers/misc/mediatek/uarthub/uarthub_drv.ko",
     "drivers/misc/mediatek/usb/c2k_usb/c2k_usb.ko",
     "drivers/misc/mediatek/usb/c2k_usb/c2k_usb_f_via_atc.ko",
@@ -558,7 +514,6 @@ mgk_64_k61_device_modules = [
     "drivers/pinctrl/mediatek/pinctrl-mt8188.ko",
     "drivers/pinctrl/mediatek/pinctrl-mtk-common-v2_debug.ko",
     "drivers/pinctrl/mediatek/pinctrl-mtk-v2.ko",
-    "drivers/power/supply/moto_chg_tcmd.ko",
     "drivers/power/supply/adapter_class.ko",
     "drivers/power/supply/charger_class.ko",
     "drivers/power/supply/k6985v1_64_alpha/bq2579x.ko",
@@ -580,7 +535,6 @@ mgk_64_k61_device_modules = [
     "drivers/power/supply/mtk_pep45.ko",
     "drivers/power/supply/mtk_pep50.ko",
     "drivers/power/supply/mtk_pep50p.ko",
-    "drivers/power/supply/moto_wlc_alg.ko",
     "drivers/power/supply/rt9490-charger.ko",
     "drivers/power/supply/rt9758-charger.ko",
     "drivers/power/supply/rt9759.ko",
@@ -599,12 +553,7 @@ mgk_64_k61_device_modules = [
     "drivers/regulator/mtk-vmm-isp71-regulator.ko",
     "drivers/regulator/rt4803.ko",
     "drivers/regulator/rt5133-regulator.ko",
-    "drivers/regulator/et5904.ko",
-    "drivers/regulator/et59041c.ko",
     "drivers/regulator/rt6160-regulator.ko",
-    "drivers/regulator/wl2864c-regulator.ko",
-    "drivers/regulator/hl7603-regulator.ko",
-    "drivers/regulator/cam_sgm62110-regulator.ko",
     "drivers/remoteproc/mtk_ccu.ko",
     "drivers/remoteproc/mtk_ccu_mssv.ko",
     "drivers/reset/reset-ti-syscon.ko",
@@ -656,14 +605,13 @@ mgk_64_k61_device_modules = [
     "sound/soc/codecs/mt6368-accdet.ko",
     "sound/soc/codecs/mt6369-accdet.ko",
     "sound/soc/codecs/mt6681-accdet.ko",
-    "sound/soc/codecs/fs19xx/snd-soc-fs19xx.ko",
     "sound/soc/codecs/richtek/richtek_spm_cls.ko",
     "sound/soc/codecs/richtek/snd-soc-rt5512.ko",
     "sound/soc/codecs/snd-soc-mt6338.ko",
     "sound/soc/codecs/snd-soc-mt6368.ko",
     "sound/soc/codecs/snd-soc-mt6369.ko",
     "sound/soc/codecs/snd-soc-mt6681.ko",
-    "sound/soc/codecs/tfa9865/snd-soc-tfa9865.ko",
+    "sound/soc/codecs/tfa98xx/snd-soc-tfa98xx.ko",
     "sound/soc/mediatek/audio_dsp/mtk-soc-offload-common.ko",
     "sound/soc/mediatek/audio_dsp/snd-soc-audiodsp-common.ko",
     "sound/soc/mediatek/audio_scp/mtk-scp-audiocommon.ko",
@@ -911,6 +859,108 @@ mgk_64_k61_platform_device_user_modules = {
 
 
 def get_overlay_modules_list():
+    if "moto" in DEFCONFIG_OVERLAYS:
+        mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/misc/utag:utags")
+        mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/mmi_info:mmi_info")
+        mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/mmi_relay:mmi_relay")
+        mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/moto_swap:moto_swap")
+        mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/moto_sched:moto_sched")
+        mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/moto_mmap_fault:moto_mmap_fault")
+        mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/moto_f_usbnet:moto_f_usbnet")
+
+    if "aito" in DEFCONFIG_OVERLAYS:
+        mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/misc/awinic/aw86927:aw86927")
+        mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/input/misc/fpc_fps_mmi:fpc_mtk_tee")
+        mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/nfc/st54lnfc/st21nfc:st54lnfc")
+        mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/nfc/st54lnfc/st54spi:st54lspi")
+        mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/power/mmi_gauge_class:mmi_gauge_class")
+        mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/power/smart_battery:smart_battery")
+        mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/power/cw2217b_fg_mmi:cw2217b_fg_mmi")
+        mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/sensors:sensors_class")
+        mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/misc/sx937x_multi:sx937x_multi")
+        mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/power/sc760x_charger_mmi:sc760x_charger_mmi")
+        mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/power/wt6670f_qc3p_mmi:wt6670f_qc3p_mmi")
+        mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/power/sc8549d:sc8546d_charger")
+        mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/power/bq25980_mmi:bq25980_mmi")
+        mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/power/mmi_pephv:mmi_pephv")
+        mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/power/cps4041_mmi:cps4041_mmi")
+	mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/power/qpnp_adaptive_charge:qpnp_adaptive_charge")
+        mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/input/touchscreen/goodix_berlin_u_mmi:goodix_brl_u_mmi")
+        mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/input/touchscreen/touchscreen_u_mmi:touchscreen_u_mmi")
+        mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/input/touchscreen/goodix_gt96x_u_mmi:goodix_gt96x_u_mmi")
+        mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/input/misc/ets_fod_mmi_u:ets_fod_mmi_u")
+        mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/input/misc/anc_fps_mmi:anc_fps_mmi")
+
+        mgk_64_k61_device_modules.append("drivers/gpu/drm/panel/dsi-panel-mot-csot-nt37707-667-fhdp-dphy-cmd.ko")
+        mgk_64_k61_device_modules.append("drivers/gpu/drm/panel/dsi-panel-mot-tianma-nt37707-667-fhdp-dphy-cmd.ko")
+        mgk_64_k61_device_modules.append("drivers/gpu/drm/panel/dsi-panel-mot-csot-nt37705-1056x1066-dphy-cmd-cli.ko")
+        mgk_64_k61_device_modules.append("drivers/gpu/drm/panel/dsi-panel-mot-dummy-vdo-60hz.ko")
+        mgk_64_k61_device_modules.append("drivers/gpu/drm/panel/dsi-panel-mot-dummy-cmd-60hz.ko")
+        mgk_64_k61_device_modules.append("drivers/misc/mediatek/flashlight/v4l2/aw36518.ko")
+        mgk_64_k61_device_modules.append("drivers/misc/mediatek/lens/ois/mot_dw9784/mot_dw9784.ko")
+        mgk_64_k61_device_modules.append("drivers/power/supply/moto_chg_tcmd.ko")
+        mgk_64_k61_device_modules.append("drivers/power/supply/moto_wlc_alg.ko")
+        mgk_64_k61_device_modules.append("drivers/regulator/wl2864c-regulator.ko")
+        mgk_64_k61_device_modules.append("drivers/regulator/hl7603-regulator.ko")
+        mgk_64_k61_device_modules.append("drivers/regulator/cam_sgm62110-regulator.ko")
+        mgk_64_k61_device_modules.append("sound/soc/codecs/tfa9865/snd-soc-tfa9865.ko")
+
+        mgk_64_k61_device_modules.remove("sound/soc/codecs/tfa98xx/snd-soc-tfa98xx.ko")
+        mgk_64_k61_device_modules.append("drivers/misc/mediatek/lens/ois/mot_tele_dw9784/mot_tele_dw9784.ko")
+
+    if "vienna" in DEFCONFIG_OVERLAYS:
+        mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/misc/awinic/aw86927:aw86927")
+        mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/input/misc/fpc_fps_mmi:fpc_mtk_tee")
+        mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/nfc/st54lnfc/st21nfc:st54lnfc")
+        mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/nfc/st54lnfc/st54spi:st54lspi")
+        mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/power/mmi_gauge_class:mmi_gauge_class")
+        mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/power/smart_battery:smart_battery")
+        mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/power/cw2217b_fg_mmi:cw2217b_fg_mmi")
+        mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/sensors:sensors_class")
+        mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/misc/sx937x_multi:sx937x_multi")
+        mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/power/sc760x_charger_mmi:sc760x_charger_mmi")
+        mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/power/wt6670f_qc3p_mmi:wt6670f_qc3p_mmi")
+        mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/power/sc8549d:sc8546d_charger")
+        mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/power/bq25980_mmi:bq25980_mmi")
+        mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/power/mmi_pephv:mmi_pephv")
+        mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/power/cps4041_mmi:cps4041_mmi")
+        mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/input/touchscreen/goodix_berlin_u_mmi:goodix_brl_u_mmi")
+        mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/input/touchscreen/touchscreen_u_mmi:touchscreen_u_mmi")
+        mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/input/touchscreen/goodix_gt96x_u_mmi:goodix_gt96x_u_mmi")
+        mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/input/misc/ets_fod_mmi_u:ets_fod_mmi_u")
+        mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/input/misc/anc_fps_mmi:anc_fps_mmi")
+
+        mgk_64_k61_device_modules.append("drivers/gpu/drm/panel/dsi-panel-mot-csot-nt37707-667-fhdp-dphy-cmd.ko")
+        mgk_64_k61_device_modules.append("drivers/gpu/drm/panel/dsi-panel-mot-tianma-nt37707-667-fhdp-dphy-cmd.ko")
+        mgk_64_k61_device_modules.append("drivers/gpu/drm/panel/dsi-panel-mot-csot-nt37705-1056x1066-dphy-cmd-cli.ko")
+        mgk_64_k61_device_modules.append("drivers/gpu/drm/panel/dsi-panel-mot-dummy-vdo-60hz.ko")
+        mgk_64_k61_device_modules.append("drivers/gpu/drm/panel/dsi-panel-mot-dummy-cmd-60hz.ko")
+        mgk_64_k61_device_modules.append("drivers/misc/mediatek/flashlight/v4l2/aw36518.ko")
+        mgk_64_k61_device_modules.append("drivers/misc/mediatek/lens/ois/mot_dw9784/mot_dw9784.ko")
+        mgk_64_k61_device_modules.append("drivers/power/supply/moto_chg_tcmd.ko")
+        mgk_64_k61_device_modules.append("drivers/power/supply/moto_wlc_alg.ko")
+        mgk_64_k61_device_modules.append("drivers/regulator/wl2864c-regulator.ko")
+        mgk_64_k61_device_modules.append("drivers/regulator/hl7603-regulator.ko")
+        mgk_64_k61_device_modules.append("drivers/regulator/cam_sgm62110-regulator.ko")
+        mgk_64_k61_device_modules.append("sound/soc/codecs/tfa9865/snd-soc-tfa9865.ko")
+
+        mgk_64_k61_device_modules.remove("sound/soc/codecs/tfa98xx/snd-soc-tfa98xx.ko")
+
+        #new product
+        mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/misc/awinic/sarsensor:awinic_sar")
+        mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/misc/foursemi/fs3001:fs3001")
+        mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/misc/sx937x:sx937x_sar")
+        mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/power/cps4038_mmi:cps4038_mmi")
+        mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/power/nfg1000_fg_mmi:nfg1000_fg_mmi")
+
+        mgk_64_k61_device_modules.append("drivers/gpu/drm/panel/dsi-panel-mot-csot-vtdr6130-636-fhdp-dphy-cmd-120hz.ko")
+        mgk_64_k61_device_modules.append("drivers/misc/mediatek/flashlight/flashlights-ocp81373.ko")
+        mgk_64_k61_device_modules.append("drivers/misc/mediatek/lens/ois/mot_tele_dw9784/mot_tele_dw9784.ko")
+        mgk_64_k61_device_modules.append("drivers/misc/mediatek/typec/mux/fsa4480-i2c.ko")
+        mgk_64_k61_device_modules.append("drivers/regulator/et5904.ko")
+        mgk_64_k61_device_modules.append("drivers/regulator/et59041c.ko")
+        mgk_64_k61_device_modules.append("sound/soc/codecs/fs19xx/snd-soc-fs19xx.ko")
+
     if "fpga.config" in DEFCONFIG_OVERLAYS:
         mgk_64_k61_kleaf_modules.remove("//vendor/mediatek/kernel_modules/fpsgo_cus:fpsgo_cus")
         mgk_64_k61_kleaf_modules.remove("//vendor/mediatek/kernel_modules/fpsgo_int:fpsgo_int")
