@@ -1034,6 +1034,8 @@ struct mtk_drm_crtc {
 
 	bool already_first_config;
 	atomic_t already_config;
+	bool skip_update;
+	bool skip_idle;
 
 	bool layer_rec_en;
 	unsigned int mode_change_index;

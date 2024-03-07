@@ -24,6 +24,7 @@
 
 #define MTK_DRM_PLANE_SCALING_MIN 16
 #define MTK_DRM_PLANE_SCALING_MAX (1 << 16)
+#define MTK_DRM_CRTC0_SKIP_FRAME_N 1
 
 static const u32 formats[] = {
 	DRM_FORMAT_C8,       DRM_FORMAT_XRGB8888, DRM_FORMAT_XBGR8888,
@@ -448,6 +449,7 @@ static void mtk_plane_atomic_update(struct drm_plane *plane,
 	unsigned int crtc_index = 0;
 	char dbg_msg[512] = {0};
 	int written = 0;
+	static int cnt;
 	struct total_tile_overhead_v to_v_info;
 
 	if (!crtc)
@@ -693,12 +695,25 @@ static void mtk_plane_atomic_update(struct drm_plane *plane,
 
 	if (mtk_plane_state->pending.format == DRM_FORMAT_RGB332) {
 		skip_update = 1;
+		mtk_crtc->skip_update = 1;
+		DDPMSG("skip first RGB332 cnt %d\n", cnt);
 		/* workaround for skip plane update and trigger hwc set crtc in discrete*/
 		if (mtk_crtc->path_data->is_discrete_path) {
 			mtk_crtc->skip_frame = true;
 			DDPMSG("skip setcrtc trigger\n");
 		}
+		cnt ++;
 	}
+	else if (cnt < MTK_DRM_CRTC0_SKIP_FRAME_N) {
+	   skip_update = 0;
+	   mtk_crtc->skip_update = 1;
+	   cnt ++;
+	}
+	else {
+	   mtk_crtc->skip_idle = 0;
+	}
+	DDPINFO("%s: skip_update=%d cnt %d\n", __func__, skip_update, cnt);
+
 	/* workaround for skip plane update when hwc set crtc */
 	if (skip_update == 0)
 		mtk_drm_crtc_plane_update(crtc, plane, mtk_plane_state);
