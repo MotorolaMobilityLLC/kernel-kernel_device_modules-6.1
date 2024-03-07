@@ -270,6 +270,8 @@ struct mt6375_chg_data {
 	struct regulator *otp_mos_reg;
 	const char *otp_mos_reg_name;
 	struct regulator *otg;
+
+	struct adapter_device *pd_adapter;
 };
 
 struct mt6375_chg_platform_data {
@@ -1114,6 +1116,35 @@ static bool is_usb_rdy(struct device *dev)
 	return ready;
 }
 
+static bool is_pd_rdy(struct mt6375_chg_data *ddata)
+{
+	int type = 0;
+
+	if (IS_ERR_OR_NULL(ddata)) {
+		pr_err("%s:ddata is ERR or NULL\n", __func__);
+		return false;
+	}
+
+	if (IS_ERR_OR_NULL(ddata->pd_adapter)) {
+		ddata->pd_adapter = get_adapter_by_name("pd_adapter");
+		if (IS_ERR_OR_NULL(ddata->pd_adapter)) {
+			pr_err("%s: No pd adapter found\n", __func__);
+			return false;
+		}
+	}
+
+	type = adapter_dev_get_property(ddata->pd_adapter, PD_TYPE);
+
+	pr_info("%s pd_type:%d\n", __func__, type);
+
+	if (type == MTK_PD_CONNECT_PE_READY_SNK_APDO ||
+		type == MTK_PD_CONNECT_PE_READY_SNK ||
+		type == MTK_PD_CONNECT_PE_READY_SNK_PD30)
+		return true;
+	else
+		return false;
+}
+
 static int mt6375_chg_enable_bc12(struct mt6375_chg_data *ddata, bool en)
 {
 	int i, ret, attach;
@@ -1224,7 +1255,7 @@ static void mt6375_chg_bc12_work_func(struct work_struct *work)
 		ddata->psy_type[active_idx] = POWER_SUPPLY_TYPE_USB_DCP;
 		ddata->psy_usb_type[active_idx] = POWER_SUPPLY_USB_TYPE_DCP;
 		if (ddata->qc_dev)
-			schedule_delayed_work(&ddata->detect_qc_dwork, 0);
+			schedule_delayed_work(&ddata->detect_qc_dwork, msecs_to_jiffies(2000));
 		break;
 	case PORT_STAT_DCP:
 		ddata->psy_desc.type = POWER_SUPPLY_TYPE_USB_DCP;
@@ -1232,7 +1263,7 @@ static void mt6375_chg_bc12_work_func(struct work_struct *work)
 		ddata->psy_usb_type[active_idx] = POWER_SUPPLY_USB_TYPE_DCP;
 		bc12_en = false;
 		if (ddata->qc_dev)
-			schedule_delayed_work(&ddata->detect_qc_dwork, 0);
+			schedule_delayed_work(&ddata->detect_qc_dwork, msecs_to_jiffies(2000)); //2s for wait PD detected complete
 
 		break;
 	case PORT_STAT_SDP:
@@ -2279,6 +2310,7 @@ void get_qc_charger_type_func_work(struct work_struct *work)
 	int early_chg_type = 0;
 	int count = 0;
 	int ret;
+	int vbus_uv = 0;
 	union power_supply_propval val;
 
 	detect_qc_dwork = container_of(work, struct delayed_work, work);
@@ -2294,6 +2326,19 @@ void get_qc_charger_type_func_work(struct work_struct *work)
 
 	if (!ddata->qc_dev) {
 		pr_err("qc protocol ic dev is not ready, exit \n");
+		return;
+	}
+
+	if (!IS_ERR_OR_NULL(ddata->chgdev)) {
+		ret = mt6375_get_vbus(ddata->chgdev, &vbus_uv);
+		if (ret != 0) {
+			pr_err("%s get vbus failed\n",__func__);
+			return;
+		}
+	}
+	pr_info("%s get vbus %d uv\n",__func__,vbus_uv);
+	if (is_pd_rdy(ddata) || vbus_uv > 8000000) {
+		pr_info("pd adaptor ready, exit qc detected\n");
 		return;
 	}
 
