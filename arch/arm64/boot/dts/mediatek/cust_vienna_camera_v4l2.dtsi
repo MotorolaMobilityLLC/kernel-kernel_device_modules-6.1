@@ -487,7 +487,7 @@
 	status = "okay";
 	clock-frequency = <1000000>;
 
-		sensor4: sensor4@10 {
+	sensor4: sensor4@10 {
 		compatible = "mediatek,imgsensor";
 		sensor-names = "mot_vienna_s5k3k1_mipi_raw";
 		reg = <0x10>;
@@ -528,6 +528,12 @@
 				remote-endpoint = <&seninf_csi_port_3_in>;
 			};
 		};
+	};
+
+	mtk_camera_eeprom4:camera-eeprom4@50 {
+		compatible = "mediatek,camera_eeprom";
+		reg = <0x50>;
+		status = "okay";
 	};
 };
 
