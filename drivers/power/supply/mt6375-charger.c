@@ -1406,6 +1406,11 @@ static int mt6375_chg_get_property(struct power_supply *psy,
 		mutex_unlock(&ddata->attach_lock);
 		break;
 	case POWER_SUPPLY_PROP_CURRENT_MAX:
+		if (is_pd_rdy(ddata)) {
+			val->intval = 3225000;
+			break;
+		}
+
 		if (ddata->psy_usb_type[ddata->active_idx] == POWER_SUPPLY_USB_TYPE_SDP)
 			val->intval = 500000;
 		else if (ddata->psy_usb_type[ddata->active_idx] == POWER_SUPPLY_USB_TYPE_DCP)
@@ -1416,6 +1421,11 @@ static int mt6375_chg_get_property(struct power_supply *psy,
 			val->intval = 500000;
 		break;
 	case POWER_SUPPLY_PROP_VOLTAGE_MAX:
+		if (is_pd_rdy(ddata)) {
+			val->intval = 22000000;
+			break;
+		}
+
 		if (ddata->psy_usb_type[ddata->active_idx] == POWER_SUPPLY_USB_TYPE_DCP)
 			val->intval = 22000000;
 		else
