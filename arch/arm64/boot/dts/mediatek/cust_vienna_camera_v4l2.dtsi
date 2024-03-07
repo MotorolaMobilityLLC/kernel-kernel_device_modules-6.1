@@ -379,6 +379,12 @@
 	status = "okay";
 	clock-frequency = <1000000>;
 
+	mtk_camera_eeprom1:camera-eeprom1@51 {
+		compatible = "mediatek,camera_eeprom";
+		reg = <0x51>;
+		status = "okay";
+	};
+
 	sensor1: sensor1@10 {
 		compatible = "mediatek,imgsensor";
 		sensor-names = "mot_vienna_s5kjd1_mipi_raw";
