@@ -11727,7 +11727,8 @@ void mtk_drm_crtc_enable(struct drm_crtc *crtc)
 	/* 11. set dirty for cmd mode */
 	if (mtk_crtc_is_frame_trigger_mode(crtc) &&
 		!mtk_state->prop_val[CRTC_PROP_DOZE_ACTIVE] &&
-		!mtk_state->doze_changed && !mtk_crtc->skip_frame)
+		!mtk_state->doze_changed && !mtk_crtc->skip_frame &&
+		!mtk_crtc->skip_update && !crtc_id)
 		mtk_crtc_set_dirty(mtk_crtc);
 
 	/* 12. set vblank*/
@@ -14144,6 +14145,8 @@ static void mtk_drm_crtc_atomic_begin(struct drm_crtc *crtc,
 		}
 	}
 
+	mtk_crtc->skip_update = 0;
+
 #ifdef MTK_DRM_ADVANCE
 	if (mtk_crtc->fake_layer.fake_layer_mask)
 		update_frame_weight(crtc, mtk_crtc_state);
@@ -14818,6 +14821,11 @@ int mtk_crtc_gec_flush_check(struct drm_crtc *crtc)
 		default:
 			break;
 		}
+	}
+
+	if ((drm_crtc_index(crtc) == 0) && (mtk_crtc->skip_update == 1)) {
+		DDPMSG("%s-%d, skip update\n", __func__, __LINE__);
+		return -EINVAL;
 	}
 
 	return 0;
@@ -17755,6 +17763,7 @@ int mtk_drm_crtc_create(struct drm_device *drm_dev,
 	mtk_crtc->mml_ir_sram.data.type = TP_BUFFER;
 	mtk_crtc->mml_ir_sram.data.uid = UID_DISP;
 	mtk_crtc->capturing = false;
+	mtk_crtc->skip_idle = 1;
 	mtk_crtc->pq_data = kzalloc(sizeof(*mtk_crtc->pq_data), GFP_KERNEL);
 	if (mtk_crtc->pq_data == NULL) {
 		DDPPR_ERR("Failed to alloc pq_data\n");
