@@ -129,7 +129,8 @@ static void md_pt_battery_percent_cb(enum BATTERY_PERCENT_LEVEL_TAG level)
 		intensity = md_pt_info[SOC_POWER_THROTTLING].reduce_tx[level-1];
 	else
 		intensity = 0;
-	md_throttle_cmd = TMC_CTRL_CMD_TX_POWER | level << 8 | PT_BATTERY_PERCENT << 16 |
+	/* MMI_STOPSHIP <power-throttling>: this will be revert after modem release the official strategy */
+	md_throttle_cmd = TMC_CTRL_CMD_TX_POWER | level << 8 | PT_LOW_BATTERY_VOLTAGE << 16 |
 		intensity << 24;
 	ret = exec_ccci_kern_func(ID_THROTTLING_CFG,
 		(char *)&md_throttle_cmd, 4);
