@@ -331,32 +331,39 @@
 
 &swtp {
 	interrupt-parent = <&pio>;
-	interrupts = <101 IRQ_TYPE_LEVEL_HIGH 101 0>;
-	deb-gpios = <&pio 101 0>;
+	interrupts = <20 IRQ_TYPE_LEVEL_HIGH 20 0>;
+	deb-gpios = <&pio 20 0>;
 	debounce = <512>;
 	status = "okay";
 };
 
 &swtp_1 {
 	interrupt-parent = <&pio>;
-	interrupts = <102 IRQ_TYPE_LEVEL_HIGH 102 0>;
-	deb-gpios = <&pio 102 0>;
+	interrupts = <21 IRQ_TYPE_LEVEL_HIGH 21 0>;
+	deb-gpios = <&pio 21 0>;
 	debounce = <512>;
 	status = "okay";
 };
 &swtp_2 {
 	interrupt-parent = <&pio>;
-	interrupts = <103 IRQ_TYPE_LEVEL_HIGH 103 0>;
-	deb-gpios = <&pio 103 0>;
+	interrupts = <23 IRQ_TYPE_LEVEL_HIGH 23 0>;
+	deb-gpios = <&pio 23 0>;
 	debounce = <512>;
 	status = "okay";
 };
 &swtp_3 {
 	interrupt-parent = <&pio>;
-	interrupts = <104 IRQ_TYPE_LEVEL_HIGH 104 0>;
-	deb-gpios = <&pio 104 0>;
+	interrupts = <22 IRQ_TYPE_LEVEL_HIGH 22 0>;
+	deb-gpios = <&pio 22 0>;
 	debounce = <512>;
 	status = "okay";
+};
+&swtp_4 {
+        interrupt-parent = <&pio>;
+        interrupts = <29 IRQ_TYPE_LEVEL_HIGH 29 0>;
+        deb-gpios = <&pio 29 0>;
+        debounce = <512>;
+        status = "okay";
 };
 
 &therm_intf {
