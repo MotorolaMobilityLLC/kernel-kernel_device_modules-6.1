@@ -8048,6 +8048,7 @@ static int mtk_drm_ioctl_set_panel_feature(struct drm_device *dev, void *data,
 				ret = mtk_drm_crtc_set_panel_feature(crtc, *param_info);
 				if (!ret) mtk_drm_setbacklight(&mtk_crtc->base, bl_level, 0, (0X1<<SET_BACKLIGHT_LEVEL), 0);
 			#endif
+				ret = mtk_drm_crtc_set_panel_feature(crtc, *param_info);
 				break;
 			default:
 				ret = mtk_drm_crtc_set_panel_feature(crtc, *param_info);
