@@ -191,7 +191,10 @@ struct STRUCT_CAM_CAL_PDAF_STRUCT {
 };
 
 #define MAX_CALIBRATION_STRING 40
-#define MAX_ALL_EEPROM_DATA_SIZE 0x2500
+/*To avoid "__invalid_size_argument_for_IOC" compile error, here reserved 256 bytes
+  for struct STRUCT_MOT_EEPROM_DATA(except DumpAllEepromData).
+*/
+#define MAX_ALL_EEPROM_DATA_SIZE ((0x01<<_IOC_SIZEBITS)-256)
 
 enum ENUM_CAM_CAL_DATA_CRC_CHECK_STATUS_ENUM{
 	NONEXISTENCE = -1,
