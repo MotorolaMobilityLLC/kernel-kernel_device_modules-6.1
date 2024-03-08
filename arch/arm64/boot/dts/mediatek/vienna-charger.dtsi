@@ -31,12 +31,12 @@
 
 	wls_cps4038_int_default: wls_cps4038_int_default {
 		wls_int {
-			pinmux = <PINMUX_GPIO18__FUNC_GPIO18>;
+			pinmux = <PINMUX_GPIO34__FUNC_GPIO34>;
 			input-enable;
 			bias-pull-up;
 		};
 		wls_det_int {
-			pinmux = <PINMUX_GPIO82__FUNC_GPIO82>;
+			pinmux = <PINMUX_GPIO36__FUNC_GPIO36>;
 			input-enable;
 			//bias-disable;
 		};
@@ -184,7 +184,7 @@
 };
 
 
-&i2c3 {
+&i2c10 {
 	clock-frequency = <400000>;
 	status = "okay";
 
@@ -197,13 +197,18 @@
 		rod_stop_battery_soc = <90>;
 		bootmode = <&chosen>;
 		reg = <0x38>;
-		cps_wls_int = <&pio 18 0x0>;
-		cps_det_int = <&pio 82 0x0>;
+		cps_wls_int = <&pio 34 0x0>;
+		cps_det_int = <&pio 36 0x0>;
 		wls_mode_select = <&pio 81 0x0>;
 		pinctrl-names = "default";
 		pinctrl-0 = <&wls_cps4038_int_default>;
 		status = "okay";
 	};
+};
+
+&i2c3 {
+	clock-frequency = <400000>;
+	status = "okay";
 
 	NFG1000: NFG1000@55 {
 		compatible = "HXZY,nfg1000";
