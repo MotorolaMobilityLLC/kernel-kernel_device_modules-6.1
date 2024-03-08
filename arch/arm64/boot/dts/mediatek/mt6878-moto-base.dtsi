@@ -31,6 +31,9 @@
 	swtp_3: swtp_3 {
 		compatible = "mediatek, swtp3-eint";
 	};
+        swtp_4: swtp_4 {
+                compatible = "mediatek, swtp4-eint";
+        };
 };
 
 /*vol+/- keys swap*/
