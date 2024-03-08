@@ -12,7 +12,7 @@
 #include <media/v4l2-subdev.h>
 
 #define DRIVER_NAME "main3_vcm"
-#define MAIN3_VCM_I2C_SLAVE_ADDR 0x18
+#define MAIN3_VCM_I2C_SLAVE_ADDR 0x54
 
 #define LOG_INF(format, args...)                                               \
 	pr_info(DRIVER_NAME " [%s] " format, __func__, ##args)
@@ -41,7 +41,9 @@ struct main3_vcm_device {
 	struct regulator *vdd;
 	struct pinctrl *vcamaf_pinctrl;
 	struct pinctrl_state *vcamaf_on;
+	struct pinctrl_state *oisen_on;
 	struct pinctrl_state *vcamaf_off;
+	struct pinctrl_state *oisen_off;
 	struct regulator *ldo[REGULATOR_MAXSIZE];
 };
 
@@ -190,6 +192,31 @@ static void register_setting(struct i2c_client *client, char table[][3], int tab
 	}
 }
 
+#define DW9784_OIS_I2C_SLAVE_ADDR 0x54
+int write_reg_16bit_value_16bit(struct i2c_client *i2c_client, unsigned short regAddr, unsigned short regData)
+{
+	int i4RetValue = 0;
+	struct i2c_msg msgs;
+	char puSendCmd[4] = { (char)(regAddr>>8), (char)(regAddr&0xff),
+	                      (char)(regData >> 8),
+	                      (char)(regData&0xFF) };
+	unsigned short addr = i2c_client->addr;
+
+	LOG_INF("DW9784 I2C reg:%04x, data:%04x", regAddr, regData);
+
+	msgs.addr  = addr;
+	msgs.flags = 0;
+	msgs.len   = 4;
+	msgs.buf   = puSendCmd;
+
+	i4RetValue = i2c_transfer(i2c_client->adapter, &msgs, 1);
+	if (i4RetValue != 1) {
+		printk("I2C send failed!!\n");
+		return -1;
+	}
+	return 0;
+}
+
 static int main3_vcm_set_position(struct main3_vcm_device *main3_vcm, u16 val)
 {
 	struct i2c_client *client = v4l2_get_subdevdata(&main3_vcm->sd);
@@ -232,6 +259,12 @@ static int main3_vcm_set_position(struct main3_vcm_device *main3_vcm, u16 val)
 
 		while (retry-- > 0) {
 			ret = i2c_master_send(client, puSendCmd, nCommNum);
+			LOG_INF("dw9784 af_drift val %d, ret = %d, client->addr 0x%x\n", val, ret, client->addr);
+			client->addr = DW9784_OIS_I2C_SLAVE_ADDR >> 1;
+			LOG_INF("dw9784 af_drift client->addr 0x%x, val<<2 %d\n", client->addr, val<<2);
+			write_reg_16bit_value_16bit(client, 0xD013, val<<2);
+			client->addr = MAIN3_VCM_I2C_SLAVE_ADDR >> 1;
+			LOG_INF("dw9784 af_drift client->addr 0x%x, val %d\n", client->addr, val);
 			if (ret >= 0)
 				break;
 		}
@@ -335,6 +368,11 @@ static int main3_vcm_power_off(struct main3_vcm_device *main3_vcm)
 		ret = pinctrl_select_state(main3_vcm->vcamaf_pinctrl,
 					main3_vcm->vcamaf_off);
 
+	if (main3_vcm->vcamaf_pinctrl && main3_vcm->oisen_off)
+		ret = pinctrl_select_state(main3_vcm->vcamaf_pinctrl,
+					main3_vcm->oisen_off);
+
+
 	return ret;
 }
 
@@ -360,6 +398,11 @@ static int main3_vcm_power_on(struct main3_vcm_device *main3_vcm)
 	if (main3_vcm->vcamaf_pinctrl && main3_vcm->vcamaf_on)
 		ret = pinctrl_select_state(main3_vcm->vcamaf_pinctrl,
 					main3_vcm->vcamaf_on);
+
+	if (main3_vcm->vcamaf_pinctrl && main3_vcm->oisen_on)
+		ret = pinctrl_select_state(main3_vcm->vcamaf_pinctrl,
+					main3_vcm->oisen_on);
+
 
 	return ret;
 }
@@ -536,6 +579,24 @@ static int main3_vcm_probe(struct i2c_client *client)
 			ret = PTR_ERR(main3_vcm->vcamaf_off);
 			main3_vcm->vcamaf_off = NULL;
 			LOG_INF("cannot get vcamaf_off pinctrl\n");
+		}
+
+		main3_vcm->oisen_on = pinctrl_lookup_state(
+			main3_vcm->vcamaf_pinctrl, "oisen_on");
+
+		if (IS_ERR(main3_vcm->oisen_on)) {
+			ret = PTR_ERR(main3_vcm->oisen_on);
+			main3_vcm->oisen_on = NULL;
+			LOG_INF("cannot get oisen_off pinctrl\n");
+		}
+
+		main3_vcm->oisen_off = pinctrl_lookup_state(
+			main3_vcm->vcamaf_pinctrl, "oisen_off");
+
+		if (IS_ERR(main3_vcm->oisen_off)) {
+			ret = PTR_ERR(main3_vcm->oisen_off);
+			main3_vcm->oisen_off = NULL;
+			LOG_INF("cannot get oisen_off pinctrl\n");
 		}
 	}
 
