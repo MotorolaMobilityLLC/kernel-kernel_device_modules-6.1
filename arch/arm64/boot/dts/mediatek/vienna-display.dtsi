@@ -51,7 +51,7 @@
 		/delete-property/ lane-swap-setting;
 		/delete-property/ pn-swap-setting;
 
-		/*compatible = "mot,dummy,vdo,60hz";*/
+		compatible = "mot,dummy,vdo,60hz";
 	};
 };
 
