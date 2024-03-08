@@ -280,6 +280,40 @@
 			output-high;
 		};
 	};
+
+	camera_pins_cam3_afvdd_0: camera-pins-cam3-afvdd-0 {
+		pins-cmd-dat {
+			pinmux = <PINMUX_GPIO185__FUNC_GPIO185>;
+			slew-rate = <1>;
+			output-low;
+		};
+	};
+
+	camera_pins_cam3_afvdd_1: camera-pins-cam3-afvdd-1 {
+		pins-cmd-dat {
+			pinmux = <PINMUX_GPIO185__FUNC_GPIO185>;
+			slew-rate = <1>;
+			output-high;
+		};
+	};
+
+	//add for main ois +
+	camera_pins_cam3_oisen_0: camera-pins-cam3-oisen-0 {
+		pins-cmd-dat {
+			pinmux = <PINMUX_GPIO194__FUNC_GPIO194>;
+			slew-rate = <1>;
+			output-low;
+		};
+	};
+
+	camera_pins_cam3_oisen_1: camera-pins-cam3-oisen-1 {
+		pins-cmd-dat {
+			pinmux = <PINMUX_GPIO194__FUNC_GPIO194>;
+			slew-rate = <1>;
+			output-high;
+		};
+	};
+	//add for main ois -
 	camera_pins_default: camdefault {
 	};
 };
@@ -298,6 +332,20 @@
 		reg = <1>;
 		wide_af_endpoint: endpoint {
 			remote-endpoint = <&wide_af>;
+		};
+	};
+
+	port@2 {
+		reg = <2>;
+		tele_af_endpoint: endpoint {
+			remote-endpoint = <&tele_af>;
+		};
+	};
+
+	port@3 {
+		reg = <3>;
+		tele_ois_endpoint: endpoint {
+			remote-endpoint = <&tele_ois>;
 		};
 	};
 };
@@ -498,6 +546,50 @@
 &i2c7 {
 	status = "okay";
 	clock-frequency = <1000000>;
+
+	camera-af-tele@a {
+		compatible = "mediatek,main3_vcm";
+		reg = <0x0a>;
+		//vdd-supply = <&rt5133_ldo1>;
+		//rst-supply = <&camera_common_dovdd>;
+		pinctrl-names = "vcamaf_off",
+				"vcamaf_on",
+				"oisen_off",
+				"oisen_on";
+
+		pinctrl-0 = <&camera_pins_cam3_afvdd_0>;
+		pinctrl-1 = <&camera_pins_cam3_afvdd_1>;
+		pinctrl-2 = <&camera_pins_cam3_oisen_0>;
+		pinctrl-3 = <&camera_pins_cam3_oisen_1>;
+
+		port {
+			tele_af: endpoint {
+				remote-endpoint = <&tele_af_endpoint>;
+			};
+		};
+	};
+
+	camera-ois-tele@72 {
+		compatible = "mediatek,mot_tele_dw9784";
+		reg = <0x72>;
+		//vdd-supply = <&rt5133_ldo1>;
+		//rst-supply = <&camera_common_dovdd>;
+		pinctrl-names = "afvdd_off",
+				"afvdd_on",
+				"oisen_off",
+				"oisen_on";
+
+		pinctrl-0 = <&camera_pins_cam3_afvdd_0>;
+		pinctrl-1 = <&camera_pins_cam3_afvdd_1>;
+		pinctrl-2 = <&camera_pins_cam3_oisen_0>;
+		pinctrl-3 = <&camera_pins_cam3_oisen_1>;
+
+		port {
+			tele_ois: endpoint {
+				remote-endpoint = <&tele_ois_endpoint>;
+			};
+		};
+	};
 
 	sensor4: sensor4@10 {
 		compatible = "mediatek,imgsensor";
