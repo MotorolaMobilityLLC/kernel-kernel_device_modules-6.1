@@ -21,7 +21,7 @@
 #define CONFIG_FSM_FIRMWARE
 #define CONFIG_FSM_I2C
 //#define CONFIG_FSM_Q6AFE
-//#define CONFIG_FSM_SYSCAL
+#define CONFIG_FSM_SYSCAL
 #ifdef CONFIG_SND_SOC_FS19XX
 #define CONFIG_FSM_MTK
 #endif
@@ -32,8 +32,8 @@
 //#define CONFIG_FSM_FS18YN
 
 /* VERSION INFORMATION */
-#define FSM_CODE_VERSION "v4.0.9-a"
-#define FSM_CODE_DATE    "20240118"
+#define FSM_CODE_VERSION "v4.0.9-b"
+#define FSM_CODE_DATE    "20240311"
 #define FSM_GIT_BRANCH   ""
 #define FSM_GIT_COMMIT   ""
 
@@ -41,7 +41,7 @@
 #define FSM_FW_NAME      "fs19xx.fsm"
 // #define FSM_CALIB_SAVE_PATH   "/data"
 // TODO
-#define FSM_CALIB_FILE "/mnt/vendor/persist/audio/fsm_calib.bin"
+#define FSM_CALIB_FILE "/mnt/vendor/persist/factory/audio/fsm_calib.bin"
 
 /* ------- MACRO FEATURE ------- */
 
