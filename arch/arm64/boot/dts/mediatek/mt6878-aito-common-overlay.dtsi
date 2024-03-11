@@ -153,8 +153,8 @@
 		Semtech,button-flag = <0x9a>;
 		Semtech,button-names = "Moto CapSense Ch1","Moto CapSense Ch3","Moto CapSense Ch4","Moto CapSense Ch7";
 		Semtech,debug-name = "capsense0";
-		Semtech,flip_operation_num = <3>;
-		Semtech,flip_operation_far_num = <3>;
+		Semtech,flip_operation_num = <2>;
+		Semtech,flip_operation_far_num = <2>;
 		Semtech,flip_near_init = <
 			0x8024 0xFFFF
 			0x4280 0xE
