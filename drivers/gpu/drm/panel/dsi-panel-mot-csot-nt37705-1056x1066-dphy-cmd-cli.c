@@ -200,7 +200,7 @@ static void lcm_panel_init(struct lcm *ctx)
 		lcm_dcs_write_seq_static(ctx, 0xB4, 0x07, 0x50);
 		lcm_dcs_write_seq_static(ctx, 0x6F, 0x2E);
 		lcm_dcs_write_seq_static(ctx, 0xB4, 0x09, 0x24);
-	} else {
+	} else if (ctx->version == 2) {
 		//GPIO3 map to TE
 		lcm_dcs_write_seq_static(ctx, 0xF0, 0x55, 0xAA, 0x52, 0x08, 0x00);
 		lcm_dcs_write_seq_static(ctx, 0xEC, 0x47, 0x46, 0x4C, 0x47);
@@ -209,8 +209,6 @@ static void lcm_panel_init(struct lcm *ctx)
 		lcm_dcs_write_seq_static(ctx, 0xB4, 0x0E, 0xA0);
 		lcm_dcs_write_seq_static(ctx, 0x6F, 0x2E);
 		lcm_dcs_write_seq_static(ctx, 0xB4, 0x09, 0xBA);
-	}
-	if (ctx->version == 2) {
 		lcm_dcs_write_seq_static(ctx, 0xF0, 0x55, 0xAA, 0x52, 0x08, 0x00);
 		lcm_dcs_write_seq_static(ctx, 0x6F, 0x1E);
 		lcm_dcs_write_seq_static(ctx, 0xB2, 0x80, 0x4C, 0x00, 0x34, 0x00, 0x1E, 0x00, 0x0C);
@@ -783,6 +781,19 @@ static struct mtk_panel_para_table panel_dc_on_v2[] = {
 	{2, {0xCC, 0x10}},
 };
 
+static struct mtk_panel_para_table panel_dc_off_v3[] = {
+	{6, {0xF0, 0x55, 0xAA, 0x52, 0x08, 0x00}},
+	{2, {0x6F, 0x2E}},
+	{3, {0xC0, 0x03, 0x20}},
+	{6, {0xF0, 0x55, 0xAA, 0x52, 0x08, 0x00}},
+	{2, {0x6F, 0x11}},
+	{4, {0xB2, 0x0B, 0x7, 0x4E}},
+	{31, {0xB3, 0x00, 0x01, 0x01, 0x58, 0x01, 0x58, 0x02, 0x53, 0x02, 0x53, 0x03, 0x09, 0x03, 0x09, 0x04, 0x00, 0x04, 0x00, 0x04, 0xBE, 0x04, 0xBE, 0x05, 0x28, 0x05, 0x28, 0x05, 0x2B, 0x05, 0x2B}},
+	{2, {0xB2, 0x01}},
+	{6, {0xF0, 0x55, 0xAA, 0x52, 0x08, 0x02}},
+	{2, {0xCC, 0x10}},
+};
+
 static int pane_dc_set_cmdq(struct lcm *ctx, void *dsi, dcs_grp_write_gce cb, void *handle, uint32_t dc_state)
 {
 	unsigned int para_count = 0;
@@ -813,9 +824,13 @@ static int pane_dc_set_cmdq(struct lcm *ctx, void *dsi, dcs_grp_write_gce cb, vo
 				pTable = panel_dc_off_v1;
 				break;
 			case 2:
-			default:
 				para_count = sizeof(panel_dc_off_v2) / sizeof(struct mtk_panel_para_table);
 				pTable = panel_dc_off_v2;
+				break;
+			case 3:
+			default:
+				para_count = sizeof(panel_dc_off_v3) / sizeof(struct mtk_panel_para_table);
+				pTable = panel_dc_off_v3;
 				break;
 		}
 	}
@@ -1082,7 +1097,7 @@ static int lcm_probe(struct mipi_dsi_device *dsi)
 	drm_panel_add(&ctx->panel);
 
 	val = of_get_property(dev->of_node, "panel-version", NULL);
-	ctx->version = val ? be32_to_cpup(val) : 2;
+	ctx->version = val ? be32_to_cpup(val) : 3;
 
 	pr_info("%s: panel version 0x%x\n", __func__, ctx->version);
 	panel_ver = ctx->version;
