@@ -165,3 +165,11 @@ sphinx_*/
 
 # moto generate config
 /kernel/configs/moto_extra.config
+/kernel/configs/debug-mgk_64_k61-aito.config
+/kernel/configs/debug-mgk_64_k61-vienna.config
+/kernel/configs/debug-mgk_64_k61.config
+/kernel/configs/moto-mgk_64_k61-aito.config
+/kernel/configs/moto-mgk_64_k61-vienna.config
+/kernel/configs/moto-mgk_64_k61-df.config
+/kernel/configs/moto-mgk_64_k61.config
+/kernel/configs/factory-mgk_64_k61.config
