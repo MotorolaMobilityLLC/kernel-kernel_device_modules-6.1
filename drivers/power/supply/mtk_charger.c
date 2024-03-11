@@ -3035,6 +3035,8 @@ static int mtk_charger_plug_out(struct mtk_charger *info)
 	pdata1->input_current_limit_by_aicl = -1;
 	pdata2->disable_charging_count = 0;
 
+	charger_dev_plug_out(info->chg1_dev);
+
 	notify.evt = EVT_PLUG_OUT;
 	notify.value = 0;
 	for (i = 0; i < MAX_ALG_NO; i++) {
@@ -3045,7 +3047,7 @@ static int mtk_charger_plug_out(struct mtk_charger *info)
 	memset(&info->sc.data, 0, sizeof(struct scd_cmd_param_t_1));
 	charger_dev_set_input_current(info->chg1_dev, 100000);
 	charger_dev_set_mivr(info->chg1_dev, info->data.min_charger_voltage);
-	charger_dev_plug_out(info->chg1_dev);
+
 	if (info->blance_dev && info->blance_can_charging) {
 		charger_dev_enable(info->blance_dev, false);
 		info->blance_can_charging = false;
