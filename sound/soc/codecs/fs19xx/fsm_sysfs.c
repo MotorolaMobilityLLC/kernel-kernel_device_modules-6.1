@@ -14,20 +14,31 @@
 static uint8_t g_reg_addr;
 
 #ifdef CONFIG_FSM_SYSCAL
+static int fsm_check_dev_index(int ndev, int index)
+{
+	struct fsm_dev *fsm_dev;
+	int dev_idx;
+	int i;
+
+	for (i = 0; i < ndev; i++) {
+		fsm_dev = fsm_get_fsm_dev_by_id(i);
+		if (fsm_dev == NULL)
+			continue;
+		dev_idx = fsm_get_index_by_position(fsm_dev->pos_mask);
+		if (index == dev_idx)
+			return 0;
+	}
+
+	return -EINVAL;
+}
+
 static ssize_t fsm_re25_show(struct device *dev,
 				struct device_attribute *attr, char *buf)
 {
 	fsm_config_t *cfg = fsm_get_config();
 	struct fsadsp_cmd_re25 cmd_re25;
-	struct fsm_dev *fsm_dev;
-	int re25, index;
+	int i, re25, size;
 	int ret;
-
-	fsm_dev = dev_get_drvdata(dev);
-	if (fsm_dev == NULL) {
-		pr_err("fsm_dev is null\n");
-		return -EINVAL;
-	}
 
 	cfg->force_calib = true;
 	fsm_set_calib_mode();
@@ -35,36 +46,30 @@ static ssize_t fsm_re25_show(struct device *dev,
 
 	memset(&cmd_re25, 0, sizeof(struct fsadsp_cmd_re25));
 	ret = fsm_afe_save_re25(&cmd_re25);
-	cfg->force_calib = false;
 	if (ret) {
 		pr_err("save re25 failed:%d", ret);
+		cfg->force_calib = false;
 		return ret;
 	}
 
-	index = fsm_get_index_by_position(fsm_dev->pos_mask);
-	if (index < 0) {
-		pr_addr(err, "Failed to get index: %d\n", index);
-		return -EINVAL;
+	for (i = 0, size = 0; i < cmd_re25.ndev; i++) {
+		re25 = cmd_re25.cal_data[i].re25;
+		size += scnprintf(buf + size, PAGE_SIZE, "%d,", re25);
 	}
-
-	re25 = cmd_re25.cal_data[index].re25;
-	return scnprintf(buf, PAGE_SIZE, "%d\n", re25);
+	
+	buf[size - 1] = '\n';
+	cfg->force_calib = false;
+	return size;
 }
 
 static ssize_t fsm_f0_show(struct device *dev,
 				struct device_attribute *attr, char *buf)
 {
 	int payload[FSM_CALIB_PAYLOAD_SIZE];
-	struct fsm_dev *fsm_dev;
+	struct preset_file *pfile;
 	struct fsm_afe afe;
-	int index, f0;
+	int i, f0, size;
 	int ret;
-
-	fsm_dev = dev_get_drvdata(dev);
-	if (fsm_dev == NULL) {
-		pr_err("fsm_dev is null\n");
-		return -EINVAL;
-	}
 
 	// fsm_set_calib_mode();
 	// fsm_delay_ms(5000);
@@ -78,14 +83,20 @@ static ssize_t fsm_f0_show(struct device *dev,
 		return ret;
 	}
 
-	index = fsm_get_index_by_position(fsm_dev->pos_mask);
-	if (index < 0) {
-		pr_addr(err, "Failed to get index: %d\n", index);
+	pfile = fsm_get_presets();
+	if (!pfile) {
+		pr_debug("not found firmware");
 		return -EINVAL;
 	}
 
-	f0 = payload[3+6*index];
-	return scnprintf(buf, PAGE_SIZE, "%d\n", f0);
+	for (i = 0, size = 0; i < pfile->hdr.ndev; i++) {
+		f0 = (fsm_check_dev_index(pfile->hdr.ndev, i) == 0) ?
+			payload[3+6*i] : -65535;
+		size += scnprintf(buf + size, PAGE_SIZE, "%d,", f0);
+	}
+	buf[size - 1] = '\n';
+
+	return size;
 }
 #endif
 
