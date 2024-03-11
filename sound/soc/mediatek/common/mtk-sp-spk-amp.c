@@ -43,7 +43,7 @@
 #define MTK_SPK_REF_NAME "Speaker Codec Ref"
 
 #ifdef CONFIG_SND_SOC_FS19XX
-static unsigned int mtk_spk_type = 1;
+static unsigned int mtk_spk_type = 5;
 #else
 static unsigned int mtk_spk_type;
 #endif
