@@ -42,6 +42,11 @@ ifneq ($(PRODUCT_IS_PRODUCTION),true)
 PRODUCT_SPECIFIC_DEFCONFIGS += $(LJAPDEFCONFIGSRC)/moto-$(DEFCONFIG_BASENAME)-df.config
 endif
 
+DEFCONFIG_OVERLAYS = $(wildcard $(PRODUCT_SPECIFIC_DEFCONFIGS))
+$(foreach config, $(DEFCONFIG_OVERLAYS), $(shell ln -sf $(abspath $(config)) $(KERNEL_DIR)/kernel/configs/))
+
+KERNEL_DEFCONFIG_OVERLAYS := $(notdir $(DEFCONFIG_OVERLAYS))
+
 define do-make-defconfig
 	$(hide) mkdir -p $(dir $(1))
 	$(hide) printf "# This file was automatically generated from:\n" > $(1);
@@ -54,7 +59,7 @@ endef
 # make combined defconfig file
 #---------------------------------------
 $(TARGET_DEFCONFIG): FORCE $(PRODUCT_SPECIFIC_DEFCONFIGS)
-	$(call do-make-defconfig,$@,$(PRODUCT_SPECIFIC_DEFCONFIGS))
+#	$(call do-make-defconfig,$@,$(PRODUCT_SPECIFIC_DEFCONFIGS))
 
 .PHONY: FORCE
 FORCE:
