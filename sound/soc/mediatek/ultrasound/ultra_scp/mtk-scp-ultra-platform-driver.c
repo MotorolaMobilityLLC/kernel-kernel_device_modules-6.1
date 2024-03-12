@@ -71,6 +71,7 @@ static struct ultra_gain_config gain_config = {
 
 static int cap_state = -1;
 static int cali_state = -1;
+static int g_session_id = 0;
 
 struct cali_result_t {
 	char state;
@@ -757,7 +758,7 @@ static int mtk_scp_ultra_suspend_set(struct snd_kcontrol *kcontrol,
 static int mtk_scp_ultra_suspend_get(struct snd_kcontrol *kcontrol,
 					  struct snd_ctl_elem_value *ucontrol)
 {
-    pr_info("%s(\n", __func__);
+	pr_info("%s(\n", __func__);
 	ucontrol->value.integer.value[0] = 0;
 	return 0;
 }
@@ -765,16 +766,80 @@ static int mtk_scp_ultra_suspend_get(struct snd_kcontrol *kcontrol,
 static int mtk_scp_ultra_custom_setting_set(struct snd_kcontrol *kcontrol,
 					  struct snd_ctl_elem_value *ucontrol)
 {
+	struct soc_mixer_control *mc = (struct soc_mixer_control *)kcontrol->private_value;
+	// unsigned int shift = mc->shift;
 	int val = ucontrol->value.integer.value[0];
 	pr_info("%s() val=%d\n", __func__, val);
-	ultra_ipi_send(AUDIO_TASK_USND_MSG_ID_CUSTOM_SETTING, false, 1, &val, 0);
+	switch (mc->shift) {
+		case 0: {
+			ultra_ipi_send(AUDIO_TASK_USND_MSG_ID_CUSTOM_SETTING, false, 1, &val, 0);
+			break;
+		}
+		case 1: {
+			ultra_ipi_send(AUDIO_TASK_USND_MSG_ID_CUSTOM_SETTING_1, false, 1, &val, 0);
+			break;
+		}
+		case 2: {
+			ultra_ipi_send(AUDIO_TASK_USND_MSG_ID_CUSTOM_SETTING_2, false, 1, &val, 0);
+			break;
+		}
+		case 3: {
+			ultra_ipi_send(AUDIO_TASK_USND_MSG_ID_CUSTOM_SETTING_3, false, 1, &val, 0);
+			break;
+		}
+		case 4: {
+			ultra_ipi_send(AUDIO_TASK_USND_MSG_ID_CUSTOM_SETTING_4, false, 1, &val, 0);
+			break;
+		}
+		case 5: {
+			ultra_ipi_send(AUDIO_TASK_USND_MSG_ID_CUSTOM_SETTING_5, false, 1, &val, 0);
+			break;
+		}
+		case 6: {
+			ultra_ipi_send(AUDIO_TASK_USND_MSG_ID_CUSTOM_SETTING_6, false, 1, &val, 0);
+			break;
+		}
+		case 7: {
+			ultra_ipi_send(AUDIO_TASK_USND_MSG_ID_CUSTOM_SETTING_7, false, 1, &val, 0);
+			break;
+		}
+		case 8: {
+			ultra_ipi_send(AUDIO_TASK_USND_MSG_ID_CUSTOM_SETTING_8, false, 1, &val, 0);
+			break;
+		}
+		case 9: {
+			ultra_ipi_send(AUDIO_TASK_USND_MSG_ID_CUSTOM_SETTING_9, false, 1, &val, 0);
+			break;
+		}
+	}
 	return 0;
 }
 static int mtk_scp_ultra_custom_setting_get(struct snd_kcontrol *kcontrol,
 					  struct snd_ctl_elem_value *ucontrol)
 {
-    pr_info("%s(\n", __func__);
+	pr_info("%s(\n", __func__);
 	ucontrol->value.integer.value[0] = 0;
+	return 0;
+}
+
+static int mtk_scp_ultra_session_id_get(struct snd_kcontrol *kcontrol,
+					  struct snd_ctl_elem_value *ucontrol)
+{
+	pr_info("%s session id %d\n", __func__, g_session_id);
+	ucontrol->value.integer.value[0] = g_session_id;
+	return 0;
+}
+
+static int mtk_scp_ultra_session_id_set(struct snd_kcontrol *kcontrol,
+					  struct snd_ctl_elem_value *ucontrol)
+{
+	// struct soc_mixer_control *mc = (struct soc_mixer_control *)kcontrol->private_value;
+	int val = ucontrol->value.integer.value[0];
+	g_session_id = val;
+	pr_info("%s session id %d\n", __func__, g_session_id);
+
+	ultra_ipi_send(AUDIO_TASK_USND_MSG_ID_SESSION_ID, false, 1, &val, 0);
+
 	return 0;
 }
 
@@ -833,6 +898,46 @@ static const struct snd_kcontrol_new ultra_platform_kcontrols[] = {
 		     SND_SOC_NOPM, 0, 0xff, 0,
 		     0,
 		     mtk_scp_ultra_rx_port_set),
+	SOC_SINGLE_EXT("usnd_custom_setting_1",
+		     SND_SOC_NOPM, 1, 0xff, 0,
+		     mtk_scp_ultra_custom_setting_get,
+		     mtk_scp_ultra_custom_setting_set),
+	SOC_SINGLE_EXT("usnd_custom_setting_2",
+		     SND_SOC_NOPM, 2, 0xff, 0,
+		     mtk_scp_ultra_custom_setting_get,
+		     mtk_scp_ultra_custom_setting_set),
+	SOC_SINGLE_EXT("usnd_custom_setting_3",
+		     SND_SOC_NOPM, 3, 0xff, 0,
+		     mtk_scp_ultra_custom_setting_get,
+		     mtk_scp_ultra_custom_setting_set),
+	SOC_SINGLE_EXT("usnd_custom_setting_4",
+		     SND_SOC_NOPM, 4, 0xff, 0,
+		     mtk_scp_ultra_custom_setting_get,
+		     mtk_scp_ultra_custom_setting_set),
+	SOC_SINGLE_EXT("usnd_custom_setting_5",
+		     SND_SOC_NOPM, 5, 0xff, 0,
+		     mtk_scp_ultra_custom_setting_get,
+		     mtk_scp_ultra_custom_setting_set),
+	SOC_SINGLE_EXT("usnd_custom_setting_6",
+		     SND_SOC_NOPM, 6, 0xff, 0,
+		     mtk_scp_ultra_custom_setting_get,
+		     mtk_scp_ultra_custom_setting_set),
+	SOC_SINGLE_EXT("usnd_custom_setting_7",
+		     SND_SOC_NOPM, 7, 0xff, 0,
+		     mtk_scp_ultra_custom_setting_get,
+		     mtk_scp_ultra_custom_setting_set),
+	SOC_SINGLE_EXT("usnd_custom_setting_8",
+		     SND_SOC_NOPM, 8, 0xff, 0,
+		     mtk_scp_ultra_custom_setting_get,
+		     mtk_scp_ultra_custom_setting_set),
+	SOC_SINGLE_EXT("usnd_custom_setting_9",
+		     SND_SOC_NOPM, 9, 0xff, 0,
+		     mtk_scp_ultra_custom_setting_get,
+		     mtk_scp_ultra_custom_setting_set),
+	SOC_SINGLE_EXT("usnd_session_id",
+		     SND_SOC_NOPM, 10, 0xff, 0,
+		     mtk_scp_ultra_session_id_get,
+		     mtk_scp_ultra_session_id_set),
 };
 
 static int mtk_scp_ultra_pcm_open(struct snd_soc_component *component,
