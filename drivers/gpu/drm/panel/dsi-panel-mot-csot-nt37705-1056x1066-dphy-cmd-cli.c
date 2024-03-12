@@ -426,6 +426,8 @@ static const struct drm_display_mode switch_mode_90hz = {
 	.vtotal		= VACT + VFP + VSA + VBP,
 };
 
+#if defined(CONFIG_MTK_PANEL_EXT)
+
 static struct mtk_panel_params ext_params_90hz = {
 	.dyn_fps = {
 		.vact_timing_fps = 90,
@@ -461,9 +463,10 @@ static struct mtk_panel_params ext_params_90hz = {
 	.panel_ver = 1,
 	.panel_name = "csot_nt37705_1056_1066",
 	.panel_supplier = "csot-nt37705",
+
+	.check_panel_feature = 1,
 };
 
-#if defined(CONFIG_MTK_PANEL_EXT)
 static struct mtk_panel_params ext_params_60hz = {
 	.dyn_fps = {
 		.vact_timing_fps = 60,
@@ -500,6 +503,8 @@ static struct mtk_panel_params ext_params_60hz = {
 	.panel_ver = 1,
 	.panel_name = "csot_nt37705_1056_1066",
 	.panel_supplier = "csot-nt37705",
+
+	.check_panel_feature = 1,
 };
 
 
@@ -539,6 +544,8 @@ static struct mtk_panel_params ext_params_48hz = {
 	.panel_ver = 1,
 	.panel_name = "csot_nt37705_1056_1066",
 	.panel_supplier = "csot-nt37705",
+
+	.check_panel_feature = 1,
 };
 
 
@@ -869,6 +876,29 @@ static int panel_feature_set(struct drm_panel *panel, void *dsi,
 	return 0;
 }
 
+static int panel_feature_get(struct drm_panel *panel, struct panel_param_info *param_info)
+{
+	struct lcm *ctx = panel_to_lcm(panel);
+	int ret = 0;
+
+	switch (param_info->param_idx) {
+		case PARAM_CABC:
+		case PARAM_ACL:
+			ret = -1;
+			break;
+		case PARAM_HBM:
+			ret = -1;
+			break;
+		case PARAM_DC:
+			param_info->value = atomic_read(&ctx->dc_mode);
+			break;
+		default:
+			ret = -1;
+			break;
+	}
+	return ret;
+}
+
 static struct mtk_panel_para_table panel_ce_on[] = {
 	{5, {0xFF, 0xAA, 0x55, 0xA5, 0x81}},
 	{2, {0x6F, 0x0E}},
@@ -972,6 +1002,7 @@ static struct mtk_panel_funcs ext_funcs = {
 	.ext_param_set = mtk_panel_ext_param_set,
 	.mode_switch = mode_switch,
 	.panel_feature_set = panel_feature_set,
+	.panel_feature_get = panel_feature_get,
 	.panel_ce_set_cmdq = panel_ce_set_cmdq,
 	.panel_ce_get = panel_ce_get,
 };
