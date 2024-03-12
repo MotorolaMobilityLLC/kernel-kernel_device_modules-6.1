@@ -884,7 +884,7 @@ def get_overlay_modules_list():
         mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/power/bq25980_mmi:bq25980_mmi")
         mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/power/mmi_pephv:mmi_pephv")
         mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/power/cps4041_mmi:cps4041_mmi")
-	mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/power/qpnp_adaptive_charge:qpnp_adaptive_charge")
+        mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/power/qpnp_adaptive_charge:qpnp_adaptive_charge")
         mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/input/touchscreen/goodix_berlin_u_mmi:goodix_brl_u_mmi")
         mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/input/touchscreen/touchscreen_u_mmi:touchscreen_u_mmi")
         mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/input/touchscreen/goodix_gt96x_u_mmi:goodix_gt96x_u_mmi")
