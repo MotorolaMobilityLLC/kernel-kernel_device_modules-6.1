@@ -48,6 +48,18 @@ unsigned short g_downloadByForce;
 
 const struct firmware *dw9784fw;
 
+typedef struct {
+	motOISExtInfType ext_state;
+	motOISExtIntf ext_data;
+	struct work_struct ext_work;
+} ois_ext_work_struct;
+
+static struct workqueue_struct *ois_ext_workqueue;
+static ois_ext_work_struct ois_ext_work;
+
+static DEFINE_MUTEX(ois_mutex);
+static motOISGOffsetResult dw9784GyroOffsetResult;
+
 #define DW9784_OIS_I2C_SLAVE_ADDR 0x54
 #define DW9784_REG_CHIP_CTRL              0xD000
 #define DW9784_REG_OIS_DSP_CTRL           0xD001
@@ -149,9 +161,567 @@ void ois_reset(void)
 	ois_i2c_wr_u16(m_client, 0xEBF1, 0x56FA);
 }
 
+static short h2d( unsigned short u16_inpdat )
+{
+	short s16_temp;
+
+	s16_temp = u16_inpdat;
+
+	if( u16_inpdat > 32767 )
+	{
+		s16_temp = (unsigned short)(u16_inpdat - 65536L);
+	}
+
+	return s16_temp;
+}
+
+int circle_motion_test (int radius, int accuracy, int deg_step, int w_time0,
+                               int w_time1, int w_time2, int ref_stroke, motOISExtData *pResult)
+{
+	signed short REF_POSITION_RADIUS[2];
+	signed short circle_adc[4][512];
+	signed short circle_cnt;
+	signed short ADC_PER_MIC[2];
+	signed short POSITION_ACCURACY[2];
+	signed short RADIUS_GYRO_RESULT;
+	signed short TARGET_RADIUS[2];
+	unsigned short GYRO_GAIN[2];
+	unsigned short TARGET_POSITION[2];
+	unsigned short MEASURE_POSITION[2];
+	signed short MAX_POS[2];
+	signed short DIFF[2];
+	signed short deg;
+	signed short get;
+	int NG_Points = 0;
+	unsigned short lens_ofst_x, lens_ofst_y;
+	int hallx, hally;
+
+	if (!pResult) {
+		LOG_INF("FATAL ERROR: pResult is NULL.");
+		return OIS_ERROR;
+	}
+
+	LOG_INF("[circle_motion_test] raius:%d,accuracy:%d,deg_step:%d,wait0:%d,wait1:%d,wait2:%d, ref_stroke:%d",
+					        radius, accuracy, deg_step, w_time0,
+					        w_time1, w_time2, ref_stroke);
+
+	// set ois to servo on mode
+	LOG_INF("[circle_motion_test] ois_hall_test start, set ois to servo on mode");
+
+	ois_i2c_wr_u16(m_client, 0x7012, 0x0001);
+	ois_mdelay(1);
+	ois_i2c_wr_u16(m_client, 0x7011, 0x0001);
+	ois_mdelay(1);
+
+	if (dw9784_wait_check_register(0x7010, 0x1001) == FUNC_PASS)
+	{
+		LOG_INF("[circle_motion_test] ois servo on success");
+		ois_mdelay(50);
+	}
+	else
+	{
+		LOG_INF("[circle_motion_test] ois servo on fail");
+	}
+
+	ois_i2c_rd_u16(m_client, 0x7210, &lens_ofst_x);		/* lens offset */
+	ois_i2c_rd_u16(m_client, 0x7280, &lens_ofst_y);
+	LOG_INF("[circle_motion_test] Lens ofst X = 0x%04X -- Lens ofst Y = 0x%04X\r\n", lens_ofst_x, lens_ofst_y);
+
+	ois_i2c_rd_u16(m_client, 0x7182, &GYRO_GAIN[AXIS_X]);	//Read Gyro gain
+	ois_i2c_rd_u16(m_client, 0x7183, &GYRO_GAIN[AXIS_Y]);
+
+	LOG_INF("[circle_motion_test] Gyro Gain X = 0x%04X -- Gyro Gain Y = 0x%04X\r\n", GYRO_GAIN[AXIS_X], GYRO_GAIN[AXIS_Y]);
+
+	REF_POSITION_RADIUS[AXIS_X] = REF_GYRO_RESULT * h2d(GYRO_GAIN[AXIS_X]) >> 13;  /* [code/deg] */
+	REF_POSITION_RADIUS[AXIS_Y] = REF_GYRO_RESULT * h2d(GYRO_GAIN[AXIS_Y]) >> 13;
+
+	LOG_INF("[circle_motion_test] REF_POSITION_RADIUS_X = %d -- REF_POSITION_RADIUS_Y = %d\r\n", REF_POSITION_RADIUS[AXIS_X], REF_POSITION_RADIUS[AXIS_Y]);
+
+	ADC_PER_MIC[AXIS_X] = (signed short)REF_POSITION_RADIUS[AXIS_X] / (ref_stroke / 100);  /* [code/um] */
+	ADC_PER_MIC[AXIS_Y] = (signed short)REF_POSITION_RADIUS[AXIS_Y] / (ref_stroke / 100);
+
+	LOG_INF("[circle_motion_test] ADC_PER_MIC_X = %06d[code/um] -- ADC_PER_MIC_Y = %06d[code/um]\r\n", ADC_PER_MIC[AXIS_X], ADC_PER_MIC[AXIS_Y]);
+
+	POSITION_ACCURACY[AXIS_X] = (signed short)ADC_PER_MIC[AXIS_X] * accuracy;
+	POSITION_ACCURACY[AXIS_Y] = (signed short)ADC_PER_MIC[AXIS_Y] * accuracy;
+
+	LOG_INF("[circle_motion_test] POSITION_ACCURACYX = %06d[code] -- POSITION_ACCURACY = %06d[code] -- ACCURACY : %d[um]\r\n", POSITION_ACCURACY[AXIS_X], POSITION_ACCURACY[AXIS_Y], accuracy);
+
+	RADIUS_GYRO_RESULT = (signed short)REF_GYRO_RESULT * radius / (ref_stroke / 100);  /* [deg/um] */
+
+	LOG_INF("[circle_motion_test] RADIUS_GYRO_RESULT = %06d\r\n", RADIUS_GYRO_RESULT);
+
+	TARGET_RADIUS[AXIS_X] = RADIUS_GYRO_RESULT * GYRO_GAIN[AXIS_X] >> 13;  /* code] */
+	TARGET_RADIUS[AXIS_Y] = RADIUS_GYRO_RESULT * GYRO_GAIN[AXIS_Y] >> 13;
+
+	LOG_INF("[circle_motion_test] TARGET_RADIUS_X = %06d[code] -- _Y = %06d[code]\r\n", TARGET_RADIUS[AXIS_X], TARGET_RADIUS[AXIS_Y]);
+
+	deg = 0;
+	TARGET_POSITION[AXIS_X] = TARGET_RADIUS[AXIS_X] * tab_cos[0] / 1000;
+	TARGET_POSITION[AXIS_Y] = TARGET_RADIUS[AXIS_Y] * tab_sin[0] / 1000;
+
+	//Enter Servo on OIS off mode, to let target pos can take effect.
+	ois_i2c_wr_u16(m_client, 0x7012, 0x0001);
+	ois_mdelay(1);
+	ois_i2c_wr_u16(m_client, 0x7011, 0x0001);
+	ois_mdelay(100);
+
+	ois_i2c_wr_u16(m_client, 0x7100, TARGET_POSITION[AXIS_X]);		/* target position */
+	ois_i2c_wr_u16(m_client, 0x7130, TARGET_POSITION[AXIS_Y]);
+
+	ois_mdelay(w_time0);	/* move to 1st position */
+	circle_cnt = 0;
+	NG_Points = 0;
+
+	LOG_INF("[circle_motion_test] STEP, DEGREE, TARGET_X, HALL_X, DIFF_X, TARGET_Y, HALL_Y, DIFF_Y\r\n");
+
+	for (deg = 0; deg <= 360; deg += deg_step)
+	{
+		TARGET_POSITION[AXIS_X] = (unsigned short)TARGET_RADIUS[AXIS_X] * tab_cos[deg] / 1000;
+		TARGET_POSITION[AXIS_Y] = (unsigned short)TARGET_RADIUS[AXIS_Y] * tab_sin[deg] / 1000;
+
+		ois_i2c_wr_u16(m_client, 0x7100, TARGET_POSITION[AXIS_X]);
+		ois_i2c_wr_u16(m_client, 0x7130, TARGET_POSITION[AXIS_Y]);
+		ois_mdelay(w_time1);		//Delay for each step
+
+		MAX_POS[AXIS_X] = -1;
+		MAX_POS[AXIS_Y] = -1;
+
+		DIFF[AXIS_X] = 0;
+		DIFF[AXIS_Y] = 0;
+
+		hallx = 0;
+		hally = 0;
+
+		for (get = 0; get < GET_POSITION_COUNT; get ++)
+		{
+			ois_i2c_rd_u16(m_client, 0x7101, &MEASURE_POSITION[AXIS_X]);	//Hall A/D code
+			ois_i2c_rd_u16(m_client, 0x7131, &MEASURE_POSITION[AXIS_Y]);
+			ois_mdelay(w_time2);	//Delay for each Hall Read
+
+			hallx += h2d(MEASURE_POSITION[AXIS_X]);
+			hally += h2d(MEASURE_POSITION[AXIS_Y]);
+			LOG_INF("[circle_motion_test] get %d, hallx %d, hally %d", get, hallx, hally);
+		}
+		DIFF[AXIS_X] = abs(h2d(TARGET_POSITION[AXIS_X]) - hallx/GET_POSITION_COUNT);
+		DIFF[AXIS_Y] = abs(h2d(TARGET_POSITION[AXIS_Y]) - hally/GET_POSITION_COUNT);
+
+		MAX_POS[AXIS_X] = DIFF[AXIS_X];
+		MAX_POS[AXIS_Y] = DIFF[AXIS_Y];
+
+		circle_adc[0][circle_cnt] = h2d(TARGET_POSITION[AXIS_X]);
+		circle_adc[1][circle_cnt] = (signed short)hallx/GET_POSITION_COUNT;
+		circle_adc[2][circle_cnt] = h2d(TARGET_POSITION[AXIS_Y]);
+		circle_adc[3][circle_cnt] = (signed short)hally/GET_POSITION_COUNT;
+
+		LOG_INF("[circle_motion_test] %6d, %6d, %6d, %6d, %6d, %6d, %6d, %6d\r\n",circle_cnt, deg, circle_adc[0][circle_cnt], circle_adc[1][circle_cnt],
+			MAX_POS[AXIS_X], circle_adc[2][circle_cnt], circle_adc[3][circle_cnt], MAX_POS[AXIS_Y]);
+/*
+		pResult->hea_result.g_targetAdc[0][circle_cnt] = circle_adc[0][circle_cnt];
+		pResult->hea_result.g_targetAdc[1][circle_cnt] = circle_adc[1][circle_cnt];
+		pResult->hea_result.g_targetAdc[2][circle_cnt] = circle_adc[2][circle_cnt];
+		pResult->hea_result.g_targetAdc[3][circle_cnt] = circle_adc[3][circle_cnt];
+		pResult->hea_result.g_diffs[AXIS_X][circle_cnt] = MAX_POS[AXIS_X];
+		pResult->hea_result.g_diffs[AXIS_Y][circle_cnt] = MAX_POS[AXIS_Y];
+		//HallAccuray.g_ADC_PER_MIC[AXIS_X] = ADC_PER_MIC[AXIS_X];
+		//HallAccuray.g_ADC_PER_MIC[AXIS_Y] = ADC_PER_MIC[AXIS_Y];
+*/
+		circle_cnt++;
+
+		/* Calculate total points that over Spec */
+		if ((MAX_POS[AXIS_X] > POSITION_ACCURACY[AXIS_X]) ||  (MAX_POS[AXIS_Y] > POSITION_ACCURACY[AXIS_Y]))
+		{
+			NG_Points ++;
+		}
+	}
+	pResult->hea_result.ng_points = NG_Points;
+	LOG_INF("[circle_motion_test] NG points = %d\r\n", NG_Points );
+
+	ois_i2c_wr_u16(m_client, 0x7100, 0);
+	ois_i2c_wr_u16(m_client, 0x7130, 0);
+
+	return NG_Points;
+}
+
+int dw9784_wait_check_register(unsigned short reg, unsigned short ref)
+{
+	/*
+	reg : read target register
+	ref : compare reference data
+	*/
+	unsigned short r_data;
+	int i=0;
+
+	for(i = 0; i < LOOP_A; i++) {
+		ois_i2c_rd_u16(m_client, reg, &r_data); //Read status
+		if(r_data == ref) {
+			break;
+		}
+		else {
+			if (i >= LOOP_B) {
+				LOG_INF("[dw9784_wait_check_register]fail: 0x%04X", r_data);
+				return FUNC_FAIL;
+			}
+		}
+		ois_mdelay(WAIT_TIME);
+	}
+	return FUNC_PASS;
+}
+
+int gyro_offset_check_update(void)
+{
+	#define MAX_GAP_PERCENT 10
+	unsigned short xOffset, yOffset;
+	unsigned int x_delta_p, y_delta_p;
+	int need_update = 0;
+
+	if (dw9784GyroOffsetResult.is_success == 0) {
+		//We have valid value
+		ois_i2c_rd_u16(m_client, 0x7180, &xOffset);
+		ois_i2c_rd_u16(m_client, 0x7181, &yOffset);
+		x_delta_p = abs(dw9784GyroOffsetResult.x_offset - xOffset)*100 / dw9784GyroOffsetResult.x_offset;
+		y_delta_p = abs(dw9784GyroOffsetResult.y_offset - yOffset)*100 / dw9784GyroOffsetResult.y_offset;
+
+		LOG_INF("check gyro_offset before write: %d, %d, hal data: %d, %d", xOffset, yOffset,
+			dw9784GyroOffsetResult.x_offset, dw9784GyroOffsetResult.y_offset);
+		if((xOffset == dw9784GyroOffsetResult.x_offset) && (yOffset == dw9784GyroOffsetResult.y_offset)) {
+			need_update = 0;
+		} else if (xOffset == 0 || yOffset == 0 ||
+				dw9784GyroOffsetResult.x_offset == 0 || dw9784GyroOffsetResult.y_offset == 0){
+			need_update = 1;
+		} else if(x_delta_p > MAX_GAP_PERCENT || x_delta_p > MAX_GAP_PERCENT){
+			need_update = 1;
+		} else {
+			need_update = 0;
+		}
+
+		if (need_update) {
+			LOG_INF("gyro_offset updating from(%d,%d) to (%d,%d), delta(%d,%d)\r\n", xOffset, yOffset,
+				dw9784GyroOffsetResult.x_offset, dw9784GyroOffsetResult.y_offset, x_delta_p, y_delta_p);
+			ois_i2c_wr_u16(m_client, 0x7180, dw9784GyroOffsetResult.x_offset);
+			ois_i2c_wr_u16(m_client, 0x7181, dw9784GyroOffsetResult.y_offset);
+			calibration_save();
+
+			xOffset = 0;
+			yOffset = 0;
+
+			ois_i2c_rd_u16(m_client, 0x7180, &xOffset);
+			ois_i2c_rd_u16(m_client, 0x7181, &yOffset);
+			LOG_INF("gyro_offset read back (%d,%d)", xOffset, yOffset);
+			if (xOffset != dw9784GyroOffsetResult.x_offset || yOffset != dw9784GyroOffsetResult.y_offset) {
+				LOG_INF("FATAL error gyro_offset update failed!!!");
+			}
+		} else {
+			LOG_INF("no need update gyro_offset");
+		}
+	} else {
+		return OIS_ERROR;
+	}
+	return OIS_SUCCESS;
+}
+
+int gyro_offset_calibration(void)
+{
+	uint16_t chipID = 0;
+	int ret = 0;
+	int msg = GYRO_OFFSET_CAL_OK;
+	uint16_t x_ofs, y_ofs, gyro_status;
+
+	LOG_INF("[dw9784_test] gyro_offset_calibration starting\r\n");
+	// set ois to servo on mode
+	LOG_INF("[dw9784_test] gyro_offset_calibration start, set ois to servo on mode");
+
+	ois_i2c_wr_u16(m_client, 0x7012, 0x0001);
+	ois_mdelay(1);
+
+	ois_i2c_wr_u16(m_client, 0x7011, 0x0001);
+	ois_mdelay(1);
+
+	if (dw9784_wait_check_register(0x7010, 0x1001) == FUNC_PASS)
+	{
+		LOG_INF("[dw9784_test] ois servo on successfully");
+		ois_mdelay(50);
+	}
+	else
+	{
+		LOG_INF("[dw9784_test] ois servo on failed");
+		return FUNC_FAIL;
+	}
+
+	ois_i2c_rd_u16(m_client, 0x7000, &chipID);
+	LOG_INF("[dw9784_test] ois chipID 0x%x", chipID);
+
+	ois_i2c_wr_u16(m_client, 0x7012, 0x0006);      // gyro offset calibration
+	ois_mdelay(1);
+
+	if (dw9784_wait_check_register(0x7010, 0x6000) == FUNC_PASS)
+	{
+		ois_i2c_wr_u16(m_client, 0x7011, 0x0001);  // gyro ofs calibration execute command
+		ois_mdelay(100);
+	}
+	else
+	{
+		LOG_INF("[dw9784_test] check register 0x7010 = 0x6000 failed");
+		ret = FUNC_FAIL;
+	}
+
+	LOG_INF("[dw9784_test] gyro_offset_calibration executing");
+
+	LOG_INF("[dw9784_test] gyro_offset_calibration start to get result");
+
+	if (dw9784_wait_check_register(0x7010, 0x6001) == FUNC_PASS) // when calibration is done, Status changes to 0x6001
+	{
+		LOG_INF("[dw9784_test] calibration function finish");
+	}
+	else
+	{
+		msg += OIS_GYRO_CAL_TIME_OVER;
+		LOG_INF("[dw9784_test] calibration function timeout, msg 0x%02x", msg);
+		return msg;
+	}
+
+	ois_i2c_rd_u16(m_client, 0x7180, &x_ofs);       /* x gyro offset */
+	ois_i2c_rd_u16(m_client, 0x7181, &y_ofs);       /* y gyro offset */
+	ois_i2c_rd_u16(m_client, 0x7195, &gyro_status); /* gyro offset status */
+
+	LOG_INF("[dw9784_test] x gyro offset: 0x%04X(%d)", x_ofs, x_ofs);
+	LOG_INF("[dw9784_test] y gyro offset: 0x%04X(%d)", y_ofs, y_ofs);
+	LOG_INF("[dw9784_test] gyro_status: 0x%04X", gyro_status);
+
+	if ((gyro_status & 0x8000)== 0x8000) /* Read Gyro offset cailbration result status */
+	{
+		if ((gyro_status & 0x1) == 0x1)
+		{
+			msg += GYRO_OFFSET_CAL_OK;
+			LOG_INF("[dw9784_test] x gyro ofs cal pass");
+		}
+		else
+		{
+			msg += X_AXIS_GYRO_OFS_FAIL;
+			LOG_INF("[dw9784_test] x gyro ofs cal fail");
+		}
+
+		if ((gyro_status & 0x10) == 0x10)
+		{
+			msg += X_AXIS_GYRO_OFS_OVER_MAX_LIMIT;
+			LOG_INF("[dw9784_test] x gyro ofs over the max. limit");
+		}
+
+		if ((gyro_status & 0x2) == 0x2)
+		{
+			msg += GYRO_OFFSET_CAL_OK;
+			LOG_INF("[dw9784_test] y gyro ofs cal pass");
+		}
+		else
+		{
+			msg += Y_AXIS_GYRO_OFS_FAIL;
+			LOG_INF("[dw9784_test] y gyro ofs cal fail");
+		}
+
+		if ((gyro_status & 0x20) == 0x20)
+		{
+			msg += Y_AXIS_GYRO_OFS_OVER_MAX_LIMIT;
+			LOG_INF("[dw9784_test] y gyro ofs over the max. limit");
+		}
+
+		if ((gyro_status & 0x800) == 0x800)
+		{
+			msg += XY_AXIS_CHECK_GYRO_RAW_DATA;
+			LOG_INF("[dw9784_test] check the x/y gyro raw data");
+		}
+
+		LOG_INF("[dw9784_test] x/y gyro ofs calibration complete, start to store results");
+	} else {
+		LOG_INF("[dw9784_test] x/y gyro ofs calibration done fail");
+		msg += GYRO_OFS_CAL_DONE_FAIL;
+	}
+
+	if (msg == GYRO_OFFSET_CAL_OK)
+	{
+		dw9784GyroOffsetResult.is_success = 0;
+		dw9784GyroOffsetResult.x_offset = x_ofs;
+		dw9784GyroOffsetResult.y_offset = y_ofs;
+		LOG_INF("[dw9784_test] dw9784GyroOffsetResult.is_success %d, dw9784GyroOffsetResult.x_offset 0x%x, dw9784GyroOffsetResult.y_offset 0x%x",
+                                dw9784GyroOffsetResult.is_success, dw9784GyroOffsetResult.x_offset, dw9784GyroOffsetResult.y_offset);
+		calibration_save();
+	} else {
+		memset(&dw9784GyroOffsetResult, 0x0, sizeof(dw9784GyroOffsetResult));
+		dw9784GyroOffsetResult.is_success = msg;
+	}
+
+	return msg;
+}
+
+motOISGOffsetResult *dw9784_get_gyro_offset_result(void)
+{
+	return &dw9784GyroOffsetResult;
+}
+
+int calibration_save(void)
+{
+	LOG_INF("[dw9784_test] calibration_save start");
+
+	ois_i2c_wr_u16(m_client, 0x7012, 0x000A); //Set store mode
+
+	// When store is done, status changes to 0xA000
+	if (dw9784_wait_check_register(0x7010, 0xA000) == FUNC_PASS)
+	{
+		LOG_INF("[dw9784_test] successful entry into store mode");
+	}
+	else
+	{
+		LOG_INF("[dw9784_test] failed to enter store mode");
+		return FUNC_FAIL;
+	}
+
+	dw9784_code_pt_off(); /* code protection off */
+
+	ois_i2c_wr_u16(m_client, 0x700F, 0x5959); //Set protect code
+	ois_mdelay(1);
+
+	ois_i2c_wr_u16(m_client, 0x7011, 0x0001); //Execute store
+	ois_mdelay(40);
+
+	// When store is done, status changes to 0xA001
+	if (dw9784_wait_check_register(0x7010, 0xA001) == FUNC_PASS)
+	{
+		ois_reset();
+		LOG_INF("[dw9784_test] calibration_save finish");
+	}
+	else
+	{
+		LOG_INF("[dw9784_test] calibration_save fail");
+		return FUNC_FAIL;
+	}
+
+	LOG_INF("[dw9784_test] calibration save finish\r\n");
+
+	return OIS_SUCCESS;
+}
+
+static motOISExtData *pDW9784TestResult = NULL;
+
+int DW9784_EXT_CMD_HANDLER(motOISExtIntf *pExtCmd)
+{
+	switch (pExtCmd->cmd) {
+		case OIS_SART_FW_DL:
+			LOG_INF("Kernel OIS_SART_FW_DL\n");
+			break;
+		case OIS_START_HEA_TEST:
+			{
+				if (!pDW9784TestResult) {
+					pDW9784TestResult = (motOISExtData *)kzalloc(sizeof(motOISExtData), GFP_NOWAIT);
+				}
+
+				LOG_INF("Kernel OIS_START_HEA_TEST\n");
+				if (pDW9784TestResult) {
+					LOG_INF("OIS raius:%d,accuracy:%d,step/deg:%d,wait0:%d,wait1:%d,wait2:%d, ref_stroke:%d",
+					        pExtCmd->data.hea_param.radius,
+					        pExtCmd->data.hea_param.accuracy,
+					        pExtCmd->data.hea_param.steps_in_degree,
+					        pExtCmd->data.hea_param.wait0,
+					        pExtCmd->data.hea_param.wait1,
+					        pExtCmd->data.hea_param.wait2,
+					        pExtCmd->data.hea_param.ref_stroke);
+					circle_motion_test(pExtCmd->data.hea_param.radius,
+					                   pExtCmd->data.hea_param.accuracy,
+					                   pExtCmd->data.hea_param.steps_in_degree,
+					                   pExtCmd->data.hea_param.wait0,
+					                   pExtCmd->data.hea_param.wait1,
+					                   pExtCmd->data.hea_param.wait2,
+					                   pExtCmd->data.hea_param.ref_stroke,
+					                   pDW9784TestResult);
+					LOG_INF("OIS HALL NG points:%d", pDW9784TestResult->hea_result.ng_points);
+				} else {
+					LOG_INF("FATAL: Kernel OIS_START_HEA_TEST memory error!!!\n");
+				}
+				break;
+			}
+		case OIS_START_GYRO_OFFSET_CALI:
+			LOG_INF("Kernel OIS_START_GYRO_OFFSET_CALI\n");
+			gyro_offset_calibration();
+			break;
+		default:
+			LOG_INF("Kernel OIS invalid cmd\n");
+			break;
+	}
+	return 0;
+}
+
+int DW9784_GET_TEST_RESULT(motOISExtIntf *pExtCmd)
+{
+	switch (pExtCmd->cmd) {
+		case OIS_QUERY_FW_INFO:
+			LOG_INF("Kernel OIS_QUERY_FW_INFO\n");
+			memset(&pExtCmd->data.fw_info, 0xff, sizeof(motOISFwInfo));
+			break;
+		case OIS_QUERY_HEA_RESULT:
+			{
+				LOG_INF("Kernel OIS_QUERY_HEA_RESULT\n");
+				if (pDW9784TestResult) {
+					memcpy(&pExtCmd->data.hea_result, &pDW9784TestResult->hea_result, sizeof(motOISHeaResult));
+					LOG_INF("OIS NG points:%d, Ret:%d", pDW9784TestResult->hea_result.ng_points, pExtCmd->data.hea_result.ng_points);
+				}
+				break;
+			}
+		case OIS_QUERY_GYRO_OFFSET_RESULT:
+			{
+				motOISGOffsetResult *gOffset = dw9784_get_gyro_offset_result();
+				LOG_INF("Kernel OIS_QUERY_GYRO_OFFSET_RESULT\n");
+				memcpy(&pExtCmd->data.gyro_offset_result, gOffset, sizeof(motOISGOffsetResult));
+				break;
+			}
+		default:
+			LOG_INF("Kernel OIS invalid cmd\n");
+			break;
+	}
+	return 0;
+}
+
+int DW9784_SET_CALIBRATION(motOISExtIntf *pExtCmd)
+{
+	switch (pExtCmd->cmd) {
+		case OIS_SET_GYRO_OFFSET:
+			{
+				if (pExtCmd->data.gyro_offset_result.is_success == 0 &&
+				    pExtCmd->data.gyro_offset_result.x_offset != 0 &&
+				    pExtCmd->data.gyro_offset_result.y_offset != 0) {
+					motOISGOffsetResult *gOffset = dw9784_get_gyro_offset_result();
+
+					//Update the gyro offset
+					gOffset->is_success = 0;
+					gOffset->x_offset = pExtCmd->data.gyro_offset_result.x_offset;
+					gOffset->y_offset = pExtCmd->data.gyro_offset_result.y_offset;
+
+					//Check if gyro offset update needed
+					gyro_offset_check_update();
+					LOG_INF("[%s] OIS update gyro_offset: %d,%d\n", __func__, gOffset->x_offset, gOffset->y_offset);
+				}
+			}
+			break;
+		default:
+			break;
+	}
+	return 0;
+}
+
+/* OIS extended interfaces */
+static void ois_ext_interface(struct work_struct *data)
+{
+	ois_ext_work_struct *pwork = container_of(data, ois_ext_work_struct, ext_work);
+
+	if (!pwork) return;
+
+	mutex_lock(&ois_mutex);
+
+	DW9784_EXT_CMD_HANDLER(&pwork->ext_data);
+	mutex_unlock(&ois_mutex);
+	LOG_INF("[dw9784_test] ext_data:%p, cmd:%d", &pwork->ext_data, pwork->ext_data.cmd);
+}
+
 static int dw9784_release(struct dw9784_device *dw9784)
 {
-	int ret = 0;
+	int ret = OIS_ERROR;
 	struct i2c_client *client = v4l2_get_subdevdata(&dw9784->sd);
 
 	ret = ois_i2c_wr_u16(client, DW9784_REG_OIS_CTRL, SERVO_OFF);
@@ -161,7 +731,18 @@ static int dw9784_release(struct dw9784_device *dw9784)
 	I2C_OPERATION_CHECK(ret);
 	ois_mdelay(10);
 
-	return 0;
+	flush_work(&ois_ext_work.ext_work);
+	if (ois_ext_workqueue) {
+		flush_workqueue(ois_ext_workqueue);
+		destroy_workqueue(ois_ext_workqueue);
+		ois_ext_workqueue = NULL;
+	}
+	if (pDW9784TestResult) {
+		kfree(pDW9784TestResult);
+		pDW9784TestResult = NULL;
+	}
+
+	return ret;
 }
 
 void erase_FW_flash_sector(void)
@@ -252,13 +833,13 @@ int dw9784_whoami_chk(void)
 		LOG_INF("[dw9784] second_chip_id check fail : 0x%04X", sec_chip_id);
 		LOG_INF("[dw9784] second_enter shutdown mode");
 		ret = ois_i2c_wr_u16(m_client, 0xD000, 0x0000); /* ic */
-		return -1;
+		return OIS_ERROR;
 	}
 
 	ois_reset(); /* ois reset */
 	ret = ois_i2c_rd_u16(m_client, 0x7194, &is_gyro);
 	LOG_INF("dw9784_whoami_chk ois_reset is_gyro: %x\n", is_gyro);
-	return 0;
+	return OIS_SUCCESS;
 }
 
 int dw9784_checksum_fw_chk(void)
@@ -281,11 +862,11 @@ int dw9784_checksum_fw_chk(void)
 	if( (reg_checksum_status & 0x0001) == 0)
 	{
 		LOG_INF("[dw9784_checksum_fw_chk] fw checksum pass");
-		return 0;
+		return OIS_SUCCESS;
 	}else
 	{
 		LOG_INF("[dw9784_checksum_fw_chk] fw checksum error reg_fw_checksum : 0x%04X", reg_fw_checksum);
-		return -1;
+		return OIS_ERROR;
 	}
 }
 
@@ -313,7 +894,7 @@ int dw9784_erase_mtp_rewritefw(void)
 		{
 			LOG_INF("[dw9784_download_fw] 2nd FMC register value 2nd warning : %04x", FMC);
 			LOG_INF("[dw9784_download_fw] stop f/w download");
-			return -1;
+			return OIS_ERROR;
 		}
 	}
 
@@ -328,7 +909,7 @@ int dw9784_erase_mtp_rewritefw(void)
 
 	ret = ois_i2c_wr_u16(m_client, 0xd000, 0x0000); /* Shut download mode */
 
-	return 0;
+	return OIS_SUCCESS;
 }
 
 int dw9784_prepare_fw_download(void)
@@ -359,14 +940,14 @@ int dw9784_prepare_fw_download(void)
 		{
 			LOG_INF("[dw9784_download_fw] 2nd FMC register value 2nd warning : %04x", FMC);
 			LOG_INF("[dw9784_download_fw] stop f/w download");
-			return -1;
+			return OIS_ERROR;
 		}
 	}
 
 	dw9784_code_pt_off();
 	erase_FW_flash_sector();
 	LOG_INF("[dw9784_download_fw] start firmware download");
-	return 0;
+	return OIS_SUCCESS;
 }
 
 int GenerateFirmwareContexts(void)
@@ -385,7 +966,7 @@ int GenerateFirmwareContexts(void)
 		if(!g_firmwareContext.fwContentPtr )
 		{
 			LOG_INF("kmalloc fwContentPtr failed in GenerateFirmwareContexts\n");
-			return -1;
+			return OIS_ERROR;
 		}
 		while(i<10496) {
 			(g_firmwareContext.fwContentPtr)[i] = (((dw9784fw->data)[2*i] << 8) + ((dw9784fw->data)[(2*i+1)]));
@@ -422,7 +1003,7 @@ int dw9784_check_if_download(void)
 		{
 			LOG_INF("[dw9784_download_fw] 2nd IF FMC register value 2nd fail : %04x", FMC);
 			LOG_INF("[dw9784_download_fw] stop firmware download");
-			return -1;
+			return OIS_ERROR;
 		}
 	}
 
@@ -430,7 +1011,7 @@ int dw9784_check_if_download(void)
 	dw9784_pid_erase();
 
 	LOG_INF("[dw9784_download_fw] start firmware/pid download");
-	return 0;
+	return OIS_SUCCESS;
 }
 
 void dw9784_post_firmware_download(void)
@@ -462,7 +1043,7 @@ int dw9784_download_fw(void)
 	if(buf_temp == NULL)
 	{
 		LOG_INF("kmalloc buf_temp failed in download_fw\n");
-		return -1;
+		return OIS_ERROR;
 	}
 	memset(buf_temp, 0, g_firmwareContext.size * sizeof(unsigned short));
 
@@ -558,7 +1139,7 @@ int dw9784_check_fw_download(void)
 
 	if (m_client == NULL) {
 		LOG_INF("FATAL: OIS CCI context error!!!");
-		return -1;
+		return OIS_ERROR;
 	}
 
 	ret = GenerateFirmwareContexts();
@@ -567,7 +1148,7 @@ int dw9784_check_fw_download(void)
 
 	if (dw9784_whoami_chk() != 0) {
 		LOG_INF("[dw9784] second chip id check fail");
-		return -1;
+		return OIS_ERROR;
 	}
 
 	ret = ois_i2c_rd_u16(m_client, DW9784_CHIP_ID_ADDRESS, &first_chip_id);
@@ -848,6 +1429,11 @@ static int dw9784_open(struct v4l2_subdev *sd, struct v4l2_subdev_fh *fh)
 		return ret;
 	}
 
+	/* OIS ext interfaces for test and firmware checking */
+	INIT_WORK(&ois_ext_work.ext_work, ois_ext_interface);
+	if (ois_ext_workqueue == NULL) {
+		ois_ext_workqueue = create_singlethread_workqueue("ois_ext_intf");
+	}
 	return 0;
 }
 
@@ -880,6 +1466,7 @@ static long dw9784_ops_core_ioctl(struct v4l2_subdev *sd, unsigned int cmd, void
 	ret = ois_i2c_rd_u16(client, 0x7131, &ois_dara_b);
 	LOG_INF("get ois_dara_b 0x%x\n",ois_dara_b);
 
+	LOG_INF("dw9784_ops_core_ioctl cmd 0x%x\n", cmd);
 	switch (cmd) {
 
 	case VIDIOC_MTK_S_OIS_MODE:
@@ -912,6 +1499,54 @@ static long dw9784_ops_core_ioctl(struct v4l2_subdev *sd, unsigned int cmd, void
 
 		if (copy_to_user((void *)info->p_ois_info, &pos_info, sizeof(pos_info)))
 			ret = -EFAULT;
+	}
+	break;
+
+	case OISIOC_G_OISEXTINTF:
+	{
+		motOISExtIntf *pOisExtData = arg;
+		memcpy(&ois_ext_work.ext_data, pOisExtData, sizeof(motOISExtIntf));
+		if ((ois_ext_work.ext_data.cmd > OIS_EXT_INVALID_CMD) && (ois_ext_work.ext_data.cmd <= OIS_ACTION_MAX)) {
+			//Raise new thread to avoid long execution time block capture requests
+			LOG_INF("OIS ext_state:%d, cmd:%d", ois_ext_work.ext_state, ois_ext_work.ext_data.cmd);
+			if (ois_ext_work.ext_state != ois_ext_work.ext_data.cmd) {
+
+				if (ois_ext_workqueue) {
+					LOG_INF("OIS queue ext work...");
+					queue_work(ois_ext_workqueue, &ois_ext_work.ext_work);
+				}
+
+				ois_ext_work.ext_state = ois_ext_work.ext_data.cmd;
+			}
+		} else if ((ois_ext_work.ext_data.cmd > OIS_ACTION_MAX) && (ois_ext_work.ext_data.cmd <= OIS_EXT_INTF_MAX)) {
+			//wait till result ready
+			motOISExtIntf * pResultData = NULL;
+
+			pResultData =  (motOISExtIntf *) kzalloc(sizeof(motOISExtIntf), GFP_KERNEL);
+
+		        if (!pResultData) {
+				ret = -ENOMEM;
+				break;
+			}
+
+			pResultData->cmd = ois_ext_work.ext_data.cmd;
+			mutex_lock(&ois_mutex);
+			DW9784_GET_TEST_RESULT(pResultData);
+			mutex_unlock(&ois_mutex);
+			memcpy((void *)arg, pResultData, sizeof(motOISExtIntf));
+			ois_ext_work.ext_state = ois_ext_work.ext_data.cmd;
+			if (pResultData) {
+				kfree(pResultData);
+				pResultData = NULL;
+			}
+		} else if (ois_ext_work.ext_data.cmd == OIS_SET_GYRO_OFFSET) {
+			mutex_lock(&ois_mutex);
+			DW9784_SET_CALIBRATION(&ois_ext_work.ext_data);
+			mutex_unlock(&ois_mutex);
+			LOG_INF("OIS update gyro_offset to %d, %d",
+					ois_ext_work.ext_data.data.gyro_offset_result.x_offset,
+					ois_ext_work.ext_data.data.gyro_offset_result.y_offset);
+		}
 	}
 	break;
 
