@@ -215,3 +215,9 @@ config MOTO_CHANNEL_SWITCH
         default n
         help
           This is to enable MOTO supports of charger channel switch.
+
+config MOTO_WLS_OTG_SWITCH
+        bool "WIRELESS OTG CHANNEL SWITCH  control support"
+        default n
+        help
+          This is to enable MOTO supports of wls otg switch.
