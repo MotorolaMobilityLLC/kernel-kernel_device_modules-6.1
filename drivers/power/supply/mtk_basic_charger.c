@@ -247,11 +247,18 @@ static bool select_charging_current_limit(struct mtk_charger *info,
 	}
 
 	info->setting.mmi_fcc_limit  =  ((info->mmi.target_fcc < 0) ? 0 : info->mmi.target_fcc);
-	if (pdata->thermal_charging_current_limit < 0 ||
-		pdata->thermal_charging_current_limit > info->mmi.min_therm_current_limit)
+
+	if (!IS_ERR_OR_NULL(info->cp_cdev) &&
+			(info->cp_thermal_fcc < 0 ||
+			info->cp_thermal_fcc > info->mmi.min_therm_current_limit))
+		info->setting.mmi_current_limit_dvchg1 = info->cp_thermal_fcc;
+	else if (IS_ERR_OR_NULL(info->cp_cdev) &&
+			(pdata->thermal_charging_current_limit < 0 ||
+			pdata->thermal_charging_current_limit > info->mmi.min_therm_current_limit))
 		info->setting.mmi_current_limit_dvchg1 = pdata->thermal_charging_current_limit;
 	else
 		info->setting.mmi_current_limit_dvchg1 = info->mmi.min_therm_current_limit;
+
 	if (support_fast_charging(info))
 		is_basic = false;
 	else {
@@ -503,13 +510,24 @@ static int do_algorithm(struct mtk_charger *info)
 				chr_err("%s: alg:%s alg_vbus:%d\n", __func__,
 					dev_name(&alg->dev), val);
 				continue;
-			} else if ((pdata->thermal_charging_current_limit > 0)
+			} else if (IS_ERR_OR_NULL(info->cp_cdev)
+				&& (pdata->thermal_charging_current_limit > 0)
 				&& (pdata->thermal_charging_current_limit < info->mmi.min_therm_current_limit)
 				&& ((alg->alg_id & PE5_ID) || (alg->alg_id & PEHV_ID))) {
 				charger_dev_enable(info->chg1_dev, true);
 				chg_alg_stop_algo(alg);
 				chr_err("%s: alg:%s due to thermal limit current%d < %d\n", __func__,
 					dev_name(&alg->dev), pdata->thermal_charging_current_limit,
+					info->mmi.min_therm_current_limit);
+				continue;
+			} else if (!IS_ERR_OR_NULL(info->cp_cdev)
+				&& (info->cp_thermal_fcc > 0)
+				&& (info->cp_thermal_fcc < info->mmi.min_therm_current_limit)
+				&& ((alg->alg_id & PE5_ID) || (alg->alg_id & PEHV_ID))) {
+				charger_dev_enable(info->chg1_dev, true);
+				chg_alg_stop_algo(alg);
+				chr_err("%s: alg:%s due to thermal limit current%d < %d\n", __func__,
+					dev_name(&alg->dev), info->cp_thermal_fcc,
 					info->mmi.min_therm_current_limit);
 				continue;
 			}

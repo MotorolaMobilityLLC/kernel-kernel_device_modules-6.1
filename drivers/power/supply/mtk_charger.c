@@ -2648,8 +2648,9 @@ static void mmi_blance_charger_check_status(struct mtk_charger *info)
 	struct mmi_sm_params *prm = &info->mmi.sm_param[FLIP_BATT];
 	union power_supply_propval pval;
 	bool charging = true;
-	int target_fcc = (prm->target_fcc >= 0) ? prm->target_fcc:0;
+	int target_fcc = (prm->target_fcc >= 0) ? prm->target_fcc:0; //mA
 	int blance_ibat_limit = 0; //mA
+	int pre_blance_ibat_limit = 0; //mA
 	int batt_mv = 0;
 	int ret = 0;
 	int flip_chg_state = CHARGE_STATE_UNKONW;
@@ -2673,28 +2674,31 @@ static void mmi_blance_charger_check_status(struct mtk_charger *info)
 
 	pr_info("balance ic chg state %d, target fv %d, batt_mv %d\n", flip_chg_state, prm->target_fv, batt_mv);
 
+	ret = charger_dev_get_charging_current(info->blance_dev, &blance_ibat_limit);
+	if (ret < 0)
+		blance_ibat_limit = target_fcc;
+	else
+		blance_ibat_limit = blance_ibat_limit / 1000;
+
+	pre_blance_ibat_limit = blance_ibat_limit;
+
 	switch (flip_chg_state) {
 
 	case CHARGE_STATE_CC:
 		blance_ibat_limit = target_fcc;
-		pr_info("Blance config ichg %d ma\n", blance_ibat_limit);
 		blance_ibat_limit = (blance_ibat_limit >= 0) ? blance_ibat_limit : 0;
-		charger_dev_set_charging_current(info->blance_dev, blance_ibat_limit * 1000);
+		pr_info("update new blance_ibat_limit %dmA",blance_ibat_limit);
 		break;
 	case CHARGE_STATE_CV:
-		if ((prm->target_fv > 0) && ((batt_mv +5) > prm->target_fv)) {
-			ret = charger_dev_get_charging_current(info->blance_dev, &blance_ibat_limit);
-			if (ret < 0)
-				blance_ibat_limit = target_fcc;
-			else
-				blance_ibat_limit = blance_ibat_limit / 1000;
+		if (blance_ibat_limit > target_fcc) {
+			blance_ibat_limit = target_fcc;
+		} else if ((prm->target_fv > 0) && ((batt_mv +5) > prm->target_fv)) {
 
 			blance_ibat_limit -= IBAT_CHG_LIM_BASE;
 			pr_info("update new blance_ibat_limit %dmA, batt_mv %d+5 > target_fv %d\n",
 				blance_ibat_limit, batt_mv, prm->target_fv);
 
 			blance_ibat_limit = (blance_ibat_limit >= 0) ? blance_ibat_limit : 0;
-			charger_dev_set_charging_current(info->blance_dev, blance_ibat_limit * 1000);
 		}
 		break;
 	default:
@@ -2710,12 +2714,126 @@ static void mmi_blance_charger_check_status(struct mtk_charger *info)
 	if (target_fcc == 0)
 		charging = false;
 
+	if (pre_blance_ibat_limit != blance_ibat_limit) {
+		charger_dev_set_charging_current(info->blance_dev, blance_ibat_limit * 1000);
+	}
+
 	if (charging != info->blance_can_charging) {
 		charger_dev_enable(info->blance_dev, charging);
 		info->blance_can_charging = charging;
 	}
 
 }
+
+static int mmi_blance_charger_get_max_state(struct thermal_cooling_device *tcd,
+	unsigned long *state)
+{
+	struct mtk_charger *info = tcd->devdata;
+
+	if (!info) {
+		chr_err("%s Error:info is NULL\n", __func__);
+		return -1;
+	}
+
+	*state = info->num_blance_thermal_zone - 1;
+
+	return 0;
+}
+
+static int mmi_blance_charger_get_cur_state(struct thermal_cooling_device *tcd,
+	unsigned long *state)
+{
+	struct mtk_charger *info = tcd->devdata;
+
+	if (!info) {
+		chr_err("%s Error:info is NULL\n", __func__);
+		return -1;
+	}
+
+	*state = info->blance_cur_state;
+
+	return 0;
+}
+
+static int mmi_blance_charger_set_cur_state(struct thermal_cooling_device *tcd,
+	unsigned long state)
+{
+	struct mtk_charger *info = tcd->devdata;
+
+	if ((state > info->num_blance_thermal_zone - 1) || !info->blance_thermal_zone)
+		return -EINVAL;
+
+	if (state == info->blance_cur_state)
+		return 0;
+
+	info->blance_thermal_fcc = info->blance_thermal_zone[state];
+	info->blance_cur_state = state;
+
+	_wake_up_charger(info);
+
+	return 0;
+}
+
+static const struct thermal_cooling_device_ops mmi_blance_charger_ops = {
+	.get_max_state = mmi_blance_charger_get_max_state,
+	.get_cur_state = mmi_blance_charger_get_cur_state,
+	.set_cur_state = mmi_blance_charger_set_cur_state,
+};
+
+static int mmi_cp_charger_get_max_state(struct thermal_cooling_device *tcd,
+	unsigned long *state)
+{
+	struct mtk_charger *info = tcd->devdata;
+
+	if (!info) {
+		chr_err("%s Error:info is NULL\n", __func__);
+		return -1;
+	}
+
+	*state = info->num_cp_thermal_zone - 1;
+
+	return 0;
+}
+
+static int mmi_cp_charger_get_cur_state(struct thermal_cooling_device *tcd,
+	unsigned long *state)
+{
+	struct mtk_charger *info = tcd->devdata;
+
+	if (!info) {
+		chr_err("%s Error:info is NULL\n", __func__);
+		return -1;
+	}
+
+	*state = info->cp_cur_state;
+
+	return 0;
+}
+
+static int mmi_cp_charger_set_cur_state(struct thermal_cooling_device *tcd,
+	unsigned long state)
+{
+	struct mtk_charger *info = tcd->devdata;
+
+	if ((state > info->num_cp_thermal_zone - 1) || !info->cp_thermal_zone)
+		return -EINVAL;
+
+	if (state == info->cp_cur_state)
+		return 0;
+
+	info->cp_thermal_fcc = info->cp_thermal_zone[state];
+	info->cp_cur_state = state;
+
+	_wake_up_charger(info);
+
+	return 0;
+}
+
+static const struct thermal_cooling_device_ops mmi_cp_charger_ops = {
+	.get_max_state = mmi_cp_charger_get_max_state,
+	.get_cur_state = mmi_cp_charger_get_cur_state,
+	.set_cur_state = mmi_cp_charger_set_cur_state,
+};
 
 static int  mtk_charger_tcmd_set_usb_current(void *input, int  val);
 static bool charger_init_algo(struct mtk_charger *info)
@@ -4620,6 +4738,11 @@ static void mmi_dual_charge_control(struct mtk_charger *chg,
 		target_fv = flip_p->target_fv;
 
 
+	if (chg->blance_thermal_fcc > 0 && (flip_p->target_fcc > chg->blance_thermal_fcc / 1000)) {
+		flip_p->target_fcc = chg->blance_thermal_fcc / 1000;
+		pr_info("[%s] flip thermal fcc %d ma\n", __func__, flip_p->target_fcc);
+	}
+
 	target_fcc = main_p->target_fcc + flip_p->target_fcc;
 
 
@@ -4957,6 +5080,33 @@ static int parse_mmi_dual_batt_dt(struct mtk_charger *info)
 	} else
 		chip->normal_zones = NULL;
 
+	if (of_find_property(node, "mmi,blance-thermal-mitigation", &byte_len)) {
+
+		info->blance_thermal_zone = (int *)
+			devm_kzalloc(dev, byte_len, GFP_KERNEL);
+
+		info->num_blance_thermal_zone =
+			byte_len / sizeof(u32);
+
+		if (info->blance_thermal_zone == NULL)
+			return -ENOMEM;
+
+		rc = of_property_read_u32_array(node,
+				"mmi,blance-thermal-mitigation",
+				(u32 *)info->blance_thermal_zone,
+				byte_len / sizeof(u32));
+		if (rc < 0) {
+			pr_err("Couldn't read mmi blance thermal mitigation rc = %d\n", rc);
+			return rc;
+		}
+
+		for (i = 0; i < info->num_blance_thermal_zone; i++) {
+			pr_err("mmi blance thermal mitigation:Zone %d,current %d", i,
+				 info->blance_thermal_zone[i]);
+		}
+	} else
+		info->blance_thermal_zone = NULL;
+
 	return rc;
 }
 
@@ -5092,6 +5242,8 @@ static int parse_mmi_dt(struct mtk_charger *info, struct device *dev)
 	struct device_node *node = dev->of_node;
 	const char *main_batt_name, *flip_batt_name;
 	int rc = 0;
+	int byte_len;
+	int i;
 
 	if (!node) {
 		pr_info("[%s]mmi dtree info. missing\n",__func__);
@@ -5175,6 +5327,33 @@ static int parse_mmi_dt(struct mtk_charger *info, struct device *dev)
 
 	info->typecotp_charger = of_property_read_bool(node, "mmi,typecotp-charger");
 	pr_info("%s typecotp_charger:%d \n", __func__, info->typecotp_charger);
+
+	if (of_find_property(node, "mmi,cp-thermal-mitigation", &byte_len)) {
+
+		info->cp_thermal_zone = (int *)
+			devm_kzalloc(dev, byte_len, GFP_KERNEL);
+
+		info->num_cp_thermal_zone =
+			byte_len / sizeof(u32);
+
+		if (info->cp_thermal_zone == NULL)
+			return -ENOMEM;
+
+		rc = of_property_read_u32_array(node,
+				"mmi,cp-thermal-mitigation",
+				(u32 *)info->cp_thermal_zone,
+				byte_len / sizeof(u32));
+		if (rc < 0) {
+			pr_err("Couldn't read mmi cp thermal mitigation rc = %d\n", rc);
+			return rc;
+		}
+
+		for (i = 0; i < info->num_cp_thermal_zone; i++) {
+			pr_err("mmi cp thermal mitigation:Zone %d,current %d", i,
+				 info->cp_thermal_zone[i]);
+		}
+	} else
+		info->cp_thermal_zone = NULL;
 
 	info->wls_boost_using_otg = of_property_read_bool(node, "mmi,wls-boost-using-otg");
 	pr_info("%s wls_boost_using_otg:%d \n", __func__, info->wls_boost_using_otg);
@@ -5400,6 +5579,8 @@ void mmi_init(struct mtk_charger *info)
 	info->mmi.adaptive_charging_disable_ichg = false;
 	info->mmi.charging_enable_hz = false;
 	info->mmi.battery_charging_disable = false;
+	info->blance_thermal_fcc = -1;
+	info->cp_thermal_fcc = -1;
 
 	rc = parse_mmi_dt(info, &info->pdev->dev);
 	if (rc < 0)
@@ -5455,6 +5636,20 @@ void mmi_init(struct mtk_charger *info)
 				&dev_attr_factory_charge_upper);
 	if (rc)
 		pr_err("[%s]couldn't create factory_charge_upper\n", __func__);
+
+	if (info->blance_thermal_zone) {
+		info->blance_cdev = thermal_of_cooling_device_register(dev_of_node(&info->pdev->dev),
+			"blance_cooler", info, &mmi_blance_charger_ops);
+		pr_info("%s Register blance cooling device %s\n",
+			__func__, (!IS_ERR_OR_NULL(info->blance_cdev))? "Success": "Failed");
+	}
+
+	if (info->cp_thermal_zone) {
+		info->cp_cdev = thermal_of_cooling_device_register(dev_of_node(&info->pdev->dev),
+			"cp_cooler", info, &mmi_cp_charger_ops);
+		pr_info("%s Register cp cooling device %s\n",
+			__func__, (!IS_ERR_OR_NULL(info->cp_cdev))? "Success": "Failed");
+	}
 
 	info->mmi.init_done = true;
 }
