@@ -951,6 +951,9 @@ static struct mtk_panel_params ext_params = {
 	.dyn_fps = {
 		.vact_timing_fps = 120,
 	},
+	.panel_cellid_reg = 0x5A,
+	.panel_cellid_offset_reg = 0x65,
+	.panel_cellid_len = 23,
 	.panel_ver = 1,
 	.panel_name = "csot_vtdr6130_636_1200_2670",
 	.panel_supplier = "csot-vtdr6130",
@@ -1020,6 +1023,9 @@ static struct mtk_panel_params ext_params_90hz = {
 	.dyn_fps = {
 		.vact_timing_fps = 120,
 	},
+	.panel_cellid_reg = 0x5A,
+	.panel_cellid_offset_reg = 0x65,
+	.panel_cellid_len = 23,
 	.panel_ver = 1,
 	.panel_name = "csot_vtdr6130_636_1200_2670",
 	.panel_supplier = "csot-vtdr6130",
@@ -1089,6 +1095,9 @@ static struct mtk_panel_params ext_params_60hz = {
 	.dyn_fps = {
 		.vact_timing_fps = 120,
 	},
+	.panel_cellid_reg = 0x5A,
+	.panel_cellid_offset_reg = 0x65,
+	.panel_cellid_len = 23,
 	.panel_ver = 1,
 	.panel_name = "csot_vtdr6130_636_1200_2670",
 	.panel_supplier = "csot-vtdr6130",
