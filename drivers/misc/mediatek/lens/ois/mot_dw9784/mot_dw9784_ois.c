@@ -172,6 +172,7 @@ enum {
 
 static u16 ois_ctrl_data;
 static int32_t ois_echo_en;
+static int32_t ois_log_en;
 static int32_t ois_log_dbg_en;
 static int32_t ois_data_dbg_en;
 static int32_t ois_fw_update;
@@ -1608,7 +1609,7 @@ static int dw9784_sample(struct hf_device *hfdev)
 	u16 reg_val_1 = 0, reg_val_2 = 0;
 	int32_t w0 = 0, w1 = 0, w2 = 0, w3 = 0;
 
-	if (ois_echo_en > 0) {
+	if (ois_echo_en > 1) {
 		s16 gyro_x = 0, gyro_y = 0;
 		s16 target_x = 0, target_y = 0;
 
@@ -1634,21 +1635,16 @@ static int dw9784_sample(struct hf_device *hfdev)
 		if (ois_data_dbg_en == 1) {
 			ois_i2c_rd_u16(m_client, DW9784_REG_OIS_GYROX, &gyro_x);
 			ois_i2c_rd_u16(m_client, DW9784_REG_OIS_GYROY, &gyro_y);
-			LOG_INF("dw9784 sample gyro_x %d, gyro_y %d", gyro_x, gyro_y);
-			LOG_INF("dw9784 sample ois_ctrl_data %d", ois_ctrl_data);
 			if (ois_ctrl_data == OIS_ON) {
 				ois_i2c_rd_u16(m_client, DW9784_REG_OIS_TARGETX, &reg_val_1);
 				ois_i2c_rd_u16(m_client, DW9784_REG_OIS_TARGETY, &reg_val_2);
-				LOG_INF("dw9784 sample DW9784_REG_OIS_TARGETXY reg_val_1 %d, reg_val_2 %d", reg_val_1, reg_val_2);
 			} else {
 				ois_i2c_rd_u16(m_client, DW9784_REG_OIS_CL_TARGETX, &reg_val_1);
 				ois_i2c_rd_u16(m_client, DW9784_REG_OIS_CL_TARGETY, &reg_val_2);
-				LOG_INF("dw9784 sample DW9784_REG_OIS_CL_TARGETX reg_val_1 %d reg_val_2 %d", reg_val_1, reg_val_2);
 			}
 			target_x = (s16)(reg_val_1);
 			target_y = (s16)(reg_val_2);
 
-			LOG_INF("dw9784 sample target_x %d, target_y %d", target_x, target_y);
 			w0 = gyro_x * 1000 / 16 * 1000;	// ois gyro x
 			w1 = gyro_y * 1000 / 16 * 1000;	// ois gyro y
 			w2 = target_x * 1000000;		// target x
@@ -1677,8 +1673,9 @@ static int dw9784_sample(struct hf_device *hfdev)
 		hf_mgr_event.timestamp = ktime_get_boottime_ns();
 		len_x = (s16)((reg_val >> 16) & 0xffff);
 		len_y = (s16)(reg_val & 0xffff);
-		LOG_INF("dw9784 sample hf_mgr_event.timestamp %lld, len_x %d, len_y %d",
-				hf_mgr_event.timestamp, len_x, len_y);
+		if (ois_log_en)
+			LOG_INF("dw9784 sample hf_mgr_event.timestamp %lld, len_x %d, len_y %d",
+					hf_mgr_event.timestamp, len_x, len_y);
 	}
 
 	hf_mgr_event.sensor_type = dw9784->hf_dev.support_list[0].sensor_type;
@@ -1804,19 +1801,20 @@ static ssize_t ois_debug_store(struct device *dev,
 		LOG_INF("dw9784_ois_debug ret fail\n");
 
 	ois_echo_en = val;
-	ois_log_dbg_en = val & 0x1;
-	ois_data_dbg_en = (val >> 1) & 0x1;
-	ois_fw_update = (val >> 2) & 0x1;
-	ois_hall_check = (val >> 3) & 0x1;
-	ois_debug_en = (val >> 4) & 0x1;
-	ois_hfmgr_test = (val >> 5) & 0x1;
+	ois_log_en = val & 0x1;
+	ois_log_dbg_en = (val >> 1) & 0x1;
+	ois_data_dbg_en = (val >> 2) & 0x1;
+	ois_fw_update = (val >> 3) & 0x1;
+	ois_hall_check = (val >> 4) & 0x1;
+	ois_debug_en = (val >> 5) & 0x1;
+	ois_hfmgr_test = (val >> 6) & 0x1;
 
 	if (ois_hall_check)
 		ois_hall_warn = 1;
 
-	LOG_INF("dw9784_ois_debug hfmgr(%d) dbg(%d) hall(%d) fw(%d) log(%d), data(%d), buf:%s\n",
+	LOG_INF("dw9784_ois_debug hfmgr(%d) dbg(%d) hall(%d) fw(%d) log_1(%d), log_2(%d), data(%d), buf:%s\n",
 		ois_hfmgr_test, ois_debug_en, ois_hall_check, ois_fw_update,
-		ois_log_dbg_en, ois_data_dbg_en, buf);
+		ois_log_en, ois_log_dbg_en, ois_data_dbg_en, buf);
 
 	return size;
 }
