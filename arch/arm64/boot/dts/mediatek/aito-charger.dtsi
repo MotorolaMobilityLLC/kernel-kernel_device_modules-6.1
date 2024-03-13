@@ -171,7 +171,7 @@
 	mmi,enable-charging-limit;
 	mmi,upper-limit-capacity = <75>;
 	mmi,lower-limit-capacity = <70>;
-	mmi,min-cp-therm-current-ua = <2000000>;
+	mmi,min-cp-therm-current-ua = <1500000>;
 
 	mmi,pd-pmax-mw = <30000>;
 	mmi,pd_vbus_low_bound = <5000000>;
@@ -225,6 +225,10 @@
 			<45 4550 335>,
 			<60 4200 55>;
 
+	mmi,blance-thermal-mitigation = <(-1) 1500000 1000000 800000 600000
+				400000 300000 200000 100000>;
+	mmi,cp-thermal-mitigation = <(-1) 5500000 5000000 4500000 4200000 4000000 3500000 3000000
+					2500000 2000000 1500000 1000000>;
 };
 
 &mt6375_chg {
