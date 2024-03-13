@@ -1718,11 +1718,7 @@ static int tfa98xx_set_fade_ctl(struct snd_kcontrol *kcontrol,
 	        }
 	    }
 	} else {
-            if(mute_status == 0) {
-	        fade_status = 0;
-            } else {
-                fade_status = ucontrol->value.integer.value[0];
-            }
+            fade_status = ucontrol->value.integer.value[0];
         }
 
 	mutex_unlock(&tfa98xx_mutex);
