@@ -640,6 +640,18 @@ struct mtk_charger {
 
 	struct charger_device *blance_dev;
 	bool	blance_can_charging;
+	struct thermal_cooling_device *blance_cdev;
+	unsigned long blance_cur_state;
+	int blance_thermal_fcc;
+	int *blance_thermal_zone;
+	int num_blance_thermal_zone;
+
+	struct thermal_cooling_device *cp_cdev;
+	unsigned long cp_cur_state;
+	int cp_thermal_fcc;
+	int *cp_thermal_zone;
+	int num_cp_thermal_zone;
+	
 	bool wls_boost_using_otg;
 };
 
