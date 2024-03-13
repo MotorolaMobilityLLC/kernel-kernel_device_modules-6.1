@@ -11,6 +11,10 @@
 #include "inc/tcpci_typec.h"
 #include "inc/tcpci_timer.h"
 
+#ifdef MOTO_WLS_OTG_SWITCH
+#include "mtk_charger.h"
+#endif
+
 #if (CONFIG_TYPEC_CAP_TRY_SOURCE || CONFIG_TYPEC_CAP_TRY_SINK)
 #define CONFIG_TYPEC_CAP_TRY_STATE 1
 #else
@@ -183,7 +187,9 @@ static const char *const typec_state_names[] = {
 	"UnattachWait.PE",
 };
 #endif /* TYPEC_INFO_ENABLE || TCPC_INFO_ENABLE || TYPEC_DBG_ENABLE */
-
+#ifdef MOTO_WLS_OTG_SWITCH
+static int tcpc_wireless_get_wireless_online(int *online);
+#endif
 static inline void typec_transfer_state(struct tcpc_device *tcpc,
 					enum TYPEC_CONNECTION_STATE state)
 {
@@ -279,6 +285,15 @@ static inline int typec_disable_low_power_mode(struct tcpc_device *tcpc)
 static void typec_unattach_wait_pe_idle_entry(struct tcpc_device *tcpc);
 static bool typec_try_norp_src(struct tcpc_device *tcpc)
 {
+#ifdef MOTO_WLS_OTG_SWITCH
+	int online = 0;
+
+	tcpc_wireless_get_wireless_online(&online);
+	if(online == 1){
+		pr_info("%s wireless in,do not alert cc\n",__func__);
+		return false;
+	}
+#endif
 	if (tcpc->typec_state == typec_unattached_snk) {
 		if (tcpci_check_vbus_valid(tcpc) &&
 		    typec_is_cc_no_res()) {
@@ -810,12 +825,42 @@ static inline void typec_cc_src_detect_vsafe0v_entry(
 
 	typec_source_attached_entry(tcpc);
 }
+#ifdef MOTO_WLS_OTG_SWITCH
+static int tcpc_wireless_get_wireless_online(int *online)
+{
+	int ret = 0;
+	struct power_supply *wl_psy = NULL;
+	union power_supply_propval prop;
 
+	wl_psy = power_supply_get_by_name("wireless");
+	if (wl_psy == NULL || IS_ERR(wl_psy)) {
+		pr_err("%s Couldn't get wl_psy\n", __func__);
+		prop.intval = 0;
+	} else {
+		ret = power_supply_get_property(wl_psy,
+			POWER_SUPPLY_PROP_ONLINE, &prop);
+		if (ret) {
+			pr_err("%s Couldn't get online status\n", __func__);
+			return ret;
+		}
+	}
+	*online = prop.intval;
+	pr_info("%s get wl_psy, online = %d\n", __func__, *online);
+
+	return ret;
+}
+#endif
 static inline void typec_cc_src_detect_entry(
 	struct tcpc_device *tcpc)
 {
+#ifdef MOTO_WLS_OTG_SWITCH
+	int online = 0;
+	tcpc_wireless_get_wireless_online(&online);
+	if (tcpci_check_vsafe0v(tcpc) || online == 1)
+#else
 	/* If Port Partner act as Sink with low VBUS, wait vSafe0v */
 	if (tcpci_check_vsafe0v(tcpc))
+#endif
 		typec_cc_src_detect_vsafe0v_entry(tcpc);
 	else
 		typec_wait_ps_change(tcpc, TYPEC_WAIT_PS_SRC_VSAFE0V);
@@ -1441,9 +1486,19 @@ static inline int typec_handle_drp_try_timeout(struct tcpc_device *tcpc)
 
 static inline int typec_handle_debounce_timeout(struct tcpc_device *tcpc)
 {
+#ifdef MOTO_WLS_OTG_SWITCH
+	int online = 0;
+
+	tcpc_wireless_get_wireless_online(&online);
+#endif
 #if CONFIG_TYPEC_CAP_NORP_SRC
+#ifdef MOTO_WLS_OTG_SWITCH
+	if (tcpc->typec_state == typec_unattached_snk &&
+	    tcpci_check_vbus_valid(tcpc) && typec_is_cc_no_res() && online != 1)
+#else
 	if (tcpc->typec_state == typec_unattached_snk &&
 	    tcpci_check_vbus_valid(tcpc) && typec_is_cc_no_res())
+#endif
 		return typec_norp_src_attached_entry(tcpc);
 #endif	/* CONFIG_TYPEC_CAP_NORP_SRC */
 
