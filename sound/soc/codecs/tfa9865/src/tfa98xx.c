@@ -2764,9 +2764,14 @@ static int tfa98xx_fade_thread(void *data)
 	unsigned int times = 0;
 	is_fading = 1;
 	for(times = 1; times < g_step; times++){
+	    if (mute_status ==1) {
+	        pr_info("mute=1,stop fade thread");
+	        break;
+	    } else {
                 pr_info("tfa98xx_send_volume %d times =%d",tfa98xx_volume_tab[times],times);
 		tfa98xx_send_volume(tfa98xx_volume_tab[times], 0x00);
 		msleep(tfa98xx_volume_tab[0]);
+	    }
 	}
 
 	is_fading = 0;
