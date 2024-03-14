@@ -287,7 +287,7 @@ bool mmi_notify_pe_ready(struct pd_port *pd_port,
     default:
         break;
     }
-    return true;
+    return false;
 }
 
 #endif /* CONFIG_SUPPORT_MMI_ADAPTER */
