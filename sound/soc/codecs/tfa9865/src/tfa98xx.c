@@ -1708,10 +1708,10 @@ static int tfa98xx_set_fade_ctl(struct snd_kcontrol *kcontrol,
 	if(2 == ucontrol->value.integer.value[0]) {
 	    if (fade_status == 0 ) {
 	        if(mute_status == 0) {
-	            if (!IS_ERR_OR_NULL(fade_thrd)) {
-	                kthread_stop(fade_thrd);
-	                fade_thrd = NULL;
-	            }
+	            //if (!IS_ERR_OR_NULL(fade_thrd)) {
+	            //    kthread_stop(fade_thrd);
+	            //    fade_thrd = NULL;
+	            //}
 	            tfa98xx_fade_task();
 	        } else {
 	            fade_status  = 1;
@@ -2775,12 +2775,12 @@ static int tfa98xx_fade_thread(void *data)
 	}
 
 	is_fading = 0;
-
+#if 0
 	do {
 	    msleep(1000);
 	}while(!kthread_should_stop());
-
-	pr_info("success stop fade thread");
+#endif
+	pr_info("fade thread finish");
 
 	return 0;
 }
@@ -3206,10 +3206,10 @@ static int tfa98xx_mute(struct snd_soc_dai *dai, int mute, int stream)
 		 * are deactivated
 		 */
 
-		if (!IS_ERR_OR_NULL(fade_thrd)) {
-			kthread_stop(fade_thrd);
-			fade_thrd = NULL;
-		}
+		//if (!IS_ERR_OR_NULL(fade_thrd)) {
+		//	kthread_stop(fade_thrd);
+		//	fade_thrd = NULL;
+		//}
 
 		if (stream == SNDRV_PCM_STREAM_PLAYBACK)
 			tfa98xx->pstream = 0;
@@ -3269,8 +3269,10 @@ static int tfa98xx_mute(struct snd_soc_dai *dai, int mute, int stream)
 
 		if (tfa98xx->dsp_init != TFA98XX_DSP_INIT_DONE){
 			if(fade_status == 1 && is_need_fade == 1){
-				tfa98xx_fade_task();
-				fade_status = 0;
+			    if(is_fading ==0) {
+			        tfa98xx_fade_task();
+			    }
+			    fade_status = 0;
 			}
 		}else {
 			pr_info(" Fade Fail as DSP NOT work\n");
