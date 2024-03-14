@@ -106,18 +106,19 @@
 
 &i2c10 {
 	status = "ok";
-	
-	st_st21nfc@0x08 {
+
+	st21nfc: st21nfc@0x08 {
 		compatible = "st,st21nfc";
 		reg = <0x08>;
 		interrupt-parent = <&pio>;
 		interrupts = <2 0>;
+		bootmode = <&chosen>;
 		reset-gpios = <&pio 40 0x00>;
 		irq-gpios = <&pio 2 0x00>;
 		clkreq-gpios = <&pio 151 0x00>;
 		status = "ok";
 	};
-	
+
 	sx937x@2c { /* SAR sensor */
 		compatible = "Semtech,sx937x";
 		reg = <0x2c>;
