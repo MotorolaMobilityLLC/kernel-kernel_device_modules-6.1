@@ -457,22 +457,27 @@
 };
 
 &pe {
+	status = "disabled";
 	gauge = <&smart_battery>;
 };
 
 &pe45 {
+	status = "disabled";
 	gauge = <&smart_battery>;
 };
 
 &pe5p {
+	status = "disabled";
 	gauge = <&smart_battery>;
 };
 
 &hvbp {
+	status = "disabled";
 	gauge = <&smart_battery>;
 };
 
 &pe2 {
+	status = "disabled";
 	compatible = "mediatek,charger,pe2";
 	gauge = <&smart_battery>;
 
