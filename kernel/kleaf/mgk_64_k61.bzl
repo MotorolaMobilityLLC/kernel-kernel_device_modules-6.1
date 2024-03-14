@@ -930,9 +930,6 @@ def get_overlay_modules_list():
         mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/input/misc/ets_fod_mmi_u:ets_fod_mmi_u")
         mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/input/misc/anc_fps_mmi:anc_fps_mmi")
 
-        mgk_64_k61_device_modules.append("drivers/gpu/drm/panel/dsi-panel-mot-csot-nt37707-667-fhdp-dphy-cmd.ko")
-        mgk_64_k61_device_modules.append("drivers/gpu/drm/panel/dsi-panel-mot-tianma-nt37707-667-fhdp-dphy-cmd.ko")
-        mgk_64_k61_device_modules.append("drivers/gpu/drm/panel/dsi-panel-mot-csot-nt37705-1056x1066-dphy-cmd-cli.ko")
         mgk_64_k61_device_modules.append("drivers/gpu/drm/panel/dsi-panel-mot-dummy-vdo-60hz.ko")
         mgk_64_k61_device_modules.append("drivers/gpu/drm/panel/dsi-panel-mot-dummy-cmd-60hz.ko")
         mgk_64_k61_device_modules.append("drivers/misc/mediatek/flashlight/v4l2/aw36518.ko")
