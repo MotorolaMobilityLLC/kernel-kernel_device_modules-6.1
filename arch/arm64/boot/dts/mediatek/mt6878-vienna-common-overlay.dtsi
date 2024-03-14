@@ -91,21 +91,6 @@
 	};
 };
 
-&i2c12 {
-	status = "okay";
-	clock-frequency = <400000>;
-	st21nfc: st21nfc@08 {
-		compatible = "st,st21nfc";
-		reg = <0x08>;
-		interrupt-parent = <&pio>;
-		interrupts = <109  0>;
-		bootmode = <&chosen>;
-		reset-gpios = <&pio 108 0x0>;
-		irq-gpios = <&pio 109 0x0>;
-		clkreq-gpios = <&pio 151 0x0>;
-		status = "okay";
-	};
-};
 
 &rt5133 {
 	status = "disabled";
