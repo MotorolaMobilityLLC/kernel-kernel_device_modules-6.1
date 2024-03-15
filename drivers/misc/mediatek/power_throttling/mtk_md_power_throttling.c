@@ -40,6 +40,7 @@ static struct md_pt_priv md_pt_info[POWER_THROTTLING_TYPE_MAX] = {
 	}
 };
 
+#if !IS_ENABLED(CONFIG_MTK_MODEM_SBP_TX_POWER_THROTTLING)
 #if IS_ENABLED(CONFIG_MTK_LOW_BATTERY_POWER_THROTTLING)
 static void md_pt_low_battery_cb(enum LOW_BATTERY_LEVEL_TAG level, void *data)
 {
@@ -86,6 +87,8 @@ static void md_lbat_dedicate_callback(unsigned int thd)
 }
 
 #endif
+#endif
+
 #if IS_ENABLED(CONFIG_MTK_BATTERY_OC_POWER_THROTTLING)
 static void md_pt_over_current_cb(enum BATTERY_OC_LEVEL_TAG level, void *data)
 {
@@ -112,6 +115,7 @@ static void md_pt_over_current_cb(enum BATTERY_OC_LEVEL_TAG level, void *data)
 	}
 }
 #endif
+
 #if IS_ENABLED(CONFIG_MTK_BATTERY_PERCENT_THROTTLING)
 static void md_pt_battery_percent_cb(enum BATTERY_PERCENT_LEVEL_TAG level)
 {
@@ -228,13 +232,21 @@ static int parse_md_limit_table(struct device *dev)
 static int mtk_md_power_throttling_probe(struct platform_device *pdev)
 {
 	int ret;
-	struct md_pt_priv *priv;
 
 	ret = parse_md_limit_table(&pdev->dev);
 	if (ret != 0)
 		return ret;
+#if IS_ENABLED(CONFIG_MTK_MODEM_SBP_TX_POWER_THROTTLING)
+	pr_info("%s: only enable md-power-throttling by battery percent\n", __func__);
+#if IS_ENABLED(CONFIG_MTK_BATTERY_PERCENT_THROTTLING)
+	if (md_pt_info[SOC_POWER_THROTTLING].max_lv > 0)
+		register_bp_thl_notify(&md_pt_battery_percent_cb, BATTERY_PERCENT_PRIO_MD);
+#endif
+#else
+	pr_info("%s: run all md-power-throttling action\n", __func__);
 #if IS_ENABLED(CONFIG_MTK_LOW_BATTERY_POWER_THROTTLING)
 	if (md_pt_info[LBAT_POWER_THROTTLING].max_lv > 0) {
+		struct md_pt_priv *priv;
 		priv = &md_pt_info[LBAT_POWER_THROTTLING];
 		if (priv->threshold) {
 			lbat_user_register_ext("md pa dedicate throttle", priv->threshold,
@@ -246,14 +258,13 @@ static int mtk_md_power_throttling_probe(struct platform_device *pdev)
 		}
 	}
 #endif
+#endif
+
 #if IS_ENABLED(CONFIG_MTK_BATTERY_OC_POWER_THROTTLING)
 	if (md_pt_info[OC_POWER_THROTTLING].max_lv > 0)
 		register_battery_oc_notify(&md_pt_over_current_cb, BATTERY_OC_PRIO_MD, NULL);
 #endif
-#if IS_ENABLED(CONFIG_MTK_BATTERY_PERCENT_THROTTLING)
-	if (md_pt_info[SOC_POWER_THROTTLING].max_lv > 0)
-		register_bp_thl_notify(&md_pt_battery_percent_cb, BATTERY_PERCENT_PRIO_MD);
-#endif
+
 	return 0;
 }
 static int mtk_md_power_throttling_remove(struct platform_device *pdev)
