@@ -2330,6 +2330,7 @@ int mtk_drm_crtc_get_panel_feature(struct drm_crtc *crtc, paramId_t param_id, ui
 int mtk_drm_crtc_set_panel_feature(struct drm_crtc *crtc, struct panel_param_info param_info)
 {
 	struct mtk_drm_crtc *mtk_crtc = to_mtk_crtc(crtc);
+	struct mtk_panel_params *panel_ext = mtk_drm_get_lcm_ext_params(crtc);
 	struct mtk_ddp_comp *comp = mtk_ddp_comp_request_output(mtk_crtc);
 	struct cmdq_pkt *cmdq_handle;
 	struct cmdq_client *client;
@@ -2373,6 +2374,11 @@ int mtk_drm_crtc_set_panel_feature(struct drm_crtc *crtc, struct panel_param_inf
 	ret = comp->funcs->io_cmd(comp, cmdq_handle, DSI_PANEL_FEATURE_SET, &param_info);
 
 	if (is_frame_mode) {
+		if ((panel_ext) && (panel_ext->te_delay)) {
+			cmdq_pkt_wfe(cmdq_handle, mtk_crtc->gce_obj.event[EVENT_TE]);
+			DDPMSG("%s :wait for TE!\n", __func__);
+		}
+
 		cmdq_pkt_set_event(cmdq_handle,
 				mtk_crtc->gce_obj.event[EVENT_CABC_EOF]);
 		cmdq_pkt_set_event(cmdq_handle,
