@@ -95,3 +95,9 @@ config MTK_GPU_POWER_THROTTLING
 	  feature
 	  Select "n" if unsure.
 
+config MTK_MODEM_SBP_TX_POWER_THROTTLING
+	bool "modem enable SBP TX power throttling feature that throttling by NV value"
+	default n
+	help
+	  Set MTK_MODEM_SBP_TX_POWER_THROTTLING to only enable MTK modem power throttling
+	  by battery percent .
