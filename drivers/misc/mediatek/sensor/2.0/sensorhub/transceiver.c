@@ -208,7 +208,7 @@ static void transceiver_update_config(struct transceiver_device *dev,
               if (src->action == CALI_ACTION) {
                 transceiver_copy_config(dst, src, 0, 36, 0);
               } else if (src->action == BIAS_ACTION){
-                transceiver_copy_config(dst, src, 28, 0, 0);
+                transceiver_copy_config(dst, src, 36, 0, 0);
               } else {
                 transceiver_copy_config(dst, src, 0, 0, 0);
               }
