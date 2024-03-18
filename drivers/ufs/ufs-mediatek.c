@@ -1724,10 +1724,12 @@ ufs_mtk_query_ioctl(struct ufs_hba *hba, u8 lun, void __user *buffer)
 	}
 
 #if defined(CONFIG_UFSFEATURE)
-	if (ufsf_check_query(ioctl_data->opcode)) {
-		err = ufsf_query_ioctl(ufs_mtk_get_ufsf(hba), lun, buffer,
-				       ioctl_data, UFSFEATURE_SELECTOR);
-		goto out_release_mem;
+	if (IS_SAMSUNG_DEVICE(storage_mfrid) || IS_MICRON_DEVICE(storage_mfrid)) {
+		if (ufsf_check_query(ioctl_data->opcode)) {
+			err = ufsf_query_ioctl(ufs_mtk_get_ufsf(hba), lun, buffer,
+					       ioctl_data, UFSFEATURE_SELECTOR);
+			goto out_release_mem;
+		}
 	}
 #endif
 
@@ -2409,7 +2411,8 @@ static int ufs_mtk_device_reset(struct ufs_hba *hba)
 	ufs_mtk_device_reset_ctrl(0, res);
 
 #if defined(CONFIG_UFSFEATURE)
-	ufsf_reset_host(ufs_mtk_get_ufsf(hba));
+	if (IS_SAMSUNG_DEVICE(storage_mfrid) || IS_MICRON_DEVICE(storage_mfrid))
+		ufsf_reset_host(ufs_mtk_get_ufsf(hba));
 #endif
 
 
@@ -2834,7 +2837,8 @@ static int ufs_mtk_suspend(struct ufs_hba *hba, enum ufs_pm_op pm_op,
 
 	if (status == PRE_CHANGE) {
 #if defined(CONFIG_UFSFEATURE)
-		ufsf_suspend(ufs_mtk_get_ufsf(hba));
+		if (IS_SAMSUNG_DEVICE(storage_mfrid) || IS_MICRON_DEVICE(storage_mfrid))
+			ufsf_suspend(ufs_mtk_get_ufsf(hba));
 #endif
 
 		if (!ufshcd_is_auto_hibern8_supported(hba))
@@ -2894,8 +2898,10 @@ static int ufs_mtk_resume(struct ufs_hba *hba, enum ufs_pm_op pm_op)
 	struct ufs_mtk_host *host = ufshcd_get_variant(hba);
 
 #if defined(CONFIG_UFSFEATURE)
-	struct ufsf_feature *ufsf = ufs_mtk_get_ufsf(hba);
-	schedule_work(&ufsf->resume_work);
+	if (IS_SAMSUNG_DEVICE(storage_mfrid) || IS_MICRON_DEVICE(storage_mfrid)) {
+		struct ufsf_feature *ufsf = ufs_mtk_get_ufsf(hba);
+		schedule_work(&ufsf->resume_work);
+	}
 #endif
 
 	if (hba->ufshcd_state != UFSHCD_STATE_OPERATIONAL)
@@ -3114,8 +3120,10 @@ static void ufs_mtk_event_notify(struct ufs_hba *hba,
 	trace_ufs_mtk_event(evt, val);
 
 #if defined(CONFIG_UFSFEATURE)
-	if (evt == UFS_EVT_WL_SUSP_ERR)
-		ufsf_resume(ufs_mtk_get_ufsf(hba), true);
+	if (IS_SAMSUNG_DEVICE(storage_mfrid) || IS_MICRON_DEVICE(storage_mfrid)) {
+		if (evt == UFS_EVT_WL_SUSP_ERR)
+			ufsf_resume(ufs_mtk_get_ufsf(hba), true);
+	}
 #endif
 	/* Print details of UIC Errors */
 	if (evt <= UFS_EVT_DME_ERR) {
@@ -3675,7 +3683,8 @@ static int ufs_mtk_remove(struct platform_device *pdev)
 	ufs_mtk_remove_sysfs(hba);
 
 #if defined(CONFIG_UFSFEATURE)
-	ufsf_remove(ufs_mtk_get_ufsf(hba));
+	if (IS_SAMSUNG_DEVICE(storage_mfrid) || IS_MICRON_DEVICE(storage_mfrid))
+		ufsf_remove(ufs_mtk_get_ufsf(hba));
 #endif
 
 	ufshcd_remove(hba);
