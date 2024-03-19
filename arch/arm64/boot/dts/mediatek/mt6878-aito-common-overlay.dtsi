@@ -99,9 +99,9 @@
 };
 
 &u2port0{
-	mediatek,eye-vrt = <7>;
-	mediatek,eye-term = <7>;
-	mediatek,rev6 = <3>;
+	mediatek,eye-vrt = <6>;
+	mediatek,eye-term = <5>;
+	mediatek,rev6 = <2>;
 };
 
 /* BOB */
