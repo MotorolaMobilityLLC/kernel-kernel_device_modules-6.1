@@ -40,7 +40,39 @@ static struct md_pt_priv md_pt_info[POWER_THROTTLING_TYPE_MAX] = {
 	}
 };
 
-#if !IS_ENABLED(CONFIG_MTK_MODEM_SBP_TX_POWER_THROTTLING)
+#if IS_ENABLED(CONFIG_MTK_MODEM_SBP_TX_POWER_THROTTLING)
+
+#if IS_ENABLED(CONFIG_MTK_BATTERY_PERCENT_THROTTLING)
+static void md_pt_battery_percent_cb(enum BATTERY_PERCENT_LEVEL_TAG level)
+{
+	unsigned int md_throttle_cmd;
+	int ret, intensity;
+
+	if (level > md_pt_info[SOC_POWER_THROTTLING].max_lv)
+		return;
+
+	if (level != BATTERY_PERCENT_LEVEL_0)
+		intensity = md_pt_info[SOC_POWER_THROTTLING].reduce_tx[level-1];
+	else
+		intensity = 0;
+	/* MMI_STOPSHIP <power-throttling>: this will be revert after modem release the official strategy */
+	md_throttle_cmd = TMC_CTRL_CMD_TX_POWER | level << 8 | PT_LOW_BATTERY_VOLTAGE << 16 |
+		intensity << 24;
+	ret = exec_ccci_kern_func(ID_THROTTLING_CFG,
+		(char *)&md_throttle_cmd, 4);
+
+	pr_notice("%s: send cmd to CCCI ret=%d, cmd=0x%x\n", __func__, ret,
+					md_throttle_cmd);
+
+	if (ret)
+		pr_notice("%s: error, ret=%d, cmd=0x%x l=%d\n", __func__, ret,
+			md_throttle_cmd, level);
+
+}
+#endif
+
+#else
+
 #if IS_ENABLED(CONFIG_MTK_LOW_BATTERY_POWER_THROTTLING)
 static void md_pt_low_battery_cb(enum LOW_BATTERY_LEVEL_TAG level, void *data)
 {
@@ -87,6 +119,7 @@ static void md_lbat_dedicate_callback(unsigned int thd)
 }
 
 #endif
+
 #endif
 
 #if IS_ENABLED(CONFIG_MTK_BATTERY_OC_POWER_THROTTLING)
@@ -116,34 +149,6 @@ static void md_pt_over_current_cb(enum BATTERY_OC_LEVEL_TAG level, void *data)
 }
 #endif
 
-#if IS_ENABLED(CONFIG_MTK_BATTERY_PERCENT_THROTTLING)
-static void md_pt_battery_percent_cb(enum BATTERY_PERCENT_LEVEL_TAG level)
-{
-	unsigned int md_throttle_cmd;
-	int ret, intensity;
-
-	if (level > md_pt_info[SOC_POWER_THROTTLING].max_lv)
-		return;
-
-	if (level != BATTERY_PERCENT_LEVEL_0)
-		intensity = md_pt_info[SOC_POWER_THROTTLING].reduce_tx[level-1];
-	else
-		intensity = 0;
-	/* MMI_STOPSHIP <power-throttling>: this will be revert after modem release the official strategy */
-	md_throttle_cmd = TMC_CTRL_CMD_TX_POWER | level << 8 | PT_LOW_BATTERY_VOLTAGE << 16 |
-		intensity << 24;
-	ret = exec_ccci_kern_func(ID_THROTTLING_CFG,
-		(char *)&md_throttle_cmd, 4);
-
-	pr_notice("%s: send cmd to CCCI ret=%d, cmd=0x%x\n", __func__, ret,
-					md_throttle_cmd);
-
-	if (ret)
-		pr_notice("%s: error, ret=%d, cmd=0x%x l=%d\n", __func__, ret,
-			md_throttle_cmd, level);
-
-}
-#endif
 static void md_limit_default_setting(struct device *dev, enum md_pt_type type)
 {
 	struct device_node *np = dev->of_node;
