@@ -932,13 +932,10 @@ def get_overlay_modules_list():
 
         mgk_64_k61_device_modules.append("drivers/gpu/drm/panel/dsi-panel-mot-dummy-vdo-60hz.ko")
         mgk_64_k61_device_modules.append("drivers/gpu/drm/panel/dsi-panel-mot-dummy-cmd-60hz.ko")
-        mgk_64_k61_device_modules.append("drivers/misc/mediatek/flashlight/v4l2/aw36518.ko")
         mgk_64_k61_device_modules.append("drivers/misc/mediatek/lens/ois/mot_dw9784/mot_dw9784.ko")
         mgk_64_k61_device_modules.append("drivers/power/supply/moto_chg_tcmd.ko")
         mgk_64_k61_device_modules.append("drivers/power/supply/moto_wlc_alg.ko")
-        mgk_64_k61_device_modules.append("drivers/regulator/wl2864c-regulator.ko")
         mgk_64_k61_device_modules.append("drivers/regulator/hl7603-regulator.ko")
-        mgk_64_k61_device_modules.append("drivers/regulator/cam_sgm62110-regulator.ko")
         mgk_64_k61_device_modules.append("sound/soc/codecs/tfa9865/snd-soc-tfa9865.ko")
 
         mgk_64_k61_device_modules.remove("sound/soc/codecs/tfa98xx/snd-soc-tfa98xx.ko")
