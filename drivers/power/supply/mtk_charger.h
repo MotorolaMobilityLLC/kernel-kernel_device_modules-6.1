@@ -433,6 +433,8 @@ struct mmi_params {
 	int			vbus_h;
 	int			vbus_l;
 	int			charger_watt;
+	struct work_struct		notify_power_event_work;
+	struct mutex		power_watt_lock;
 };
 /*moto mmi Functionality end*/
 
