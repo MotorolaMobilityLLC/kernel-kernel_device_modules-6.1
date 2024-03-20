@@ -4167,11 +4167,111 @@ static ssize_t panelDC_show(struct device *device,
 	return written;
 }
 
+void mipi_dsi_dcs_grp_write_gce(struct mtk_dsi *dsi, struct cmdq_pkt *handle,
+				struct mtk_panel_para_table *para_table,
+				unsigned int para_size);
+static ssize_t panelPcdCheck_store(struct device *device,
+		struct device_attribute *attr, const char *buf, size_t count)
+{
+	struct drm_connector *connector = dev_get_drvdata(device);
+	struct mtk_dsi *dsi = connector_to_dsi(connector);
+	struct drm_crtc *crtc = dsi->encoder.crtc;
+	struct mtk_drm_crtc *mtk_crtc = to_mtk_crtc(crtc);
+	struct mtk_ddp_comp *comp = mtk_ddp_comp_request_output(mtk_crtc);
+	struct cmdq_pkt *cmdq_handle;
+	struct cmdq_client *client;
+	bool is_frame_mode;
+	int state = false;
+	int res;
+	int cnt = 10;
+
+	if (!(comp && comp->funcs && comp->funcs->io_cmd))
+		return -EINVAL;
+
+	if (!(mtk_crtc->enabled)) {
+		DDPMSG("%s: skip, slept\n", __func__);
+		return -EINVAL;
+	}
+
+	res = kstrtou32(buf, cnt, &state);
+	if (res < 0)
+		return res;
+
+	if (atomic_read(&mtk_crtc->singal_for_mode_switch)) {
+		DDPINFO("Wait event from mode_switch...\n");
+		wait_event_interruptible(mtk_crtc->mode_switch_end_wq,
+			(atomic_read(&mtk_crtc->singal_for_mode_switch) == 0));
+		DDPINFO("Wait event from mode_switch, end\n");
+	}
+
+	mtk_drm_idlemgr_kick(__func__, crtc, 0);
+
+	DDPINFO("%s:set LCM pcd en:%d crtc %d\n", __func__, state, drm_crtc_index(crtc));
+
+	is_frame_mode = mtk_crtc_is_frame_trigger_mode(&mtk_crtc->base);
+
+	/* setHBM would use VM CMD in  DSI VDO mode only */
+	client = (is_frame_mode || mtk_crtc->gce_obj.client[CLIENT_DSI_CFG] == NULL) ?
+		mtk_crtc->gce_obj.client[CLIENT_CFG] : mtk_crtc->gce_obj.client[CLIENT_DSI_CFG];
+	cmdq_handle =
+		cmdq_pkt_create(client);
+
+	if (!cmdq_handle) {
+		DDPPR_ERR("%s:%d NULL cmdq handle\n", __func__, __LINE__);
+		return -EINVAL;
+	}
+
+	mtk_crtc_wait_frame_done(mtk_crtc, cmdq_handle, DDP_FIRST_PATH, 0);
+
+	if (is_frame_mode) {
+		cmdq_pkt_clear_event(cmdq_handle,
+				mtk_crtc->gce_obj.event[EVENT_STREAM_BLOCK]);
+		cmdq_pkt_wfe(cmdq_handle,
+				mtk_crtc->gce_obj.event[EVENT_CABC_EOF]);
+	}
+
+	if (dsi && dsi->ext && dsi->ext->funcs->panel_pcd_set_cmdq) {
+		dsi->ext->funcs->panel_pcd_set_cmdq(dsi->panel, dsi,
+					       mipi_dsi_dcs_grp_write_gce, cmdq_handle,
+					       state);
+	}
+
+	if (is_frame_mode) {
+		cmdq_pkt_set_event(cmdq_handle,
+				mtk_crtc->gce_obj.event[EVENT_CABC_EOF]);
+		cmdq_pkt_set_event(cmdq_handle,
+				mtk_crtc->gce_obj.event[EVENT_STREAM_BLOCK]);
+	}
+
+	cmdq_pkt_flush(cmdq_handle);
+	cmdq_pkt_destroy(cmdq_handle);
+	return count;
+}
+
+static ssize_t panelPcdCheck_show(struct device *device,
+	struct device_attribute *attr, char *buf)
+{
+	struct drm_connector *connector = dev_get_drvdata(device);
+	struct mtk_dsi *dsi = connector_to_dsi(connector);
+	int written = 0;
+	int state;
+
+	if (dsi && dsi->ext && dsi->ext->funcs->panel_pcd_get) {
+		dsi->ext->funcs->panel_pcd_get(dsi->panel, &state);
+		mutex_lock(&connector->dev->mode_config.mutex);
+		written = snprintf(buf, PAGE_SIZE, "%d\n", state);
+		mutex_unlock(&connector->dev->mode_config.mutex);
+	} else
+		written = snprintf(buf, PAGE_SIZE, "%s\n", "Invalid");
+	return written;
+}
+
 static DEVICE_ATTR_RO(panelVer);
 static DEVICE_ATTR_RO(panelName);
 static DEVICE_ATTR_RO(panelSupplier);
 static DEVICE_ATTR_RO(panelCellId);
 static DEVICE_ATTR_RO(panelDC);
+static DEVICE_ATTR_RW(panelPcdCheck);
 
 static const struct attribute *conn_panel_attrs[] = {
 	&dev_attr_panelVer.attr,
@@ -4179,6 +4279,7 @@ static const struct attribute *conn_panel_attrs[] = {
 	&dev_attr_panelSupplier.attr,
 	&dev_attr_panelCellId.attr,
 	&dev_attr_panelDC.attr,
+	&dev_attr_panelPcdCheck.attr,
 	NULL
 };
 
