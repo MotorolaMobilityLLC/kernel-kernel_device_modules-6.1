@@ -50,6 +50,7 @@ struct lcm {
 	atomic_t apl_mode;
 	atomic_t current_bl;
 	atomic_t current_fps;
+	atomic_t pcd_mode;
 	enum panel_version version;
 };
 
@@ -382,6 +383,7 @@ static int lcm_prepare(struct drm_panel *panel)
 	atomic_set(&ctx->apl_mode, 0);
 	atomic_set(&ctx->current_bl, 0);
 	atomic_set(&ctx->current_fps, 120);
+	atomic_set(&ctx->pcd_mode, 0);
 
 	pr_info("%s-\n", __func__);
 	return ret;
@@ -1494,6 +1496,56 @@ static int panel_feature_get(struct drm_panel *panel, struct panel_param_info *p
 	return ret;
 }
 
+static struct mtk_panel_para_table panel_pcd_on[] = {
+	{6, {0xF0, 0x55, 0xAA, 0x52, 0x08, 0x01}},
+	{2, {0x6F, 0x01}},
+	{2, {0xD0, 0x80}},
+};
+static struct mtk_panel_para_table panel_pcd_off[] = {
+	{6, {0xF0, 0x55, 0xAA, 0x52, 0x08, 0x01}},
+	{2, {0x6F, 0x01}},
+	{2, {0xD0, 0x00}},
+};
+
+static int panel_pcd_get(struct drm_panel *panel, int *state)
+{
+	struct lcm *ctx = panel_to_lcm(panel);
+
+	*state = atomic_read(&ctx->pcd_mode);
+
+	return 0;
+}
+
+static int panel_pcd_set_cmdq(struct drm_panel *panel, void *dsi,
+			      dcs_grp_write_gce cb, void *handle, int en)
+{
+	unsigned int para_count = 0;
+	struct mtk_panel_para_table *pTable;
+	struct lcm *ctx = panel_to_lcm(panel);
+
+	if (!cb)
+		return -1;
+
+	if (atomic_read(&ctx->pcd_mode) == en) {
+		return 0;
+	}
+
+	if(en){
+		para_count = sizeof(panel_pcd_on) / sizeof(struct mtk_panel_para_table);
+		pTable = panel_pcd_on;
+	} else {
+		para_count = sizeof(panel_pcd_off) / sizeof(struct mtk_panel_para_table);
+		pTable = panel_pcd_off;
+	}
+
+	cb(dsi, handle, pTable, para_count);
+
+	atomic_set(&ctx->pcd_mode, en);
+
+	pr_info("%s: set panel pcd to %d success\n", __func__, en);
+	return 0;
+}
+
 static int panel_ext_init_power(struct drm_panel *panel)
 {
 	int ret;
@@ -1534,6 +1586,8 @@ static struct mtk_panel_funcs ext_funcs = {
 	.mode_switch = mode_switch,
 	.panel_feature_set = panel_feature_set,
 	.panel_feature_get = panel_feature_get,
+	.panel_pcd_set_cmdq = panel_pcd_set_cmdq,
+	.panel_pcd_get = panel_pcd_get,
 };
 #endif
 
@@ -1732,6 +1786,7 @@ static int lcm_probe(struct mipi_dsi_device *dsi)
 	atomic_set(&ctx->dc_mode, 0);
 	atomic_set(&ctx->apl_mode, 0);
 	atomic_set(&ctx->current_fps, 120);
+	atomic_set(&ctx->pcd_mode, 0);
 
 	return ret;
 }
