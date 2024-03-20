@@ -3184,6 +3184,7 @@ static int mtk_charger_plug_out(struct mtk_charger *info)
 	info->mmi.charger_watt = 0;
 
 	info->mmi.force_pmic_icl_ma = 0;
+	info->mmi.force_cp_fcc_ma = 0;
 
 	power_supply_changed(info->psy1);
 	return 0;
@@ -5631,6 +5632,52 @@ static DEVICE_ATTR(force_pmic_icl, 0644,
 		force_pmic_icl_show,
 		force_pmic_icl_store);
 
+static ssize_t force_cp_fcc_store(struct device *dev,
+				struct device_attribute *attr,
+				const char *buf, size_t count)
+{
+	unsigned long r;
+	unsigned long mode;
+
+	r = kstrtoul(buf, 0, &mode);
+	if (r) {
+		pr_err("[%s]Invalid force cp fcc value = %lu\n", __func__, mode);
+		return -EINVAL;
+	}
+
+	if (!mmi_info) {
+		pr_err("[%s]mmi_info not valid\n", __func__);
+		return -ENODEV;
+	}
+
+	if (mode >= 0) {
+		mmi_info->mmi.force_cp_fcc_ma = mode;
+		_wake_up_charger(mmi_info);
+	}
+
+	return r ? r : count;
+}
+
+static ssize_t force_cp_fcc_show(struct device *dev,
+				    struct device_attribute *attr,
+				    char *buf)
+{
+	int state;
+
+	if (!mmi_info) {
+		pr_err("[%s]mmi_info not valid\n", __func__);
+		return -ENODEV;
+	}
+
+	state = mmi_info->mmi.force_cp_fcc_ma;
+
+	return scnprintf(buf, CHG_SHOW_MAX_SIZE, "%d\n", state);
+}
+
+static DEVICE_ATTR(force_cp_fcc, 0644,
+		force_cp_fcc_show,
+		force_cp_fcc_store);
+
 static void mmi_notify_power_event_work(struct work_struct *work);
 
 void mmi_init(struct mtk_charger *info)
@@ -5699,6 +5746,12 @@ void mmi_init(struct mtk_charger *info)
 				&dev_attr_force_pmic_icl);
 	if (rc) {
 		pr_err("[%s]couldn't create force_pmic_icl\n", __func__);
+	}
+
+	rc = device_create_file(&info->pdev->dev,
+				&dev_attr_force_cp_fcc);
+	if (rc) {
+		pr_err("[%s]couldn't create force_cp_icl\n", __func__);
 	}
 
 	rc = device_create_file(&info->pdev->dev,

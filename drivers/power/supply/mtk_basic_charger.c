@@ -259,6 +259,10 @@ static bool select_charging_current_limit(struct mtk_charger *info,
 	else
 		info->setting.mmi_current_limit_dvchg1 = info->mmi.min_therm_current_limit;
 
+	if ((info->mmi.force_cp_fcc_ma > 0) &&
+		(info->setting.mmi_current_limit_dvchg1 < 0 || info->setting.mmi_current_limit_dvchg1 > (info->mmi.force_cp_fcc_ma * 1000)))
+		info->setting.mmi_current_limit_dvchg1 = info->mmi.force_cp_fcc_ma * 1000;
+
 	if (support_fast_charging(info))
 		is_basic = false;
 	else {

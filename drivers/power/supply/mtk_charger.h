@@ -410,6 +410,7 @@ struct mmi_params {
 	int			batt_statues;
 	int			max_chrg_temp;
 	int			force_pmic_icl_ma;
+	int			force_cp_fcc_ma;
 
 	/*target parameter*/
 	int			target_fv;
