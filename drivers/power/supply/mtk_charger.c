@@ -4304,7 +4304,7 @@ static void mmi_basic_charge_sm(struct mtk_charger *info,
 			prm->pres_chrg_step = STEP_FULL;
 		}
 	} else if (prm->pres_chrg_step == STEP_FULL) {
-		if (state->batt_soc <= 95 || state->batt_mv < (max_fv_mv - HYST_STEP_MV * 2)) {
+		if (state->batt_soc <= 95) {
 			prm->chrg_taper_cnt = 0;
 			prm->pres_chrg_step = STEP_NORM;
 		}
