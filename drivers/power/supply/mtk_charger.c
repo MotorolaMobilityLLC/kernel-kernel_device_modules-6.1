@@ -3356,11 +3356,23 @@ int mmi_get_prop_from_charger(struct mtk_charger *info,
 	return rc;
 }
 
-void update_charging_limit_modes(struct mtk_charger *info, int batt_soc)
+void update_charging_limit_modes(struct mtk_charger *info, int batt_index, int batt_soc)
 {
 	enum charging_limit_modes charging_limit_modes;
+	struct mmi_sm_params *prm = &info->mmi.sm_param[batt_index];
+	union power_supply_propval val;
+	int rc = 0;
 
-	charging_limit_modes = info->mmi.charging_limit_modes;
+	if (batt_index == MAIN_BATT) {
+		rc = mmi_get_prop_from_battery(info,
+					POWER_SUPPLY_PROP_CAPACITY, &val);
+		if (rc < 0) {
+			pr_err("[%s]Error getting Batt Capacity rc = %d\n", __func__, rc);
+		} else
+			batt_soc = val.intval;
+	}
+
+	charging_limit_modes = prm->charging_limit_modes;
 	if ((charging_limit_modes != CHARGING_LIMIT_RUN)
 	    && (batt_soc >= info->mmi.upper_limit_capacity))
 		charging_limit_modes = CHARGING_LIMIT_RUN;
@@ -3368,8 +3380,8 @@ void update_charging_limit_modes(struct mtk_charger *info, int batt_soc)
 		   && (batt_soc <= info->mmi.lower_limit_capacity))
 		charging_limit_modes = CHARGING_LIMIT_OFF;
 
-	if (charging_limit_modes != info->mmi.charging_limit_modes)
-		info->mmi.charging_limit_modes = charging_limit_modes;
+	if (charging_limit_modes != prm->charging_limit_modes)
+		prm->charging_limit_modes = charging_limit_modes;
 }
 
 static int mmi_get_zone_fv(struct mmi_sm_params *prm, struct mmi_zone *zone_c, int num_zones_c, int temp_c)
@@ -4175,6 +4187,9 @@ static void mmi_basic_charge_sm(struct mtk_charger *info,
 		goto end_check;
 	}
 
+	if (mmi->enable_charging_limit && mmi->is_factory_image)
+		update_charging_limit_modes(info, BASE_BATT, state->batt_soc);
+
 	mmi_find_temp_zone(info, prm, state->batt_temp, state->batt_mv);
 	if (prm->pres_temp_zone >= prm->num_temp_zones)
 		zone = &prm->temp_zones[0];
@@ -4199,14 +4214,14 @@ static void mmi_basic_charge_sm(struct mtk_charger *info,
 	/* Determine Next State */
 	prev_step = prm->pres_chrg_step;
 
-	if (mmi->charging_limit_modes == CHARGING_LIMIT_RUN)
+	if (prm->charging_limit_modes == CHARGING_LIMIT_RUN)
 		pr_warn("Factory Mode/Image so Limiting Charging!!!\n");
 
 	if (!state->charger_present) {
 		prm->pres_chrg_step = STEP_NONE;
 	} else if ((prm->pres_temp_zone == ZONE_HOT) ||
 		   (prm->pres_temp_zone == ZONE_COLD) ||
-		   (mmi->charging_limit_modes == CHARGING_LIMIT_RUN)) {
+		   (prm->charging_limit_modes == CHARGING_LIMIT_RUN)) {
 		prm->pres_chrg_step = STEP_STOP;
 	} else if (mmi->demo_mode) {
 		bool voltage_full;
@@ -4420,6 +4435,9 @@ static int mmi_dual_charge_sm(struct mtk_charger *chg,
 
 	prm->max_fv_mv = max_fv_mv;
 
+	if (chg->mmi.enable_charging_limit && chg->mmi.is_factory_image)
+		update_charging_limit_modes(chg, batt, stat->batt_soc);
+
 	mmi_find_temp_zone(chg, prm, stat->batt_temp, stat->batt_mv);
 	zone = &prm->temp_zones[prm->pres_temp_zone];
 
@@ -4427,7 +4445,7 @@ static int mmi_dual_charge_sm(struct mtk_charger *chg,
 		prm->pres_chrg_step = STEP_NONE;
 	} else if ((prm->pres_temp_zone == ZONE_HOT) ||
 		   (prm->pres_temp_zone == ZONE_COLD) ||
-		   (chg->mmi.charging_limit_modes == CHARGING_LIMIT_RUN)) {
+		   (prm->charging_limit_modes == CHARGING_LIMIT_RUN)) {
 		prm->pres_chrg_step = STEP_STOP;
 	} else if (chg->mmi.demo_mode) { /* Demo Mode */
 		prm->pres_chrg_step = STEP_DEMO;
@@ -4788,7 +4806,6 @@ vote_now:
 static void mmi_charger_check_status(struct mtk_charger *info)
 {
 	int rc;
-	struct mmi_params *mmi = &info->mmi;
 	struct mmi_chg_status chg_stat;
 
 	union power_supply_propval val;
@@ -4840,9 +4857,6 @@ static void mmi_charger_check_status(struct mtk_charger *info)
 
 	pr_info("[%s]batt=%d mV, %d mA, %d C, USB= %d mV\n", __func__,
 		chg_stat.batt_mv, chg_stat.batt_ma, chg_stat.batt_temp, chg_stat.usb_mv);
-
-	if (mmi->enable_charging_limit && mmi->is_factory_image)
-		update_charging_limit_modes(info, chg_stat.batt_soc);
 
 	if (info->main_batt_psy && info->flip_batt_psy) {
 		mmi_dual_charge_control(info, &chg_stat);
@@ -5629,7 +5643,6 @@ void mmi_init(struct mtk_charger *info)
 	info->mmi.factory_mode = info->atm_enabled;
 
 	info->mmi.is_factory_image = false;
-	info->mmi.charging_limit_modes = CHARGING_LIMIT_UNKNOWN;
 	info->mmi.adaptive_charging_disable_ibat = false;
 	info->mmi.adaptive_charging_disable_ichg = false;
 	info->mmi.charging_enable_hz = false;

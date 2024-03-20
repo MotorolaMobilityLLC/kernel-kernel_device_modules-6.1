@@ -377,6 +377,8 @@ struct mmi_sm_params {
 	int			target_fcc;
 	int			target_fv;
 	int			demo_mode_prev_soc;
+
+	enum charging_limit_modes	charging_limit_modes;
 };
 
 struct mmi_params {
@@ -400,7 +402,6 @@ struct mmi_params {
 
 	bool			enable_charging_limit;
 	bool			is_factory_image;
-	enum charging_limit_modes	charging_limit_modes;
 	int			upper_limit_capacity;
 	int			lower_limit_capacity;
 	int			base_fv_mv;
