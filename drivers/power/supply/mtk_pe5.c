@@ -31,7 +31,7 @@ int pe50_get_log_level(void)
 
 /* Parameters */
 #define PE50_VTA_INIT		5000	/* mV */
-#define PE50_ITA_INIT		3000	/* mA */
+#define PE50_ITA_INIT		2000	/* mA */
 #define PE50_TA_WDT_MIN		10000	/* ms */
 #define PE50_VTA_GAP_MIN	200	/* mV */
 #define PE50_VTA_VAR_MIN	103	/* % */
