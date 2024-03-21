@@ -9,4 +9,10 @@ config SCHED_MOTO_UNFAIR
       This feature will allow the scheduler to maintain more detailed
       mvp scheduling.
 
+config MOTO_USBNET_DEBUG
+    tristate "Moto usbnet debug"
+    default n
+    help
+      Debug moto usbnet issue
+
 endmenu
