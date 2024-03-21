@@ -33,7 +33,7 @@
 		wls_int {
 			pinmux = <PINMUX_GPIO34__FUNC_GPIO34>;
 			input-enable;
-			bias-pull-up;
+			//bias-pull-up;
 		};
 		wls_det_int {
 			pinmux = <PINMUX_GPIO36__FUNC_GPIO36>;
