@@ -15,8 +15,8 @@
 	backlight {
 		/delete-property/ max-hw-brightness;
 		/delete-property/ max-brightness;
-		max-brightness = <16380>;
-		max-hw-brightness = <16380>;
+		max-brightness = <4080>;
+		max-hw-brightness = <4080>;
 	};
 };
 
