@@ -29,6 +29,20 @@
 		bias-pull-up;
 	};
 
+	nu2115_int_default_master: nu2115_int_default_master {
+		pinmux = <PINMUX_GPIO12__FUNC_GPIO12>;
+		slew-rate= <0>;
+		input-enable;
+		bias-pull-up;
+	};
+
+	nu2115_int_default_slave: nu2115_int_default_slave {
+		pinmux = <PINMUX_GPIO11__FUNC_GPIO11>;
+		slew-rate= <0>;
+		input-enable;
+		bias-pull-up;
+	};
+
 	wls_cps4038_int_default: wls_cps4038_int_default {
 		wls_int {
 			pinmux = <PINMUX_GPIO34__FUNC_GPIO34>;
@@ -255,6 +269,38 @@
 
 		pinctrl-names = "default";
 		pinctrl-0 = <&bq25960_int_default_slave>;
+	};
+
+	nu2115_master:nu2115-master@6d {
+		status = "okay";
+		compatible = "ti,nu2115-master";
+		reg = <0x6d>;
+
+		nu2115-addr = <0x6d>;
+		nu2115-name = "nu2115-master";
+
+		interrupt-parent = <&pio>;
+		interrupts = <12 IRQ_TYPE_EDGE_FALLING 12 0>;
+		interrupt-names = "nu2115_irq_master";
+
+		pinctrl-names = "default";
+		pinctrl-0 = <&nu2115_int_default_master>;
+	};
+
+	nu2115_slave:nu2115-slave@6e {
+		status = "okay";
+		compatible = "ti,nu2115-slave";
+		reg = <0x6e>;
+
+		nu2115-addr = <0x6e>;
+		nu2115-name = "nu2115-slave";
+
+		interrupt-parent = <&pio>;
+		interrupts = <11 IRQ_TYPE_EDGE_FALLING 11 0>;
+		interrupt-names = "nu2115_irq_slave";
+
+		pinctrl-names = "default";
+		pinctrl-0 = <&nu2115_int_default_slave>;
 	};
 };
 
