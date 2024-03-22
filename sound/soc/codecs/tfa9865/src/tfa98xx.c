@@ -2763,7 +2763,7 @@ static int tfa98xx_fade_thread(void *data)
 {
 	unsigned int times = 0;
 	is_fading = 1;
-	for(times = 1; times < g_step; times++){
+	for(times = 1; times <= g_step; times++){
 	    if (mute_status ==1) {
 	        pr_info("mute=1,stop fade thread");
 	        break;
