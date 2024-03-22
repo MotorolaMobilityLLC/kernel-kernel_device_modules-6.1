@@ -173,92 +173,10 @@ bootargs_ext = "";
 
 #endif
 
-&mtkfb {
-	pinctrl-names = "lcd_bias_enp1_gpio", "lcd_bias_enp0_gpio",
-		"lcd_bias_enn1_gpio", "lcd_bias_enn0_gpio",
-		"lcm_rst_out1_gpio", "lcm_rst_out0_gpio",
-		"mode_te_te", "lcm_led_en1_gpio", "lcm_led_en0_gpio";
-	pinctrl-0 = <&mtkfb_pins_lcd_bias_enp1>;
-	pinctrl-1 = <&mtkfb_pins_lcd_bias_enp0>;
-	pinctrl-2 = <&mtkfb_pins_lcd_bias_enn1>;
-	pinctrl-3 = <&mtkfb_pins_lcd_bias_enn0>;
-	pinctrl-4 = <&mtkfb_pins_lcm_rst_out1_gpio>;
-	pinctrl-5 = <&mtkfb_pins_lcm_rst_out0_gpio>;
-	pinctrl-6 = <&mtkfb_pins_lcm_dsi_te>;
-	pinctrl-7 = <&mtkfb_pins_lcm_led_en1>;
-	pinctrl-8 = <&mtkfb_pins_lcm_led_en0>;
-
-	status = "okay";
-};
-
 &pio {
-	mtkfb_pins_lcd_bias_enp1: lcd-bias-enp1-gpio {
-		pins-cmd-dat {
-			pinmux = <PINMUX_GPIO149__FUNC_GPIO149>;
-			slew-rate = <1>;
-			output-high;
-		};
-	};
-
-	mtkfb_pins_lcd_bias_enp0: lcd-bias-enp0-gpio {
-		pins-cmd-dat {
-			pinmux = <PINMUX_GPIO149__FUNC_GPIO149>;
-			slew-rate = <1>;
-			output-low;
-		};
-	};
-
-	mtkfb_pins_lcd_bias_enn1: lcd-bias-enn1-gpio {
-		pins-cmd-dat {
-			pinmux = <PINMUX_GPIO149__FUNC_GPIO149>;
-			slew-rate = <1>;
-			output-high;
-		};
-	};
-
-	mtkfb_pins_lcd_bias_enn0: lcd-bias-enn0-gpio {
-		pins-cmd-dat {
-			pinmux = <PINMUX_GPIO149__FUNC_GPIO149>;
-			slew-rate = <1>;
-			output-low;
-		};
-	};
-
-	mtkfb_pins_lcm_rst_out1_gpio: lcm-rst-out1-gpio {
-		pins-cmd-dat {
-			pinmux = <PINMUX_GPIO90__FUNC_GPIO90>;
-			slew-rate = <1>;
-			output-high;
-		};
-	};
-
-	mtkfb_pins_lcm_rst_out0_gpio: lcm-rst-out0-gpio {
-		pins-cmd-dat {
-			pinmux = <PINMUX_GPIO90__FUNC_GPIO90>;
-			slew-rate = <1>;
-			output-low;
-		};
-	};
-
 	mtkfb_pins_lcm_dsi_te: lcm-dsi-te {
 		pins-cmd-dat {
 			pinmux = <PINMUX_GPIO89__FUNC_DSI_TE>;
-		};
-	};
-
-	mtkfb_pins_lcm_led_en1: lcm-led-en1-gpio {
-		pins-cmd-dat {
-			pinmux = <PINMUX_GPIO149__FUNC_GPIO149>;
-			slew-rate = <1>;
-			output-high;
-		};
-	};
-
-	mtkfb_pins_lcm_led_en0: lcm-led-en0-gpio {
-		pins-cmd-dat {
-			pinmux = <PINMUX_GPIO149__FUNC_GPIO149>;
-			slew-rate = <1>;
-			output-low;
 		};
 	};
 };
@@ -275,11 +193,13 @@ bootargs_ext = "";
 	#size-cells = <0>;
 	switch-fps = <120>;
 	panel1@0 {
+		/delete-property/ compatible;
+		/delete-property/ pm-enable-gpios;
+		/delete-property/ gate-ic;
+
 		compatible = "nt37707,cmd,667,fhdp";
 		reg = <0>;
-		pm-enable-gpios = <&pio 149 0>;
 		reset-gpios = <&pio 90 0>;
-		gate-ic = <4831>;
 		swap-from-dts;
 		lane-swap-setting = <1 2 0 3 4 2>;
 		pn-swap-setting = <1 1 1 1 1 1>;
@@ -291,11 +211,13 @@ bootargs_ext = "";
 		};
 	};
 	panel2@1 {
+		/delete-property/ compatible;
+		/delete-property/ pm-enable-gpios;
+		/delete-property/ gate-ic;
+
 		compatible = "jdi,nt36672e,vdo,120hz";
 		reg = <1>;
-		pm-enable-gpios = <&pio 149 0>;
 		reset-gpios = <&pio 90 0>;
-		gate-ic = <4831>;
 		pinctrl-names = "default";
 		port {
 			panel_in1: endpoint {

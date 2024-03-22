@@ -55,6 +55,7 @@
 	};
 };
 
+
 &mtkfb {
 	/delete-property/ pinctrl-names;
 	/delete-property/ pinctrl-0;
@@ -66,6 +67,8 @@
 	/delete-property/ pinctrl-6;
 	/delete-property/ pinctrl-7;
 	/delete-property/ pinctrl-8;
+	/delete-property/ pinctrl-9;
+	/delete-property/ pinctrl-10;
 
 	pinctrl-names = "lcm_rst_out0_gpio", "mode_te_te",
 		"oled_vci_en_gpio", "oled_vio_en_gpio",
