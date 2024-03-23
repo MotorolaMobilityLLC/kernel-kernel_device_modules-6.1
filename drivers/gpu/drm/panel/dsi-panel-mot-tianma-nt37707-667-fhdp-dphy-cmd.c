@@ -583,6 +583,8 @@ static struct mtk_panel_params ext_params_30hz = {
 	.panel_supplier = "tianma-nt37707",
 
 	.check_panel_feature = 1,
+	.panel_pcd_reg = 0xD0,
+	.panel_pcd_reg_mask = 0x7F,
 };
 
 static struct mtk_panel_params ext_params_60hz = {
@@ -663,6 +665,8 @@ static struct mtk_panel_params ext_params_60hz = {
 	.panel_supplier = "tianma-nt37707",
 
 	.check_panel_feature = 1,
+	.panel_pcd_reg = 0xD0,
+	.panel_pcd_reg_mask = 0x7F,
 };
 
 
@@ -744,6 +748,8 @@ static struct mtk_panel_params ext_params_90hz = {
 	.panel_supplier = "tianma-nt37707",
 
 	.check_panel_feature = 1,
+	.panel_pcd_reg = 0xD0,
+	.panel_pcd_reg_mask = 0x7F,
 };
 
 static struct mtk_panel_params ext_params_120hz = {
@@ -823,6 +829,8 @@ static struct mtk_panel_params ext_params_120hz = {
 	.panel_supplier = "tianma-nt37707",
 
 	.check_panel_feature = 1,
+	.panel_pcd_reg = 0xD0,
+	.panel_pcd_reg_mask = 0x7F,
 };
 
 static struct mtk_panel_params ext_params_24hz = {
@@ -902,6 +910,8 @@ static struct mtk_panel_params ext_params_24hz = {
 	.panel_supplier = "tianma-nt37707",
 
 	.check_panel_feature = 1,
+	.panel_pcd_reg = 0xD0,
+	.panel_pcd_reg_mask = 0x7F,
 };
 
 static struct mtk_panel_params ext_params_10hz = {
@@ -981,6 +991,8 @@ static struct mtk_panel_params ext_params_10hz = {
 	.panel_supplier = "tianma-nt37707",
 
 	.check_panel_feature = 1,
+	.panel_pcd_reg = 0xD0,
+	.panel_pcd_reg_mask = 0x7F,
 };
 
 static struct mtk_panel_params ext_params_1hz = {
@@ -1060,6 +1072,8 @@ static struct mtk_panel_params ext_params_1hz = {
 	.panel_supplier = "tianma-nt37707",
 
 	.check_panel_feature = 1,
+	.panel_pcd_reg = 0xD0,
+	.panel_pcd_reg_mask = 0x7F,
 };
 
 static int panel_ata_check(struct drm_panel *panel)
