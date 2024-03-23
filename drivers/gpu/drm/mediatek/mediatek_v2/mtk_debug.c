@@ -6300,3 +6300,55 @@ done:
 	reading_cellid = false;
 	return ret_dlen;
 }
+
+int ddic_dsi_read_1reg_cmd(int reg, char *rx_buf)
+{
+	unsigned int j = 0;
+	unsigned int ret_dlen = 0;
+	int ret;
+	struct mtk_ddic_dsi_msg *cmd_msg =
+		vmalloc(sizeof(struct mtk_ddic_dsi_msg));
+	u8 tx[10] = {0};
+
+	if (!cmd_msg)
+		return ret_dlen;
+
+	DDPMSG("%s start case_num:%d\n", __func__, reg);
+
+	memset(cmd_msg, 0, sizeof(struct mtk_ddic_dsi_msg));
+
+	cmd_msg->channel = 0;
+	cmd_msg->tx_cmd_num = 1;
+	cmd_msg->type[0] = 0x06;
+	tx[0] = reg;
+	cmd_msg->tx_buf[0] = tx;
+	cmd_msg->tx_len[0] = 1;
+
+	cmd_msg->rx_cmd_num = 1;
+	cmd_msg->rx_buf[0] = vmalloc(256 * sizeof(unsigned char));
+	memset(cmd_msg->rx_buf[0], 0, 256);
+	cmd_msg->rx_len[0] = 1;
+
+	ret = mtk_ddic_dsi_read_cmd(cmd_msg);
+	if (ret != 0) {
+		DDPPR_ERR("%s error\n", __func__);
+		goto  done;
+	}
+
+	ret_dlen = cmd_msg->rx_len[0];
+	memcpy(rx_buf, cmd_msg->rx_buf[0], ret_dlen);
+	DDPMSG("read lcm addr:0x%x--dlen:%d\n",
+		*(char *)(cmd_msg->tx_buf[0]), ret_dlen);
+	for (j = 0; j < ret_dlen; j++) {
+		DDPMSG("read lcm addr:0x%x--byte:%d,val:0x%x\n",
+			*(char *)(cmd_msg->tx_buf[0]), j,
+			*(char *)(cmd_msg->rx_buf[0] + j));
+	}
+
+done:
+	vfree(cmd_msg->rx_buf[0]);
+	vfree(cmd_msg);
+
+	DDPMSG("%s end -\n", __func__);
+	return ret_dlen;
+}

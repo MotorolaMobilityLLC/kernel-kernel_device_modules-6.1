@@ -605,6 +605,8 @@ struct mtk_panel_params {
 	enum panel_hbm_type hbm_type;
 
 	bool lcm_support_ce;
+	int panel_pcd_reg;
+	int panel_pcd_reg_mask;
 };
 
 struct mtk_panel_ext {
