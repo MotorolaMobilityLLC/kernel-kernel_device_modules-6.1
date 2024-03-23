@@ -4266,12 +4266,39 @@ static ssize_t panelPcdCheck_show(struct device *device,
 	return written;
 }
 
+extern int ddic_dsi_read_1reg_cmd(int reg, char *rx_buf);
+static ssize_t panelPcdValue_show(struct device *device,
+	struct device_attribute *attr, char *buf)
+{
+	struct drm_connector *connector = dev_get_drvdata(device);
+	struct mtk_dsi *dsi = connector_to_dsi(connector);
+	int value, ret;
+	char rx_buf[256];
+
+	int written = 0;
+
+	if (dsi && dsi->ext && dsi->ext->params->panel_pcd_reg) {
+		memset(rx_buf, 0, 2);
+		ret = ddic_dsi_read_1reg_cmd(dsi->ext->params->panel_pcd_reg, rx_buf);
+		if(ret) {
+			value = rx_buf[0];
+			if (dsi->ext->params->panel_pcd_reg_mask)
+				value = rx_buf[0] & dsi->ext->params->panel_pcd_reg_mask;
+			written = snprintf(buf, PAGE_SIZE, "0x%02x\n", value);
+		} else
+			written = snprintf(buf, PAGE_SIZE, "%s\n", "Invalid");
+	} else
+		written = snprintf(buf, PAGE_SIZE, "%s\n", "Invalid");
+	return written;
+}
+
 static DEVICE_ATTR_RO(panelVer);
 static DEVICE_ATTR_RO(panelName);
 static DEVICE_ATTR_RO(panelSupplier);
 static DEVICE_ATTR_RO(panelCellId);
 static DEVICE_ATTR_RO(panelDC);
 static DEVICE_ATTR_RW(panelPcdCheck);
+static DEVICE_ATTR_RO(panelPcdValue);
 
 static const struct attribute *conn_panel_attrs[] = {
 	&dev_attr_panelVer.attr,
@@ -4280,6 +4307,7 @@ static const struct attribute *conn_panel_attrs[] = {
 	&dev_attr_panelCellId.attr,
 	&dev_attr_panelDC.attr,
 	&dev_attr_panelPcdCheck.attr,
+	&dev_attr_panelPcdValue.attr,
 	NULL
 };
 
