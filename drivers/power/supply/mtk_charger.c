@@ -3361,17 +3361,6 @@ void update_charging_limit_modes(struct mtk_charger *info, int batt_index, int b
 {
 	enum charging_limit_modes charging_limit_modes;
 	struct mmi_sm_params *prm = &info->mmi.sm_param[batt_index];
-	union power_supply_propval val;
-	int rc = 0;
-
-	if (batt_index == MAIN_BATT) {
-		rc = mmi_get_prop_from_battery(info,
-					POWER_SUPPLY_PROP_CAPACITY, &val);
-		if (rc < 0) {
-			pr_err("[%s]Error getting Batt Capacity rc = %d\n", __func__, rc);
-		} else
-			batt_soc = val.intval;
-	}
 
 	charging_limit_modes = prm->charging_limit_modes;
 	if ((charging_limit_modes != CHARGING_LIMIT_RUN)
@@ -4624,12 +4613,8 @@ static void mmi_dual_charge_control(struct mtk_charger *chg,
 	} else
 		chg_stat_flip.batt_ma = pval.intval / 1000;
 
-	rc = power_supply_get_property(chg->main_batt_psy, POWER_SUPPLY_PROP_CAPACITY, &pval);
-	if (rc < 0) {
-		pr_err("Error getting Main Batt Capacity rc = %d\n", rc);
-		return;
-	} else
-		chg_stat_main.batt_soc = pval.intval;
+	/*use uisoc to control main battery*/
+	chg_stat_main.batt_soc = state->batt_soc;
 
 	rc = power_supply_get_property(chg->flip_batt_psy, POWER_SUPPLY_PROP_CAPACITY, &pval);
 	if (rc < 0) {
