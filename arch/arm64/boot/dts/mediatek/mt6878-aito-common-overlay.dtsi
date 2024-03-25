@@ -45,7 +45,7 @@
 
 	sar_int_default: sar_int_default {
 		pins_cmd_dat {
-			pinmux = <PINMUX_GPIO10__FUNC_GPIO10>;
+			pinmux = <PINMUX_GPIO116__FUNC_GPIO116>;
 			input-enable;
 			drive-strength = <2>;
 			bias-pull-up;
@@ -54,7 +54,7 @@
 
 	sar_int_sleep: sar_int_sleep {
 		pins_cmd_dat {
-			pinmux = <PINMUX_GPIO10__FUNC_GPIO10>;
+			pinmux = <PINMUX_GPIO116__FUNC_GPIO116>;
 			input-enable;
 			drive-strength = <2>;
 			bias-pull-up;
@@ -63,7 +63,7 @@
 
 	sar_int_default_sub: sar_int_default_sub {
 		pins_cmd_dat {
-			pinmux = <PINMUX_GPIO116__FUNC_GPIO116>;
+			pinmux = <PINMUX_GPIO10__FUNC_GPIO10>;
 			input-enable;
 			drive-strength = <2>;
 			bias-pull-up;
@@ -72,7 +72,7 @@
 
 	sar_int_sleep_sub: sar_int_sleep_sub {
 		pins_cmd_dat {
-			pinmux = <PINMUX_GPIO116__FUNC_GPIO116>;
+			pinmux = <PINMUX_GPIO10__FUNC_GPIO10>;
 			input-enable;
 			drive-strength = <2>;
 			bias-pull-up;
