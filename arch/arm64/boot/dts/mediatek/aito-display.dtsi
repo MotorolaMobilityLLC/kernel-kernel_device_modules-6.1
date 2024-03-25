@@ -243,3 +243,6 @@
 	};
 };
 
+&dispsys_config {
+	pre-define-bw = <0xffffffff>, <4200>, <0>, <1000>;
+};
