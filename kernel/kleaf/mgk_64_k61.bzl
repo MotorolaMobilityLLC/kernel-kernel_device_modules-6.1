@@ -867,6 +867,7 @@ def get_overlay_modules_list():
         mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/moto_sched:moto_sched")
         mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/moto_mmap_fault:moto_mmap_fault")
         mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/moto_f_usbnet:moto_f_usbnet")
+        mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/moto_con_dfpar:con_dfpar")
 
     if "aito" in DEFCONFIG_OVERLAYS:
         mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/misc/awinic/aw86927:aw86927")
