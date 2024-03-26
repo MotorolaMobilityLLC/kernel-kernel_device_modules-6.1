@@ -319,6 +319,17 @@
 };
 /* CAMERA GPIO end */
 
+&odm {
+        camera_common_dovdd: camera-common-dovdd {
+                compatible = "regulator-fixed";
+                regulator-name = "camera-common-dovdd";
+                regulator-min-microvolt = <1800000>;
+                regulator-max-microvolt = <1800000>;
+                enable-active-high;
+                vin-supply = <&mt6363_vio18>;
+        };
+};
+
 &mtk_composite_v4l2_2 {
 	#address-cells = <1>;
 	#size-cells = <0>;
@@ -401,6 +412,7 @@
 		dvdd-supply = <&et5904_ldo1>;
 		avdd-supply = <&et5904_ldo3>;
 		afvdd-supply = <&mt6369_vtp>;
+		dovdd-supply = <&camera_common_dovdd>;
 
 		clocks = <&topckgen_clk CLK_TOP_UVPLL192M_D32>,
 			<&topckgen_clk CLK_TOP_UVPLL192M_D16>,
@@ -457,6 +469,7 @@
 		pinctrl-6 = <&camera_pins_cam1_rst_1>;
 		dvdd-supply = <&et5904_ldo2>;
 		avdd-supply = <&et5904_ldo4>;
+		dovdd-supply = <&camera_common_dovdd>;
 
 		clocks = <&topckgen_clk CLK_TOP_UVPLL192M_D32>,
 			<&topckgen_clk CLK_TOP_UVPLL192M_D16>,
@@ -523,6 +536,7 @@
 		avdd-supply = <&et59041c_ldo3>;
 		dvdd-supply = <&et59041c_ldo1>;
 		afvdd-supply = <&mt6369_vio28>;
+		dovdd-supply = <&camera_common_dovdd>;
 
 		clocks = <&topckgen_clk CLK_TOP_UVPLL192M_D32>,
 			<&topckgen_clk CLK_TOP_UVPLL192M_D16>,
@@ -615,6 +629,7 @@
 		pinctrl-6 = <&camera_pins_cam4_rst_1>;
 		avdd-supply = <&et59041c_ldo4>;
 		dvdd-supply = <&et59041c_ldo2>;
+		dovdd-supply = <&camera_common_dovdd>;
 
 		clocks = <&topckgen_clk CLK_TOP_UVPLL192M_D32>,
 			<&topckgen_clk CLK_TOP_UVPLL192M_D16>,
