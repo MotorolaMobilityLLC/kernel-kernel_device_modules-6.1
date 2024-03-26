@@ -44,7 +44,6 @@ typedef struct
 }FirmwareContex;
 
 FirmwareContex g_firmwareContext;
-unsigned short g_downloadByForce;
 
 const struct firmware *dw9784fw;
 
@@ -977,7 +976,6 @@ int GenerateFirmwareContexts(void)
 			g_firmwareContext.version = *(g_firmwareContext.fwContentPtr+FW_VERSION_OFFSET);
 			g_firmwareContext.checksum = *(g_firmwareContext.fwContentPtr+FW_CHECKSUM_OFFSET);
 	}
-	g_downloadByForce = 0;
 	return i4RetValue;
 }
 
@@ -1037,8 +1035,13 @@ int dw9784_download_fw(void)
 	int ret = 0;
 	unsigned short i;
 	unsigned short addr;
-	//unsigned short buf[g_firmwareContext.size];
 	unsigned short* buf_temp = NULL;
+
+	if (!(dw9784_check_fw_download())) {
+		LOG_INF("[dw9784] dw9784 skip firmware");
+		return ret;
+	}
+
 	buf_temp = kmalloc(20992,GFP_KERNEL);
 	if(buf_temp == NULL)
 	{
@@ -1124,6 +1127,8 @@ int dw9784_download_fw(void)
 	dw9784_post_firmware_download();
 	kfree(buf_temp);
 	buf_temp = NULL;
+	kfree(g_firmwareContext.fwContentPtr);
+	g_firmwareContext.fwContentPtr = NULL;
 
 	return ret;
 }
@@ -1131,6 +1136,7 @@ int dw9784_download_fw(void)
 int dw9784_check_fw_download(void)
 {
 	int ret = 0;
+	int g_downloadByForce = 0;
 	uint16_t fwchecksum = 0;
 	uint16_t first_chip_id = 0;
 	uint16_t chip_checksum = 0;
@@ -1158,11 +1164,12 @@ int dw9784_check_fw_download(void)
 	LOG_INF("[dw9784] FW_DATE_PHONE_MAKER : 0x%x", chip_checksum);
 
 	LOG_INF("[dw9784] first_chip_id : 0x%x", first_chip_id);
+
+//	g_downloadByForce = 1;
 	if (first_chip_id != DW9784_CHIP_ID) { /* first_chip_id verification failed */
 		LOG_INF("[dw9784] start flash download:: size:%d, version:0x%x",
 			g_firmwareContext.size, g_firmwareContext.version);
 		g_downloadByForce = 1;
-		ret = dw9784_download_fw(); /* Need to forced update OIS firmware again. */
 	} else {
 		fwchecksum = dw9784_checksum_fw_chk();
 		if(fwchecksum != 0)
@@ -1184,7 +1191,6 @@ int dw9784_check_fw_download(void)
 			LOG_INF("[dw9784] start flash download:: size:%d, version:0x%x g_downloadByForce %d",
 			                 g_firmwareContext.size, g_firmwareContext.version, g_downloadByForce);
 
-			ret = dw9784_download_fw();
 			LOG_INF("[dw9784] flash download::vendor_dw9784");
 			if (ret != EOK) {
 				dw9784_erase_mtp_rewritefw();
@@ -1196,12 +1202,9 @@ int dw9784_check_fw_download(void)
 			LOG_INF("[dw9784] ois firmware version is updated, skip download");
 		}
 	}
-	kfree(g_firmwareContext.fwContentPtr);
-	g_firmwareContext.fwContentPtr = NULL;
 
 	return g_downloadByForce;
 }
-
 
 static int dw9784_init(struct dw9784_device *dw9784)
 {
@@ -1216,8 +1219,7 @@ static int dw9784_init(struct dw9784_device *dw9784)
 	m_client = client;
 
 	client->addr = DW9784_OIS_I2C_SLAVE_ADDR >> 1;
-	dw9784_check_fw_download();
-	//ois_reset();
+	ois_reset();
 	//ret = ois_i2c_wr_u16(m_client, 0x7020, 0x0000);
 
 	ret = ois_i2c_rd_u16(client, 0x7011, &lock_ois);
@@ -1237,9 +1239,6 @@ static int dw9784_power_off(struct dw9784_device *dw9784)
 
 	LOG_INF("+\n");
 
-	ret = dw9784_release(dw9784);
-	if (ret)
-		LOG_INF("dw9784 release failed!\n");
 
 	hw_nums = ARRAY_SIZE(pio_names);
 	if (hw_nums > PINCTRL_MAXSIZE)
@@ -1353,54 +1352,7 @@ static int dw9784_power_on(struct dw9784_device *dw9784)
 	 */
 	usleep_range(DW9784_CTRL_DELAY_US, DW9784_CTRL_DELAY_US + 100);
 
-	ret = dw9784_init(dw9784);
-	if (ret < 0)
-		goto fail;
 
-	LOG_INF("dw9784 dw9784 init success");
-	return 0;
-
-fail:
-	hw_nums = ARRAY_SIZE(pio_names);
-	if (hw_nums > PINCTRL_MAXSIZE)
-		hw_nums = PINCTRL_MAXSIZE;
-	for (i = 0; i < hw_nums; i += 2) {
-		int idx = 1 + i;
-
-		if (dw9784->pio && dw9784->pio_state[idx]) {
-			ret = pinctrl_select_state(dw9784->pio,
-						dw9784->pio_state[idx]);
-			if (ret < 0)
-				LOG_INF("cannot enable %d pintctrl\n", idx);
-		}
-	}
-	usleep_range(1000, 1100);
-
-	hw_nums = ARRAY_SIZE(ldo_names);
-	if (hw_nums > REGULATOR_MAXSIZE)
-		hw_nums = REGULATOR_MAXSIZE;
-	for (i = 0; i < hw_nums; i++) {
-		if (dw9784->ldo[i]) {
-			ret = regulator_disable(dw9784->ldo[i]);
-			if (ret < 0)
-				LOG_INF("cannot enable %d regulator\n", i);
-		}
-	}
-
-	hw_nums = ARRAY_SIZE(clk_names);
-	if (hw_nums > CLK_MAXSIZE)
-		hw_nums = CLK_MAXSIZE;
-	for (i = 0; i < hw_nums; i += 2) {
-		struct clk *mclk = dw9784->clk[i];
-		struct clk *mclk_src = dw9784->clk[i + 1];
-
-		if (mclk && mclk_src) {
-			clk_disable_unprepare(mclk_src);
-			clk_disable_unprepare(mclk);
-		}
-	}
-
-	LOG_INF("dw9784 power on fail");
 	LOG_INF("-\n");
 
 	return ret;
@@ -1420,6 +1372,7 @@ static const struct v4l2_ctrl_ops dw9784_ois_ctrl_ops = {
 static int dw9784_open(struct v4l2_subdev *sd, struct v4l2_subdev_fh *fh)
 {
 	int ret;
+	struct dw9784_device *dw9784 = sd_to_dw9784_ois(sd);
 
 	LOG_INF("%s\n", __func__);
 
@@ -1428,6 +1381,10 @@ static int dw9784_open(struct v4l2_subdev *sd, struct v4l2_subdev_fh *fh)
 		pm_runtime_put_noidle(sd->dev);
 		return ret;
 	}
+
+	ret = dw9784_init(dw9784);
+	if (ret < 0)
+		LOG_INF("OIS init fail!\n");
 
 	/* OIS ext interfaces for test and firmware checking */
 	INIT_WORK(&ois_ext_work.ext_work, ois_ext_interface);
@@ -1439,8 +1396,14 @@ static int dw9784_open(struct v4l2_subdev *sd, struct v4l2_subdev_fh *fh)
 
 static int dw9784_close(struct v4l2_subdev *sd, struct v4l2_subdev_fh *fh)
 {
+	int ret;
+	struct dw9784_device *dw9784 = sd_to_dw9784_ois(sd);
+
 	LOG_INF("%s\n", __func__);
 
+	ret = dw9784_release(dw9784);
+	if (ret)
+		LOG_INF("dw9784 release failed!\n");
 	pm_runtime_put(sd->dev);
 
 	return 0;
@@ -1678,6 +1641,20 @@ static int dw9784_probe(struct i2c_client *client)
 
 	pm_runtime_enable(dev);
 
+
+	LOG_INF("dw9784_probe dw9784_download_fw E!");
+	ret = pm_runtime_get_sync(dev);
+	if (ret < 0) {
+		pm_runtime_put_noidle(dev);
+		return ret;
+	}
+
+	client->addr = (DW9784_OIS_I2C_SLAVE_ADDR) >> 1;
+	m_client = client;
+	dw9784_download_fw();
+
+	pm_runtime_put(dev);
+	LOG_INF("dw9784_probe dw9784_download_fw X!");
 	LOG_INF("-\n");
 
 	return 0;
