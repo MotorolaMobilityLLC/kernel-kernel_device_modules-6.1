@@ -19,7 +19,7 @@
 
 #define MAIN_VCM_NAME				"main_vcm"
 #define MAIN_VCM_MAX_FOCUS_POS			1023
-#if IS_ENABLED(MOT_AK7377_HALL_TEST)
+#if IS_ENABLED(CONFIG_MOT_AK7377_HALL_TEST)
 #define AFIOC_G_AFPOS _IOWR('A', 35, int)
 #endif
 /*
@@ -30,7 +30,7 @@
 
 #define REGULATOR_MAXSIZE			16
 #define DELAY_10MS                              10000
-#if IS_ENABLED(MOT_AK7377_HALL_TEST)
+#if IS_ENABLED(CONFIG_MOT_AK7377_HALL_TEST)
 typedef struct {
 	int max_val;
 	int min_val;
@@ -457,7 +457,7 @@ static int main_vcm_close(struct v4l2_subdev *sd, struct v4l2_subdev_fh *fh)
 	return 0;
 }
 
-#if IS_ENABLED(MOT_AK7377_HALL_TEST)
+#if IS_ENABLED(CONFIG_MOT_AK7377_HALL_TEST)
 #define AK7377A_SET_POSITION_ADDR 0x00
 #define AK7377A_MOVE_DELAY_US 8400
 static int ak7377a_test_hall_set_position(struct v4l2_subdev  * sd, u16 val)
@@ -523,7 +523,7 @@ static int ak7377a_test_hall_GetResult(struct v4l2_subdev  * sd,int mode)
 static long main_vcm_ops_core_ioctl(struct v4l2_subdev *sd, unsigned int cmd, void *arg)
 {
 	int ret = 0;
-#if IS_ENABLED(MOT_AK7377_HALL_TEST)
+#if IS_ENABLED(CONFIG_MOT_AK7377_HALL_TEST)
 	motAfTestData  afdata;
 #endif
 	struct main_vcm_device *main_vcm = sd_to_main_vcm_vcm(sd);
@@ -552,7 +552,7 @@ static long main_vcm_ops_core_ioctl(struct v4l2_subdev *sd, unsigned int cmd, vo
 			LOG_INF("init error\n");
 	}
 	break;
-#if IS_ENABLED(MOT_AK7377_HALL_TEST)
+#if IS_ENABLED(CONFIG_MOT_AK7377_HALL_TEST)
 	case AFIOC_G_AFPOS:
 	{
 		ret = ak7377a_test_hall_set_position(sd,0xfff);       //4095
