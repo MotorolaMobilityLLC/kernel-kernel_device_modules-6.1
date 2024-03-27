@@ -781,11 +781,15 @@ int __init moto_rkp_init(void)
 		}
 	}
 
+#if !IS_ENABLED(CONFIG_KASAN_GENERIC) && !IS_ENABLED(CONFIG_KASAN_SW_TAGS)
+#if !IS_ENABLED(CONFIG_GCOV_KERNEL)
 	/* Lock down the sensitive HVC calls from EL2 MKP service */
 	while (!mkp_ro_region_is_already_locked) {
 		pr_info("%s: MotoRkp waiting for kernel RO region to be ready..\n", __func__);
 		mdelay(100); // Align with the workqueue to be scheduled in mkp_pk_work.
 	}
+#endif
+#endif
 
 	if (mkp_ro_region_is_already_locked && (mkp_lockdown_hvc_call(MKP_INIT) == 0)) {
 		pr_info("%s: MotoRkp set done and locked\n", __func__);
