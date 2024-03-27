@@ -112,6 +112,21 @@
 		reg = <0x77>;
 		/* hl7603_vout_voltage = <0x0B>; //3.4v */
 	};
+
+	rt6160@75 {
+		compatible = "richtek,rt6160",
+			     "richtek,rt6160-vbb";
+		reg = <0x75>;
+
+		status = "disabled";
+	};
+
+	sgm61220@75 {
+		status = "ok";
+		compatible = "sgm62110";
+		reg = <0x75>;
+
+	};
 };
 
 &i2c12 {

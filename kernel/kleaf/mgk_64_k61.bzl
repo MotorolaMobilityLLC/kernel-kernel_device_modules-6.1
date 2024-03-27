@@ -903,6 +903,7 @@ def get_overlay_modules_list():
         mgk_64_k61_device_modules.append("drivers/power/supply/moto_wlc_alg.ko")
         mgk_64_k61_device_modules.append("drivers/regulator/wl2864c-regulator.ko")
         mgk_64_k61_device_modules.append("drivers/regulator/hl7603-regulator.ko")
+        mgk_64_k61_device_modules.append("drivers/regulator/sgm62110-regulator.ko")
         mgk_64_k61_device_modules.append("drivers/regulator/cam_sgm62110-regulator.ko")
         mgk_64_k61_device_modules.append("sound/soc/codecs/tfa9865/snd-soc-tfa9865.ko")
 
