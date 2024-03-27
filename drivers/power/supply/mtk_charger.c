@@ -2719,8 +2719,12 @@ static void mmi_blance_charger_check_status(struct mtk_charger *info)
 	}
 
 	if (charging != info->blance_can_charging) {
-		charger_dev_enable(info->blance_dev, charging);
-		info->blance_can_charging = charging;
+		ret = charger_dev_enable(info->blance_dev, charging);
+		if (ret < 0) {
+			pr_info("blance ic %s charging failed\n", charging?"enable":"disable");
+		} else {
+			info->blance_can_charging = charging;
+		}
 	}
 
 }
@@ -3140,6 +3144,7 @@ static int mtk_charger_plug_out(struct mtk_charger *info)
 	struct chg_alg_device *alg;
 	struct chg_alg_notify notify;
 	int i;
+	int ret = 0;
 
 	chr_err("%s\n", __func__);
 	info->chr_type = POWER_SUPPLY_TYPE_UNKNOWN;
@@ -3165,8 +3170,11 @@ static int mtk_charger_plug_out(struct mtk_charger *info)
 	charger_dev_set_mivr(info->chg1_dev, info->data.min_charger_voltage);
 	charger_dev_plug_out(info->chg1_dev);
 	if (info->blance_dev && info->blance_can_charging) {
-		charger_dev_enable(info->blance_dev, false);
-		info->blance_can_charging = false;
+		ret = charger_dev_enable(info->blance_dev, false);
+		if (ret < 0) {
+			pr_info("%s blance disable charging failed\n",__func__);
+		} else
+			info->blance_can_charging = false;
 	}
 	if (info->dvchg1_dev)
 		charger_dev_enable_adc(info->dvchg1_dev, false);
