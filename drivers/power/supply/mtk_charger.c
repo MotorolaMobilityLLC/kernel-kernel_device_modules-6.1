@@ -3325,6 +3325,14 @@ static char *stepchg_str[] = {
 	[STEP_NONE]		= "NONE",
 };
 
+void mmi_wake_up_charger(void)
+{
+	if (!IS_ERR_OR_NULL(mmi_info)) {
+		_wake_up_charger(mmi_info);
+	}
+}
+EXPORT_SYMBOL(mmi_wake_up_charger);
+
 int mmi_get_prop_from_battery(struct mtk_charger *info,
 				enum power_supply_property psp,
 				union power_supply_propval *val)
@@ -3766,9 +3774,8 @@ void mmi_charge_rate_check(struct mtk_charger *info)
 		goto end_rate_check;
 	}
 
-	if (icl >= TURBO_CHRG_THRSH)
-		info->mmi.charge_rate = POWER_SUPPLY_CHARGE_RATE_TURBO;
-	else if (icl < WEAK_CHRG_THRSH)
+	//for BC1.2
+	if (icl < WEAK_CHRG_THRSH)
 		info->mmi.charge_rate = POWER_SUPPLY_CHARGE_RATE_WEAK;
 	else
 		info->mmi.charge_rate =  POWER_SUPPLY_CHARGE_RATE_NORMAL;
@@ -4034,23 +4041,20 @@ static int mmi_check_power_watt(struct mtk_charger *info, bool force)
 	} else if (qc_chg_type == USB_TYPE_QC30) {
 		power_watt = MMI_POWER_15W;
 	} else { //BC1.2
-		if (info->mmi.factory_mode) { //never set ICL in factory mode, so use charger type
-			switch (info->chr_type) {
-			case POWER_SUPPLY_TYPE_USB_DCP:
-				power_watt = MMI_POWER_10W;
-				break;
-			case POWER_SUPPLY_TYPE_USB_CDP:
-				power_watt = MMI_POWER_7W;
-				break;
-			case POWER_SUPPLY_TYPE_USB:
-				power_watt = MMI_POWER_2W;
-				break;
-			default:
-				power_watt = 5 * icl /1000;
-				break;
-			}
-		} else
+		switch (info->chr_type) {
+		case POWER_SUPPLY_TYPE_USB_DCP:
+			power_watt = MMI_POWER_10W;
+			break;
+		case POWER_SUPPLY_TYPE_USB_CDP:
+			power_watt = MMI_POWER_7W;
+			break;
+		case POWER_SUPPLY_TYPE_USB:
+			power_watt = MMI_POWER_2W;
+			break;
+		default:
 			power_watt = 5 * icl /1000;
+			break;
+		}
 	}
 
 	power_watt = MAX(power_watt, 1);

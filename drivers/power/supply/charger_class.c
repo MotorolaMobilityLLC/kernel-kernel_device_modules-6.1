@@ -231,6 +231,16 @@ int charger_dev_get_min_input_current(struct charger_device *chg_dev, u32 *uA)
 }
 EXPORT_SYMBOL(charger_dev_get_min_input_current);
 
+int charger_dev_get_max_input_current(struct charger_device *chg_dev, u32 *uA)
+{
+	if (chg_dev != NULL && chg_dev->ops != NULL &&
+	    chg_dev->ops->get_max_input_current)
+		return chg_dev->ops->get_max_input_current(chg_dev, uA);
+
+	return -EOPNOTSUPP;
+}
+EXPORT_SYMBOL(charger_dev_get_max_input_current);
+
 int charger_dev_set_boot_volt_times(struct charger_device *chg_dev, u32 val)
 {
 	if (chg_dev != NULL && chg_dev->ops != NULL &&
