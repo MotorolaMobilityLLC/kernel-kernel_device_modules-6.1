@@ -18,7 +18,7 @@
 	pr_info(DRIVER_NAME " [%s] " format, __func__, ##args)
 
 #define MAIN3_VCM_NAME				"main3_vcm"
-#define MAIN3_VCM_MAX_FOCUS_POS			1023
+#define MAIN3_VCM_MAX_FOCUS_POS			2046
 /*
  * This sets the minimum granularity for the focus positions.
  * A value of 1 gives maximum accuracy for a desired focus position
@@ -261,8 +261,8 @@ static int main3_vcm_set_position(struct main3_vcm_device *main3_vcm, u16 val)
 			ret = i2c_master_send(client, puSendCmd, nCommNum);
 			LOG_INF("dw9784 af_drift val %d, ret = %d, client->addr 0x%x\n", val, ret, client->addr);
 			client->addr = DW9784_OIS_I2C_SLAVE_ADDR >> 1;
-			LOG_INF("dw9784 af_drift client->addr 0x%x, val<<2 %d\n", client->addr, val<<2);
-			write_reg_16bit_value_16bit(client, 0xD013, val<<2);
+			LOG_INF("dw9784 af_drift client->addr 0x%x, val << 1 %d\n", client->addr, val << 1);
+			write_reg_16bit_value_16bit(client, 0xD013, val << 1);
 			client->addr = MAIN3_VCM_I2C_SLAVE_ADDR >> 1;
 			LOG_INF("dw9784 af_drift client->addr 0x%x, val %d\n", client->addr, val);
 			if (ret >= 0)
