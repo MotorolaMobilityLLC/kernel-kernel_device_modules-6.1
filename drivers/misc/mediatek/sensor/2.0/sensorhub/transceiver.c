@@ -346,6 +346,8 @@ static int transceiver_translate(struct transceiver_device *dev,
 		case SENSOR_TYPE_ACCELEROMETER_UNCALIBRATED:
 		case SENSOR_TYPE_MAGNETIC_FIELD_UNCALIBRATED:
 		case SENSOR_TYPE_GYROSCOPE_UNCALIBRATED:
+		case SENSOR_TYPE_ACCELEROMETER_FLIP_UNCALIBRATED:
+		case SENSOR_TYPE_GYROSCOPE_FLIP_UNCALIBRATED:
 			dst->word[0] = src->value[0];
 			dst->word[1] = src->value[1];
 			dst->word[2] = src->value[2];
