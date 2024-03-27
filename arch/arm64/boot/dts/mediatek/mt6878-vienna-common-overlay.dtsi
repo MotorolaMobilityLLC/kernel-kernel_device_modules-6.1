@@ -239,7 +239,7 @@
 
 		fs3001_f0_ref=< 2350 >;
 		fs3001_auto_brake=< 0 >;
-		fs3001_f0_cali_mode=< 0 >;
+		fs3001_f0_cali_mode=< 1 >;
 		fs3001_cont_drv1_lvl=< 127 >;
 		fs3001_cont_drv2_lvl=< 54 >;
 		fs3001_cont_drv1_time=< 4 >;
