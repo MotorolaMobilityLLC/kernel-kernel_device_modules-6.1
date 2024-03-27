@@ -219,6 +219,26 @@ enum mt6375_chg_dtprop_type {
 	DTPROP_BOOL,
 };
 
+/*For dcp15w*/
+struct dcp15w {
+	bool support;
+	bool is_detecting;
+	bool hook_current;
+	bool online;
+	struct delayed_work detect_dwork;
+	struct alarm timer; /* alarm timer */
+	struct completion plugout_trigger;
+	s64 plugin_time;
+	s64 plugout_time;
+
+	int icl_target;
+	int icl_min;
+	int icl_max;
+	int icl_step;
+	int time_step;
+	int time_plug;
+};
+
 struct mt6375_chg_data {
 	struct device *dev;
 	struct regmap *rmap;
@@ -272,6 +292,8 @@ struct mt6375_chg_data {
 	struct regulator *otg;
 
 	struct adapter_device *pd_adapter;
+
+	struct dcp15w dcp15w;
 };
 
 struct mt6375_chg_platform_data {
@@ -475,6 +497,9 @@ static const struct mt6375_chg_field mt6375_chg_fields[F_MAX] = {
 	MT6375_CHG_FIELD(F_USBID_EN, MT6375_REG_USBID_CTRL1, 7, 7),
 	MT6375_CHG_FIELD(F_USBID_FLOATING, MT6375_REG_USBID_CTRL2, 1, 1),
 };
+
+static void dcp15w_timer_stop(struct mt6375_chg_data *ddata);
+static void dcp15w_timer_start(struct mt6375_chg_data *ddata, int ms);
 
 static inline int mt6375_chg_field_set(struct mt6375_chg_data *ddata,
 				       enum mt6375_chg_reg_field fd, u32 val);
@@ -1063,6 +1088,27 @@ static void mt6375_chg_pwr_rdy_process(struct mt6375_chg_data *ddata)
 		ddata->qc_is_detect = false;
 	}
 
+	if (ddata->dcp15w.support) {
+		if (val) {
+			dcp15w_timer_stop(ddata);
+			ddata->dcp15w.plugin_time = ktime_to_ms(ktime_get_boottime());
+		} else {
+			ddata->dcp15w.plugout_time = ktime_to_ms(ktime_get_boottime());
+			if (ddata->dcp15w.is_detecting) {
+				complete(&ddata->dcp15w.plugout_trigger);
+			}
+
+			if (ddata->dcp15w.online) {
+				pr_info("%s dcp15w plugout_trigger time:%lld\n",
+						__func__, ddata->dcp15w.plugout_time);
+				ddata->dcp15w.hook_current = true;
+				ddata->dcp15w.icl_target -= ddata->dcp15w.icl_step;
+				mt6375_chg_field_set(ddata, F_IAICR, 100);//plugout reset icl to 100mA
+				dcp15w_timer_start(ddata, ddata->dcp15w.time_plug);
+			}
+		}
+	}
+
 	mmi_notify_vbus_event(ddata, val);
 
 	ret = mt6375_chg_field_set(ddata, F_BLEED_DIS_EN, !ddata->pwr_rdy);
@@ -1261,17 +1307,32 @@ static void mt6375_chg_bc12_work_func(struct work_struct *work)
 		ddata->psy_desc.type = POWER_SUPPLY_TYPE_USB_DCP;
 		ddata->psy_type[active_idx] = POWER_SUPPLY_TYPE_USB_DCP;
 		ddata->psy_usb_type[active_idx] = POWER_SUPPLY_USB_TYPE_DCP;
-		if (ddata->qc_dev)
-			schedule_delayed_work(&ddata->detect_qc_dwork, msecs_to_jiffies(2000));
+		if (ddata->dcp15w.support) {
+			if (ddata->qc_dev && !ddata->dcp15w.is_detecting)
+				schedule_delayed_work(&ddata->detect_qc_dwork, msecs_to_jiffies(2000)); //2s for wait PD detected complete
+			else if (!ddata->dcp15w.is_detecting) {
+				schedule_delayed_work(&ddata->dcp15w.detect_dwork, msecs_to_jiffies(2000));
+			}
+		} else {
+			if (ddata->qc_dev)
+				schedule_delayed_work(&ddata->detect_qc_dwork, msecs_to_jiffies(2000)); //2s for wait PD detected complete
+		}
 		break;
 	case PORT_STAT_DCP:
 		ddata->psy_desc.type = POWER_SUPPLY_TYPE_USB_DCP;
 		ddata->psy_type[active_idx] = POWER_SUPPLY_TYPE_USB_DCP;
 		ddata->psy_usb_type[active_idx] = POWER_SUPPLY_USB_TYPE_DCP;
 		bc12_en = false;
-		if (ddata->qc_dev)
-			schedule_delayed_work(&ddata->detect_qc_dwork, msecs_to_jiffies(2000)); //2s for wait PD detected complete
-
+		if (ddata->dcp15w.support) {
+			if (ddata->qc_dev && !ddata->dcp15w.is_detecting)
+				schedule_delayed_work(&ddata->detect_qc_dwork, msecs_to_jiffies(2000)); //2s for wait PD detected complete
+			else if (!ddata->dcp15w.is_detecting) {
+				schedule_delayed_work(&ddata->dcp15w.detect_dwork, msecs_to_jiffies(2000));
+			}
+		} else {
+			if (ddata->qc_dev)
+				schedule_delayed_work(&ddata->detect_qc_dwork, msecs_to_jiffies(2000)); //2s for wait PD detected complete
+		}
 		break;
 	case PORT_STAT_SDP:
 		ddata->psy_desc.type = POWER_SUPPLY_TYPE_USB;
@@ -1371,6 +1432,10 @@ static int mt6375_chg_get_property(struct power_supply *psy,
 	case POWER_SUPPLY_PROP_ONLINE:
 		mutex_lock(&ddata->attach_lock);
 		val->intval = atomic_read(&ddata->attach[ddata->active_idx]);
+
+		if (ddata->dcp15w.support && ddata->dcp15w.online)
+			val->intval = 1;
+
 		mutex_unlock(&ddata->attach_lock);
 		break;
 	case POWER_SUPPLY_PROP_STATUS:
@@ -1562,6 +1627,11 @@ static int mt6375_set_ichg(struct charger_device *chgdev, u32 uA)
 	struct mt6375_chg_data *ddata = charger_get_data(chgdev);
 	union power_supply_propval val = { .intval = U_TO_M(uA) };
 
+	if (ddata->dcp15w.support && ddata->dcp15w.hook_current) {
+		pr_info("dcp15w hook ichg=%d hook\n", uA);
+		return 0;
+	}
+
 	mt_dbg(ddata->dev, "ichg=%d\n", uA);
 	return power_supply_set_property(ddata->psy,
 		POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT, &val);
@@ -1614,7 +1684,13 @@ static int mt6375_set_aicr(struct charger_device *chgdev, u32 uA)
 	struct mt6375_chg_data *ddata = charger_get_data(chgdev);
 	union power_supply_propval val = { .intval = U_TO_M(uA) };
 
-	mt_dbg(ddata->dev, "aicr=%d\n", uA);
+	if (ddata->dcp15w.support && ddata->dcp15w.hook_current) {
+		pr_info("dcp15w hook=%d, aicr=%d, ICL max=%d\n",
+			ddata->dcp15w.hook_current, val.intval, ddata->dcp15w.icl_target);
+		return 0;
+	}
+
+	mt_dbg(ddata->dev, "aicr=%d\n", val.intval);
 	return power_supply_set_property(ddata->psy,
 		POWER_SUPPLY_PROP_INPUT_CURRENT_LIMIT, &val);
 }
@@ -2360,7 +2436,6 @@ void get_qc_charger_type_func_work(struct work_struct *work)
 	}
 
 	adapter_dev_reset_chg_type(ddata->qc_dev);
-	pr_err("start qc detected \n");
 	ddata->qc_is_detect = true;
 
 	mt6375_chg_field_set(ddata, F_IAICR, 500);
@@ -2424,6 +2499,213 @@ void get_qc_charger_type_func_work(struct work_struct *work)
 		pr_err("Force set qc3 5V");
 	}
 
+	if (ddata->dcp15w.support) {
+		ret = power_supply_get_property(ddata->psy, POWER_SUPPLY_PROP_ONLINE, &val);
+		if (ret == 0 && val.intval && (ddata->qc_chg_type == USB_TYPE_DCP)) {
+			pr_info("dcp15w start detect_dwork after qc detected end\n");
+			schedule_delayed_work(&ddata->dcp15w.detect_dwork, 0);
+		}
+	}
+
+}
+
+static enum alarmtimer_restart
+	dcp15w_alarm_timer_func(struct alarm *alarm, ktime_t now)
+{
+	struct mt6375_chg_data *ddata =
+	container_of(alarm, struct mt6375_chg_data, dcp15w.timer);
+
+	ddata->dcp15w.hook_current = false;
+	ddata->dcp15w.online = false;
+	ddata->dcp15w.icl_target = -1;
+	mmi_wake_up_charger();
+
+	pr_info("%s:dcp15w alarm time out:%lldms\n", __func__,
+			ktime_to_ms(now));
+	return ALARMTIMER_NORESTART;
+}
+
+static void dcp15w_timer_stop(struct mt6375_chg_data *ddata)
+{
+	int ret = 0;
+
+	/* If the timer was already set, cancel it */
+	ret = alarm_try_to_cancel(&ddata->dcp15w.timer);
+	if (ret < 0) {
+		chr_err("%s: callback was running, skip timer\n", __func__);
+		return;
+	}
+	pr_info("%s:dcp15w alarm timer stop:%d, %lldms\n", __func__, ret,
+		ktime_to_ms(ktime_get_boottime()));
+}
+
+static void dcp15w_timer_start(struct mt6375_chg_data *ddata, int ms)
+{
+	ktime_t ktime;
+	int ret = 0;
+
+	/* If the timer was already set, cancel it */
+	ret = alarm_try_to_cancel(&ddata->dcp15w.timer);
+	if (ret < 0) {
+		chr_err("%s: callback was running, skip timer\n", __func__);
+		return;
+	}
+	ktime = ktime_get_boottime() + ms * 1000000;
+	pr_info("%s:dcp15w alarm timer start:%d, %lldms\n", __func__, ret,
+		ktime_to_ms(ktime));
+	alarm_start(&ddata->dcp15w.timer, ktime);
+}
+
+#define MIDDLE(min, max, value)			\
+		((min > value) ? min : ((value > max) ? max : value))
+
+void dcp15w_detect_dwork(struct work_struct *work)
+{
+	struct delayed_work *dwork = NULL;
+	struct mt6375_chg_data *ddata = NULL;
+	unsigned long timeout = 300;
+	long ret_comp = 0;
+	int i = 0;
+	int ibus_ua = 0;
+	int vbus_uv = 0;
+	int icl_ma = 0;
+	int power_mw = 0;
+	int ret = 0;
+	int count = -1;
+
+	dwork = container_of(work, struct delayed_work, work);
+	if (IS_ERR_OR_NULL(dwork)) {
+		pr_err("%s:Cann't get dcp15w.detect_dwork\n", __func__);
+		return ;
+	}
+	ddata = container_of(dwork, struct mt6375_chg_data, dcp15w.detect_dwork);
+	if (IS_ERR_OR_NULL(ddata)) {
+		pr_err("%s:Cann't get mt6375_chg_data \n", __func__);
+		return ;
+	}
+
+	if (!IS_ERR_OR_NULL(ddata->chgdev)) {
+		ret = mt6375_get_vbus(ddata->chgdev, &vbus_uv);
+		if (ret != 0) {
+			pr_err("%s get vbus failed\n", __func__);
+			return;
+		}
+	}
+	pr_info("%s dcp15w get vbus %d uv\n", __func__, vbus_uv);
+	if (is_pd_rdy(ddata) || vbus_uv > 8000000) {
+		pr_err("%s:pd adaptor ready, exit dcp15w detected\n", __func__);
+		return;
+	}
+
+	if (vbus_uv < 4000000) {
+		pr_err("%s:dcp15w: vbus_uv < 4V, exit dcp15w detected\n", __func__);
+		return;
+	}
+
+	pr_info("dcp15w plugin_time:%lld,plugout_time:%lld, die_time:%lld\n",
+			ddata->dcp15w.plugin_time, ddata->dcp15w.plugout_time,
+			ddata->dcp15w.plugin_time - ddata->dcp15w.plugout_time);
+
+	if (ddata->dcp15w.icl_target > 0) {
+		ddata->dcp15w.icl_target = MIDDLE(ddata->dcp15w.icl_min, ddata->dcp15w.icl_max, ddata->dcp15w.icl_target);
+		count = (ddata->dcp15w.icl_target - ddata->dcp15w.icl_min) / ddata->dcp15w.icl_step;
+	} else {
+		count = (ddata->dcp15w.icl_max - ddata->dcp15w.icl_min) / ddata->dcp15w.icl_step;
+	}
+
+	pr_info("dcp15w start detected %lldms\n", ktime_to_ms(ktime_get_boottime()));
+	ddata->dcp15w.is_detecting = true;
+	ddata->dcp15w.online = true;
+	ddata->dcp15w.hook_current = true;
+	reinit_completion(&ddata->dcp15w.plugout_trigger);
+	mt6375_chg_field_set(ddata, F_CC, 3000);
+
+	timeout = ddata->dcp15w.time_step;
+	pr_info("dcp15w count:%d timeout:%ldms,icl_target=%dmA\n", count, timeout, ddata->dcp15w.icl_target);
+	for (i = 0; i <= count; i++) {
+		icl_ma = ddata->dcp15w.icl_min + ddata->dcp15w.icl_step * i;
+		mt6375_chg_field_set(ddata, F_IAICR, icl_ma);
+		ddata->dcp15w.icl_target = icl_ma;
+		ret_comp = wait_for_completion_interruptible_timeout(&ddata->dcp15w.plugout_trigger,
+				msecs_to_jiffies(timeout));
+
+		if (!IS_ERR_OR_NULL(ddata->chgdev)) {
+			ret = mt6375_get_vbus(ddata->chgdev, &vbus_uv);
+			mt6375_get_ibus(ddata->chgdev, &ibus_ua);
+			power_mw = ((ibus_ua/1000) * (vbus_uv / 1000))/ 1000;
+		}
+		pr_info("dcp15w set[%d] icl:%dmA ibus:%dmA vbus:%dmV power:%dmW ret_comp:%ld\n",
+			 i, icl_ma, ibus_ua/1000, vbus_uv/1000, power_mw, ret_comp);
+
+		if (ret_comp > 0) {
+			pr_info("%s:dcp15w drop_time=%lld\n", __func__, ktime_to_ms(ktime_get_boottime()));
+			break;
+		}
+	}
+
+	if (ret_comp == 0) {
+		//normal
+		ddata->dcp15w.hook_current = false;
+		mmi_wake_up_charger();
+	}
+
+	pr_info("dcp15w ddata->dcp15w.icl_target=%d\n", ddata->dcp15w.icl_target);
+	ddata->dcp15w.is_detecting = false;
+
+	return;
+}
+
+static int dcp15w_init(struct mt6375_chg_data *ddata)
+{
+	struct device_node *np = ddata->dev->of_node;
+	u32 val = 0;
+
+	if (!np) {
+		pr_err("%s np is NULL\n", __func__);
+		return -EINVAL;
+	}
+
+	ddata->dcp15w.support = of_property_read_bool(np, "dcp15w-support");
+
+	if (ddata->dcp15w.support) {
+		if (of_property_read_u32(np, "dcp15w-icl-min", &val) >= 0)
+			ddata->dcp15w.icl_min = val;
+		else
+			ddata->dcp15w.icl_min = 1000;
+
+		if (of_property_read_u32(np, "dcp15w-icl-step", &val) >= 0)
+			ddata->dcp15w.icl_step = val;
+		else
+			ddata->dcp15w.icl_step = 200;
+
+		if (of_property_read_u32(np, "dcp15w-time-step", &val) >= 0)
+			ddata->dcp15w.time_step = val;
+		else
+			ddata->dcp15w.time_step = 300;
+
+		if (of_property_read_u32(np, "dcp15w-time-plug", &val) >= 0)
+			ddata->dcp15w.time_plug = val;
+		else
+			ddata->dcp15w.time_plug = 500;
+
+		if (of_property_read_u32(np, "dcp15w-icl-max", &val) >= 0)
+			ddata->dcp15w.icl_max = val;
+		else
+			ddata->dcp15w.icl_max = 3000;
+
+		ddata->dcp15w.icl_target = -1;
+		init_completion(&ddata->dcp15w.plugout_trigger);
+		INIT_DELAYED_WORK(&ddata->dcp15w.detect_dwork, dcp15w_detect_dwork);
+		alarm_init(&ddata->dcp15w.timer, ALARM_BOOTTIME,
+				dcp15w_alarm_timer_func);
+	}
+
+	if (ddata->dcp15w.icl_min > ddata->dcp15w.icl_max) {
+		ddata->dcp15w.support = false;
+		pr_err("dcp15w icl_min larger than icl_max, disable dcp15w\n");
+	}
+
+	return 0;
 }
 
 #define DUMP_REG_BUF_SIZE	1024
@@ -2864,6 +3146,21 @@ static int mmi_get_dp_dm(struct charger_device *chgdev, int *val)
 	return ret;
 }
 
+static int mmi_get_max_aicr(struct charger_device *chgdev, u32 *uA)
+{
+	struct mt6375_chg_data *ddata = charger_get_data(chgdev);
+
+	if (ddata->dcp15w.support) {
+		if (ddata->dcp15w.icl_target > 0)
+			*uA = M_TO_U(ddata->dcp15w.icl_target);
+		else
+			*uA = M_TO_U(ddata->dcp15w.icl_min);
+	} else
+		*uA = -1;
+
+	return 0;
+}
+
 static const struct charger_properties mt6375_chg_props = {
 	.alias_name = "mt6375_chg",
 };
@@ -2886,6 +3183,7 @@ static const struct charger_ops mt6375_chg_ops = {
 	.set_input_current = mt6375_set_aicr,
 	.get_input_current = mt6375_get_aicr,
 	.get_min_input_current = mt6375_get_min_aicr,
+	.get_max_input_current = mmi_get_max_aicr,
 	/* MIVR */
 	.set_mivr = mt6375_set_mivr,
 	.get_mivr = mt6375_get_mivr,
@@ -3557,6 +3855,7 @@ static int mt6375_chg_probe(struct platform_device *pdev)
 		dev_info(dev, "Don't find qc protocol ic dev\n");
 	}
 
+	dcp15w_init(ddata);
 	INIT_WORK(&ddata->bc12_work, mt6375_chg_bc12_work_func);
 	INIT_DELAYED_WORK(&ddata->pwr_rdy_dwork, mt6375_chg_pwr_rdy_dwork_func);
 	INIT_DELAYED_WORK(&ddata->detect_qc_dwork, get_qc_charger_type_func_work);

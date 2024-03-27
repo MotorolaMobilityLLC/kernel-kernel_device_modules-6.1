@@ -112,6 +112,7 @@ struct charger_ops {
 	int (*get_input_current)(struct charger_device *dev, u32 *uA);
 	int (*set_input_current)(struct charger_device *dev, u32 uA);
 	int (*get_min_input_current)(struct charger_device *dev, u32 *uA);
+	int (*get_max_input_current)(struct charger_device *dev, u32 *uA);
 
 	/* set boot volt times */
 	int (*set_boot_volt_times)(struct charger_device *dev, u32 val);
@@ -452,4 +453,5 @@ extern int charger_dev_enable_mos_short(
 	struct charger_device *charger_dev, bool en);
 extern int charger_dev_is_power_ready(struct charger_device *chg_dev);
 extern int charger_dev_get_vmos_adc(struct charger_device *chg_dev, bool type, int *uV);
+extern int charger_dev_get_max_input_current(struct charger_device *chg_dev, u32 *uA);
 #endif /*LINUX_POWER_CHARGER_CLASS_H*/

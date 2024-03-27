@@ -704,6 +704,7 @@ extern int get_charger_input_current(struct mtk_charger *info,
 extern int get_charger_zcv(struct mtk_charger *info,
 	struct charger_device *chg);
 extern void _wake_up_charger(struct mtk_charger *info);
+extern void mmi_wake_up_charger(void);
 
 /* functions for other */
 extern int mtk_chg_enable_vbus_ovp(bool enable);
