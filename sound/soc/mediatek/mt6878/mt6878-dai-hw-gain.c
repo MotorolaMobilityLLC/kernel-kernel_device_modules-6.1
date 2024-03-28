@@ -35,6 +35,8 @@ static const struct snd_kcontrol_new mtk_hw_gain1_in_ch1_mix[] = {
 static const struct snd_kcontrol_new mtk_hw_gain1_in_ch2_mix[] = {
 	SOC_DAPM_SINGLE_AUTODISABLE("ADDA_UL_CH2", AFE_CONN007_0,
 				    I_ADDA_UL_CH2, 1, 0),
+	SOC_DAPM_SINGLE_AUTODISABLE("ADDA_UL_CH3", AFE_CONN007_0,
+				    I_ADDA_UL_CH3, 1, 0),
 };
 
 static const struct snd_kcontrol_new mtk_hw_gain2_in_ch1_mix[] = {
