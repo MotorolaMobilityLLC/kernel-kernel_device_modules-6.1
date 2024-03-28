@@ -119,3 +119,8 @@
 	};
 };
 
+&i2c6 {
+	gate_ic: gate-ic@11 {
+		status = "disabled";
+	};
+};
