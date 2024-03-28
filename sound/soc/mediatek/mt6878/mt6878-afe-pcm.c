@@ -2732,6 +2732,7 @@ static const struct snd_soc_dapm_route mt6878_memif_routes[] = {
 
 	{"HW_GAIN1_IN_CH1", "ADDA_UL_CH1", "ADDA_UL_Mux"},
 	{"HW_GAIN1_IN_CH2", "ADDA_UL_CH2", "ADDA_UL_Mux"},
+	{"HW_GAIN1_IN_CH2", "ADDA_UL_CH3", "ADDA_CH34_UL_Mux"},
 
 	{"UL_CM0", NULL, "UL_CM0_CH1"},
 	{"UL_CM0", NULL, "UL_CM0_CH2"},
