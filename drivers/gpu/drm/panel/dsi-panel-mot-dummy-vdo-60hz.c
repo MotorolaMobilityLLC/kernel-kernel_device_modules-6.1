@@ -59,23 +59,38 @@ static int dummy_panel_enable(struct drm_panel *panel)
 	return 0;
 }
 
+#define HFP (76)
+#define HSA (60)
+#define HBP (12)
+#define HACT (600)
+#define VFP (54)
+#define VSA (10)
+#define VBP (10)
+#define VACT (800)
+#define PLL_CLOCK (263)
+
+
 static const struct drm_display_mode default_mode = {
-	.clock = 182284,
-	.hdisplay = 1080,
-	.hsync_start = 1080 + 76,//HFP
-	.hsync_end = 1080 + 76 + 12,//HSA
-	.htotal = 1080 + 76 + 12 + 60,//HBP
-	.vdisplay = 2400,
-	.vsync_start = 2400 + 54,//VFP
-	.vsync_end = 2400 + 54 + 10,//VSA
-	.vtotal = 2400 + 54 + 10 + 10,//VBP
+	.clock = 39254,
+	.hdisplay	= HACT,
+	.hsync_start	= HACT + HFP,
+	.hsync_end	= HACT + HFP + HSA,
+	.htotal		= HACT + HFP + HSA + HBP,
+	.vdisplay	= VACT,
+	.vsync_start	= VACT + VFP,
+	.vsync_end	= VACT + VFP + VSA,
+	.vtotal		= VACT + VFP + VSA + VBP,
 };
 
 #if defined(CONFIG_MTK_PANEL_EXT)
 static struct mtk_panel_params ext_params = {
-	.pll_clk = 595,
-	.vfp_low_power = 840,
-	.data_rate = 1190,
+	.pll_clk = 263,
+	.data_rate = 526,
+
+	.lp_perline_en = 1,
+
+	.cust_esd_check = 0,
+	.esd_check_enable = 0,
 };
 
 static int panel_ata_check(struct drm_panel *panel)
