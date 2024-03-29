@@ -17,6 +17,7 @@
 #include <linux/init.h> // rodata_enable support
 #include <linux/mutex.h>
 #include <linux/kernel.h> // round_up
+#include <linux/kprobes.h>
 #include <linux/reboot.h>
 #include <linux/workqueue.h>
 #include <linux/tracepoint.h>
@@ -54,17 +55,8 @@ const struct selinux_state *g_selinux_state;
 
 static DEFINE_PER_CPU(struct avc_sbuf_cache, cpu_avc_sbuf);
 
-
 struct rb_root mkp_rbtree = RB_ROOT;
 DEFINE_RWLOCK(mkp_rbtree_rwlock);
-
-#if !IS_ENABLED(CONFIG_KASAN_GENERIC) && !IS_ENABLED(CONFIG_KASAN_SW_TAGS)
-#if !IS_ENABLED(CONFIG_GCOV_KERNEL)
-static void *p_stext;
-static void *p_etext;
-static void *p__init_begin;
-#endif
-#endif
 
 int mkp_hook_trace_on;
 module_param(mkp_hook_trace_on, int, 0600);
@@ -148,11 +140,43 @@ static bool mkp_ro_region_is_already_locked = false;
 
 #if !IS_ENABLED(CONFIG_KASAN_GENERIC) && !IS_ENABLED(CONFIG_KASAN_SW_TAGS)
 #if !IS_ENABLED(CONFIG_GCOV_KERNEL)
-static void mkp_protect_kernel_work_fn(struct work_struct *work);
+/*
+ * For determining the offsets of kernel code, rodata, etc.
+ * kallsyms_lookup_name is no longer exported due to misuse. In this case,
+ * however, we want it just to look up very specific constant name strings
+ */
+static struct kprobe kp_kallsyms_lookup_name = {
+	.symbol_name = "kallsyms_lookup_name",
+	.addr = 0
+};
+typedef unsigned long (*kallsyms_lookup_name_t)(const char *name);
 
-static DECLARE_DELAYED_WORK(mkp_pk_work, mkp_protect_kernel_work_fn);
-static int retry_num = 100;
-static void mkp_protect_kernel_work_fn(struct work_struct *work)
+int moto_rkp_populate_kernel_info(uint64_t *stext, uint64_t *etext, uint64_t *end_rodata)
+{
+	kallsyms_lookup_name_t kallsyms_lookup_name_ind = NULL;
+
+	/* Register a kprobe before any readonly protection is set up */
+	if (register_kprobe(&kp_kallsyms_lookup_name)) {
+		pr_err("MotoRKP failed to register kallsyms kprobe!\n");
+		return -EACCES;
+	}
+
+	/* Populate the reflected address of 'kallsyms_lookup_name()' symbol */
+	kallsyms_lookup_name_ind = (kallsyms_lookup_name_t)kp_kallsyms_lookup_name.addr;
+
+	*stext = kallsyms_lookup_name_ind("_stext");
+	*etext = kallsyms_lookup_name_ind("_etext");
+	*end_rodata = kallsyms_lookup_name_ind("__init_begin");
+
+	/* If we unregister it later, our own protections will create an exception */
+	unregister_kprobe(&kp_kallsyms_lookup_name);
+
+	pr_info("MotoRKP: Succeeded in getting the kernel region info\n");
+
+	return 0;
+}
+
+static int mkp_protect_kernel_ro_region(void)
 {
 	int ret = 0;
 	uint32_t policy = 0;
@@ -160,7 +184,8 @@ static void mkp_protect_kernel_work_fn(struct work_struct *work)
 	unsigned long addr_start;
 	unsigned long addr_end;
 	phys_addr_t phys_addr;
-	int nr_pages;
+	int nr_pages = 0;
+	static uint64_t stext, etext, end_rodata = 0;
 
 	/* Map all kernel code in the EL1S2 with the granularity of 2M */
 	bool kernel_code_perf = false;
@@ -168,14 +193,10 @@ static void mkp_protect_kernel_work_fn(struct work_struct *work)
 
 	if (policy_ctrl[MKP_POLICY_KERNEL_CODE] &&
 		policy_ctrl[MKP_POLICY_KERNEL_RODATA]) {
-		mkp_get_krn_info(&p_stext, &p_etext, &p__init_begin);
-		if (p_stext == NULL || p_etext == NULL || p__init_begin == NULL) {
-			pr_info("%s: retry in 0.1 second", __func__);
-			if (--retry_num >= 0)
-				schedule_delayed_work(&mkp_pk_work, HZ / 10);
-			else
-				MKP_ERR("protect krn failed\n");
-			return;
+		ret = moto_rkp_populate_kernel_info(&stext, &etext, &end_rodata);
+		if (ret != 0 || stext == 0 || etext == 0 || end_rodata == 0) {
+			MKP_ERR("Fail to get kernel ro data address info\n");
+			return -EACCES;
 		}
 	}
 
@@ -188,8 +209,8 @@ static void mkp_protect_kernel_work_fn(struct work_struct *work)
 
 	if (policy_ctrl[MKP_POLICY_KERNEL_CODE] != 0) {
 		// round down addr before minus operation
-		addr_start = (unsigned long)p_stext;
-		addr_end = (unsigned long)p_etext;
+		addr_start = stext;
+		addr_end = etext;
 		addr_start = round_up(addr_start, PAGE_SIZE);
 		addr_end = round_down(addr_end, PAGE_SIZE);
 
@@ -205,26 +226,35 @@ static void mkp_protect_kernel_work_fn(struct work_struct *work)
 		}
 		if (addr_start == 0) {
 			MKP_ERR("Cannot find the kernel text\n");
-			goto protect_krn_fail;
+			return -EINVAL;
 		}
 
 		nr_pages = (addr_end-addr_start)>>PAGE_SHIFT;
 		phys_addr = __pa_symbol((void *)addr_start);
 		policy = MKP_POLICY_KERNEL_CODE;
-		handle = mkp_create_handle(policy, (unsigned long)phys_addr, nr_pages<<12);
+		handle = mkp_create_handle(policy, (unsigned long)phys_addr, nr_pages<<MOTO_RKP_SHIFT_PAGE_BIT);
 		if (handle == 0) {
 			MKP_ERR("%s:%d: Create handle fail\n", __func__, __LINE__);
+			return -EACCES;
 		} else {
 			ret = mkp_set_mapping_x(policy, handle);
+			if (ret) {
+				MKP_ERR("%s:%d: Set .text executable fail\n", __func__, __LINE__);
+				return -EACCES;
+			}
 			ret = mkp_set_mapping_ro(policy, handle);
+			if (ret) {
+				MKP_ERR("%s:%d: Set .text readonly fail\n", __func__, __LINE__);
+				return -EACCES;
+			}
 			pr_info("mkp: protect krn code done\n");
 		}
 	}
 
 	if (policy_ctrl[MKP_POLICY_KERNEL_RODATA] != 0) {
 		// round down addr before minus operation
-		addr_start = (unsigned long)p_etext;
-		addr_end = (unsigned long)p__init_begin;
+		addr_start = etext;
+		addr_end = end_rodata;
 		addr_start = round_up(addr_start, PAGE_SIZE);
 		addr_end = round_down(addr_end, PAGE_SIZE);
 
@@ -233,28 +263,29 @@ static void mkp_protect_kernel_work_fn(struct work_struct *work)
 			addr_start = addr_end_2m;
 		if (addr_start == 0) {
 			MKP_ERR("Cannot find the kernel rodata\n");
-			goto protect_krn_fail;
+			return -EINVAL;
 		}
 
 		nr_pages = (addr_end-addr_start)>>PAGE_SHIFT;
 		phys_addr = __pa_symbol((void *)addr_start);
 		policy = MKP_POLICY_KERNEL_RODATA;
-		handle = mkp_create_handle(policy, (unsigned long)phys_addr, nr_pages<<12);
-		if (handle == 0)
+		handle = mkp_create_handle(policy, (unsigned long)phys_addr, nr_pages<<MOTO_RKP_SHIFT_PAGE_BIT);
+		if (handle == 0) {
 			MKP_ERR("%s:%d: Create handle fail\n", __func__, __LINE__);
-		else {
+			return -EACCES;
+		} else {
 			ret = mkp_set_mapping_ro(policy, handle);
+			if (ret) {
+				MKP_ERR("%s:%d: Set .rodata readonly fail\n", __func__, __LINE__);
+				return -EACCES;
+			}
 			pr_info("mkp: protect krn rodata done\n");
 		}
 	}
 
 	/* Mark kernel ro region is locked */
 	mkp_ro_region_is_already_locked = true;
-
-protect_krn_fail:
-	p_stext = NULL;
-	p_etext = NULL;
-	p__init_begin = NULL;
+	return 0;
 }
 #endif
 #endif
@@ -625,7 +656,7 @@ int __read_mostly moto_rkp_locked;
 static ssize_t proc_moto_rkp_lock_write(struct file *file, const char __user *buf,
 		size_t count, loff_t *ppos)
 {
-	char buffer[3] = {0};
+	char buffer[MOTO_RKP_LOCKED_FLAG_SIZE] = {0};
 	int err, val;
 
 	memset(buffer, 0, sizeof(buffer));
@@ -672,19 +703,19 @@ int moto_rkp_proc_init(void)
 
 	d_moto_rkp = proc_mkdir(MOTO_RKP_PROC_DIR, NULL);
 	if (!d_moto_rkp) {
-		MKP_ERR("failed to create proc dir moto_rkp\n");
-		goto err_creat_d_moto_rkp;
+		MKP_ERR("fail to create proc dir moto_rkp\n");
+		goto err_create_moto_rkp_node;
 	}
 
 	proc_node = proc_create("locked", 0664, d_moto_rkp, &proc_moto_rkp_enabled_fops);
 	if (!proc_node) {
-		MKP_ERR("failed to create proc node moto_rkp_locked\n");
-		goto err_creat_d_moto_rkp;
+		MKP_ERR("fail to create proc node moto_rkp_locked\n");
+		goto err_create_moto_rkp_node;
 	}
 
 	return 0;
 
-err_creat_d_moto_rkp:
+err_create_moto_rkp_node:
 	remove_proc_entry("locked", d_moto_rkp);
 	return -ENOENT;
 }
@@ -706,10 +737,12 @@ int __init moto_rkp_init(void)
 	/* Protect kernel code & rodata */
 	if (policy_ctrl[MKP_POLICY_KERNEL_CODE] != 0 ||
 		policy_ctrl[MKP_POLICY_KERNEL_RODATA] != 0) {
-
 #if !IS_ENABLED(CONFIG_KASAN_GENERIC) && !IS_ENABLED(CONFIG_KASAN_SW_TAGS)
 #if !IS_ENABLED(CONFIG_GCOV_KERNEL)
-		schedule_delayed_work(&mkp_pk_work, 0);
+	if (mkp_protect_kernel_ro_region()) {
+		MKP_ERR("Create avc ro sharebuf fail\n");
+		goto failed;
+	}
 #endif
 #endif
 	}
@@ -728,6 +761,7 @@ int __init moto_rkp_init(void)
 			avc_array_sz = size;
 		} else {
 			MKP_ERR("Create avc ro sharebuf fail\n");
+			goto failed;
 		}
 	}
 
