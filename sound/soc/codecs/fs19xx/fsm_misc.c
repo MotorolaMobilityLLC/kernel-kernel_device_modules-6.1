@@ -153,7 +153,7 @@ static int fsm_misc_cmd_with_args(unsigned int cmd, uint8_t addr,
 	return 0;
 }
 
-#ifdef CONFIG_FSM_Q6AFE
+#if defined(CONFIG_FSM_Q6AFE) || defined(CONFIG_FSM_MTK)
 int fsm_misc_send_apr(void __user *buf)
 {
 	uint32_t header[FSM_AFE_HEADER_LEN];
@@ -273,7 +273,7 @@ static long fsm_misc_ioctl(struct file *filp, unsigned int cmd,
 		unsigned long arg)
 {
 	struct fsm_misc_args misc_args;
-#ifdef CONFIG_FSM_Q6AFE
+#if defined(CONFIG_FSM_Q6AFE) || defined(CONFIG_FSM_MTK)
 	struct fsm_re25_data re25_data;
 #endif
 	struct fsm_misc *fsm_misc;
@@ -331,7 +331,7 @@ static long fsm_misc_ioctl(struct file *filp, unsigned int cmd,
 	case FSM_IOC_GET_INFO:
 		ret = fsm_get_dev_info((int *)arg);
 		break;
-#ifdef CONFIG_FSM_Q6AFE
+#if defined(CONFIG_FSM_Q6AFE) || defined(CONFIG_FSM_MTK)
 	case FSM_IOC_SEND_APR:
 		ret = fsm_misc_send_apr((void __user *)arg);
 		if (ret) {
