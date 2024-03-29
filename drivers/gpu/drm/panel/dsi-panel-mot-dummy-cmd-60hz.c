@@ -86,8 +86,8 @@ static const struct drm_display_mode default_mode = {
 
 #if defined(CONFIG_MTK_PANEL_EXT)
 static struct mtk_panel_params ext_params = {
-	.pll_clk = 263,
-	.data_rate = 526,
+	.pll_clk = 125,
+	.data_rate = 250,
 
 	.lp_perline_en = 1,
 
