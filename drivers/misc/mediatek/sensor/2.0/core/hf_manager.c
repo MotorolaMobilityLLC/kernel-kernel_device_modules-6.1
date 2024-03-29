@@ -762,6 +762,9 @@ static void hf_manager_find_best_param(struct hf_core *core,
 static inline bool device_rebatch(struct hf_core *core, uint8_t sensor_type,
 			int64_t best_delay, int64_t best_latency)
 {
+	/*moto add for workround IKSWU-104659*/
+	if(sensor_type == SENSOR_TYPE_HINGE_ANGLE)
+		return true;
 	if (core->state[sensor_type].delay != best_delay ||
 			core->state[sensor_type].latency != best_latency) {
 		core->state[sensor_type].delay = best_delay;
