@@ -77,8 +77,8 @@ static motOISGOffsetResult dw9784GyroOffsetResult;
 #define CLK_MAXSIZE				16
 
 static const char * const ldo_names[] = {
-	// "vin",
-	// "vdd",
+	 "vin",
+	 "vdd",
 };
 
 /* power  on stage : idx = 0, 2, 4, ... */
@@ -86,10 +86,10 @@ static const char * const ldo_names[] = {
 static const char * const pio_names[] = {
 	//"mclk_4mA",
 	//"mclk_off",
-	"oisen_on",
-	"oisen_off",
-	"afvdd_on",
-	"afvdd_off",
+	//"oisen_on",
+	//"oisen_off",
+	//"afvdd_on",
+	//"afvdd_off",
 	// "rst_low",
 	// "rst_high",
 };
