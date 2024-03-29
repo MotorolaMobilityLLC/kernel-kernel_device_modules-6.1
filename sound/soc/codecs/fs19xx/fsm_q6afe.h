@@ -184,7 +184,9 @@ int fsm_afe_get_tx_port(void);
 int fsm_afe_mod_ctrl(bool enable);
 void fsm_reset_re25_data(void);
 int fsm_set_re25_data(struct fsm_re25_data *data);
+#ifdef CONFIG_FSM_KERNEL_RW_SUPPORT
 int fsm_afe_read_re25(uint32_t *re25, int count);
+#endif
 int fsm_afe_save_re25(struct fsadsp_cmd_re25 *cmd_re25);
 int fsm_afe_get_livedata(void *ldata, int size);
 int fsm_afe_send_apr(struct fsm_afe *afe, void *buf, uint32_t length);
