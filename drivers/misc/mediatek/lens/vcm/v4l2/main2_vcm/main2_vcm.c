@@ -117,13 +117,17 @@ struct main2_vcm_device *ab_main2_vcm;
 #define VIB_HOLD 0x0b10
 #define ALL_HOLD 0x0b11
 #define FIND_VCM 0x0b11
-#define SUIT_POS 0x01ba
 
 //Directly set len to Target Pos will cause noise
 //Through several set_pos to Target Pos
-#define SEGMENT_LENGTH 0x07
+static const int SUIT_POS = 0;
 
-static unsigned short af_len = SUIT_POS;
+// control detials
+static const int af_step_count = 70;
+static const int af_segment_len = 11;
+static const int af_set_delay = 8000;
+
+static int af_len = SUIT_POS;
 static unsigned int Open_holder = NO_HOLD;
 static unsigned int Close_holder = NO_HOLD;
 static spinlock_t g_vcm_SpinLock;
@@ -323,23 +327,10 @@ static int main2_vcm_release(struct main2_vcm_device *main2_vcm)
 	//Segmented set pos for VIB release VCM
 	if(Open_holder == VIB_HOLD)
 	{
-		int i = 0;
-		int af_step_count = 0;
-		diff_dac = g_vcmconfig.origin_focus_pos - SUIT_POS;
-		af_step_count = (af_len < 0 ? (af_len*(-1)) : diff_dac) / SEGMENT_LENGTH;
-		af_len = SUIT_POS;
-		LOG_AFNE("Reset pos to (%d) with %d Segments, echo segment long:0x0%x. Open_holder%x\n", g_vcmconfig.origin_focus_pos, af_step_count,\
-			SEGMENT_LENGTH, Open_holder);
-
-		for(i = 0;i < af_step_count; i++)
-		{
-			af_len += (diff_dac < 0 ? (SEGMENT_LENGTH*(-1)) : SEGMENT_LENGTH);
-			if(af_len > g_vcmconfig.origin_focus_pos)
-				af_len = g_vcmconfig.origin_focus_pos;
-
-			ret = main2_vcm_set_position(ab_main2_vcm, af_len);
-		}
+		af_len = g_vcmconfig.origin_focus_pos;
+		ret = main2_vcm_set_position(ab_main2_vcm, af_len);
 		LOG_AFNE("MTK_S_SETVCMPOS, reset target pos=0x%x, ret=%d. Open_holder=0x0%x\n", af_len, ret, Open_holder);
+		usleep_range(7000, 8000);
 	}
 	else
 	{
@@ -580,7 +571,8 @@ static long main2_vcm_ops_core_ioctl(struct v4l2_subdev *sd, unsigned int cmd, v
 	case VIDIOC_MTK_S_SETVCMPOS:
 	{
 		//set lens pos
-		unsigned int i = 0;
+		int i = 0;
+		int diff_dac = 0;
 		ab_lens_info = arg;
 		spin_lock(&g_vcm_SpinLock);
 		if(Open_holder != CAM_HOLD)
@@ -588,17 +580,25 @@ static long main2_vcm_ops_core_ioctl(struct v4l2_subdev *sd, unsigned int cmd, v
 		spin_unlock(&g_vcm_SpinLock);
 
 		//Segmented set pos for VIB ioctl VCM
-		af_len = g_vcmconfig.origin_focus_pos - SUIT_POS;
-		i = af_len / SEGMENT_LENGTH;
-		for(;i > 0; i--)
+		diff_dac = SUIT_POS - g_vcmconfig.origin_focus_pos;
+		af_len = g_vcmconfig.origin_focus_pos;
+		LOG_AFNE("MTK_S_SETVCMPOS target pos to (%d) with %d count, each segment long:0x0%x. Open_holder%x\n", SUIT_POS, af_step_count,\
+			af_segment_len, Open_holder);
+
+		for(i = 0;i < af_step_count; i++)
 		{
-			af_len = SUIT_POS + i * SEGMENT_LENGTH;
-			if(af_len > g_vcmconfig.origin_focus_pos)
-				af_len = g_vcmconfig.origin_focus_pos;
+			af_len += (diff_dac < 0 ? (af_segment_len*(-1)) : af_segment_len);
+			if(af_len < SUIT_POS || af_len == SUIT_POS)
+			{
+				af_len = SUIT_POS;
+				i = af_step_count + 1;
+			}
 
 			ret = main2_vcm_set_position(ab_main2_vcm, af_len);
+			LOG_AFNE("set pos to (%d), count=%d\n", af_len, i);
+			usleep_range(af_set_delay , af_set_delay + 1000);
 		}
-		LOG_AFNE("MTK_S_SETVCMPOS, target pos=0x%x, ret=%d. Open_holder=0x0%x\n", af_len, ret, Close_holder);
+		LOG_AFNE("MTK_S_SETVCMPOS set pos=0x%x, ret=%d. Open_holder=0x0%x\n", af_len, ret, Close_holder);
 		return ret;
 	}
         break;
