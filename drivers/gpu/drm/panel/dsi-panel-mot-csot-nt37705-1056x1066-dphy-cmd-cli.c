@@ -562,7 +562,6 @@ static int lcm_setbacklight_cmdq(void *dsi, dcs_write_gce cb, void *handle,
 	char bl_tb0[] = { 0x51, 0x0f, 0xff};
 	struct lcm *ctx = g_ctx;
 	unsigned int current_bl;
-	char *envp[2];
 	struct mtk_dsi * cli_dsi = (struct mtk_dsi *) dsi;
 
 	if (atomic_read(&ctx->hbm_mode)) {
@@ -581,10 +580,14 @@ static int lcm_setbacklight_cmdq(void *dsi, dcs_write_gce cb, void *handle,
 	cb(dsi, handle, bl_tb0, ARRAY_SIZE(bl_tb0));
 
 	if (!(current_bl && level)) {
-		envp[0] = "SOURCE=backlight";
+		char *envp[2];
+		char brightness[36];
+
+		snprintf(brightness, 36, "SOURCE=backlight-%u", level);
+		envp[0] = brightness;
 		envp[1] = NULL;
 		kobject_uevent_env(&cli_dsi->dev->kobj, KOBJ_CHANGE, envp);
-		pr_info("backlight changed from %u to %u\n", current_bl, level);
+		pr_info("backlight changed from %u to %u, %s\n", current_bl, level, brightness);
 	} else
 		pr_debug("backlight changed from %u to %u\n", current_bl, level);
 
