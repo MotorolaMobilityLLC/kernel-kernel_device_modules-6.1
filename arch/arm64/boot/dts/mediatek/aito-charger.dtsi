@@ -395,6 +395,7 @@
 		pinctrl-0 = <&bq25960_int_default>;
 
 		sc8541-addr = <0x6a>;
+		mmi,disable_mux;
 	};
 
 	cps_wls_charger:cps_wls_charger@30 {
