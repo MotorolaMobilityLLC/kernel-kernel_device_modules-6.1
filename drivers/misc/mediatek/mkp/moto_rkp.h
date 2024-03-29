@@ -8,6 +8,11 @@
 
 #include "debug.h"
 
+#define MAX_CACHED_NUM	4	// shall be the exponential of 2
+#define CACHED_NUM_MASK	(MAX_CACHED_NUM - 1)
+#define MOTO_RKP_SHIFT_PAGE_BIT  12
+#define MOTO_RKP_LOCKED_FLAG_SIZE 3
+
 struct avc_sbuf_content {
 	unsigned long avc_node;
 	u32 ssid __aligned(8);
@@ -33,8 +38,6 @@ struct cred_sbuf_content {
 	};
 };
 
-#define MAX_CACHED_NUM	4	// shall be the exponential of 2
-#define CACHED_NUM_MASK	(MAX_CACHED_NUM - 1)
 struct avc_sbuf_cache {
 	unsigned long cached[MAX_CACHED_NUM];
 	int cached_index[MAX_CACHED_NUM];
