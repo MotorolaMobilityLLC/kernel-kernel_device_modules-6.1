@@ -260,6 +260,7 @@ int fsm_afe_handle_direction(bool is_set, int *dir)
 EXPORT_SYMBOL(fsm_afe_handle_direction);
 #endif
 
+#ifdef CONFIG_FSM_KERNEL_RW_SUPPORT
 int fsm_afe_read_re25(uint32_t *re25, int count)
 {
 	struct file *fp;
@@ -348,6 +349,7 @@ int fsm_afe_write_re25(uint32_t *re25, int count)
 
 	return 0;
 }
+#endif
 
 int fsm_afe_save_re25(struct fsadsp_cmd_re25 *cmd_re25)
 {
@@ -391,11 +393,13 @@ int fsm_afe_save_re25(struct fsadsp_cmd_re25 *cmd_re25)
 		pr_info("re25.%d[%X]:%d", index,
 				fsm_dev->pos_mask, fsm_dev->re25);
 	}
+#ifdef CONFIG_FSM_KERNEL_RW_SUPPORT
 	ret = fsm_afe_write_re25(re25, cmd_re25->ndev);
 	if (ret) {
 		pr_err("write re25 fail:%d", ret);
 		return ret;
 	}
+#endif
 	memcpy(g_fsm_re25, re25, sizeof(int) * cmd_re25->ndev);
 
 	return ret;
@@ -405,7 +409,9 @@ int fsm_afe_mod_ctrl(bool enable)
 {
 	fsm_config_t *cfg = fsm_get_config();
 	struct fsadsp_cmd_re25 *params;
+#ifdef CONFIG_FSM_KERNEL_RW_SUPPORT
 	uint32_t re25[FSM_DEV_MAX] = { 0 };
+#endif
 	struct preset_file *preset;
 	struct fsm_afe afe;
 	fsm_dev_t *fsm_dev;
@@ -432,16 +438,22 @@ int fsm_afe_mod_ctrl(bool enable)
 		return -EINVAL;
 	}
 	params->ndev = preset->hdr.ndev;
+#ifdef CONFIG_FSM_KERNEL_RW_SUPPORT
 	ret = fsm_afe_read_re25(&re25[0], params->ndev);
 	if (ret) {
 		pr_err("read back re25 fail:%d", ret);
 	}
+#endif
 	for (dev = 0; dev < cfg->dev_count; dev++) {
 		fsm_dev = fsm_get_fsm_dev_by_id(dev);
 		if (fsm_dev == NULL || fsm_skip_device(fsm_dev))
 			continue;
 		index = fsm_get_index_by_position(fsm_dev->pos_mask);
+#ifdef CONFIG_FSM_KERNEL_RW_SUPPORT
 		fsm_dev->re25 = re25[index];
+#else
+		fsm_dev->re25 = g_fsm_re25[index];
+#endif
 		params->cal_data[index].rstrim  = LOW8(fsm_dev->rstrim);
 		params->cal_data[index].channel = fsm_dev->pos_mask;
 		params->cal_data[index].re25    = fsm_dev->re25;
