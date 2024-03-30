@@ -11,7 +11,7 @@
 #include "inc/tcpci_typec.h"
 #include "inc/tcpci_timer.h"
 #include "inc/std_tcpci_v10.h"
-#ifdef MOTO_WLS_OTG_SWITCH
+#ifdef CONFIG_MOTO_WLS_OTG_SWITCH
 #include "mtk_charger.h"
 #endif
 
@@ -191,7 +191,7 @@ static const char *const typec_state_names[] = {
 	"UnattachWait.PE",
 };
 #endif /* TYPEC_INFO_ENABLE || TCPC_INFO_ENABLE || TYPEC_DBG_ENABLE */
-#ifdef MOTO_WLS_OTG_SWITCH
+#ifdef CONFIG_MOTO_WLS_OTG_SWITCH
 static int tcpc_wireless_get_wireless_online(int *online);
 #endif
 static inline void typec_transfer_state(struct tcpc_device *tcpc,
@@ -295,7 +295,7 @@ static inline int typec_handle_role_swap_start(struct tcpc_device *tcpc)
 
 	tcpc_wireless_get_wireless_online(&online);
 	if(online == 1){
-		pr_info("%s wireless in,do not alert cc\n",__func__);
+		pr_err("%s wireless in,do not alert cc\n",__func__);
 		return false;
 	}
 #endif
@@ -788,7 +788,7 @@ static inline void typec_cc_src_detect_vsafe0v_entry(struct tcpc_device *tcpc)
 
 	typec_source_attached_entry(tcpc);
 }
-#ifdef MOTO_WLS_OTG_SWITCH
+#ifdef CONFIG_MOTO_WLS_OTG_SWITCH
 static int tcpc_wireless_get_wireless_online(int *online)
 {
 	int ret = 0;
@@ -808,14 +808,14 @@ static int tcpc_wireless_get_wireless_online(int *online)
 		}
 	}
 	*online = prop.intval;
-	pr_info("%s get wl_psy, online = %d\n", __func__, *online);
+	pr_err("%s get wl_psy, online = %d\n", __func__, *online);
 
 	return ret;
 }
 #endif
 static inline void typec_cc_src_detect_entry(struct tcpc_device *tcpc)
 {
-#ifdef MOTO_WLS_OTG_SWITCH
+#ifdef CONFIG_MOTO_WLS_OTG_SWITCH
 	int online = 0;
 	tcpc_wireless_get_wireless_online(&online);
 	if (tcpci_check_vsafe0v(tcpc) || online == 1)
@@ -1431,13 +1431,13 @@ static inline int typec_handle_drp_try_timeout(struct tcpc_device *tcpc)
 
 static inline int typec_handle_debounce_timeout(struct tcpc_device *tcpc)
 {
-#ifdef MOTO_WLS_OTG_SWITCH
+#ifdef CONFIG_MOTO_WLS_OTG_SWITCH
 	int online = 0;
 
 	tcpc_wireless_get_wireless_online(&online);
 #endif
 #if CONFIG_TYPEC_CAP_NORP_SRC
-#ifdef MOTO_WLS_OTG_SWITCH
+#ifdef CONFIG_MOTO_WLS_OTG_SWITCH
 	if (tcpc->typec_state == typec_unattached_snk &&
 	    tcpci_check_vbus_valid(tcpc) && typec_is_cc_no_res() && online != 1) {
 #else
