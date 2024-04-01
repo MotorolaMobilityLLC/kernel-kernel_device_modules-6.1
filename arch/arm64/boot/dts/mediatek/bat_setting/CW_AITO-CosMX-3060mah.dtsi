@@ -1,0 +1,27 @@
+/*
+ * Copyright (C) 2023 Motorola Inc.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 as
+ * published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See http://www.gnu.org/licenses/gpl-2.0.html for more details.
+ */
+aito-cosmx-3060mah {
+	serialnum = "SB18E19548";
+	fcc_design = <3060>;
+	//ui_full = <98>;
+	config_profile_info = [ 46 00 00 00 00 00 00 00
+				AC BA B6 C2 B0 A9 D0 B5
+				A7 FF F1 C3 9A 7F 67 56
+				4A 44 3B 9C 82 E3 43 FF
+				DE C1 CD D3 D8 DA D8 D8
+				DE CF D2 C0 AF AA B0 A9
+				BB A7 C2 CF D2 FE FF D9
+				20 00 AB 10 00 A2 D4 00
+				00 00 64 07 B1 BA 00 00
+				00 00 00 00 00 00 00 5E];
+};

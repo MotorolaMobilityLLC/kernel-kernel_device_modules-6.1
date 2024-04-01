@@ -1,0 +1,27 @@
+/*
+ * Copyright (C) 2023 Motorola Inc.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 as
+ * published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See http://www.gnu.org/licenses/gpl-2.0.html for more details.
+ */
+aito-cosmx-1140mah {
+	serialnum = "SB18E19548";
+	fcc_design = <1140>;
+	//ui_full = <98>;
+	config_profile_info = [ 46 00 00 00 00 00 00 00
+				B5 BB BF C2 AE A5 D5 BC
+				B1 FC D7 A3 88 73 5F 51
+				48 44 3E 90 7A E2 F2 ED
+				E7 C9 CE D2 D6 D8 D5 D5
+				DA CF D2 BB AB A3 A7 A8
+				B3 B9 9F D7 D4 FF FF DC
+				20 00 AB 10 00 A3 14 00
+				00 00 64 1D B1 F0 00 00
+				00 00 00 00 00 00 00 5D];
+};
