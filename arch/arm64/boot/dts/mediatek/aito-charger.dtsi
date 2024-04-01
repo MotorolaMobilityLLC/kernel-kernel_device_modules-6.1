@@ -270,6 +270,7 @@
 		//vdd-i2c-supply = <&L18B>;
 		fg-psy-name = "flip_battery";
 		#include "bat_setting/CW_AITO-atl-1140mah.dtsi"
+		#include "bat_setting/CW_AITO-CosMX-1140mah.dtsi"
 	};
 
 	sc760x_balance: sc760x-balance@52{
@@ -352,6 +353,7 @@
 		io-channel-names = "bat_temp", "vref";
 		rbat_pull_up_r = <24000>;/*24k*/
 		#include "bat_setting/CW_AITO-atl-3060mah.dtsi"
+		#include "bat_setting/CW_AITO-CosMX-3060mah.dtsi"
 	};
 
 	sc8546d-charger@6a{
