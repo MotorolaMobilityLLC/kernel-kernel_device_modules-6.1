@@ -48,7 +48,7 @@
 		mmi,enable-gestures;
 		mmi,power-off-suspend;
 		mmi,usb-charger-detection;
-		mmi,supported_gesture_type = <0x06>;
+		mmi,supported_gesture_type = <0x07>;
 		mmi,resolution_boost = <16>;
 		mmi,enable-palm;
 		mtk-charger = <&mt6375_chg>;
