@@ -1242,28 +1242,6 @@ static enum Tfa98xx_Error tfa986x_specific(struct tfa_device *tfa)
                 MN = 1
         };
 
-	if (((rev & 0xfff) == 0xa66) && tfa_get_bf(tfa, 0xf3b1)) {
-		rev = rev - 1;  /* To > 0x65 */
-		/* For N/MN variant, bits from 19..16 are used*/
-		/* For TFA9865X2XX or TFA9865MN1XX, bits from 23..20 are used */
-		if (tfa_get_bf(tfa, 0xf090)) {          /* For N variant */
-			if ( tfa_get_bf(tfa, 0xf4f0) )  /* For 64N variant */
-				rev = ( N << 16 ) | rev;        /* For 64N1 */
-			else
-				rev = ( 1 << 20 ) | ( N << 16 ) | rev; /* For 65N2 */
-		} else {        /* For MN variant */
-			rev = ( MN << 16 ) | rev;       /* For 65/64 MN1XX */
-		}
-
-		if ( tfa_get_bf(tfa, 0xf4f0) )  /*  0xf4f0, "lock_max_dcdc_voltage" */
-			rev -= 1; /* 65 > 64 */
-	}
-
-	tfa->revid = rev;
-
-	if (tfa->in_use == 0)
-		return Tfa98xx_Error_NotOpen;
-
 	tfa_set_bf(tfa, TFA986X_BF_PWDN, 0);
 	tfa_set_bf(tfa, TFA986X_BF_MANAOOSC, 0);
 		
@@ -1272,6 +1250,28 @@ static enum Tfa98xx_Error tfa986x_specific(struct tfa_device *tfa)
 		pr_err("Error, waiting powerdown leaving\n");
 		return rc;
 	}
+
+	if (((rev & 0xfff) == 0xa66) && tfa_get_bf(tfa, 0xf3b1)) {
+	rev = rev - 1;  /* To > 0x65 */
+	/* For N/MN variant, bits from 19..16 are used*/
+	/* For TFA9865X2XX or TFA9865MN1XX, bits from 23..20 are used */
+	if (tfa_get_bf(tfa, 0xf090)) {          /* For N variant */
+		if ( tfa_get_bf(tfa, 0xf4f0) )  /* For 64N variant */
+			rev = ( N << 16 ) | rev;        /* For 64N1 */
+		else
+			rev = ( 1 << 20 ) | ( N << 16 ) | rev; /* For 65N2 */
+	} else {        /* For MN variant */
+		rev = ( MN << 16 ) | rev;       /* For 65/64 MN1XX */
+	}
+
+	if ( tfa_get_bf(tfa, 0xf4f0) )  /*  0xf4f0, "lock_max_dcdc_voltage" */
+		rev -= 1; /* 65 > 64 */
+	}
+
+	tfa->revid = rev;
+
+	if (tfa->in_use == 0)
+		return Tfa98xx_Error_NotOpen;
 
 	/* Unlock key 1 and 2 */
 	error = tfa_reg_write(tfa, 0x0F, 0x5A6B);
