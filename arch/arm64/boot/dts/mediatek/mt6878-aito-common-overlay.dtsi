@@ -441,7 +441,7 @@
 	status = "okay";
 	clock-frequency = <400000>;
 
-	spk: tfa98xx@35 {
+	tfa9865_spk: tfa98xx@35 {
 		compatible = "tfa,tfa98xx";
 		#address-cells = <1>;
 		#size-cells = <0>;
@@ -452,7 +452,7 @@
 		status = "okay";
 	};
 
-	rcv: tfa98xx@34 {
+	tfa9865_rcv: tfa98xx@34 {
 		compatible = "tfa,tfa98xx";
 		#address-cells = <1>;
 		#size-cells = <0>;
@@ -467,7 +467,7 @@
 &sound {
 	mediatek,spk-i2s = <25 24>;
 	mediatek,speaker-codec {
-		sound-dai = <&spk &rcv>;
+		sound-dai = <&tfa9865_spk &tfa9865_rcv>;
 	};
 };
 
