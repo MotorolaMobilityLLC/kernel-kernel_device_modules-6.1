@@ -41,5 +41,13 @@
 	config-otg-iout = <1800000>;
 };
 
+&tfa9865_spk {
+    support_1_8_V=<1>;
+};
+
+&tfa9865_rcv {
+    support_1_8_V=<1>;
+};
+
 #include <aito_pvt/cust.dtsi>
 /*End of this file, DO NOT ADD ANYTHING HERE*/
