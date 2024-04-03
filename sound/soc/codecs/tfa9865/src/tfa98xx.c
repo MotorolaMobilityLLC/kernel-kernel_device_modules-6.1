@@ -75,6 +75,8 @@ static uint8_t is_fading = 0;
 static uint8_t is_need_fade = 0;
 static uint8_t g_step = 16;
 static uint8_t mute_status = 1;
+static u32 support_1_8_V = 0;
+
 struct task_struct *fade_thrd;
 unsigned char tfa98xx_volume_tab[33] =
 {
@@ -84,6 +86,10 @@ unsigned char tfa98xx_volume_tab[33] =
 static char *fw_name = "tfa98xx.cnt";
 module_param(fw_name, charp, S_IRUGO | S_IWUSR);
 MODULE_PARM_DESC(fw_name, "TFA98xx DSP firmware (container file) name.");
+
+static char *fw_name_dvt1 = "tfa98xx_dvt1.cnt";
+module_param(fw_name_dvt1, charp, S_IRUGO | S_IWUSR);
+MODULE_PARM_DESC(fw_name_dvt1, "TFA98xx DSP firmware (container file) name.");
 
 static int trace_level = 0;
 module_param(trace_level, int, S_IRUGO);
@@ -2601,9 +2607,15 @@ static int tfa98xx_load_container(struct tfa98xx *tfa98xx)
 {
 	tfa98xx->dsp_fw_state = TFA98XX_DSP_FW_PENDING;
 
-	return request_firmware_nowait(THIS_MODULE, true,
+        if (support_1_8_V == 0) {
+	    return request_firmware_nowait(THIS_MODULE, true,
+		fw_name_dvt1, tfa98xx->dev, GFP_KERNEL,
+		tfa98xx, tfa98xx_container_loaded);                   //modify by mono for kernel6.1 20231030
+        } else {
+	    return request_firmware_nowait(THIS_MODULE, true,
 		fw_name, tfa98xx->dev, GFP_KERNEL,
 		tfa98xx, tfa98xx_container_loaded);                   //modify by mono for kernel6.1 20231030
+	}
 }
 
 static void tfa98xx_nmode_update_work(struct work_struct *work)
@@ -3503,6 +3515,18 @@ static int tfa98xx_parse_dt(struct device *dev, struct tfa98xx *tfa98xx,
 	 tfa98xx->reset_polarity = (value == 0) ? LOW : HIGH;
         } 
 	dev_dbg(dev, "reset-polarity:%d\n",tfa98xx->reset_polarity);
+
+
+	ret = of_property_read_u32(np,"support_1_8_V",&value);
+	if(ret< 0)
+	{
+         support_1_8_V = 0;
+        }else {
+	 support_1_8_V = (value == 1) ? 1 : 0;
+        }
+
+        dev_dbg(dev, "support_1_8_V:%d\n",support_1_8_V);
+
 	return 0;
 }
 
