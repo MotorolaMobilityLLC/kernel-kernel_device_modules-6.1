@@ -939,6 +939,14 @@ static int mmi_switch_enn_config(struct mtk_charger *info, enum mmi_mux_channel 
 				pr_info("[%s] switch_enn_en %d\n", __func__, en);
 				chg_alg_set_prop(alg, ALG_WLC_STATE, en);
 			}
+#ifdef CONFIG_MOTO_CHANNEL_SWITCH
+			if(en)
+				info->wls_tcmd_test = true;
+			else
+				info->wls_tcmd_test = false;
+			pr_info("Factory tcmd test en = %d\n", en);
+			chg_alg_set_prop(alg, ALG_WLC_STATE, en);
+#endif
 		} else {
 			pr_info("[%s] not found wlc\n", __func__);
 		}
@@ -947,6 +955,9 @@ static int mmi_switch_enn_config(struct mtk_charger *info, enum mmi_mux_channel 
 	return 0;
 }
 
+#ifdef CONFIG_MOTO_CHANNEL_SWITCH
+extern void wls_tcmd_set_role_device(void);
+#endif
 static int mmi_mux_switch(struct mtk_charger *info, enum mmi_mux_channel channel, bool on)
 {
 	int pre_chan, pre_on;
@@ -994,6 +1005,12 @@ static int mmi_mux_switch(struct mtk_charger *info, enum mmi_mux_channel channel
 					mmi_mux_config(info, MMI_MUX_CHANNEL_WLC_OTG);
 					info->mmi.mux_channel.chan = MMI_MUX_CHANNEL_WLC_OTG;
 					info->mmi.mux_channel.on = true;
+#ifdef CONFIG_MOTO_CHANNEL_SWITCH
+				} else if (pre_chan == MMI_MUX_CHANNEL_WLC_FACTORY_TEST) {
+					mmi_mux_config(info, MMI_MUX_CHANNEL_WLC_FACTORY_TEST);
+					info->mmi.mux_channel.chan = MMI_MUX_CHANNEL_WLC_FACTORY_TEST;
+					info->mmi.mux_channel.on = true;
+#endif
 				} else {
 					mmi_mux_config(info, MMI_MUX_CHANNEL_NONE);
 					info->mmi.mux_channel.chan = MMI_MUX_CHANNEL_NONE;
@@ -1048,6 +1065,15 @@ static int mmi_mux_switch(struct mtk_charger *info, enum mmi_mux_channel channel
 					mmi_mux_config(info, MMI_MUX_CHANNEL_TYPEC_OTG_WLC_CHG);
 					info->mmi.mux_channel.chan = MMI_MUX_CHANNEL_TYPEC_OTG_WLC_CHG;
 					info->mmi.mux_channel.on = true;
+#ifdef CONFIG_MOTO_CHANNEL_SWITCH
+				} else if (pre_chan == MMI_MUX_CHANNEL_WLC_FACTORY_TEST) {
+					pr_info("Last chan is wls_factory_test");
+					wls_tcmd_set_role_device();
+					mmi_mux_config(info, MMI_MUX_CHANNEL_WLC_FACTORY_TEST);
+					info->mmi.mux_channel.chan = MMI_MUX_CHANNEL_WLC_FACTORY_TEST;
+					info->mmi.mux_channel.on = true;
+					charger_dev_set_input_current(info->chg1_dev, info->data.wireless_factory_max_input_current);
+#endif
 				} else {
 					mmi_mux_config(info, MMI_MUX_CHANNEL_WLC_CHG);
 					info->mmi.mux_channel.chan = MMI_MUX_CHANNEL_WLC_CHG;

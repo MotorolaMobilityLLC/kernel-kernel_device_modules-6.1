@@ -7390,6 +7390,9 @@ static int mtk_charger_probe(struct platform_device *pdev)
 	info->is_charging = false;
 	info->safety_timer_cmd = -1;
 	info->cmd_pp = -1;
+#ifdef CONFIG_MOTO_WLS_OTG_SWITCH
+	info->wls_tcmd_test = false;
+#endif
 
 #ifdef MTK_BASE
 	/* 8 = KERNEL_POWER_OFF_CHARGING_BOOT */
