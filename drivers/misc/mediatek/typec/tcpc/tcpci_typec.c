@@ -233,11 +233,38 @@ bool mmi_tcpc_get_pd_flag(void){
 	return g_tcpc_pd_adapter_flag;
 }
 #endif
+#ifdef CONFIG_MOTO_WLS_OTG_SWITCH
+static void tcpc_wireless_get_tcmd_val(bool *val)
+{
+	struct power_supply *chg_psy = NULL;
+	struct mtk_charger *info = NULL;
 
+	chg_psy = power_supply_get_by_name("mtk-master-charger");
+	if (chg_psy == NULL || IS_ERR(chg_psy)) {
+		pr_err("%s Couldn't get chg_psy\n", __func__);
+		return;
+	}
+	info = (struct mtk_charger *)power_supply_get_drvdata(chg_psy);
+
+	*val = info->wls_tcmd_test;
+	return;
+}
+#endif
 static int typec_alert_attach_state_change(struct tcpc_device *tcpc)
 {
 	int ret = 0;
+#ifdef CONFIG_MOTO_WLS_OTG_SWITCH
+	int online = 0;
+	bool val = false;
 
+	tcpc_wireless_get_wireless_online(&online);
+	tcpc_wireless_get_tcmd_val(&val);
+	pr_err("%s online = %d,val = %d\n",__func__,online,val);
+	if(online && val){
+		pr_err("%s do not alert state_change\n",__func__);
+		return 0;
+	}
+#endif
 	if (tcpc->typec_attach_old == tcpc->typec_attach_new) {
 		TYPEC_INFO("Attached-> %s(repeat)\n",
 			typec_attach_names[tcpc->typec_attach_new]);
