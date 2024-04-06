@@ -658,6 +658,9 @@ struct mtk_charger {
 	int num_cp_thermal_zone;
 	
 	bool wls_boost_using_otg;
+#ifdef CONFIG_MOTO_WLS_OTG_SWITCH
+	bool wls_tcmd_test;
+#endif
 };
 
 static inline int mtk_chg_alg_notify_call(struct mtk_charger *info,

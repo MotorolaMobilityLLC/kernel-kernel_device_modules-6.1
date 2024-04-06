@@ -32,7 +32,9 @@ static const unsigned int usb_extcon_cable[] = {
 	EXTCON_USB_HOST,
 	EXTCON_NONE,
 };
-
+#ifdef CONFIG_MOTO_CHANNEL_SWITCH
+struct mtk_extcon_info *extcon_wls_tcmd;
+#endif
 static int mmi_mux_typec_otg_chan(enum mmi_mux_channel channel, bool on)
 {
 	struct mtk_charger *info = NULL;
@@ -151,6 +153,15 @@ static bool usb_is_online(struct mtk_extcon_info *extcon)
 	else
 		return false;
 }
+
+#ifdef CONFIG_MOTO_CHANNEL_SWITCH
+void wls_tcmd_set_role_device(void)
+{
+	pr_info("wls need adb to read volt and current\n");
+	mtk_usb_extcon_set_role(extcon_wls_tcmd, USB_ROLE_DEVICE);
+}
+EXPORT_SYMBOL(wls_tcmd_set_role_device);
+#endif
 
 static void mtk_usb_extcon_psy_detector(struct work_struct *work)
 {
@@ -709,7 +720,9 @@ static int mtk_usb_extcon_probe(struct platform_device *pdev)
 #endif
 
 	platform_set_drvdata(pdev, extcon);
-
+#ifdef CONFIG_MOTO_CHANNEL_SWITCH
+	extcon_wls_tcmd = extcon;
+#endif
 	return 0;
 }
 
