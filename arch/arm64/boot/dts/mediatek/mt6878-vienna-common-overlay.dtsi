@@ -280,6 +280,7 @@
 
 &i2c6 {
  	status = "okay";
+	clock-frequency = <400000>;
 	fs16xx_smartpa_0: fs16xx@34 {
 		compatible = "foursemi,fs16xx";
  		#sound-dai-cells = <0>;
