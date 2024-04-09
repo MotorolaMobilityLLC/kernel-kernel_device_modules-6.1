@@ -475,7 +475,7 @@ static const struct drm_display_mode mode_24 = {
 };
 
 static const struct drm_display_mode mode_10 = {
-	.clock = 34262,
+	.clock = 411148,
 	.hdisplay = FRAME_WIDTH,//1200
 	.hsync_start = FRAME_WIDTH + FHD_HFP,//1215
 	.hsync_end = FRAME_WIDTH + FHD_HFP + FHD_HSA,//1230
@@ -483,11 +483,11 @@ static const struct drm_display_mode mode_10 = {
 	.vdisplay = FRAME_HEIGHT,//2670
 	.vsync_start = FRAME_HEIGHT + FHD_VFP,//2715
 	.vsync_end = FRAME_HEIGHT + FHD_VFP + FHD_VSA,//2717
-	.vtotal = FRAME_HEIGHT + FHD_VFP + FHD_VSA + FHD_VBP,//2752
+	.vtotal = FRAME_HEIGHT + FHD_VFP + FHD_VSA + FHD_VBP+1,//2752
 };
 
 static const struct drm_display_mode mode_1 = {
-	.clock = 3426,
+	.clock = 411148,
 	.hdisplay = FRAME_WIDTH,//1200
 	.hsync_start = FRAME_WIDTH + FHD_HFP,//1215
 	.hsync_end = FRAME_WIDTH + FHD_HFP + FHD_HSA,//1230
@@ -495,7 +495,7 @@ static const struct drm_display_mode mode_1 = {
 	.vdisplay = FRAME_HEIGHT,//2670
 	.vsync_start = FRAME_HEIGHT + FHD_VFP,//2715
 	.vsync_end = FRAME_HEIGHT + FHD_VFP + FHD_VSA,//2717
-	.vtotal = FRAME_HEIGHT + FHD_VFP + FHD_VSA + FHD_VBP,//2752
+	.vtotal = FRAME_HEIGHT + FHD_VFP + FHD_VSA + FHD_VBP+2,//2752
 };
 
 
@@ -1605,6 +1605,7 @@ static int lcm_get_modes(struct drm_panel *panel, struct drm_connector *connecto
 		return -ENOMEM;
 
 	drm_mode_set_name(mode5);
+	snprintf(mode5->name,  DRM_DISPLAY_MODE_LEN,  "%s@%d",mode5->name, RRGSFlag_Special_Idle_1Hz);
 	mode5->type = DRM_MODE_TYPE_DRIVER;
 	drm_mode_probed_add(connector, mode5);
 
@@ -1617,6 +1618,7 @@ static int lcm_get_modes(struct drm_panel *panel, struct drm_connector *connecto
 	}
 
 	drm_mode_set_name(mode4);
+	snprintf(mode4->name,  DRM_DISPLAY_MODE_LEN,  "%s@%d",mode4->name, RRGSFlag_Special_Idle_10Hz);
 	mode4->type = DRM_MODE_TYPE_DRIVER;
 	drm_mode_probed_add(connector, mode4);
 
@@ -1629,6 +1631,7 @@ static int lcm_get_modes(struct drm_panel *panel, struct drm_connector *connecto
 	}
 
 	drm_mode_set_name(mode3);
+	snprintf(mode3->name,  DRM_DISPLAY_MODE_LEN,  "%s@%d",mode3->name, RRGSFlag_All_No_Duplicated | RRGSFlag_120HzBased);
 	mode3->type = DRM_MODE_TYPE_DRIVER;
 	drm_mode_probed_add(connector, mode3);
 
@@ -1641,6 +1644,7 @@ static int lcm_get_modes(struct drm_panel *panel, struct drm_connector *connecto
 	}
 
 	drm_mode_set_name(mode2);
+	snprintf(mode2->name,  DRM_DISPLAY_MODE_LEN,  "%s@%d",mode2->name, RRGSFlag_All_No_Duplicated | RRGSFlag_120HzBased | RRGSFlag_90HzBased);
 	mode2->type = DRM_MODE_TYPE_DRIVER;
 	drm_mode_probed_add(connector, mode2);
 
@@ -1654,6 +1658,7 @@ static int lcm_get_modes(struct drm_panel *panel, struct drm_connector *connecto
 
 	drm_mode_set_name(mode1);
 	mode1->type = DRM_MODE_TYPE_DRIVER;
+	snprintf(mode1->name,  DRM_DISPLAY_MODE_LEN,  "%s@%d",mode1->name, RRGSFlag_All_No_Duplicated | RRGSFlag_120HzBased);
 	drm_mode_probed_add(connector, mode1);
 
 	mode = drm_mode_duplicate(connector->dev, &default_mode);
@@ -1665,6 +1670,7 @@ static int lcm_get_modes(struct drm_panel *panel, struct drm_connector *connecto
 	}
 
 	drm_mode_set_name(mode);
+	snprintf(mode->name,  DRM_DISPLAY_MODE_LEN,  "%s@%d",mode->name, RRGSFlag_All_No_Duplicated | RRGSFlag_120HzBased);
 	mode->type = DRM_MODE_TYPE_DRIVER | DRM_MODE_TYPE_PREFERRED;
 	drm_mode_probed_add(connector, mode);
 
@@ -1677,6 +1683,7 @@ static int lcm_get_modes(struct drm_panel *panel, struct drm_connector *connecto
 	}
 
 	drm_mode_set_name(mode6);
+	snprintf(mode6->name,  DRM_DISPLAY_MODE_LEN,  "%s@%d",mode6->name, RRGSFlag_All_No_Duplicated | RRGSFlag_90HzBased);
 	mode6->type = DRM_MODE_TYPE_DRIVER;
 	drm_mode_probed_add(connector, mode6);
 
