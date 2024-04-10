@@ -123,9 +123,9 @@ struct main2_vcm_device *ab_main2_vcm;
 static const int SUIT_POS = 0;
 
 // control detials
-static const int af_step_count = 70;
-static const int af_segment_len = 11;
-static const int af_set_delay = 8000;
+static const int af_step_count[3]  = {1,    6,      5};
+static const int af_set_delay[3]   = {8000, 30000, 13000};
+static const int af_segment_len[3] = {95,   11,    35};
 
 static int af_len = SUIT_POS;
 static unsigned int Open_holder = NO_HOLD;
@@ -570,8 +570,8 @@ static long main2_vcm_ops_core_ioctl(struct v4l2_subdev *sd, unsigned int cmd, v
 	break;
 	case VIDIOC_MTK_S_SETVCMPOS:
 	{
-		//set lens pos
-		int i = 0;
+		//Segmented set pos for VIB ioctl VCM
+		int i, j;
 		int diff_dac = 0;
 		ab_lens_info = arg;
 		spin_lock(&g_vcm_SpinLock);
@@ -579,26 +579,31 @@ static long main2_vcm_ops_core_ioctl(struct v4l2_subdev *sd, unsigned int cmd, v
 		Open_holder = ab_lens_info->holder;
 		spin_unlock(&g_vcm_SpinLock);
 
-		//Segmented set pos for VIB ioctl VCM
 		diff_dac = SUIT_POS - g_vcmconfig.origin_focus_pos;
 		af_len = g_vcmconfig.origin_focus_pos;
-		LOG_AFNE("MTK_S_SETVCMPOS target pos to (%d) with %d count, each segment long:0x0%x. Open_holder%x\n", SUIT_POS, af_step_count,\
-			af_segment_len, Open_holder);
 
-		for(i = 0;i < af_step_count; i++)
+		for(j = 0; j < sizeof(af_step_count)/sizeof(int); j++)
 		{
-			af_len += (diff_dac < 0 ? (af_segment_len*(-1)) : af_segment_len);
-			if(af_len < SUIT_POS || af_len == SUIT_POS)
+			LOG_AFNE("MTK_S_SETVCMPOS  park(%d) from (%d) to (%d) with %d count, segment len:%d, delay:%d.\n", j, af_len, \
+				af_len - af_segment_len[j]*af_step_count[j], af_step_count[j], af_segment_len[j], af_set_delay[j]);
+			for(i = 0;i < af_step_count[j]; i++)
 			{
-				af_len = SUIT_POS;
-				i = af_step_count + 1;
-			}
+				af_len += (diff_dac < 0 ? (af_segment_len[j]*(-1)) : af_segment_len[j]);
+				if(af_len < SUIT_POS || af_len == SUIT_POS)
+				{
+					af_len = SUIT_POS;
+					i = af_step_count[j] + 1;
+				}
 
-			ret = main2_vcm_set_position(ab_main2_vcm, af_len);
-			LOG_AFNE("set pos to (%d), count=%d\n", af_len, i);
-			usleep_range(af_set_delay , af_set_delay + 1000);
+				ret = main2_vcm_set_position(ab_main2_vcm, af_len);
+				LOG_AFNE("set pos to (%d), count=%d\n", af_len, i);
+				usleep_range(af_set_delay[j], af_set_delay[j] + 1000);
+			}
 		}
-		LOG_AFNE("MTK_S_SETVCMPOS set pos=0x%x, ret=%d. Open_holder=0x0%x\n", af_len, ret, Close_holder);
+
+		// 4th park
+		ret = main2_vcm_set_position(ab_main2_vcm, 0);
+		LOG_AFNE("MTK_S_SETVCMPOS final set pos from %d to 0, ret=%d. Open_holder=0x0%x\n", af_len, ret, Open_holder);
 		return ret;
 	}
         break;
