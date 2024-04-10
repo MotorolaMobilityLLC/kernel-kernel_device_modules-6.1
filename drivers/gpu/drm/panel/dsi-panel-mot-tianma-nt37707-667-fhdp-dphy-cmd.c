@@ -160,7 +160,7 @@ static void lcm_panel_init(struct lcm *ctx)
 	lcm_dcs_write_seq_static(ctx, 0xFF, 0xAA, 0x55, 0xA5, 0x81);
 	lcm_dcs_write_seq_static(ctx, 0x6F, 0x0D);
 	lcm_dcs_write_seq_static(ctx, 0xFB, 0x80);
-	if(ctx->version == 1) {
+	if(ctx->version != 1) {
 		//for EM_DT=0 condition
 		lcm_dcs_write_seq_static(ctx, 0xF0, 0x55, 0xAA, 0x52, 0x08, 0x01);
 		lcm_dcs_write_seq_static(ctx, 0xE5, 0x00);
@@ -183,10 +183,12 @@ static void lcm_panel_init(struct lcm *ctx)
 	lcm_dcs_write_seq_static(ctx, 0x6F, 0x02);
 	lcm_dcs_write_seq_static(ctx, 0xF9, 0x84);
 	lcm_dcs_write_seq_static(ctx, 0x6F, 0x10);
-		if(ctx->version == 1)
-			lcm_dcs_write_seq_static(ctx, 0xFB, 0x04);
-		else
-			lcm_dcs_write_seq_static(ctx, 0xFB, 0x40);
+
+	if(ctx->version == 1)
+		lcm_dcs_write_seq_static(ctx, 0xFB, 0x04);
+	else
+		lcm_dcs_write_seq_static(ctx, 0xFB, 0x40);
+
 	//LVDET skip frame off
 	lcm_dcs_write_seq_static(ctx, 0xFF, 0xAA, 0x55, 0xA5, 0x80);
 	lcm_dcs_write_seq_static(ctx, 0x6F, 0x48);
