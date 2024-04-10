@@ -51,7 +51,6 @@
 			bias-pull-up;
 		};
 	};
-
 };
 
 
@@ -253,7 +252,7 @@
 		fs3001_brk_pgagain=< 5 >;
 		fs3001_brk_margin=< 48 >;
 		fs3001_play_ram_srate=< 0 >;
-		fs3001_play_rtp_srate=< 1 >;
+		fs3001_play_rtp_srate=< 0 >;
 		fs3001_lk_f0_cali=< 0 >;
 		fs3001_default_vib_mode=< 3 >;
 		fs3001_vbat_mode=< 0 >;
@@ -261,7 +260,7 @@
 		fs3001_f0_cali_data_mode=< 0 >;
 		fs3001_lr_pgagain=< 5 >;
 		fs3001_gain_adjust=< 0 >;
-		fs3001_rtp_max=< 3 >;
+		fs3001_rtp_max=< 53 >;
 		fs3001_rtp_time=< 20 20 20 >;
 		fs3001_reg_inits=< 0xffffff 0xffffff 0xffffff 0xffffff 0xffffff 0xffffff 0xffffff 0xffffff 0xffffff 0xffffff >;
 		fs3001_rtp_id_boundary=< 3 >;
