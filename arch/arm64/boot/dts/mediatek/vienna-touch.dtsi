@@ -43,6 +43,7 @@
 		goodix,sample-ctrl;
 		goodix,interpolation-ctrl;
 		goodix,gesture-wait-pm;
+		goodix,stowed-mode-ctrl;
 		goodix,config-name = "goodix_gt9916_cfg_group.bin";
 		goodix,firmware-name = "goodix_gt9916_firmware.bin";
 		mmi,enable-gestures;
