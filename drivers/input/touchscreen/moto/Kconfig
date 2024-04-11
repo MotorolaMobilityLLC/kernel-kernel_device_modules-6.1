@@ -65,3 +65,9 @@ config GTP_GHOST_LOG_CAPTURE
 	bool "Support ghost touch log capture feature"
 	help
 		Say Y here if support ghost touch log capture feature.
+
+config GTP_FOD
+	bool "Support fod feature"
+	help
+		Say Y here if support fod feature.
+
