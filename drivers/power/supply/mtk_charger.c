@@ -4154,6 +4154,31 @@ int mmi_batt_health_check(void)
 }
 EXPORT_SYMBOL(mmi_batt_health_check);
 
+int mmi_get_batt_cv_delata_by_cycle(int batt_cycle)
+{
+	int batt_cv_delata = 0;
+	int i ;
+	struct mmi_cycle_cv_steps *zones;
+	int num_zones;
+
+	if (mmi_info == NULL) {
+		pr_err("[%s]called before charger_manager valid!\n", __func__);
+		return -1;
+	}
+	zones = mmi_info->mmi.cycle_cv_steps;
+	num_zones = mmi_info->mmi.num_cycle_cv_steps;
+
+	if(zones != NULL && num_zones > 0) {
+		for(i = 0; i < num_zones; i++) {
+			if(batt_cycle > zones[i].cycle) {
+				batt_cv_delata = zones[i].delta_cv_mv;
+			}
+		}
+	}
+
+	return batt_cv_delata;
+}
+
 #define WARM_TEMP 45
 #define COOL_TEMP 0
 #define HYST_STEP_MV 50
@@ -4173,6 +4198,9 @@ static void mmi_basic_charge_sm(struct mtk_charger *info,
 	int target_fv = -EINVAL;
 	int prev_step;
 	int stop_recharge_hyst;
+	int rc;
+	int batt_cv_delata;
+	union power_supply_propval val;
 
 	if (!prm->temp_zones) {
 		pr_err("[%s]temp_zones is NULL\n", __func__);
@@ -4207,6 +4235,19 @@ static void mmi_basic_charge_sm(struct mtk_charger *info,
 	} else {
 		max_fv_mv = mmi_get_zone_fv(prm, prm->normal_zones, prm->num_normal_zones, state->batt_temp);
 	}
+
+	if(info->mmi.cycle_cv_steps != NULL) {
+		rc = mmi_get_prop_from_battery(info,
+					POWER_SUPPLY_PROP_CYCLE_COUNT, &val);
+		if (rc < 0) {
+			pr_err("[%s]Error getting battery cycle count rc = %d\n", __func__, rc);
+		} else {
+			batt_cv_delata = mmi_get_batt_cv_delata_by_cycle(val.intval);
+			if( batt_cv_delata > 0)
+				max_fv_mv = max_fv_mv - batt_cv_delata;
+		}
+	}
+	pr_err("[%s] max_fv_mv = %d,batt_cv_delata = %d",__func__,max_fv_mv,batt_cv_delata);
 
 	if (max_fv_mv == 0)
 		max_fv_mv = mmi->base_fv_mv;
@@ -5265,6 +5306,45 @@ static int parse_mmi_dt(struct mtk_charger *info, struct device *dev)
 	if (!node) {
 		pr_info("[%s]mmi dtree info. missing\n",__func__);
 		return -ENODEV;
+	}
+
+	if (of_find_property(node, "mmi,mmi-cycle-cv-steps", &byte_len)) {
+		if ((byte_len / sizeof(u32)) % 2) {
+			pr_err("[%s]DT error wrong mmi cycle batt_cv zones, byte_len = %d\n",
+				__func__, byte_len);
+			return -ENODEV;
+		}
+
+		info->mmi.cycle_cv_steps = (struct mmi_cycle_cv_steps *)
+			devm_kzalloc(dev, byte_len, GFP_KERNEL);
+
+		if (info->mmi.cycle_cv_steps == NULL)
+			return -ENOMEM;
+
+		info->mmi.num_cycle_cv_steps =
+			byte_len / sizeof(struct mmi_cycle_cv_steps);
+
+		rc = of_property_read_u32_array(node,
+				"mmi,mmi-cycle-cv-steps",
+				(u32 *)info->mmi.cycle_cv_steps,
+				byte_len / sizeof(u32));
+		if (rc < 0) {
+			pr_err("[%s]Couldn't read mmi cycle cv steps rc = %d\n", __func__, rc);
+			return rc;
+		}
+		pr_info("[%s]mmi cycle cv steps: Num: %d\n",
+				__func__,
+				info->mmi.num_cycle_cv_steps);
+		for (i = 0; i < info->mmi.num_cycle_cv_steps; i++) {
+			pr_info("[%s]mmi cycle cv steps: cycle > %d, delta_cv_mv = %d mV\n",
+				__func__,
+				info->mmi.cycle_cv_steps[i].cycle,
+				info->mmi.cycle_cv_steps[i].delta_cv_mv);
+		}
+	} else {
+		info->mmi.cycle_cv_steps = NULL;
+		info->mmi.num_cycle_cv_steps = 0;
+		pr_err("[%s]mmi cycle cv steps is not set\n", __func__);
 	}
 
 	info->mmi.enable_mux =
