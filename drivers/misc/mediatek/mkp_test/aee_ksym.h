@@ -3,30 +3,35 @@
  * Copyright (C) 2021 MediaTek Inc.
  */
 
-#ifndef _DUMMY_KSYM_H_
-#define _DUMMY_KSYM_H_
+#ifndef _KSYM_H_
+#define _KSYM_H_
 
-#include <asm/memory.h> // for MODULE_VADDR
-#include <linux/arm-smccc.h>
-#include <linux/cma.h>
-#include <linux/err.h>
-#include <linux/futex.h>
-#include <linux/memblock.h>
-#include <linux/module.h>
-#include <linux/kernel.h>
-#include <linux/sizes.h>
-#include <linux/sched.h>
-#include <linux/timer.h>
-#include <linux/of_reserved_mem.h>
-#include <linux/printk.h>
+#include <linux/types.h> // for phys_addr_t
 #include <linux/rbtree.h>
+#include <linux/types.h> // for phys_addr_t
 #include <linux/random.h>
+
+#include <linux/memblock.h>
+#include <linux/err.h>
+#include <linux/sizes.h>
+
+#include <linux/sched.h>
+#include <linux/module.h>
+#include <linux/printk.h>
+#include <uapi/linux/sched/types.h>
+#include <linux/futex.h>
 #include <linux/plist.h>
 #include <linux/percpu-defs.h>
+#include <linux/kernel.h>
 #include <linux/platform_device.h>
-#include <linux/types.h>
+#include <linux/arm-smccc.h>
 #include <linux/vmalloc.h>
-#include <uapi/linux/sched/types.h>
+#include <linux/cma.h>
+#include <linux/of_reserved_mem.h>
+#include <linux/timer.h>
+
+#include <asm/memory.h> // for MODULE_VADDR
+#include <linux/types.h> // for phys_addr_t
 
 #include <linux/of_fdt.h>
 #include <linux/of_reserved_mem.h>
@@ -34,25 +39,15 @@
 #include <linux/dma-mapping.h>
 #include <linux/dma-direct.h>
 
-#define KV		kimage_vaddr
+#define KV		(kimage_vaddr+64*1024)
 #define S_MAX		SZ_128M
 #define SM_SIZE		28
 #define TT_SIZE		256
 #define NAME_LEN	128
 
-void *mkp_abt_addr(void *ssa);
-unsigned long *mkp_krb_addr(void);
-unsigned int *mkp_km_addr(void);
-u16 *mkp_kti_addr(void);
-int mkp_ka_init(void);
-unsigned int mkp_checking_names(unsigned int off,
-					   char *namebuf, size_t buflen);
-unsigned long mkp_idx2addr(int idx);
-unsigned long mkp_addr_find(const char *name);
 void mkp_get_krn_code(void **p_stext, void **p_etext);
 void mkp_get_krn_rodata(void **p_etext, void **p__init_begin);
 void mkp_get_krn_info(void **p_stext, void **p_etext, void **p__init_begin);
-
 
 /*****************************************************
  *  debug.h //May remove later
@@ -62,4 +57,4 @@ void mkp_get_krn_info(void **p_stext, void **p_etext, void **p__init_begin);
 #define MKP_WARN(fmt, args...) do { pr_info("MKP_WARN: "fmt, ##args); } while (0)
 #define MKP_INFO(fmt, args...) do { pr_info("MKP_INFO: "fmt, ##args); } while (0)
 
-#endif /* _DUMMY_KSYM_H_ */
+#endif /* _KSYM_H */
