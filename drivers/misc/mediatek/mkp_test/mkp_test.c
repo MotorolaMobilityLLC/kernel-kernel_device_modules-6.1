@@ -15,7 +15,11 @@
 #include <trace/hooks/syscall_check.h>
 #include <linux/delay.h>
 #include "mkp_security.h"
+#ifdef dummy_ksym
 #include "dummy_ksym.h"
+#else
+#include "aee_ksym.h"
+#endif
 
 #define TEST(unused, func)\
 	static int func(struct seq_file *m)
@@ -63,9 +67,13 @@ struct cred_sbuf_content {
 
 #define mkp_test_msg(fmt, args...)      seq_printf(m, "[mkp_test] "fmt"\n", ##args)
 
-static noinline void __try_to_attack(void *taddr)
+static noinline void __try_to_attack(struct seq_file *m, void *taddr)
 {
 	*(char *)(taddr) = '0';
+	if (*(volatile char*)(taddr) == '0')
+		mkp_test_msg("__try_to_attack succeeded\n");
+	else
+		mkp_test_msg("__try_to_attack failed\n");
 }
 
 static void try_to_attack_ko(struct seq_file *m, unsigned long addr)
@@ -82,7 +90,7 @@ static void try_to_attack_ko(struct seq_file *m, unsigned long addr)
 		return;
 	}
 
-	__try_to_attack(taddr);
+	__try_to_attack(m, taddr);
 }
 
 static void try_to_attack(struct seq_file *m, unsigned long addr)
@@ -99,7 +107,7 @@ static void try_to_attack(struct seq_file *m, unsigned long addr)
 		return;
 	}
 
-	__try_to_attack(taddr);
+	__try_to_attack(m, taddr);
 }
 
 /******************************************************
@@ -141,7 +149,7 @@ TEST(mkp_test, mkp_test_002_mkp)
 	struct module *pMod, *list_mod;
 	const struct module_layout* layout;
 	unsigned long ro_addr;
-	mkp_test_msg(" [SCN002]: protect mkp (no toleration)\n");
+	mkp_test_msg(" [SCN002]: attack mkp (no toleration)\n");
 	pMod = NULL;
 	preempt_disable();
 	list_for_each_entry(list_mod, THIS_MODULE->list.prev, list){
@@ -174,7 +182,7 @@ TEST(mkp_test, mkp_test_003_driver)
 	struct module *pMod = THIS_MODULE;
 	const struct module_layout* layout;
 	unsigned long ro_addr;
-	mkp_test_msg(" [SCN003]: protect driver (no toleration)\n");
+	mkp_test_msg(" [SCN003]: attack driver (no toleration)\n");
 	if(!pMod)
 		return 0;
 
@@ -268,7 +276,7 @@ TEST(mkp_test, mkp_test_006_rodata)
 	unsigned long addr_start;
 	static int cnt = 1;
 
-	mkp_test_msg("[SCN006]: protect kernel RO data (... %d)\n", cnt);
+	mkp_test_msg("[SCN006]: attack kernel RO data (... %d)\n", cnt);
 	mkp_get_krn_rodata(&p_etext, &p__init_begin);
 	addr_start = (unsigned long)p_etext;
 	
@@ -296,7 +304,7 @@ TEST(mkp_test, mkp_test_007_kernel)
 	unsigned long addr_start;
 	static int cnt = 1;
 	
-	mkp_test_msg("[SCN007]: protect kernel code (... %d)\n", cnt);
+	mkp_test_msg("[SCN007]: attack kernel code (... %d)\n", cnt);
 	mkp_get_krn_code(&p_stext, &p_etext);
 	addr_start = (unsigned long)p_stext;
 	
@@ -343,10 +351,12 @@ static void add_tests(void)
 
 static int __init mkp_test_init(void)
 {
+#ifdef dummy_ksym
 	if (mkp_ka_init() != 0) {
 		pr_info("%s: failed\n", __func__);
 		return 0;
 	}
+#endif
 
 	add_tests();
 	pr_info("module loaded\n");
