@@ -770,6 +770,9 @@ static int charger_dev_event(struct notifier_block *nb, unsigned long event,
 		info->dpdmov_stat = data->dpdmov_stat;
 		pr_info("%s: DPDM ovp = %d\n", __func__, info->dpdmov_stat);
 		break;
+	case CHARGER_DEV_NOTIFY_INFO_SYNC:
+		pr_info("%s: INFO SYNC\n", __func__);
+		break;
 	default:
 		return NOTIFY_DONE;
 	}
