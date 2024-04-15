@@ -226,7 +226,7 @@ struct dcp15w {
 	bool hook_current;
 	bool online;
 	struct delayed_work detect_dwork;
-	struct alarm timer; /* alarm timer */
+	struct delayed_work exit_dwork;
 	struct completion plugout_trigger;
 	s64 plugin_time;
 	s64 plugout_time;
@@ -497,9 +497,6 @@ static const struct mt6375_chg_field mt6375_chg_fields[F_MAX] = {
 	MT6375_CHG_FIELD(F_USBID_EN, MT6375_REG_USBID_CTRL1, 7, 7),
 	MT6375_CHG_FIELD(F_USBID_FLOATING, MT6375_REG_USBID_CTRL2, 1, 1),
 };
-
-static void dcp15w_timer_stop(struct mt6375_chg_data *ddata);
-static void dcp15w_timer_start(struct mt6375_chg_data *ddata, int ms);
 
 static inline int mt6375_chg_field_set(struct mt6375_chg_data *ddata,
 				       enum mt6375_chg_reg_field fd, u32 val);
@@ -1070,6 +1067,28 @@ static int mmi_notify_vbus_event(struct mt6375_chg_data *ddata, bool vbus_status
 	return 0;
 }
 
+static void dcp15w_exit_work_stop(struct mt6375_chg_data *ddata)
+{
+	int ret = 0;
+
+	/* If the exit work was already set, cancel it */
+	ret = cancel_delayed_work_sync(&ddata->dcp15w.exit_dwork);
+
+	pr_info("%s:dcp15w exit work stop:%d, %lldms\n", __func__, ret,
+		ktime_to_ms(ktime_get_boottime()));
+}
+
+static void dcp15w_exit_work_start(struct mt6375_chg_data *ddata, int ms)
+{
+	int ret = 0;
+
+	/* Start the exit work*/
+	ret = schedule_delayed_work(&ddata->dcp15w.exit_dwork, msecs_to_jiffies(ms));
+
+	pr_info("%s:dcp15w exit work start:%d, %lldms\n", __func__, ret,
+		ktime_to_ms(ktime_get_boottime()));
+}
+
 static void mt6375_chg_pwr_rdy_process(struct mt6375_chg_data *ddata)
 {
 	int ret;
@@ -1090,7 +1109,7 @@ static void mt6375_chg_pwr_rdy_process(struct mt6375_chg_data *ddata)
 
 	if (ddata->dcp15w.support) {
 		if (val) {
-			dcp15w_timer_stop(ddata);
+			dcp15w_exit_work_stop(ddata);
 			ddata->dcp15w.plugin_time = ktime_to_ms(ktime_get_boottime());
 		} else {
 			ddata->dcp15w.plugout_time = ktime_to_ms(ktime_get_boottime());
@@ -1104,7 +1123,7 @@ static void mt6375_chg_pwr_rdy_process(struct mt6375_chg_data *ddata)
 				ddata->dcp15w.hook_current = true;
 				ddata->dcp15w.icl_target -= ddata->dcp15w.icl_step;
 				mt6375_chg_field_set(ddata, F_IAICR, 100);//plugout reset icl to 100mA
-				dcp15w_timer_start(ddata, ddata->dcp15w.time_plug);
+				dcp15w_exit_work_start(ddata, ddata->dcp15w.time_plug);
 			}
 		}
 	}
@@ -2509,51 +2528,30 @@ void get_qc_charger_type_func_work(struct work_struct *work)
 
 }
 
-static enum alarmtimer_restart
-	dcp15w_alarm_timer_func(struct alarm *alarm, ktime_t now)
+void dcp15w_exit_dwork(struct work_struct *work)
 {
-	struct mt6375_chg_data *ddata =
-	container_of(alarm, struct mt6375_chg_data, dcp15w.timer);
+	struct delayed_work *dwork = NULL;
+	struct mt6375_chg_data *ddata = NULL;
+
+	dwork = container_of(work, struct delayed_work, work);
+	if (IS_ERR_OR_NULL(dwork)) {
+		pr_err("%s:Cann't get dcp15w.exit_dwork\n", __func__);
+		return ;
+	}
+	ddata = container_of(dwork, struct mt6375_chg_data, dcp15w.exit_dwork);
+	if (IS_ERR_OR_NULL(ddata)) {
+		pr_err("%s:Cann't get mt6375_chg_data \n", __func__);
+		return ;
+	}
 
 	ddata->dcp15w.hook_current = false;
 	ddata->dcp15w.online = false;
 	ddata->dcp15w.icl_target = -1;
-	mmi_wake_up_charger();
+	charger_dev_notify(ddata->chgdev, CHARGER_DEV_NOTIFY_INFO_SYNC);
 
-	pr_info("%s:dcp15w alarm time out:%lldms\n", __func__,
-			ktime_to_ms(now));
-	return ALARMTIMER_NORESTART;
-}
-
-static void dcp15w_timer_stop(struct mt6375_chg_data *ddata)
-{
-	int ret = 0;
-
-	/* If the timer was already set, cancel it */
-	ret = alarm_try_to_cancel(&ddata->dcp15w.timer);
-	if (ret < 0) {
-		chr_err("%s: callback was running, skip timer\n", __func__);
-		return;
-	}
-	pr_info("%s:dcp15w alarm timer stop:%d, %lldms\n", __func__, ret,
-		ktime_to_ms(ktime_get_boottime()));
-}
-
-static void dcp15w_timer_start(struct mt6375_chg_data *ddata, int ms)
-{
-	ktime_t ktime;
-	int ret = 0;
-
-	/* If the timer was already set, cancel it */
-	ret = alarm_try_to_cancel(&ddata->dcp15w.timer);
-	if (ret < 0) {
-		chr_err("%s: callback was running, skip timer\n", __func__);
-		return;
-	}
-	ktime = ktime_get_boottime() + ms * 1000000;
-	pr_info("%s:dcp15w alarm timer start:%d, %lldms\n", __func__, ret,
-		ktime_to_ms(ktime));
-	alarm_start(&ddata->dcp15w.timer, ktime);
+	pr_info("%s:dcp15w exit work time out:%lldms\n", __func__,
+			ktime_to_ms(ktime_get_boottime()));
+	return;
 }
 
 #define MIDDLE(min, max, value)			\
@@ -2646,7 +2644,7 @@ void dcp15w_detect_dwork(struct work_struct *work)
 	if (ret_comp == 0) {
 		//normal
 		ddata->dcp15w.hook_current = false;
-		mmi_wake_up_charger();
+		charger_dev_notify(ddata->chgdev, CHARGER_DEV_NOTIFY_INFO_SYNC);
 	}
 
 	pr_info("dcp15w ddata->dcp15w.icl_target=%d\n", ddata->dcp15w.icl_target);
@@ -2696,8 +2694,7 @@ static int dcp15w_init(struct mt6375_chg_data *ddata)
 		ddata->dcp15w.icl_target = -1;
 		init_completion(&ddata->dcp15w.plugout_trigger);
 		INIT_DELAYED_WORK(&ddata->dcp15w.detect_dwork, dcp15w_detect_dwork);
-		alarm_init(&ddata->dcp15w.timer, ALARM_BOOTTIME,
-				dcp15w_alarm_timer_func);
+		INIT_DELAYED_WORK(&ddata->dcp15w.exit_dwork, dcp15w_exit_dwork);
 	}
 
 	if (ddata->dcp15w.icl_min > ddata->dcp15w.icl_max) {
