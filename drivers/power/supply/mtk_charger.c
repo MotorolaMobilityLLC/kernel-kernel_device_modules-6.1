@@ -3325,14 +3325,6 @@ static char *stepchg_str[] = {
 	[STEP_NONE]		= "NONE",
 };
 
-void mmi_wake_up_charger(void)
-{
-	if (!IS_ERR_OR_NULL(mmi_info)) {
-		_wake_up_charger(mmi_info);
-	}
-}
-EXPORT_SYMBOL(mmi_wake_up_charger);
-
 int mmi_get_prop_from_battery(struct mtk_charger *info,
 				enum power_supply_property psp,
 				union power_supply_propval *val)
