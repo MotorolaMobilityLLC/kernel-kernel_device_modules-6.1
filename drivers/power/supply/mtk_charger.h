@@ -312,6 +312,13 @@ struct mmi_zone  {
 	int		chg_iterm;
 };
 
+#ifdef CONFIG_MOTO_1200_CYCLE
+struct mmi_cycle_cv_steps {
+	int		cycle;
+	int		delta_cv_mv;
+};
+#endif
+
 struct mmi_temp_zone {
 	int		temp_c;
 	int		norm_mv;
@@ -437,6 +444,10 @@ struct mmi_params {
 	int			charger_watt;
 	struct work_struct		notify_power_event_work;
 	struct mutex		power_watt_lock;
+#ifdef CONFIG_MOTO_1200_CYCLE
+	int			num_cycle_cv_steps;
+	struct mmi_cycle_cv_steps	*cycle_cv_steps;
+#endif
 };
 /*moto mmi Functionality end*/
 
