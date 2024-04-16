@@ -1251,6 +1251,7 @@ static int mt6375_chg_enable_bc12(struct mt6375_chg_data *ddata, bool en)
 	return mt6375_chg_field_set(ddata, F_BC12_EN, en);
 }
 
+#define DELAY_TIME 1500
 static void mt6375_chg_bc12_work_func(struct work_struct *work)
 {
 	struct mt6375_chg_data *ddata = container_of(work,
@@ -1328,13 +1329,13 @@ static void mt6375_chg_bc12_work_func(struct work_struct *work)
 		ddata->psy_usb_type[active_idx] = POWER_SUPPLY_USB_TYPE_DCP;
 		if (ddata->dcp15w.support) {
 			if (ddata->qc_dev && !ddata->dcp15w.is_detecting)
-				schedule_delayed_work(&ddata->detect_qc_dwork, msecs_to_jiffies(2000)); //2s for wait PD detected complete
+				schedule_delayed_work(&ddata->detect_qc_dwork, msecs_to_jiffies(DELAY_TIME)); //for wait PD detected complete
 			else if (!ddata->dcp15w.is_detecting) {
-				schedule_delayed_work(&ddata->dcp15w.detect_dwork, msecs_to_jiffies(2000));
+				schedule_delayed_work(&ddata->dcp15w.detect_dwork, msecs_to_jiffies(DELAY_TIME));
 			}
 		} else {
 			if (ddata->qc_dev)
-				schedule_delayed_work(&ddata->detect_qc_dwork, msecs_to_jiffies(2000)); //2s for wait PD detected complete
+				schedule_delayed_work(&ddata->detect_qc_dwork, msecs_to_jiffies(DELAY_TIME)); //for wait PD detected complete
 		}
 		break;
 	case PORT_STAT_DCP:
@@ -1344,13 +1345,13 @@ static void mt6375_chg_bc12_work_func(struct work_struct *work)
 		bc12_en = false;
 		if (ddata->dcp15w.support) {
 			if (ddata->qc_dev && !ddata->dcp15w.is_detecting)
-				schedule_delayed_work(&ddata->detect_qc_dwork, msecs_to_jiffies(2000)); //2s for wait PD detected complete
+				schedule_delayed_work(&ddata->detect_qc_dwork, msecs_to_jiffies(DELAY_TIME)); //for wait PD detected complete
 			else if (!ddata->dcp15w.is_detecting) {
-				schedule_delayed_work(&ddata->dcp15w.detect_dwork, msecs_to_jiffies(2000));
+				schedule_delayed_work(&ddata->dcp15w.detect_dwork, msecs_to_jiffies(DELAY_TIME));
 			}
 		} else {
 			if (ddata->qc_dev)
-				schedule_delayed_work(&ddata->detect_qc_dwork, msecs_to_jiffies(2000)); //2s for wait PD detected complete
+				schedule_delayed_work(&ddata->detect_qc_dwork, msecs_to_jiffies(DELAY_TIME)); //for wait PD detected complete
 		}
 		break;
 	case PORT_STAT_SDP:
@@ -2506,6 +2507,12 @@ void get_qc_charger_type_func_work(struct work_struct *work)
 	}while(need_retry);
 
 	ddata->qc_is_detect = false;
+
+	if ((ddata->qc_chg_type == USB_TYPE_QC30)
+		|| (ddata->qc_chg_type == USB_TYPE_QC3P_18)
+		|| (ddata->qc_chg_type == USB_TYPE_QC3P_27)) {
+		charger_dev_notify(ddata->chgdev, CHARGER_DEV_NOTIFY_CTD_DONE);
+	}
 
 	if(ddata->qc_chg_type == USB_TYPE_QC20){
 		adapter_dev_dp_dm(ddata->qc_dev, DP_DM_FORCE_QC2_5V);
