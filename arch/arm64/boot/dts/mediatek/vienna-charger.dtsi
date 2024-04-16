@@ -195,6 +195,7 @@
 &smart_battery {
 	status = "okay";
 	compatible = "mmi,smart-battery";
+	mmi,ui_full_soc = <97>;
 };
 
 
