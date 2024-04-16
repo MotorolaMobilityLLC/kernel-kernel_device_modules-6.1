@@ -29,6 +29,7 @@
 
 #define DW9784_NAME				"mot_dw9784"
 
+// #define FOR_DEBUG
 #define DW9784_CTRL_DELAY_US			5000
 #define DW9784_CHIP_ID_ADDRESS 0x7000
 #define DW9784_CHECKSUM_ADRESS 0x700C
@@ -79,7 +80,7 @@ static motOISGOffsetResult dw9784GyroOffsetResult;
 #define DW9784_REG_OIS_TARGETY            0x7136   // Y_TARGET
 #define DW9784_REG_OIS_LENS_POSX          0x70FE   // X_LENS_POS
 #define DW9784_REG_OIS_LENS_POSY          0x70FF   // Y_LENS_POS
-#define DW9784_REG_OIS_CL_TARGETX         0x7110
+#define DW9784_REG_OIS_CL_TARGETX         0x7100
 #define DW9784_REG_OIS_CL_TARGETY         0x7130
 #define OIS_ON                   0x0000   // OIS ON/SERVO ON
 #define SERVO_ON                 0x0001   // OIS OFF/SERVO ON
@@ -1288,6 +1289,7 @@ static int dw9784_init(struct dw9784_device *dw9784)
 	LOG_INF("+\n");
 
 	m_client = client;
+	dw_ois_mode = OIS_MODEINIT;
 
 	client->addr = DW9784_OIS_I2C_SLAVE_ADDR >> 1;
 	ois_reset();
