@@ -221,3 +221,9 @@ config MOTO_WLS_OTG_SWITCH
         default n
         help
           This is to enable MOTO supports of wls otg switch.
+
+config MOTO_1200_CYCLE
+        bool "1200 cycle support"
+        default n
+        help
+          This is to enable MOTO supports of 1200 cycle feature.
