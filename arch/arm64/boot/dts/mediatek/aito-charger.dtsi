@@ -410,6 +410,7 @@
 		compatible = "cps,wls-charger-cps4041";
 		wireless-fw-name = "cps4041.bin";
 		enable_stop_epp = <1>;
+		enable_bat_full_stop_epp = <1>;
 		enable_rx_offset_detect = <1>;
 		/*stop rx offset detect battery soc*/
 		rod_stop_battery_soc = <90>;
