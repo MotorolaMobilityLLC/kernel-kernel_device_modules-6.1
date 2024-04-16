@@ -62,6 +62,7 @@ enum {
 	CHARGER_DEV_NOTIFY_BATPRO_DONE,
 	CHARGER_DEV_NOTIFY_DPDM_OVP,
 	CHARGER_DEV_NOTIFY_INFO_SYNC,
+	CHARGER_DEV_NOTIFY_CTD_DONE, //charger type detected done
 };
 
 struct charger_device {
