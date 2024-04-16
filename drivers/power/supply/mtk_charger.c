@@ -4049,7 +4049,7 @@ static int mmi_check_power_watt(struct mtk_charger *info, bool force)
 		}
 	}
 
-	power_watt = MAX(power_watt, 1);
+	power_watt = MAX(power_watt, 0);
 
 out:
 	info->mmi.charger_watt = power_watt;
