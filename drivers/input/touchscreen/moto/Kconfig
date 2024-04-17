@@ -71,3 +71,7 @@ config GTP_FOD
 	help
 		Say Y here if support fod feature.
 
+config GTP_POCKET_MODE
+	bool "Support pocket mode feature"
+	help
+		Say Y here if support pockey mode feature.
