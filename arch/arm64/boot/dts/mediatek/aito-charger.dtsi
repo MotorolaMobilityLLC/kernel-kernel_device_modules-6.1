@@ -411,6 +411,8 @@
 		wireless-fw-name = "cps4041.bin";
 		enable_stop_epp = <1>;
 		enable_bat_full_stop_epp = <1>;
+		enable_wls_auto_switch = <1>;
+		wls_auto_switch_overtemp = <420>;
 		enable_rx_offset_detect = <1>;
 		/*stop rx offset detect battery soc*/
 		rod_stop_battery_soc = <90>;
