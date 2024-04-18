@@ -584,6 +584,7 @@ static int lcm_setbacklight_cmdq(void *dsi, dcs_write_gce cb,
 
 	if ((ctx->hbm_mode) && level) {
 		pr_info("hbm_mode = %d, skip backlight(%d)\n", ctx->hbm_mode, level);
+		ctx->current_backlight = level;
 		return 0;
 	}
 
@@ -1348,14 +1349,8 @@ static int panel_lhbm_set_cmdq(void *dsi, dcs_grp_write_gce cb, void *handle, ui
 			lcm_dcs_write_seq_static(ctx, 0x62, 0x03);
 		}
 	} else {
-		if (bl_level <= ARRAY_SIZE(lhbm_alpha)) {
 			lcm_dcs_write(ctx, lhbm_51, 3);
 			lcm_dcs_write_seq_static(ctx, 0x62, 0x00);
-		} else {
-			lcm_dcs_write_seq_static(ctx, 0x62, 0x00);
-		}
-
-
 	}
 	return 0;
 
