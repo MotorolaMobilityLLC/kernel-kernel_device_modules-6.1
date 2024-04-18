@@ -357,6 +357,21 @@ static int et5904_regulator_is_enabled(struct regulator_dev *rdev)
 		return -EINVAL;
 	}
 
+	//Workaround: for some hw units 0x0B register unknown overwriting caused regulator enable disfunction.
+	{
+		int val = 0;
+		regmap_read(rdev->regmap, ET5904_REG_SEQ1, &val);
+		if (val) {
+			ET_DBG("Force correcting SEQ1 register from value %d\n", val);
+			regmap_write(rdev->regmap, ET5904_REG_SEQ1, 0);
+		}
+		regmap_read(rdev->regmap, ET5904_REG_SEQ2, &val);
+		if (val) {
+			ET_DBG("Force correcting SEQ2 register from value %d\n", val);
+			regmap_write(rdev->regmap, ET5904_REG_SEQ2, 0);
+		}
+	}
+
 	regmap_read(rdev->regmap, ET5904_REG_LDO_EN, &val);
 
 	ET_DBG("ET5904_REG_LDO_EN(0x0E)  = 0x%x", val);
