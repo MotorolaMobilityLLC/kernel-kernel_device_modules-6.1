@@ -259,9 +259,7 @@ static int main3_vcm_set_position(struct main3_vcm_device *main3_vcm, u16 val)
 
 		while (retry-- > 0) {
 			ret = i2c_master_send(client, puSendCmd, nCommNum);
-			LOG_INF("dw9784 af_drift val %d, ret = %d, client->addr 0x%x\n", val, ret, client->addr);
 			client->addr = DW9784_OIS_I2C_SLAVE_ADDR >> 1;
-			LOG_INF("dw9784 af_drift client->addr 0x%x, val << 1 %d\n", client->addr, val << 1);
 			write_reg_16bit_value_16bit(client, 0xD013, val << 1);
 			client->addr = MAIN3_VCM_I2C_SLAVE_ADDR >> 1;
 			LOG_INF("dw9784 af_drift client->addr 0x%x, val %d\n", client->addr, val);

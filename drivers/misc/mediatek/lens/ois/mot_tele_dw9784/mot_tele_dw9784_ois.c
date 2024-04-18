@@ -79,7 +79,7 @@ static motOISGOffsetResult dw9784GyroOffsetResult;
 #define DW9784_REG_OIS_TARGETY            0x7136   // Y_TARGET
 #define DW9784_REG_OIS_LENS_POSX          0x7101  // X_LENS_POS
 #define DW9784_REG_OIS_LENS_POSY          0x7131   // Y_LENS_POS
-#define DW9784_REG_OIS_CL_TARGETX         0x7110
+#define DW9784_REG_OIS_CL_TARGETX         0x7100
 #define DW9784_REG_OIS_CL_TARGETY         0x7130
 #define OIS_ON                   0x0000   // OIS ON/SERVO ON
 #define SERVO_ON                 0x0001   // OIS OFF/SERVO ON
@@ -199,7 +199,6 @@ static inline struct dw9784_device *sd_to_dw9784_ois(struct v4l2_subdev *subdev)
 {
 	return container_of(subdev, struct dw9784_device, sd);
 }
-
 
 static void ois_mdelay(unsigned long ms)
 {
@@ -873,8 +872,6 @@ void dw9784_flash_acess(void)
 int dw9784_whoami_chk(void)
 {
 	uint16_t sec_chip_id;
-	unsigned short  is_gyro = 0;
-
 	int ret = 0;
 	ret = ois_i2c_wr_u16(m_client, 0xD000, 0x0001); /* chip enable */
 	ois_mdelay(4);
@@ -894,8 +891,6 @@ int dw9784_whoami_chk(void)
 	}
 
 	ois_reset(); /* ois reset */
-	ret = ois_i2c_rd_u16(m_client, 0x7194, &is_gyro);
-	LOG_INF("dw9784_whoami_chk ois_reset is_gyro: %x\n", is_gyro);
 	return OIS_SUCCESS;
 }
 
@@ -1073,8 +1068,7 @@ int dw9784_check_if_download(void)
 void dw9784_post_firmware_download(void)
 {
 	uint16_t fwchecksum = 0;
-	uint16_t is_gyro = 0;
-	int ret;
+
 	ois_reset();
 	fwchecksum = dw9784_checksum_fw_chk();
 	if(fwchecksum != 0)
@@ -1083,8 +1077,6 @@ void dw9784_post_firmware_download(void)
 		dw9784_erase_mtp_rewritefw();
 		LOG_INF("[dw9784] change dw9784 state to shutdown mode");
 	}
-	ret = ois_i2c_rd_u16(m_client, 0x7194, &is_gyro);
-	LOG_INF("dw9784_post_firmware_download ois_reset is_gyro: 0x%x\n", is_gyro);
 	return;
 }
 
@@ -1120,7 +1112,6 @@ int dw9784_download_fw(void)
 	{
 		addr = MTP_START_ADDRESS + i;
 		i2c_block_write_reg(addr, g_firmwareContext.fwContentPtr + i, DATPKT_SIZE);
-
 	}
 #if 0
         LOG_INF("[dw9784_download_fw] write firmware to flash\n");
@@ -1151,7 +1142,7 @@ int dw9784_download_fw(void)
 		LOG_INF("dw9784 check if download fail");
 		kfree(buf_temp);
 		buf_temp = NULL;
-        }
+	}
 
 	for (i = 0; i < PID_SIZE_W; i += DATPKT_SIZE)
         {
@@ -1295,10 +1286,11 @@ static int dw9784_init(struct dw9784_device *dw9784)
 	LOG_INF("+\n");
 
 	m_client = client;
+	dw_ois_mode = OIS_MODEINIT;
 
 	client->addr = DW9784_OIS_I2C_SLAVE_ADDR >> 1;
 	ois_reset();
-	//ret = ois_i2c_wr_u16(m_client, 0x7020, 0x0000);
+	//ret = ois_i2c_wr_u16(m_client, 0x7020, 0x0000);//master
 
 	ret = ois_i2c_rd_u16(client, 0x7011, &lock_ois);
 	LOG_INF("Check HW lock_ois: %x\n", lock_ois);
@@ -1454,9 +1446,9 @@ static int dw9784_open(struct v4l2_subdev *sd, struct v4l2_subdev_fh *fh)
 
 	LOG_INF("%s\n", __func__);
 
-	ret = pm_runtime_get_sync(sd->dev);
+	ret = dw9784_power_on(dw9784);
 	if (ret < 0) {
-		pm_runtime_put_noidle(sd->dev);
+		LOG_INF("%s, dw9784_power_on fail", __func__);
 		return ret;
 	}
 
@@ -1482,7 +1474,13 @@ static int dw9784_close(struct v4l2_subdev *sd, struct v4l2_subdev_fh *fh)
 	ret = dw9784_release(dw9784);
 	if (ret)
 		LOG_INF("dw9784 release failed!\n");
-	pm_runtime_put(sd->dev);
+
+	ret = dw9784_power_off(dw9784);
+	LOG_INF("%s, dw9784_power_off ret = %d\n", __func__, ret);
+	if (ret < 0) {
+		LOG_INF("%s, dw9784_power_off fail", __func__);
+		return ret;
+	}
 
 	return 0;
 }
@@ -1983,8 +1981,6 @@ static int dw9784_probe(struct i2c_client *client)
 	if (ret < 0)
 		goto err_cleanup;
 
-	pm_runtime_enable(dev);
-
 	/* create class */
 	ois_class = class_create(THIS_MODULE, DW9784_NAME);
 	if (IS_ERR(ois_class)) {
@@ -2008,9 +2004,9 @@ static int dw9784_probe(struct i2c_client *client)
 	}
 
 	LOG_INF("dw9784_probe dw9784_download_fw E!");
-	ret = pm_runtime_get_sync(dev);
+	ret = dw9784_power_on(dw9784);
 	if (ret < 0) {
-		pm_runtime_put_noidle(dev);
+		LOG_INF("%s, dw9784_power_on fail", __func__);
 		return ret;
 	}
 
@@ -2018,7 +2014,11 @@ static int dw9784_probe(struct i2c_client *client)
 	m_client = client;
 	dw9784_download_fw();
 
-	pm_runtime_put(dev);
+	ret = dw9784_power_off(dw9784);
+	if (ret < 0) {
+		LOG_INF("%s, dw9784_power_off fail", __func__);
+		return ret;
+	}
 	LOG_INF("dw9784_probe dw9784_download_fw X!");
 	LOG_INF("-\n");
 
@@ -2051,34 +2051,12 @@ static void dw9784_remove(struct i2c_client *client)
 
 	hf_device_unregister_manager_destroy(&dw9784->hf_dev);
 	dw9784_subdev_cleanup(dw9784);
-	pm_runtime_disable(&client->dev);
-	if (!pm_runtime_status_suspended(&client->dev))
-		dw9784_power_off(dw9784);
-	pm_runtime_set_suspended(&client->dev);
 
 	device_remove_file(&client->dev, &dev_attr_ois_debug);
 	device_destroy(ois_class, ois_devno);
 	class_destroy(ois_class);
 
 	LOG_INF("-\n");
-}
-
-static int __maybe_unused dw9784_ois_suspend(struct device *dev)
-{
-	struct i2c_client *client = to_i2c_client(dev);
-	struct v4l2_subdev *sd = i2c_get_clientdata(client);
-	struct dw9784_device *dw9784 = sd_to_dw9784_ois(sd);
-
-	return dw9784_power_off(dw9784);
-}
-
-static int __maybe_unused dw9784_ois_resume(struct device *dev)
-{
-	struct i2c_client *client = to_i2c_client(dev);
-	struct v4l2_subdev *sd = i2c_get_clientdata(client);
-	struct dw9784_device *dw9784 = sd_to_dw9784_ois(sd);
-
-	return dw9784_power_on(dw9784);
 }
 
 static const struct i2c_device_id dw9784_id_table[] = {
@@ -2093,16 +2071,9 @@ static const struct of_device_id dw9784_of_table[] = {
 };
 MODULE_DEVICE_TABLE(of, dw9784_of_table);
 
-static const struct dev_pm_ops dw9784_pm_ops = {
-	SET_SYSTEM_SLEEP_PM_OPS(pm_runtime_force_suspend,
-				pm_runtime_force_resume)
-	SET_RUNTIME_PM_OPS(dw9784_ois_suspend, dw9784_ois_resume, NULL)
-};
-
 static struct i2c_driver dw9784_i2c_driver = {
 	.driver = {
 		.name = DW9784_NAME,
-		.pm = &dw9784_pm_ops,
 		.of_match_table = dw9784_of_table,
 	},
 	.probe_new  = dw9784_probe,
