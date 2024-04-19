@@ -234,7 +234,7 @@
 &mt6375_chg {
 	mmi,mux_otg_switch_en = <&pio 99 0x0>;
 	dcp15w-support;
-	dcp15w-icl-min = <500>; //mA
+	dcp15w-icl-min = <1000>; //mA
 	dcp15w-icl-max = <3000>; //mA
 	dcp15w-icl-step = <500>; //mA
 	dcp15w-time-step = <300>; //ms

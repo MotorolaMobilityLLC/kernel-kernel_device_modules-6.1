@@ -1120,9 +1120,12 @@ static void mt6375_chg_pwr_rdy_process(struct mt6375_chg_data *ddata)
 			if (ddata->dcp15w.online) {
 				pr_info("%s dcp15w plugout_trigger time:%lld\n",
 						__func__, ddata->dcp15w.plugout_time);
-				ddata->dcp15w.hook_current = true;
+
 				ddata->dcp15w.icl_target -= ddata->dcp15w.icl_step;
-				mt6375_chg_field_set(ddata, F_IAICR, 100);//plugout reset icl to 100mA
+				if (ddata->dcp15w.icl_target < ddata->dcp15w.icl_min)
+					ddata->dcp15w.icl_target = ddata->dcp15w.icl_min;
+
+				mt6375_chg_field_set(ddata, F_IAICR, ddata->dcp15w.icl_min);//plugout reset icl
 				dcp15w_exit_work_start(ddata, ddata->dcp15w.time_plug);
 			}
 		}
@@ -2648,9 +2651,10 @@ void dcp15w_detect_dwork(struct work_struct *work)
 		}
 	}
 
+	ddata->dcp15w.hook_current = false;
+
 	if (ret_comp == 0) {
 		//normal
-		ddata->dcp15w.hook_current = false;
 		charger_dev_notify(ddata->chgdev, CHARGER_DEV_NOTIFY_INFO_SYNC);
 	}
 
