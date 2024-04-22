@@ -1529,6 +1529,11 @@ static int mt6375_chg_get_property(struct power_supply *psy,
 	case POWER_SUPPLY_PROP_TYPE:
 		mutex_lock(&ddata->attach_lock);
 		val->intval = ddata->psy_desc.type;
+
+		if (ddata->dcp15w.support && ddata->dcp15w.online
+			&& !atomic_read(&ddata->attach[ddata->active_idx]))
+			val->intval = POWER_SUPPLY_TYPE_UNKNOWN;
+
 		mutex_unlock(&ddata->attach_lock);
 		break;
 	case POWER_SUPPLY_PROP_CALIBRATE:
