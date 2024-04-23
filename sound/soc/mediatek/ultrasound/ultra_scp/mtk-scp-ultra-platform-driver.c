@@ -77,8 +77,11 @@ struct cali_result_t {
 	char state;
 	char result[24];
 };
-
+struct cali_thres_t {
+    char result[24];
+};
 struct cali_result_t g_cali_result;
+struct cali_thres_t g_cali_thres;
 
 /*****************************************************************************
  * SCP Recovery Register
@@ -456,6 +459,43 @@ static int mtk_scp_ultra_gain_config_set(struct snd_kcontrol *kcontrol,
 		       true,
 		       2,
 		       &payload[0],
+		       ULTRA_IPI_BYPASS_ACK);
+	return 0;
+}
+
+static int mtk_scp_ultra_thres_get(struct snd_kcontrol *kcontrol,
+					 unsigned int __user *data,
+					 unsigned int size)
+{
+	// struct cali_thres_t *thres = &g_cali_thres;
+
+	if (copy_to_user(data,
+			 &g_cali_thres,
+			 sizeof(struct cali_thres_t))) {
+		pr_info("%s() copy fail, data=%p, size=%d\n",
+			__func__, data, size);
+		return -EFAULT;
+	}
+	return 0;
+}
+
+static int mtk_scp_ultra_thres_set(struct snd_kcontrol *kcontrol,
+					 const unsigned int __user *data,
+					 unsigned int size)
+{
+
+	if (copy_from_user(&g_cali_thres,
+			   data,
+			   sizeof(struct cali_thres_t))) {
+		pr_info("%s() copy fail, data=%p, size=%d\n",
+			__func__, data, size);
+		return -EFAULT;
+	}
+	pr_info("%s() \n", __func__);
+	ultra_ipi_send(AUDIO_TASK_USND_MSG_ID_THRES,
+		       true,
+		       6,
+		       (int *)&g_cali_thres,
 		       ULTRA_IPI_BYPASS_ACK);
 	return 0;
 }
@@ -866,6 +906,10 @@ static const struct snd_kcontrol_new ultra_platform_kcontrols[] = {
 			  sizeof(struct ultra_gain_config),
 			  mtk_scp_ultra_gain_config_get,
 			  mtk_scp_ultra_gain_config_set),
+	SND_SOC_BYTES_TLV("mtk_scp_ultra_thres",
+			  sizeof(struct cali_thres_t),
+			  mtk_scp_ultra_thres_get,
+			  mtk_scp_ultra_thres_set),
 	SOC_SINGLE_EXT("mtk_scp_ultra_cap_state",
 			  SND_SOC_NOPM, 0, 0xff, 0,
 			  mtk_scp_ultra_cap_get,
