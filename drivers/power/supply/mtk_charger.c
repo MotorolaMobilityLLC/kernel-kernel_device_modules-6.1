@@ -2655,7 +2655,7 @@ static void mmi_blance_charger_check_status(struct mtk_charger *info)
 	int ret = 0;
 	int flip_chg_state = CHARGE_STATE_UNKONW;
 
-	if (!info->blance_dev)
+	if (IS_ERR_OR_NULL(info->blance_dev) || IS_ERR_OR_NULL(info->flip_batt_psy))
 		return;
 
 	ret = power_supply_get_property(info->flip_batt_psy, POWER_SUPPLY_PROP_VOLTAGE_NOW, &pval);
