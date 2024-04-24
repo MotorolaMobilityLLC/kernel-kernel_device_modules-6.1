@@ -414,6 +414,9 @@
 		enable_wls_auto_switch = <1>;
 		wls_auto_switch_overtemp = <420>;
 		enable_rx_offset_detect = <1>;
+		config-otg-support;
+		enable_wls_auto_stop = <1>;
+		backpower-mode-support;
 		/*stop rx offset detect battery soc*/
 		rod_stop_battery_soc = <90>;
 		bootmode = <&chosen>;
