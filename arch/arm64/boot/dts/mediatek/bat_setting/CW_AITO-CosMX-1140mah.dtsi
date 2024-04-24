@@ -15,13 +15,13 @@ aito-cosmx-1140mah {
 	fcc_design = <1140>;
 	//ui_full = <98>;
 	config_profile_info = [ 46 00 00 00 00 00 00 00
-				B5 BB BF C2 AE A5 D5 BC
-				B1 FC D7 A3 88 73 5F 51
-				48 44 3E 90 7A E2 F2 ED
-				E7 C9 CE D2 D6 D8 D5 D5
-				DA CF D2 BB AB A3 A7 A8
-				B3 B9 9F D7 D4 FF FF DC
-				20 00 AB 10 00 A3 14 00
-				00 00 64 1D B1 F0 00 00
-				00 00 00 00 00 00 00 5D];
+				AB C2 C2 C7 B6 AD C5 A4
+				96 FF E4 BB 94 81 67 55
+				4B 46 41 85 5D E3 03 F1
+				E3 CE CE D3 D5 D7 D6 D5
+				D8 CF D0 BC AC A3 A7 A7
+				B1 B9 9F D5 D3 FF FF EE
+				20 00 AB 10 00 80 C9 00
+				00 00 64 19 90 04 00 00
+				00 00 00 00 00 00 00 14];
 };

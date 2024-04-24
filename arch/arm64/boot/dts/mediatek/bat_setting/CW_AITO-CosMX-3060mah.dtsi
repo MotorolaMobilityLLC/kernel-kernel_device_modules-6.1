@@ -15,13 +15,13 @@ aito-cosmx-3060mah {
 	fcc_design = <3060>;
 	//ui_full = <98>;
 	config_profile_info = [ 46 00 00 00 00 00 00 00
-				AC BA B6 C2 B0 A9 D0 B5
-				A7 FF F1 C3 9A 7F 67 56
-				4A 44 3B 9C 82 E3 43 FF
-				DE C1 CD D3 D8 DA D8 D8
-				DE CF D2 C0 AF AA B0 A9
-				BB A7 C2 CF D2 FE FF D9
-				20 00 AB 10 00 A2 D4 00
-				00 00 64 07 B1 BA 00 00
-				00 00 00 00 00 00 00 5E];
+				B5 BB BF C2 AE A5 D5 BC
+				B1 FC D7 A3 88 73 5F 51
+				48 44 3E 90 7A E2 F2 ED
+				E7 C9 CE D2 D6 D8 D5 D5
+				DA CF D2 BB AB A3 A7 A8
+				B3 B9 9F D7 D4 FF FF DC
+				20 00 AB 10 00 A3 14 00
+				00 00 64 1D B1 F0 00 00
+				00 00 00 00 00 00 00 5D];
 };
