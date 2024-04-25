@@ -4226,14 +4226,18 @@ static ssize_t panelPcdCheck_store(struct device *device,
 	if (!(comp && comp->funcs && comp->funcs->io_cmd))
 		return -EINVAL;
 
+	DDP_MUTEX_LOCK(&mtk_crtc->lock, __func__, __LINE__);
 	if (!(mtk_crtc->enabled)) {
+		DDP_MUTEX_UNLOCK(&mtk_crtc->lock, __func__, __LINE__);
 		DDPMSG("%s: skip, slept\n", __func__);
 		return -EINVAL;
 	}
 
 	res = kstrtou32(buf, cnt, &state);
-	if (res < 0)
+	if (res < 0) {
+		DDP_MUTEX_UNLOCK(&mtk_crtc->lock, __func__, __LINE__);
 		return res;
+	}
 
 	if (atomic_read(&mtk_crtc->singal_for_mode_switch)) {
 		DDPINFO("Wait event from mode_switch...\n");
@@ -4255,6 +4259,7 @@ static ssize_t panelPcdCheck_store(struct device *device,
 		cmdq_pkt_create(client);
 
 	if (!cmdq_handle) {
+		DDP_MUTEX_UNLOCK(&mtk_crtc->lock, __func__, __LINE__);
 		DDPPR_ERR("%s:%d NULL cmdq handle\n", __func__, __LINE__);
 		return -EINVAL;
 	}
@@ -4283,6 +4288,7 @@ static ssize_t panelPcdCheck_store(struct device *device,
 
 	cmdq_pkt_flush(cmdq_handle);
 	cmdq_pkt_destroy(cmdq_handle);
+	DDP_MUTEX_UNLOCK(&mtk_crtc->lock, __func__, __LINE__);
 	return count;
 }
 
