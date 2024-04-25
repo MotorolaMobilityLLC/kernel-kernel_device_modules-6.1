@@ -274,6 +274,14 @@
 	compatible = "mmi,smart-battery";
 	mmi,gauge_names = "main_battery", "flip_battery";
 	mmi,ui_full_soc = <97>;
+
+	mmi,vbatt-low-mv = <3300>;
+	mmi,vbatt-low-cold-mv = <3700>;
+
+	mmi,vbatt-empty-mv = <3000>;
+	mmi,vbatt-empty-cold-mv = <3000>;
+
+	mmi,batt-cold-threshold = <0>;
 };
 
 &i2c0 {
