@@ -205,6 +205,12 @@ config MOTO_CHG_BATT_TEMP_NTC_100K
         help
           This is to enable MOTO supports of 100k battery temp ntc.
 
+config WORK_AROUND_FOR_REG_RESET
+        bool "Enable WORK AROUND FOR REG RESET"
+        default n
+        help
+          This is to enable Work around for reg reset.
+
 config MOTO_WLC_ALG_SUPPORT
 	tristate "moto wlc interface driver for charger"
 	help
