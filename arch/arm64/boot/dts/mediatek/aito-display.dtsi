@@ -71,8 +71,8 @@
 		reset-gpios = <&pio 90 0>;
 		pinctrl-names = "default";
 		port {
-			panel_in2: endpoint {
-				remote-endpoint = <&dsi_out>;
+			panel_in2: endpoint@2 {
+				remote-endpoint = <&dsi_out2>;
 			};
 		};
 	};
@@ -117,6 +117,29 @@
                           <&pio 77 0>,
                           <&pio 115 0>;
 		reset-gpios = <&pio 113 0>;
+	};
+
+	panel23@2 {
+		compatible = "csot,nt37705,cmd,c6,cli";
+		reg = <2>;
+		pm-enable-gpios = <&pio 114 0>,
+                          <&pio 59 0>,
+                          <&pio 77 0>,
+                          <&pio 115 0>;
+		reset-gpios = <&pio 113 0>;
+		port {
+			panel23_in: endpoint {
+				remote-endpoint = <&dsi1_out2>;
+			};
+		};
+	};
+
+	ports {
+		port {
+			dsi1_out2: endpoint@2 {
+				remote-endpoint = <&panel23_in>;
+			};
+		};
 	};
 };
 
