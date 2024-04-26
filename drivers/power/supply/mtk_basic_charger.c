@@ -322,6 +322,11 @@ static bool select_charging_current_limit(struct mtk_charger *info,
 
 	pdata->charging_current_limit = ((info->mmi.target_fcc < 0) ? 0 : info->mmi.target_fcc);
 
+	/*When charging FULL mt6375 trigger pwr rdy interrupt frequent.
+	It can't be reproduced by reduce ICL when FULL.*/
+	if (info->mmi.sm_param[BASE_BATT].pres_chrg_step == STEP_FULL)
+		pdata->input_current_limit = 500000;
+
 	charger_dev_qc_is_detect(info->chg1_dev, &qc_is_detect);
 	charger_dev_get_protocol(info->chg1_dev, &qc_chg_type);
 	/*when qc is detect should make sure ICL is 500mA*/
