@@ -267,5 +267,7 @@
 };
 
 &dispsys_config {
-	pre-define-bw = <0xffffffff>, <4200>, <0>, <1000>;
+	pre-define-bw = <0xffffffff>, <4200>, <0>, <1200>;
+	crtc-ovl-usage = <0xf>, <0x2>, <0x2>, <0xc>;
+	dual-disp-dynamic-ovl;
 };
