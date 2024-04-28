@@ -129,7 +129,7 @@ int fsm_afe_send_apr(struct fsm_afe *afe, void *buf, uint32_t length)
 
 	buf32[0] = afe->param_id;
 	if (afe->op_set) {
-		memcpy(&buf32[1], buf, length);
+		memcpy(&buf32[1], buf, (length-sizeof(uint32_t)));
 		ret = mtk_spk_send_ipi_buf_to_dsp((void *)buf32, length);
 		if (ret)
 			pr_err("send ipi buf failed:%d", ret);
