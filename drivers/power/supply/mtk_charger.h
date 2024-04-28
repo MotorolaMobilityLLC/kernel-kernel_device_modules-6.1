@@ -319,6 +319,11 @@ struct mmi_cycle_cv_steps {
 };
 #endif
 
+struct mmi_thermal_config {
+	int		temp_c;
+	int		level;
+};
+
 struct mmi_temp_zone {
 	int		temp_c;
 	int		norm_mv;
@@ -667,6 +672,9 @@ struct mtk_charger {
 	int cp_thermal_fcc;
 	int *cp_thermal_zone;
 	int num_cp_thermal_zone;
+
+	struct mmi_thermal_config *cp_thermal_com;
+	int num_cp_thermal_com;
 	
 	bool wls_boost_using_otg;
 #ifdef CONFIG_MOTO_WLS_OTG_SWITCH
