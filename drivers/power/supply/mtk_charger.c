@@ -5452,6 +5452,38 @@ static int parse_mmi_dt(struct mtk_charger *info, struct device *dev)
 	} else
 		info->cp_thermal_zone = NULL;
 
+	if (of_find_property(node, "mmi,cp-thermal-config-com", &byte_len)) {
+		if ((byte_len / sizeof(u32)) % 2) {
+			pr_err("DT error wrong mmi cp thermal config com\n");
+			return -ENODEV;
+		}
+
+		info->cp_thermal_com = (struct mmi_thermal_config*)
+			devm_kzalloc(dev, byte_len, GFP_KERNEL);
+
+		info->num_cp_thermal_com =
+			byte_len / sizeof(struct mmi_thermal_config);
+
+		if (info->cp_thermal_com == NULL)
+			return -ENOMEM;
+
+		rc = of_property_read_u32_array(node,
+				"mmi,cp-thermal-config-com",
+				(u32 *)info->cp_thermal_com,
+				byte_len / sizeof(u32));
+		if (rc < 0) {
+			pr_err("Couldn't read mmi cp thermal config com rc = %d\n", rc);
+			return rc;
+		}
+
+		for (i = 0; i < info->num_cp_thermal_com; i++) {
+			pr_err("cp thermal config com:Step %d,Temp %d,level %d\n", i,
+				 info->cp_thermal_com[i].temp_c,
+				 info->cp_thermal_com[i].level);
+		}
+	} else
+		info->cp_thermal_com = NULL;
+
 	info->wls_boost_using_otg = of_property_read_bool(node, "mmi,wls-boost-using-otg");
 	pr_info("%s wls_boost_using_otg:%d \n", __func__, info->wls_boost_using_otg);
 
@@ -6129,6 +6161,52 @@ static const struct thermal_cooling_device_ops mmi_typec_otp_tcd_ops = {
 	.set_cur_state = mmi_typec_otp_set_cur_state,
 };
 
+static void mmi_cp_thermal_check(struct mtk_charger *info, int batt_temp)
+{
+	int i = 0;
+	int thermal_level = 0;
+
+	if (IS_ERR_OR_NULL(info->cp_thermal_com))
+		return;
+
+	for (i = 0; i < info->num_cp_thermal_com; i++) {
+		if (batt_temp >= info->cp_thermal_com[i].temp_c)
+			thermal_level = info->cp_thermal_com[i].level;
+		else
+			break;
+	}
+
+	info->cp_thermal_fcc = info->cp_thermal_zone[thermal_level];
+
+	pr_info("[%s]batt temp %d, level %d, cp thermal fcc %d\n",
+		__func__, batt_temp, thermal_level, info->cp_thermal_fcc);
+}
+
+static void mmi_thermal_check_status(struct mtk_charger *info)
+{
+	unsigned int boot_mode = info->bootmode;
+	int batt_temp = 0;
+	int rc = 0;
+	union power_supply_propval val;
+
+	/* 8 = KERNEL_POWER_OFF_CHARGING_BOOT */
+	/* 9 = LOW_POWER_OFF_CHARGING_BOOT */
+	if (boot_mode != 8 && boot_mode != 9)
+		return;
+
+	rc = mmi_get_prop_from_battery(info,
+				POWER_SUPPLY_PROP_TEMP, &val);
+	if (rc < 0) {
+		pr_err("[%s]Error getting Batt Temperature rc = %d\n", __func__, rc);
+		return;
+	} else
+		batt_temp = val.intval;
+
+	/*for charger pump*/
+	mmi_cp_thermal_check(info, batt_temp);
+
+}
+
 static int charger_routine_thread(void *arg)
 {
 	struct mtk_charger *info = arg;
@@ -6205,6 +6283,7 @@ static int charger_routine_thread(void *arg)
 
 		check_battery_exist(info);
 		check_dynamic_mivr(info);
+		mmi_thermal_check_status(info);
 		mmi_charger_check_status(info);
 		charger_check_status(info);
 
