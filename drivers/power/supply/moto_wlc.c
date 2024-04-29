@@ -459,6 +459,7 @@ static void mmi_thermal_check_status(struct chg_alg_device *alg)
 		return;
 	}
 
+	batt_temp = batt_temp * 10;
 	for (i = 0; i < wlc->num_wlc_thermal_com; i++) {
 		if (batt_temp >= wlc->wlc_thermal_com[i].temp_c)
 			thermal_level = wlc->wlc_thermal_com[i].level;
