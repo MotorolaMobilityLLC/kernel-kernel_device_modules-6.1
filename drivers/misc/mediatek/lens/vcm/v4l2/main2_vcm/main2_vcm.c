@@ -10,6 +10,7 @@
 #include <media/v4l2-ctrls.h>
 #include <media/v4l2-device.h>
 #include <media/v4l2-subdev.h>
+#include <linux/pm_wakeup.h>
 
 #define DRIVER_NAME "main2_vcm"
 #define MAIN2_VCM_I2C_SLAVE_ADDR 0x18
@@ -106,6 +107,7 @@ struct af_vib_lens_info {
 
 struct af_vib_lens_info *ab_lens_info;
 struct main2_vcm_device *ab_main2_vcm;
+static struct wakeup_source vib_wakelock;
 
 #define VIDIOC_MTK_S_SETOPENER  _IOWR('V', BASE_VIDIOC_PRIVATE + 21 , struct af_vib_lens_info)
 #define VIDIOC_MTK_S_SETCLOSER _IOWR('V', BASE_VIDIOC_PRIVATE + 22 , struct af_vib_lens_info)
@@ -502,10 +504,16 @@ static int main2_vcm_close(struct v4l2_subdev *sd, struct v4l2_subdev_fh *fh)
 	if(Open_holder == CAM_HOLD && Close_holder != CAM_HOLD)
 	{
 		LOG_AFNE("Close VCM subdev by VIB, only close fd, not change Open_holder=0x0%x\n", Open_holder);
+		__pm_relax(&vib_wakelock);
+		LOG_AFNE("Close VCM subdev by VIB, relax vib_wakelock:%d\n", vib_wakelock.active);
 		return 0;
 	}
 	LOG_INF("Close vcm subdev, open_hold=0x0%x, set to NO_HOLD 0x0b00\n", Open_holder);
 	main2_vcm_power_off(main2_vcm);
+
+	__pm_relax(&vib_wakelock);
+	LOG_AFNE("Open_holder =0x0%x, relax vib_wakelock:%d\n", Open_holder, vib_wakelock.active);
+
 	spin_lock(&g_vcm_SpinLock);
 	Open_holder = NO_HOLD;
 	Close_holder = NO_HOLD;
@@ -578,6 +586,8 @@ static long main2_vcm_ops_core_ioctl(struct v4l2_subdev *sd, unsigned int cmd, v
 		if(Open_holder != CAM_HOLD)
 		Open_holder = ab_lens_info->holder;
 		spin_unlock(&g_vcm_SpinLock);
+		__pm_stay_awake(&vib_wakelock);
+		LOG_AFNE("VIB long vibration will start, wakeup vib_wakelock:%d\n", vib_wakelock.active);
 
 		diff_dac = SUIT_POS - g_vcmconfig.origin_focus_pos;
 		af_len = g_vcmconfig.origin_focus_pos;
@@ -732,6 +742,11 @@ static int main2_vcm_probe(struct i2c_client *client)
 	ret = v4l2_async_register_subdev(&main2_vcm->sd);
 	if (ret < 0)
 		goto err_cleanup;
+#ifdef CONFIG_AF_NOISE_ELIMINATION
+	memset(&vib_wakelock, 0, sizeof(vib_wakelock));
+	vib_wakelock.name = "vibrator_noise_elimination";
+	wakeup_source_add(&vib_wakelock);
+#endif
 
 	return 0;
 
@@ -748,6 +763,12 @@ static void main2_vcm_remove(struct i2c_client *client)
 	LOG_INF("+\n");
 
 	main2_vcm_subdev_cleanup(main2_vcm);
+
+#ifdef CONFIG_AF_NOISE_ELIMINATION
+	__pm_relax(&vib_wakelock);
+	LOG_AFNE("VCM remove, relax and remove vib_wakelock:%d\n", vib_wakelock.active);
+	wakeup_source_remove(&vib_wakelock);
+#endif
 }
 
 static const struct i2c_device_id main2_vcm_id_table[] = {
