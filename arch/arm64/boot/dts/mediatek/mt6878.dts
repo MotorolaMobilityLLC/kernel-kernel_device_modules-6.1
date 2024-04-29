@@ -10418,6 +10418,9 @@
 			//<0x1c0018e4 0x4>,
 			//<0x1c0012b8 0x4>,
 			//<0x1c013010 0x4>,
+
+		/* awake timeout count plt setting */
+		awake-timeout = <30000>; /* 300 ms */
 	};
 
 	scp_audio_mbox: scp-audio-mbox@1cbe0000 {
