@@ -7810,9 +7810,7 @@ static int mtk_drm_kms_init(struct drm_device *drm)
 	/* remove it after MT6989 MML DLO switch ready */
 	if (of_property_read_bool(private->mmsys_dev->of_node, "enable-main-full-ovl-path"))
 		ret = mtk_drm_crtc_create(drm, private->data->ext_alter_path_data);
-	else if (of_property_read_bool(private->mmsys_dev->of_node,
-					"dual-disp-dynamic-ovl")) {
-		private->enable_dual_disp_dynamic_ovl = true;
+	else if (private->enable_dual_disp_dynamic_ovl) {
 		ret = mtk_drm_crtc_create(drm, private->data->main_dynamic_path_data);
 	} else
 		ret = mtk_drm_crtc_create(drm, private->data->main_path_data);
@@ -9673,23 +9671,38 @@ SKIP_OVLSYS_CONFIG:
 
 	private->boot_mode = mtk_drm_get_boot_mode_from_dts();
 
+	if (of_property_read_bool(dev->of_node, "dual-disp-dynamic-ovl")) {
+		if(of_property_read_bool(dev->of_node, "utag-disable-dynamic-ovl")) {
+				DDPMSG("%s: dynamic ovl is disable by utag\n", __func__);
+		} else {
+			private->enable_dual_disp_dynamic_ovl = true;
+			DDPMSG("%s: dynamic ovl is enabled\n", __func__);
+		}
+	}
+
 	for (i = 0 ; i < MAX_CRTC ; ++i) {
 		unsigned int value;
 
-		ret = of_property_read_u32_index(dev->of_node, "pre-define-bw", i, &value);
+		if (private->enable_dual_disp_dynamic_ovl)
+			ret = of_property_read_u32_index(dev->of_node, "pre-define-bw-dyn-ovl", i, &value);
+		else
+			ret = of_property_read_u32_index(dev->of_node, "pre-define-bw", i, &value);
 		if (unlikely(ret < 0) ||
 			((private->data && private->data->mmsys_id == MMSYS_MT6878) &&
 			(i == 3) && (private->boot_mode == KERNEL_POWER_OFF_CHARGING_BOOT)))
 			value = 0;
 		private->pre_defined_bw[i] = value;
 
-		ret = of_property_read_u32_index(dev->of_node, "crtc-ovl-usage", i, &value);
+		if (private->enable_dual_disp_dynamic_ovl)
+			ret = of_property_read_u32_index(dev->of_node, "crtc-ovl-usage-dyn-ovl", i, &value);
+		else
+			ret = of_property_read_u32_index(dev->of_node, "crtc-ovl-usage", i, &value);
 		if (unlikely(ret < 0))
 			value = 0;
 		private->ovlsys_usage[i] = value;
 
 		private->ovl_usage[i] = mtk_ddp_ovl_usage_trans(private, private->ovlsys_usage[i]);
-		DDPINFO("CRTC %d available BW:%x OVL usage:%x\n", i,
+		DDPMSG("CRTC %d available BW:%x OVL usage:%x\n", i,
 				private->pre_defined_bw[i], private->ovl_usage[i]);
 	}
 
