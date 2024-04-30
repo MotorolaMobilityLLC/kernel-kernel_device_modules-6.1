@@ -320,7 +320,7 @@ static const struct scp_domain_data scp_domain_mt6878_spm_data[] = {
 		.hwv_clr_sta_ofs = 0x1470,
 		.hwv_shift = 0,
 		.basic_clk_name = {"mm_infra"},
-		.caps = MTK_SCPD_IS_PWR_CON_ON | MTK_SCPD_HWV_OPS | default_cap,
+		.caps = MTK_SCPD_IS_PWR_CON_ON | MTK_SCPD_HWV_OPS | default_cap | MTK_SCPD_INFRA_REQ_OPT,
 	},
 	[MT6878_POWER_DOMAIN_MM_PROC_DORMANT] = {
 		.name = "mm-proc-dormant",
@@ -351,7 +351,7 @@ static const struct scp_domain_data scp_domain_mt6878_spm_data[] = {
 		.hwv_set_sta_ofs = 0x146C,
 		.hwv_clr_sta_ofs = 0x1470,
 		.hwv_shift = 1,
-		.caps = MTK_SCPD_IS_PWR_CON_ON | MTK_SCPD_HWV_OPS | default_cap,
+		.caps = MTK_SCPD_IS_PWR_CON_ON | MTK_SCPD_HWV_OPS | default_cap | MTK_SCPD_INFRA_REQ_OPT,
 	},
 	[MT6878_POWER_DOMAIN_SSUSB] = {
 		.name = "ssusb",
