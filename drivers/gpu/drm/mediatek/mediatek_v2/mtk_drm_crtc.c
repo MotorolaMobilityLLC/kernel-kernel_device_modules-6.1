@@ -11476,19 +11476,21 @@ int mtk_drm_crtc_usage_enable(struct mtk_drm_private *priv,
 	if (priv->usage[main_disp_idx] == DISP_DISABLE)
 		return DISP_ENABLE;
 
-	/* this crtc OVL usage conflict with main display, pending */
-	if ((priv->ovl_usage[main_disp_idx] & priv->ovl_usage[crtc_id]) != 0)
-		return DISP_OPENING;
-
 	/* enable non HRT display imediateky */
 	if (priv->pre_defined_bw[crtc_id] == 0)
 		return DISP_ENABLE;
+
+	/* this crtc OVL usage conflict with main display, pending */
+	if ((priv->ovl_usage[main_disp_idx] & priv->ovl_usage[crtc_id]) != 0) {
+		priv->usage[crtc_id] = DISP_OPENING;
+		return DISP_OPENING;
+	}
 
 	return DISP_OPENING;
 }
 
 static void mtk_drm_crtc_path_adjust(struct mtk_drm_private *priv, struct drm_crtc *crtc,
-							unsigned int ddp_mode)
+							unsigned int ddp_mode, bool is_first)
 {
 	struct mtk_drm_crtc *mtk_crtc = to_mtk_crtc(crtc);
 	struct mtk_ddp_comp *comp;
@@ -11498,6 +11500,14 @@ static void mtk_drm_crtc_path_adjust(struct mtk_drm_private *priv, struct drm_cr
 
 	if (mtk_crtc->ddp_ctx[ddp_mode].ovl_comp_nr[DDP_FIRST_PATH] == 0)
 		return;
+
+	/*
+	 for dynamic ovl switch
+	 force enable dual display @Charging boot mode and boot from lk
+	*/
+	if (priv->enable_dual_disp_dynamic_ovl &&
+		(priv->boot_mode == KERNEL_POWER_OFF_CHARGING_BOOT || is_first))
+		priv->usage[3] = DISP_ENABLE;
 
 	/*  find main display index and count occupied_ovl */
 	for (i = 0; i < MAX_CRTC ; ++i) {
@@ -11682,7 +11692,7 @@ void mtk_drm_crtc_enable(struct drm_crtc *crtc)
 
 	only_output = (priv->usage[crtc_id] == DISP_OPENING);
 	/* adjust path for ovl switch if necessary */
-	mtk_drm_crtc_path_adjust(priv, crtc, mtk_crtc->ddp_mode);
+	mtk_drm_crtc_path_adjust(priv, crtc, mtk_crtc->ddp_mode, false);
 
 	/*for dual pipe*/
 	mtk_crtc_prepare_dual_pipe(mtk_crtc);
@@ -11802,7 +11812,10 @@ void mtk_drm_crtc_enable(struct drm_crtc *crtc)
 	if (mtk_drm_lcm_is_connect(mtk_crtc))
 		mtk_disp_esd_check_switch(crtc, true);
 
-	mtk_drm_set_idlemgr(crtc, 1, false);
+	if (!priv->enable_dual_disp_dynamic_ovl ||
+		(priv->enable_dual_disp_dynamic_ovl &&
+		priv->boot_mode != KERNEL_POWER_OFF_CHARGING_BOOT))
+		mtk_drm_set_idlemgr(crtc, 1, false);
 
 	/* 14. enable fake vsync if need*/
 	mtk_drm_fake_vsync_switch(crtc, true);
@@ -12015,18 +12028,6 @@ static void mtk_drm_crtc_update_interface(struct drm_crtc *crtc,
 	}
 }
 
-static void mtk_drm_crtc_usage_update_first(struct drm_crtc *crtc)
-{
-	struct drm_device *dev = crtc->dev;
-	struct drm_crtc *crtc0 = list_first_entry(&(dev)->mode_config.crtc_list,
-				typeof(*crtc), head);
-	struct mtk_drm_crtc *mtk_crtc0 = to_mtk_crtc(crtc0);
-	struct mtk_drm_private *priv = crtc->dev->dev_private;
-
-	DDPMSG("%s: crtc0 original ovl_usage=0x%x\n", __func__, mtk_crtc0->ovl_usage_status);
-	mtk_drm_crtc_path_adjust(priv, crtc0, mtk_crtc0->ddp_mode);
-}
-
 void mtk_drm_crtc_atomic_resume(struct drm_crtc *crtc,
 				struct drm_atomic_state *atomic_state)
 {
@@ -12088,16 +12089,6 @@ void mtk_drm_crtc_atomic_resume(struct drm_crtc *crtc,
 
 		priv->usage[index] = mtk_drm_crtc_usage_enable(priv, index);
 		CRTC_MMP_MARK(index, crtc_usage, priv->usage[index], 0);
-
-		/*
-		 for flip/fold both display will be enabled from lk
-		 so we need update ovl_usage of primary display
-		 */
-		if (priv->enable_dual_disp_dynamic_ovl &&
-			mtk_crtc->enabled && index > 0 &&
-			mtk_disp_num_from_atag() > 0)
-			mtk_drm_crtc_usage_update_first(crtc);
-
 
 		if (priv->usage[index] == DISP_OPENING) {
 			DDPMSG("%s %d wait for opening\n", __func__, index);
@@ -12633,6 +12624,14 @@ void mtk_drm_crtc_first_enable(struct drm_crtc *crtc)
 
 	/*for dual pipe*/
 	mtk_crtc_prepare_dual_pipe(mtk_crtc);
+
+	/*
+	 for flip/fold both display will be enabled from lk
+	 so we need update ovl_usage of primary display
+	 */
+	if (priv->enable_dual_disp_dynamic_ovl && crtc_id == 0 &&
+		mtk_disp_num_from_atag() > 0)
+		mtk_drm_crtc_path_adjust(priv, crtc, mtk_crtc->ddp_mode, true);
 
 	/* for ap res switch */
 	mtk_crtc_divide_default_path_by_rsz(mtk_crtc);
