@@ -267,7 +267,10 @@
 };
 
 &dispsys_config {
-	pre-define-bw = <0xffffffff>, <4200>, <0>, <1200>;
-	crtc-ovl-usage = <0xf>, <0x2>, <0x2>, <0xc>;
+	pre-define-bw-dyn-ovl = <0xffffffff>, <4200>, <0>, <1900>;
+	crtc-ovl-usage-dyn-ovl = <0xf>, <0x2>, <0x2>, <0xc>;
 	dual-disp-dynamic-ovl;
+
+	pre-define-bw = <0xffffffff>, <4200>, <0>, <1000>;
+	crtc-ovl-usage = <0x7>, <0x2>, <0x2>, <0x8>;
 };
