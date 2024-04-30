@@ -62,76 +62,6 @@
 #define FHD_VSA_90            (2)
 #define FHD_VBP_90            (35)
 
-struct mtk_mode_switch_cmd cmd_table_120fps[] = {
-	{2, {0x6c, 0x01}},
-	{2, {0x71, 0x00}},
-	{3, {0xF0, 0xAA,0x1B}},
-	{2, {0xD0, 0x00}},
-	{3, {0xF0, 0xAA,0x10}},
-	{2, {0xCF, 0x09}}
-};
-
-struct mtk_mode_switch_cmd cmd_table_90fps[] = {
-	{2, {0x6c, 0x02}},
-	{2, {0x71, 0x00}},
-	{3, {0xF0, 0xAA,0x1B}},
-	{2, {0xD0, 0x00}},
-	{3, {0xF0, 0xAA,0x10}},
-	{2, {0xCF, 0x09}}
-};
-
-struct mtk_mode_switch_cmd cmd_table_60fps[] = {
-	{2, {0x6C, 0x01}},
-	{4, {0x71, 0x01,0x01,0x00}},
-	{2, {0xF0, 0xAA,0x1B}},
-	{2, {0xD0, 0x00}},
-	{3, {0xF0, 0xAA,0x10}},
-	{2, {0xCF, 0x16}}
-};
-
-struct mtk_mode_switch_cmd cmd_table_30fps[] = {
-	{2, {0x6C, 0x01}},
-	{4, {0x71, 0x01,0x03,0x00}},
-	{3, {0xF0, 0xAA,0x1B}},
-	{2, {0xD0, 0x00}},
-	{3, {0xF0, 0xAA,0x10}},
-	{2, {0xCF, 0x16}}
-};
-
-struct mtk_mode_switch_cmd cmd_table_24fps[] = {
-	{2, {0x6C, 0x01}},
-	{2, {0x71, 0x00}},
-	{2, {0x75, 0x01}},
-	{3, {0xF0, 0xAA,0x1B}},
-	{2, {0x65, 0x0C}},
-	{5, {0xD6, 0x04,0x04,0x04,0x04}},
-	{2, {0xD0, 0x11}},
-	{3, {0xF0, 0xAA,0x10}},
-	{2, {0xCF, 0x16}}
-};
-
-struct mtk_mode_switch_cmd cmd_table_10fps[] = {
-	{2, {0x6C, 0x01}},
-	{2, {0x71, 0x00}},
-	{2, {0x75, 0x02}},
-	{3, {0xF0, 0xAA,0x1B}},
-	{2, {0xD0, 0x11}},
-	{3, {0xF0, 0xAA,0x10}},
-	{2, {0xCF, 0x09}}
-};
-
-struct mtk_mode_switch_cmd cmd_table_1fps[] = {
-	{2, {0x6C, 0x01}},
-	{4, {0x71, 0x01,0x77,0x00}},
-	{2, {0x71, 0x00}},
-	{2, {0x75, 0x03}},
-	{3, {0xF0, 0xAA,0x1B}},
-	{2, {0xD0, 0x11}},
-	{3, {0xF0, 0xAA,0x10}},
-	{2, {0xCF, 0x09}}
-};
-
-static enum RES_SWITCH_TYPE res_switch_type = RES_SWITCH_NO_USE;
 
 unsigned int nt37801_wqhs_dsi_cmd_120hz_dphy_buf_thresh[14] = {
 	896, 1792, 2688, 3584, 4480, 5376, 6272, 6720, 7168, 7616, 7744, 7872, 8000, 8064};
@@ -580,41 +510,6 @@ static const struct drm_display_mode mode_1 = {
 };
 
 
-enum SWITCH_MODE_DELAY switch_mode_delay_table[DISPLAY_MODE_NUM][DISPLAY_MODE_NUM] = {
-	/*DISPLAY_MODE_0 ... DISPLAY_MODE_11*/
-	//mode switch, TE really switch at (N + x)th TE, the x means delay_x
-	//from [row] fps to [column] fps
-	{DELAY_0, DELAY_2, DELAY_1, DELAY_1, DELAY_1, DELAY_1,
-		DELAY_0, DELAY_2, DELAY_1, DELAY_1, DELAY_1, DELAY_1,},// mode_0
-	{DELAY_2, DELAY_0, DELAY_2, DELAY_1, DELAY_1, DELAY_1,
-		DELAY_2, DELAY_0, DELAY_2, DELAY_1, DELAY_1, DELAY_1,},// mode_1
-	{DELAY_0, DELAY_2, DELAY_0, DELAY_1, DELAY_1, DELAY_1,
-		DELAY_0, DELAY_2, DELAY_0, DELAY_1, DELAY_1, DELAY_1,},// mode_2
-	{DELAY_0, DELAY_2, DELAY_1, DELAY_0, DELAY_1, DELAY_1,
-		DELAY_0, DELAY_2, DELAY_1, DELAY_0, DELAY_1, DELAY_1,},// mode_3
-	{DELAY_0, DELAY_2, DELAY_1, DELAY_1, DELAY_0, DELAY_1,
-		DELAY_0, DELAY_2, DELAY_1, DELAY_1, DELAY_0, DELAY_1,},// mode_4
-	{DELAY_0, DELAY_2, DELAY_1, DELAY_1, DELAY_1, DELAY_0,
-		DELAY_0, DELAY_2, DELAY_1, DELAY_1, DELAY_1, DELAY_0,},// mode_5
-	//{DELAY_0, DELAY_2, DELAY_1, DELAY_1, DELAY_1, DELAY_0,
-	//	DELAY_0, DELAY_2, DELAY_1, DELAY_1, DELAY_1, DELAY_0,},// mode_6
-
-	{DELAY_0, DELAY_2, DELAY_1, DELAY_1, DELAY_1, DELAY_1,
-		DELAY_0, DELAY_2, DELAY_1, DELAY_1, DELAY_1, DELAY_1,},// mode_6
-	{DELAY_2, DELAY_0, DELAY_2, DELAY_1, DELAY_1, DELAY_1,
-		DELAY_2, DELAY_0, DELAY_2, DELAY_1, DELAY_1, DELAY_1,},// mode_7
-	{DELAY_0, DELAY_2, DELAY_0, DELAY_1, DELAY_1, DELAY_1,
-		DELAY_0, DELAY_2, DELAY_0, DELAY_1, DELAY_1, DELAY_1,},// mode_8
-	{DELAY_0, DELAY_2, DELAY_1, DELAY_0, DELAY_1, DELAY_1,
-		DELAY_0, DELAY_2, DELAY_1, DELAY_0, DELAY_1, DELAY_1,},// mode_9
-	{DELAY_0, DELAY_2, DELAY_1, DELAY_1, DELAY_0, DELAY_1,
-		DELAY_0, DELAY_2, DELAY_1, DELAY_1, DELAY_0, DELAY_1,},// mode_10
-	{DELAY_0, DELAY_2, DELAY_1, DELAY_1, DELAY_1, DELAY_0,
-		DELAY_0, DELAY_2, DELAY_1, DELAY_1, DELAY_1, DELAY_0,},// mode_11
-	//{DELAY_0, DELAY_2, DELAY_1, DELAY_1, DELAY_1, DELAY_0,
-	//	DELAY_0, DELAY_2, DELAY_1, DELAY_1, DELAY_1, DELAY_0,},// mode_13
-};
-
 #if defined(CONFIG_MTK_PANEL_EXT)
 static int panel_ext_reset(struct drm_panel *panel, int on)
 {
@@ -706,7 +601,6 @@ static struct mtk_panel_params ext_params = {
 	.lcm_color_mode = MTK_DRM_COLOR_MODE_DISPLAY_P3,
 	.lp_perline_en = 1,
 	.te_delay = 1,
-	.te_delay_high_to_low_fps_period = 1,
 	.output_mode = MTK_PANEL_DSC_SINGLE_PORT,
 	.lcm_index = 0,
 	.dsc_params = {
@@ -784,7 +678,6 @@ static struct mtk_panel_params ext_params_90hz = {
 	.lcm_color_mode = MTK_DRM_COLOR_MODE_DISPLAY_P3,
 	.lp_perline_en = 1,
 	.te_delay = 1,
-	.te_delay_high_to_low_fps_period = 1,
 	.output_mode = MTK_PANEL_DSC_SINGLE_PORT,
 	.lcm_index = 0,
 	.dsc_params = {
@@ -862,7 +755,6 @@ static struct mtk_panel_params ext_params_60hz = {
 	.lcm_color_mode = MTK_DRM_COLOR_MODE_DISPLAY_P3,
 	.lp_perline_en = 1,
 	.te_delay = 1,
-	.te_delay_high_to_low_fps_period = 1,
 	.output_mode = MTK_PANEL_DSC_SINGLE_PORT,
 	.lcm_index = 0,
 	.dsc_params = {
@@ -940,7 +832,6 @@ static struct mtk_panel_params ext_params_30hz = {
 	.lcm_color_mode = MTK_DRM_COLOR_MODE_DISPLAY_P3,
 	.lp_perline_en = 1,
 	.te_delay = 1,
-	.te_delay_high_to_low_fps_period = 1,
 	.output_mode = MTK_PANEL_DSC_SINGLE_PORT,
 	.lcm_index = 0,
 	.dsc_params = {
@@ -1018,7 +909,6 @@ static struct mtk_panel_params ext_params_24hz = {
 	.lcm_color_mode = MTK_DRM_COLOR_MODE_DISPLAY_P3,
 	.lp_perline_en = 1,
 	.te_delay = 1,
-	.te_delay_high_to_low_fps_period = 1,
 	.output_mode = MTK_PANEL_DSC_SINGLE_PORT,
 	.lcm_index = 0,
 	.dsc_params = {
@@ -1072,7 +962,7 @@ static struct mtk_panel_params ext_params_24hz = {
 	},*/
 	.dyn_fps = {
 		.switch_en = 1,
-		.vact_timing_fps = 24,
+		.vact_timing_fps = 120,
 		.data_rate = 1010,
 	},
 	.panel_cellid_reg = 0x5A,
@@ -1096,7 +986,6 @@ static struct mtk_panel_params ext_params_10hz = {
 	.lcm_color_mode = MTK_DRM_COLOR_MODE_DISPLAY_P3,
 	.lp_perline_en = 1,
 	.te_delay = 1,
-	.te_delay_high_to_low_fps_period = 1,
 	.output_mode = MTK_PANEL_DSC_SINGLE_PORT,
 	.lcm_index = 0,
 	.dsc_params = {
@@ -1150,7 +1039,7 @@ static struct mtk_panel_params ext_params_10hz = {
 	},*/
 	.dyn_fps = {
 		.switch_en = 1,
-		.vact_timing_fps = 10,
+		.vact_timing_fps = 120,
 		.data_rate = 1010,
 	},
 	.panel_cellid_reg = 0x5A,
@@ -1174,7 +1063,6 @@ static struct mtk_panel_params ext_params_1hz = {
 	.lcm_color_mode = MTK_DRM_COLOR_MODE_DISPLAY_P3,
 	.lp_perline_en = 1,
 	.te_delay = 1,
-	.te_delay_high_to_low_fps_period = 1,
 	.output_mode = MTK_PANEL_DSC_SINGLE_PORT,
 	.lcm_index = 0,
 	.dsc_params = {
@@ -1228,7 +1116,7 @@ static struct mtk_panel_params ext_params_1hz = {
 	},*/
 	.dyn_fps = {
 		.switch_en = 1,
-		.vact_timing_fps = 1,
+		.vact_timing_fps = 120,
 		.data_rate = 1010,
 	},
 	.panel_cellid_reg = 0x5A,
@@ -1284,96 +1172,131 @@ static int mtk_panel_ext_param_set(struct drm_panel *panel,
 	return ret;
 }
 
-/*static int mtk_panel_ext_param_get(struct drm_panel *panel,
-	struct drm_connector *connector,
-	struct mtk_panel_params **ext_param,
-	unsigned int mode)
+static void mode_switch_to_90(struct drm_panel *panel,
+	enum MTK_PANEL_MODE_SWITCH_STAGE stage)
 {
-	int ret = 0;
-	struct lcm *ctx = panel_to_lcm(panel);
-	struct drm_display_mode *m = get_mode_by_id(connector, mode);
-	printk("%s enter  \n",__func__);
-	if (drm_mode_vrefresh(m) == 120)
-		*ext_param = &ext_params;
-	else if (drm_mode_vrefresh(m) == 90)
-		*ext_param = &ext_params_90hz;
-	else if (drm_mode_vrefresh(m) == 60)
-		*ext_param = &ext_params_60hz;
-	else if (drm_mode_vrefresh(m) == 30)
-		*ext_param = &ext_params;
-	else if (drm_mode_vrefresh(m) == 24)
-		*ext_param = &ext_params;
-	else if (drm_mode_vrefresh(m) == 10)
-		*ext_param = &ext_params;
-	else if (drm_mode_vrefresh(m) == 1)
-		*ext_param = &ext_params;
-	else
-		ret = 1;
+	if (stage == BEFORE_DSI_POWERDOWN) {
+		struct lcm *ctx = panel_to_lcm(panel);
 
-	if (!ret)
-		ctx->current_fps = drm_mode_vrefresh(m);
-	printk("%s exit current_fps = %d \n",__func__,ctx->current_fps);
-	return ret;
-}*/
+		lcm_dcs_write_seq_static(ctx, 0x6c,0x02);
+		lcm_dcs_write_seq_static(ctx, 0x71,0x00);
+		lcm_dcs_write_seq_static(ctx, 0xF0,0xAA,0x1B);
+		lcm_dcs_write_seq_static(ctx, 0xD0,0x00);
+		lcm_dcs_write_seq_static(ctx, 0xF0,0xAA,0x10);
+		lcm_dcs_write_seq_static(ctx, 0xCF,0x09);
+		ctx->current_fps = 90;
+	}
+}
 
-
-static void mode_switch_working(struct drm_panel *panel, int fps,
-	struct mtk_mode_switch_cmd *mode_switch_cmd, size_t len)
+static void mode_switch_to_120(struct drm_panel *panel,
+	enum MTK_PANEL_MODE_SWITCH_STAGE stage)
 {
-	printk("%s enter  \n",__func__);
-#if MODE_SWITCH_CMDQ_ENABLE
-	if (fps == 120) {
-		memset(&ext_params.mode_switch_cmd, 0,
-			sizeof(struct mode_switch_params));
-		ext_params.mode_switch_cmd.num_cmd = len;
-		memcpy(&ext_params.mode_switch_cmd.ms_table, mode_switch_cmd,
-			sizeof(struct mtk_mode_switch_cmd) * len);
-	} else if (fps == 90) {
-		memset(&ext_params_90hz.mode_switch_cmd, 0,
-			sizeof(struct mode_switch_params));
-		ext_params_90hz.mode_switch_cmd.num_cmd = len;
-		memcpy(&ext_params_90hz.mode_switch_cmd.ms_table, mode_switch_cmd,
-			sizeof(struct mtk_mode_switch_cmd) * len);
-	} else if (fps == 60) {
-		memset(&ext_params_60hz.mode_switch_cmd, 0,
-			sizeof(struct mode_switch_params));
-		ext_params_60hz.mode_switch_cmd.num_cmd = len;
-		memcpy(&ext_params_60hz.mode_switch_cmd.ms_table, mode_switch_cmd,
-			sizeof(struct mtk_mode_switch_cmd) * len);
-	}else if (fps == 30) {
-		memset(&ext_params_30hz.mode_switch_cmd, 0,
-			sizeof(struct mode_switch_params));
-		ext_params_30hz.mode_switch_cmd.num_cmd = len;
-		memcpy(&ext_params_30hz.mode_switch_cmd.ms_table, mode_switch_cmd,
-			sizeof(struct mtk_mode_switch_cmd) * len);
-	}else if (fps == 24) {
-		memset(&ext_params_24hz.mode_switch_cmd, 0,
-			sizeof(struct mode_switch_params));
-		ext_params_24hz.mode_switch_cmd.num_cmd = len;
-		memcpy(&ext_params_24hz.mode_switch_cmd.ms_table, mode_switch_cmd,
-			sizeof(struct mtk_mode_switch_cmd) * len);
-	}else if (fps == 10) {
-		memset(&ext_params_10hz.mode_switch_cmd, 0,
-			sizeof(struct mode_switch_params));
-		ext_params_10hz.mode_switch_cmd.num_cmd = len;
-		memcpy(&ext_params_10hz.mode_switch_cmd.ms_table, mode_switch_cmd,
-			sizeof(struct mtk_mode_switch_cmd) * len);
-	}else if (fps == 1) {
-		memset(&ext_params_1hz.mode_switch_cmd, 0,
-			sizeof(struct mode_switch_params));
-		ext_params_1hz.mode_switch_cmd.num_cmd = len;
-		memcpy(&ext_params_1hz.mode_switch_cmd.ms_table, mode_switch_cmd,
-			sizeof(struct mtk_mode_switch_cmd) * len);
+	if (stage == BEFORE_DSI_POWERDOWN) {
+		struct lcm *ctx = panel_to_lcm(panel);
+		lcm_dcs_write_seq_static(ctx, 0x6c,0x01);
+		lcm_dcs_write_seq_static(ctx, 0x71,0x00);
+		lcm_dcs_write_seq_static(ctx, 0xF0,0xAA,0x1B);
+		lcm_dcs_write_seq_static(ctx, 0xD0,0x00);
+		lcm_dcs_write_seq_static(ctx, 0xF0,0xAA,0x10);
+		lcm_dcs_write_seq_static(ctx, 0xCF,0x09);
+		ctx->current_fps = 120;
 	}
-#else
-	int i;
-	struct lcm *ctx = panel_to_lcm(panel);
-	for (i = 0; i < len; i++) {
-		lcm_dcs_write(ctx, mode_switch_cmd[i].para_list,
-			mode_switch_cmd[i].cmd_num);
+}
+
+static void mode_switch_to_60(struct drm_panel *panel,
+	enum MTK_PANEL_MODE_SWITCH_STAGE stage)
+{
+	if (stage == BEFORE_DSI_POWERDOWN) {
+		struct lcm *ctx = panel_to_lcm(panel);
+
+		lcm_dcs_write_seq_static(ctx, 0x6C, 0x01);
+		lcm_dcs_write_seq_static(ctx, 0x71,0x01,0x01,0x00);
+		lcm_dcs_write_seq_static(ctx, 0xF0,0xAA,0x1B);
+		lcm_dcs_write_seq_static(ctx, 0xD0,0x00);
+		lcm_dcs_write_seq_static(ctx, 0xF0,0xAA,0x10);
+		lcm_dcs_write_seq_static(ctx, 0xCF,0x16);
+
+		ctx->current_fps = 60;
 	}
-#endif
-	printk("%s exit  \n",__func__);
+}
+
+static void mode_switch_to_30(struct drm_panel *panel,
+	enum MTK_PANEL_MODE_SWITCH_STAGE stage)
+{
+	if (stage == BEFORE_DSI_POWERDOWN) {
+		struct lcm *ctx = panel_to_lcm(panel);
+
+		lcm_dcs_write_seq_static(ctx, 0x6C, 0x01);
+		lcm_dcs_write_seq_static(ctx, 0x71,0x01,0x03,0x00);
+		lcm_dcs_write_seq_static(ctx, 0xF0,0xAA,0x1B);
+		lcm_dcs_write_seq_static(ctx, 0xD0,0x00);
+		lcm_dcs_write_seq_static(ctx, 0xF0,0xAA,0x10);
+		lcm_dcs_write_seq_static(ctx, 0xCF,0x16);
+
+		ctx->current_fps = 30;
+	}
+}
+
+static void mode_switch_to_24(struct drm_panel *panel,
+	enum MTK_PANEL_MODE_SWITCH_STAGE stage)
+{
+	if (stage == BEFORE_DSI_POWERDOWN) {
+		struct lcm *ctx = panel_to_lcm(panel);
+
+		lcm_dcs_write_seq_static(ctx, 0x6C,0x01);
+		lcm_dcs_write_seq_static(ctx, 0x71,0x00);
+		msleep(10);
+		lcm_dcs_write_seq_static(ctx, 0x75,0x01);
+		lcm_dcs_write_seq_static(ctx, 0xF0,0xAA,0x1B);
+		lcm_dcs_write_seq_static(ctx, 0x65,0x0C);
+		lcm_dcs_write_seq_static(ctx, 0xD6,0x04,0x04,0x04,0x04);
+		lcm_dcs_write_seq_static(ctx, 0xD0,0x11);
+		lcm_dcs_write_seq_static(ctx, 0xF0,0xAA,0x10);
+		lcm_dcs_write_seq_static(ctx, 0xCF,0x16);
+
+		ctx->current_fps = 24;
+	}
+}
+
+static void mode_switch_to_10(struct drm_panel *panel,
+	enum MTK_PANEL_MODE_SWITCH_STAGE stage)
+{
+	if (stage == BEFORE_DSI_POWERDOWN) {
+		struct lcm *ctx = panel_to_lcm(panel);
+
+		lcm_dcs_write_seq_static(ctx, 0x6C,0x01);
+		lcm_dcs_write_seq_static(ctx, 0x71,0x00);
+		msleep(10);
+		lcm_dcs_write_seq_static(ctx, 0x75,0x02);
+		lcm_dcs_write_seq_static(ctx, 0xF0,0xAA,0x1B);
+		lcm_dcs_write_seq_static(ctx, 0xD0,0x11);
+		lcm_dcs_write_seq_static(ctx, 0xF0,0xAA,0x10);
+		lcm_dcs_write_seq_static(ctx, 0xCF,0x09);
+
+
+		ctx->current_fps = 10;
+	}
+}
+
+static void mode_switch_to_1(struct drm_panel *panel,
+	enum MTK_PANEL_MODE_SWITCH_STAGE stage)
+{
+	if (stage == BEFORE_DSI_POWERDOWN) {
+		struct lcm *ctx = panel_to_lcm(panel);
+
+		lcm_dcs_write_seq_static(ctx, 0x6c, 0x01);
+		lcm_dcs_write_seq_static(ctx, 0x71, 0x00);
+		msleep(10);
+		lcm_dcs_write_seq_static(ctx, 0x75, 0x03);
+		lcm_dcs_write_seq_static(ctx, 0xF0, 0xAA,0x1B);
+		lcm_dcs_write_seq_static(ctx, 0xD0, 0x11);
+
+		lcm_dcs_write_seq_static(ctx, 0xF0, 0xAA,0x10);
+		lcm_dcs_write_seq_static(ctx, 0xCF, 0x09);
+
+
+		ctx->current_fps = 1;
+	}
 }
 
 static int mode_switch(struct drm_panel *panel,
@@ -1382,34 +1305,29 @@ static int mode_switch(struct drm_panel *panel,
 {
 	int ret = 0;
 	struct drm_display_mode *m = get_mode_by_id(connector, dst_mode);
-	printk("%s enter  \n",__func__);
-	if (stage == BEFORE_DSI_POWERDOWN) {
-		ret = 1;
+
+	if (cur_mode == dst_mode)
 		return ret;
-	}
 
 	pr_info("%s cur_mode = %d dst_mode %d\n", __func__, cur_mode, dst_mode);
 
 	if (drm_mode_vrefresh(m) == 120){
 		if (dst_mode == 1) {
-			mode_switch_working(panel, 1, cmd_table_1fps, ARRAY_SIZE(cmd_table_1fps));/*switch to 1 */
+			mode_switch_to_1(panel, stage);/*switch to 1 */
 		} else if (dst_mode == 2) {
-		mode_switch_working(panel, 10, cmd_table_10fps, ARRAY_SIZE(cmd_table_10fps));/*switch to 10 */
-		} else{
-			mode_switch_working(panel, 120, cmd_table_120fps, ARRAY_SIZE(cmd_table_120fps));/*switch to 120 */
-		}
-	}
-	else if (drm_mode_vrefresh(m) == 90)
-		mode_switch_working(panel, 90, cmd_table_90fps, ARRAY_SIZE(cmd_table_90fps));
-	else if (drm_mode_vrefresh(m) == 60)
-		mode_switch_working(panel, 60, cmd_table_60fps, ARRAY_SIZE(cmd_table_60fps));
-	else if (drm_mode_vrefresh(m) == 30)
-		mode_switch_working(panel, 30, cmd_table_30fps, ARRAY_SIZE(cmd_table_30fps));
-	else if (drm_mode_vrefresh(m) == 24)
-		mode_switch_working(panel, 24, cmd_table_24fps, ARRAY_SIZE(cmd_table_24fps));
-	else
+			mode_switch_to_10(panel, stage);/*switch to 10 */
+		} else
+			mode_switch_to_120(panel, stage);/*switch to 120 */
+	} else if (drm_mode_vrefresh(m) == 90) { /*switch to 90 */
+		mode_switch_to_90(panel, stage);
+	} else if (drm_mode_vrefresh(m) == 60) { /*switch to 60 */
+		mode_switch_to_60(panel, stage);
+	} else if (drm_mode_vrefresh(m) == 30) { /*switch to 30 */
+		mode_switch_to_30(panel, stage);
+	} else if (drm_mode_vrefresh(m) == 24) { /*switch to 24 */
+		mode_switch_to_24(panel, stage);
+	} else
 		ret = 1;
-	printk("%s exit  \n",__func__);
 	return ret;
 }
 
@@ -1694,14 +1612,8 @@ static struct mtk_panel_funcs ext_funcs = {
 	.init_power = panel_ext_init_power,
 	.power_down = panel_ext_powerdown,
 	.ext_param_set = mtk_panel_ext_param_set,
-	//.ext_param_get = mtk_panel_ext_param_get,
 	.mode_switch = mode_switch,
-	//.set_bl_elvss_cmdq = lcm_set_bl_elvss_cmdq,
-	/* Not real backlight cmd in AOD, just for QC purpose */
 	.ata_check = panel_ata_check,
-	//.lcm_update_roi = lcm_update_roi,
-	//.lcm_update_roi_cmdq = lcm_update_roi_cmdq,
-	//.get_lcm_power_state = lcm_panel_get_ab_data,
 	.panel_feature_set = panel_feature_set,
 	.panel_feature_get = panel_feature_get,
 };
@@ -1847,8 +1759,6 @@ static int lcm_probe(struct mipi_dsi_device *dsi)
 	struct device_node *dsi_node, *remote_node = NULL, *endpoint = NULL;
 	struct lcm *ctx;
 	struct device_node *backlight;
-	unsigned int res_switch;
-	unsigned int value;
 	int ret;
 	const u32 *val;
 
@@ -1883,15 +1793,9 @@ static int lcm_probe(struct mipi_dsi_device *dsi)
 	dsi->mode_flags = MIPI_DSI_MODE_LPM | MIPI_DSI_MODE_NO_EOT_PACKET
 			 | MIPI_DSI_CLOCK_NON_CONTINUOUS;
 
-	ret = of_property_read_u32(dev->of_node, "res-switch", &res_switch);
-	if (ret < 0)
-		res_switch = 0;
-	else
-		res_switch_type = (enum RES_SWITCH_TYPE)res_switch;
 
 
 
-	value = 0;
 	backlight = of_parse_phandle(dev->of_node, "backlight", 0);
 	if (backlight) {
 		ctx->backlight = of_find_backlight_by_node(backlight);
