@@ -590,7 +590,6 @@ struct mtk_panel_params {
 	bool dual_swap;
 	unsigned int mode_switch_delay;
 	unsigned int te_delay;
-	bool te_delay_high_to_low_fps_period;
 
 	u64 panel_ver;
 	char panel_name[DRM_DISPLAY_NAME_LEN];
