@@ -16,6 +16,8 @@
 #include <linux/regulator/consumer.h>
 #include <linux/slab.h>
 #include <linux/pm_runtime.h>
+#include <linux/arm-smccc.h>
+#include <linux/soc/mediatek/mtk_sip_svc.h> /* for SMC ID table */
 
 #include "scpsys.h"
 #include "mtk-scpsys.h"
@@ -136,6 +138,11 @@ static void __iomem *hwvdbg_hfrp_base;
 static struct scp_domain *scpsys_mminfra_hwv;
 
 static bool mmproc_sspm_vote_sync_bits_support;
+
+static void turn_onoff_infra(enum infra_onoff_enum on);
+static DEFINE_SPINLOCK(hwv_infra_lock);
+#define hwccf_lock(flags)   spin_lock_irqsave(&hwv_infra_lock, flags)
+#define hwccf_unlock(flags) spin_unlock_irqrestore(&hwv_infra_lock, flags)
 
 int register_scpsys_notifier(struct notifier_block *nb)
 {
@@ -1151,6 +1158,9 @@ static int scpsys_hwv_power_on(struct generic_pm_domain *genpd)
 	else
 		hwv_regmap = scp->hwv_regmap;
 
+	if (MTK_SCPD_CAPS(scpd, MTK_SCPD_INFRA_REQ_OPT))
+		turn_onoff_infra(INFRA_ON);
+
 	if (MTK_SCPD_CAPS(scpd, MTK_SCPD_WAIT_VCP)) {
 		/* check infra->mminfra->mmup bus state for serror */
 		val = readl(hwvdbg_infra_base + 0x870);
@@ -1204,6 +1214,9 @@ static int scpsys_hwv_power_on(struct generic_pm_domain *genpd)
 
 	scpsys_clk_disable(scpd->lp_clk, MAX_CLKS);
 
+	if (MTK_SCPD_CAPS(scpd, MTK_SCPD_INFRA_REQ_OPT))
+		turn_onoff_infra(INFRA_OFF);
+
 	return 0;
 
 err_vcp_ready:
@@ -1239,6 +1252,9 @@ static int scpsys_hwv_power_off(struct generic_pm_domain *genpd)
 		hwv_regmap = scpd->hwv_regmap;
 	else
 		hwv_regmap = scp->hwv_regmap;
+
+	if (MTK_SCPD_CAPS(scpd, MTK_SCPD_INFRA_REQ_OPT))
+		turn_onoff_infra(INFRA_ON);
 
 	if (MTK_SCPD_CAPS(scpd, MTK_SCPD_WAIT_VCP)) {
 		/* wait until vcp is ready, check 0x1c00091c[1] = 1 */
@@ -1287,6 +1303,9 @@ static int scpsys_hwv_power_off(struct generic_pm_domain *genpd)
 	ret = scpsys_regulator_disable(scpd);
 	if (ret < 0)
 		goto err_regulator;
+
+	if (MTK_SCPD_CAPS(scpd, MTK_SCPD_INFRA_REQ_OPT))
+		turn_onoff_infra(INFRA_OFF);
 
 	return 0;
 
@@ -1527,6 +1546,45 @@ static int mtk_pd_get_regmap(struct platform_device *pdev, struct regmap **regma
 	}
 
 	return 0;
+}
+
+static int smc_turn_on_infra(void)
+{
+	struct arm_smccc_res res;
+
+	arm_smccc_smc(MTK_SIP_KERNEL_HWCCF_CONTROL, INFRA_TURN_ON,
+		0, 0, 0, 0, 0, 0, &res);
+	return res.a0;
+}
+
+static int smc_turn_off_infra(void)
+{
+	struct arm_smccc_res res;
+
+	arm_smccc_smc(MTK_SIP_KERNEL_HWCCF_CONTROL, INFRA_TURN_OFF,
+		0, 0, 0, 0, 0, 0, &res);
+	return res.a0;
+}
+
+static void turn_onoff_infra(enum infra_onoff_enum on)
+{
+	static int ref_cnt;
+	unsigned long flags;
+
+	hwccf_lock(flags);
+	if (on) {
+		ref_cnt++;
+		if (ref_cnt == 1)
+			smc_turn_on_infra();
+	} else {
+		ref_cnt--;
+		if (ref_cnt == 0)
+			smc_turn_off_infra();
+		else if (ref_cnt < 0)
+			pr_err("infra ref_cnt < 0: %d\n", ref_cnt);
+	}
+	hwccf_unlock(flags);
+
 }
 
 struct scp *init_scp(struct platform_device *pdev,
