@@ -515,7 +515,9 @@ struct mtk_charger {
 	struct power_supply  *bc12_psy;
 	struct power_supply  *bat_psy;
 	struct power_supply	*main_batt_psy;
+	const char	*main_batt_name;
 	struct power_supply	*flip_batt_psy;
+	const char	*flip_batt_name;
 	struct adapter_device *pd_adapter;
 	struct notifier_block pd_nb;
 	struct mutex pd_lock;

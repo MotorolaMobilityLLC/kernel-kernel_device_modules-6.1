@@ -4893,7 +4893,24 @@ static void mmi_charger_check_status(struct mtk_charger *info)
 	pr_info("[%s]batt=%d mV, %d mA, %d C, USB= %d mV\n", __func__,
 		chg_stat.batt_mv, chg_stat.batt_ma, chg_stat.batt_temp, chg_stat.usb_mv);
 
-	if (info->main_batt_psy && info->flip_batt_psy) {
+	if (IS_ERR_OR_NULL(info->main_batt_psy)) {
+		info->main_batt_psy = power_supply_get_by_name(info->main_batt_name);
+		if (IS_ERR_OR_NULL(info->main_batt_psy))
+			pr_err("[%s]: get %s failed\n",__func__, info->main_batt_name);
+		else
+			pr_info("[%s]: get %s success\n",__func__, info->main_batt_name);
+	}
+
+	if (IS_ERR_OR_NULL(info->flip_batt_psy)) {
+		info->flip_batt_psy = power_supply_get_by_name(info->flip_batt_name);
+		if (IS_ERR_OR_NULL(info->flip_batt_psy))
+			pr_err("[%s]: get %s failed\n",__func__, info->flip_batt_name);
+		else
+			pr_info("[%s]: get %s success\n",__func__, info->flip_batt_name);
+	}
+
+	if (!IS_ERR_OR_NULL(info->main_batt_psy)
+		&& !IS_ERR_OR_NULL(info->flip_batt_psy)) {
 		mmi_dual_charge_control(info, &chg_stat);
 	} else {
 		mmi_basic_charge_sm(info, &chg_stat);
@@ -5296,7 +5313,6 @@ static int parse_mmi_single_batt_dt(struct mtk_charger *info)
 static int parse_mmi_dt(struct mtk_charger *info, struct device *dev)
 {
 	struct device_node *node = dev->of_node;
-	const char *main_batt_name, *flip_batt_name;
 	int rc = 0;
 	int byte_len;
 	int i;
@@ -5412,12 +5428,12 @@ static int parse_mmi_dt(struct mtk_charger *info, struct device *dev)
 		info->mmi.vbus_l = 5000000;
 
 	rc = of_property_read_string(node,
-				     "mmi,main-batt-psy", &main_batt_name);
+				     "mmi,main-batt-psy", &info->main_batt_name);
 	rc |= of_property_read_string(node,
-				      "mmi,flip-batt-psy", &flip_batt_name);
-	if (!rc && main_batt_name && flip_batt_name) {
-		info->main_batt_psy = power_supply_get_by_name(main_batt_name);
-		info->flip_batt_psy = power_supply_get_by_name(flip_batt_name);
+				      "mmi,flip-batt-psy", &info->flip_batt_name);
+	if (!rc && info->main_batt_name && info->flip_batt_name) {
+		info->main_batt_psy = power_supply_get_by_name(info->main_batt_name);
+		info->flip_batt_psy = power_supply_get_by_name(info->flip_batt_name);
 		parse_mmi_dual_batt_dt(info);
 	} else
 		parse_mmi_single_batt_dt(info);
