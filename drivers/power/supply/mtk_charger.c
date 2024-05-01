@@ -4893,20 +4893,23 @@ static void mmi_charger_check_status(struct mtk_charger *info)
 	pr_info("[%s]batt=%d mV, %d mA, %d C, USB= %d mV\n", __func__,
 		chg_stat.batt_mv, chg_stat.batt_ma, chg_stat.batt_temp, chg_stat.usb_mv);
 
-	if (IS_ERR_OR_NULL(info->main_batt_psy)) {
-		info->main_batt_psy = power_supply_get_by_name(info->main_batt_name);
-		if (IS_ERR_OR_NULL(info->main_batt_psy))
-			pr_err("[%s]: get %s failed\n",__func__, info->main_batt_name);
-		else
-			pr_info("[%s]: get %s success\n",__func__, info->main_batt_name);
-	}
+	if (!IS_ERR_OR_NULL(info->main_batt_name)
+		&& !IS_ERR_OR_NULL(info->flip_batt_name)) {
+		if (IS_ERR_OR_NULL(info->main_batt_psy)) {
+			info->main_batt_psy = power_supply_get_by_name(info->main_batt_name);
+			if (IS_ERR_OR_NULL(info->main_batt_psy))
+				pr_err("[%s]: get %s failed\n",__func__, info->main_batt_name);
+			else
+				pr_info("[%s]: get %s success\n",__func__, info->main_batt_name);
+		}
 
-	if (IS_ERR_OR_NULL(info->flip_batt_psy)) {
-		info->flip_batt_psy = power_supply_get_by_name(info->flip_batt_name);
-		if (IS_ERR_OR_NULL(info->flip_batt_psy))
-			pr_err("[%s]: get %s failed\n",__func__, info->flip_batt_name);
-		else
-			pr_info("[%s]: get %s success\n",__func__, info->flip_batt_name);
+		if (IS_ERR_OR_NULL(info->flip_batt_psy)) {
+			info->flip_batt_psy = power_supply_get_by_name(info->flip_batt_name);
+			if (IS_ERR_OR_NULL(info->flip_batt_psy))
+				pr_err("[%s]: get %s failed\n",__func__, info->flip_batt_name);
+			else
+				pr_info("[%s]: get %s success\n",__func__, info->flip_batt_name);
+		}
 	}
 
 	if (!IS_ERR_OR_NULL(info->main_batt_psy)
