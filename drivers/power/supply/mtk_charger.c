@@ -4518,8 +4518,11 @@ static int mmi_dual_charge_sm(struct mtk_charger *chg,
 	} else if (prm->pres_chrg_step == STEP_NORM) {
 		if (!zone->fcc_norm_ma)
 			prm->pres_chrg_step = STEP_STOP;
-		else if ((stat->batt_soc < 100) ||
-			 (stat->batt_mv + fv_offset) < max_fv_mv) {
+		else if ((stat->batt_mv + fv_offset) < zone->norm_mv) {
+			prm->chrg_taper_cnt = 0;
+			prm->pres_chrg_step = STEP_MAX;
+		}
+		else if ((stat->batt_mv + fv_offset/2) < max_fv_mv) {
 			prm->chrg_taper_cnt = 0;
 			prm->pres_chrg_step = STEP_NORM;
 		} else if (mmi_has_current_tapered(chg, prm, stat->batt_ma,
