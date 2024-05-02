@@ -2647,6 +2647,7 @@ static void mmi_blance_charger_check_status(struct mtk_charger *info)
 {
 	struct mmi_sm_params *prm = &info->mmi.sm_param[FLIP_BATT];
 	union power_supply_propval pval;
+	bool blance_dev_chgen = false;
 	bool charging = true;
 	int target_fcc = (prm->target_fcc >= 0) ? prm->target_fcc:0; //mA
 	int blance_ibat_limit = 0; //mA
@@ -2655,8 +2656,27 @@ static void mmi_blance_charger_check_status(struct mtk_charger *info)
 	int ret = 0;
 	int flip_chg_state = CHARGE_STATE_UNKONW;
 
-	if (IS_ERR_OR_NULL(info->blance_dev) || IS_ERR_OR_NULL(info->flip_batt_psy))
+	if (IS_ERR_OR_NULL(info->blance_dev))
 		return;
+
+	ret = charger_dev_is_enabled(info->blance_dev, &blance_dev_chgen);
+	if (ret < 0) {
+		pr_err("blance ic get charging state failed\n");
+		return;
+	}
+
+	if (IS_ERR_OR_NULL(info->flip_batt_psy)) {
+		if (info->mmi.batt_statues == POWER_SUPPLY_STATUS_CHARGING
+			&& blance_dev_chgen == true) {
+			ret = charger_dev_enable(info->blance_dev, false);
+			if (ret < 0) {
+				pr_err("blance ic disable charging failed\n");
+			} else {
+				info->blance_can_charging = false;
+			}
+		}
+		return;
+	}
 
 	ret = power_supply_get_property(info->flip_batt_psy, POWER_SUPPLY_PROP_VOLTAGE_NOW, &pval);
 	if (ret < 0) {
@@ -4913,11 +4933,14 @@ static void mmi_charger_check_status(struct mtk_charger *info)
 			else
 				pr_info("[%s]: get %s success\n",__func__, info->flip_batt_name);
 		}
-	}
 
-	if (!IS_ERR_OR_NULL(info->main_batt_psy)
-		&& !IS_ERR_OR_NULL(info->flip_batt_psy)) {
-		mmi_dual_charge_control(info, &chg_stat);
+		if (!IS_ERR_OR_NULL(info->main_batt_psy)
+			&& !IS_ERR_OR_NULL(info->flip_batt_psy)) {
+			mmi_dual_charge_control(info, &chg_stat);
+		} else if (!IS_ERR_OR_NULL(info->main_batt_psy)
+					&& IS_ERR_OR_NULL(info->flip_batt_psy)) {
+			mmi_basic_charge_sm(info, &chg_stat);
+		}
 	} else {
 		mmi_basic_charge_sm(info, &chg_stat);
 	}
@@ -5441,8 +5464,9 @@ static int parse_mmi_dt(struct mtk_charger *info, struct device *dev)
 		info->main_batt_psy = power_supply_get_by_name(info->main_batt_name);
 		info->flip_batt_psy = power_supply_get_by_name(info->flip_batt_name);
 		parse_mmi_dual_batt_dt(info);
-	} else
-		parse_mmi_single_batt_dt(info);
+	}
+
+	parse_mmi_single_batt_dt(info);
 
 	info->typecotp_charger = of_property_read_bool(node, "mmi,typecotp-charger");
 	pr_info("%s typecotp_charger:%d \n", __func__, info->typecotp_charger);
