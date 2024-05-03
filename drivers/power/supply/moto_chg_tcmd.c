@@ -365,7 +365,10 @@ static ssize_t force_chg_auto_enable_show(struct device *dev, struct device_attr
 
 	return snprintf(buf, PAGE_SIZE, "%d\n", data->force_chg_enable_flag);
 }
-
+#ifdef CONFIG_MOTO_CHANNEL_SWITCH
+bool wlc_factory_en = false;
+EXPORT_SYMBOL(wlc_factory_en);
+#endif
 static ssize_t force_chg_auto_enable_store(struct device *dev, struct device_attribute *attr,
 									const char *buf, size_t count)
 {
@@ -373,7 +376,12 @@ static ssize_t force_chg_auto_enable_store(struct device *dev, struct device_att
 	struct  moto_chg_tcmd_data *data = platform_get_drvdata(pdev);
 	int ret;
 	int val;
-
+#ifdef CONFIG_MOTO_CHANNEL_SWITCH
+	if(wlc_factory_en){
+		pr_err("%s wlc factory test,not set bat fet\n", __func__);
+		goto end;
+	}
+#endif
 	if (!chg_client) {
 		pr_err("%s chg_client is null\n", __func__);
 		goto end;
@@ -1126,6 +1134,9 @@ static ssize_t wireless_en_store(struct device *dev,
 
 	if (wls_client->wls_en) {
 		ret = wls_client->wls_en(wls_client->data, !!val);
+#ifdef CONFIG_MOTO_CHANNEL_SWITCH
+		wlc_factory_en = !!val;
+#endif
 		if (ret) {
 			pr_err("%s wls en fail %d\n", __func__, ret);
 		}
