@@ -7048,8 +7048,12 @@ static void mtk_charger_external_power_changed(struct power_supply *psy)
 		 will report OCP before wireless power transfer interrupt.here set to max
 		 current wireless chip could support when wireless cable insert.
 	*/
-	if(info->wireless_online && info->mmi.factory_mode)
-		 charger_dev_set_input_current(info->chg1_dev, info->data.wireless_factory_max_input_current);
+	if(info->wireless_online && info->mmi.factory_mode){
+		charger_dev_set_input_current(info->chg1_dev, info->data.wireless_factory_max_input_current);
+#ifdef CONFIG_MOTO_CHANNEL_SWITCH
+		charger_dev_enable(info->chg1_dev,true);
+#endif
+	}
 	_wake_up_charger(info);
 }
 
