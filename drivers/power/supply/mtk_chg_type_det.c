@@ -200,6 +200,7 @@ static int wireless_get_wireless_online(int *online)
 	return ret;
 }
 
+extern bool wlc_factory_en;
 static int wireless_get_charger_type(struct mtk_ctd_info *mci,int idx)
 {
 	int ret;
@@ -226,8 +227,13 @@ static int wireless_get_charger_type(struct mtk_ctd_info *mci,int idx)
 		return -EINVAL;
 	}
 	if (((adc_vol == true) && wireless_online) || (!wireless_online)) {
-		mmi_mux_typec_chg_chan(MMI_MUX_CHANNEL_TYPEC_CHG, true);
-		handle_typec_pd_attach(mci, idx, ATTACH_TYPE_TYPEC);
+		pr_err("%s:wlc_factory_en = %d\n", __func__,wlc_factory_en);
+		if(!wlc_factory_en){
+			mmi_mux_typec_chg_chan(MMI_MUX_CHANNEL_TYPEC_CHG, true);
+			handle_typec_pd_attach(mci, idx, ATTACH_TYPE_TYPEC);
+		}else{
+			pr_err("%s:wlc_factory_en is true, not open VAC1 MOS\n", __func__);
+		}
 	}
 
 	return 0;
