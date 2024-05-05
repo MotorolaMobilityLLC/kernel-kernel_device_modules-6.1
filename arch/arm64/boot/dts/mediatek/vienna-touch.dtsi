@@ -26,8 +26,8 @@
 		pinctrl-0 = <&ctp_gt9896s_int_active &ctp_gt9896s_reset_active>;
 		pinctrl-1 = <&ctp_gt9896s_int_suspend &ctp_gt9896s_reset_suspend>;
 		spi-max-frequency = <15000000>;  /* 4800000,9600000,15000000,19200000 */
-		mmi,status = "/chosen","mmi,panel_name","contains","csot_vtdr6130";
-		goodix,panel-supplier = "csot";
+		mmi,status = "/chosen","mmi,panel_name","contains","csot_vtdr6130","tianma_nt37707";
+		goodix,panel-supplier = "csot","tianma";
 		goodix,reset-gpio = <&pio 152 0x0>;
 		goodix,irq-gpio = <&pio 7 0x2002>;
 		goodix,avdd-gpio = <&pio 189 0x0>;
@@ -45,8 +45,8 @@
 		goodix,gesture-wait-pm;
 		goodix,stowed-mode-ctrl;
 		goodix,pocket-mode-ctrl;
-		goodix,config-name = "goodix_gt9916_cfg_group.bin";
-		goodix,firmware-name = "goodix_gt9916_firmware.bin";
+		/*goodix,config-name = "goodix_gt9916_cfg_group.bin";
+		goodix,firmware-name = "goodix_gt9916_firmware.bin";*/
 		mmi,enable-gestures;
 		mmi,power-off-suspend;
 		mmi,usb-charger-detection;
