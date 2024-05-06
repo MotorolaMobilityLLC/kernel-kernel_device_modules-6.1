@@ -151,6 +151,17 @@ static void lcm_dcs_write(struct lcm *ctx, const void *data, size_t len)
 
 static void lcm_panel_init(struct lcm *ctx)
 {
+	if(ctx->version != 1) {
+		lcm_dcs_write_seq_static(ctx, 0XF0, 0X55, 0XAA, 0X52, 0X08, 0X00);
+		lcm_dcs_write_seq_static(ctx, 0XBA, 0X00, 0X54);
+		lcm_dcs_write_seq_static(ctx, 0X6F, 0X07);
+		lcm_dcs_write_seq_static(ctx, 0XBA, 0X00, 0X54);
+		lcm_dcs_write_seq_static(ctx, 0X6F, 0X0E);
+		lcm_dcs_write_seq_static(ctx, 0XBA, 0X00, 0X54);
+		lcm_dcs_write_seq_static(ctx, 0X6F, 0X15);
+		lcm_dcs_write_seq_static(ctx, 0XBA, 0X00, 0X3D);
+	}
+
 	lcm_dcs_write_seq_static(ctx, 0x5A, 0x01);
 	lcm_dcs_write_seq_static(ctx, 0xFF, 0xAA, 0x55, 0xA5, 0x80);
 	//Power seq
