@@ -75,3 +75,8 @@ config GTP_POCKET_MODE
 	bool "Support pocket mode feature"
 	help
 		Say Y here if support pockey mode feature.
+
+config GTP_CS_DELAY
+	bool "Set SPI CS setuptime"
+	help
+		Say Y here if need to adjust CS setuptime.
