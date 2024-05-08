@@ -2535,7 +2535,9 @@ void get_qc_charger_type_func_work(struct work_struct *work)
 
 	if (ddata->dcp15w.support) {
 		ret = power_supply_get_property(ddata->psy, POWER_SUPPLY_PROP_ONLINE, &val);
-		if (ret == 0 && val.intval && (ddata->qc_chg_type == USB_TYPE_DCP)) {
+		if (ret == 0 && val.intval &&
+			(ddata->qc_chg_type == USB_TYPE_DCP
+			|| ddata->qc_chg_type == USB_TYPE_QC20)) {
 			pr_info("dcp15w start detect_dwork after qc detected end\n");
 			schedule_delayed_work(&ddata->dcp15w.detect_dwork, 0);
 		}
