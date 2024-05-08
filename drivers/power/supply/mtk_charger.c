@@ -2659,6 +2659,9 @@ static void mmi_blance_charger_check_status(struct mtk_charger *info)
 	if (IS_ERR_OR_NULL(info->blance_dev))
 		return;
 
+	if (get_charger_type(info) == POWER_SUPPLY_TYPE_UNKNOWN)
+		return;
+
 	ret = charger_dev_is_enabled(info->blance_dev, &blance_dev_chgen);
 	if (ret < 0) {
 		pr_err("blance ic get charging state failed\n");
@@ -2738,7 +2741,9 @@ static void mmi_blance_charger_check_status(struct mtk_charger *info)
 		charger_dev_set_charging_current(info->blance_dev, blance_ibat_limit * 1000);
 	}
 
-	if (charging != info->blance_can_charging) {
+	if ((charging != info->blance_can_charging)
+		|| (charging == false && blance_dev_chgen == true)) {
+
 		ret = charger_dev_enable(info->blance_dev, charging);
 		if (ret < 0) {
 			pr_info("blance ic %s charging failed\n", charging?"enable":"disable");
