@@ -600,6 +600,11 @@ static int fsm_afe_module_switch_set(struct snd_kcontrol *kcontrol,
 	int index = ucontrol->value.integer.value[0];
 	int ret;
 
+        if (index < 0)
+                index = 0;
+        else if (index > 1)
+                index = 1;
+
 	pr_info("Switch %s", fsm_afe_switch_text[index]);
 	ret = fsm_afe_module_ctrl(index);
 	if (ret) {
