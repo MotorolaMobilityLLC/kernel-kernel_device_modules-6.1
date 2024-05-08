@@ -40,7 +40,7 @@
 #define CREATE_TRACE_POINTS
 #include "trace_mtk_mkp.h"
 
-DEBUG_SET_LEVEL(DEBUG_LEVEL_ERR);
+DEBUG_SET_LEVEL(DEBUG_LEVEL_INFO);
 
 struct work_struct *avc_work;
 
@@ -247,7 +247,8 @@ static int mkp_protect_kernel_ro_region(void)
 				MKP_ERR("%s:%d: Set .text readonly fail\n", __func__, __LINE__);
 				return -EACCES;
 			}
-			pr_info("mkp: protect krn code done\n");
+			pr_notice("mkp: protect krn code done, phys_addr=0x%lx, size=0x%lx\n",
+					(unsigned long)phys_addr, (unsigned long)(nr_pages<<MOTO_RKP_SHIFT_PAGE_BIT));
 		}
 	}
 
@@ -279,7 +280,8 @@ static int mkp_protect_kernel_ro_region(void)
 				MKP_ERR("%s:%d: Set .rodata readonly fail\n", __func__, __LINE__);
 				return -EACCES;
 			}
-			pr_info("mkp: protect krn rodata done\n");
+			pr_notice("mkp: protect krn rodata done, phys_addr=0x%lx, size=0x%lx\n",
+					(unsigned long)phys_addr, (unsigned long)(nr_pages<<MOTO_RKP_SHIFT_PAGE_BIT));
 		}
 	}
 
