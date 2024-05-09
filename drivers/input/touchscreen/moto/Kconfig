@@ -80,3 +80,8 @@ config GTP_CS_DELAY
 	bool "Set SPI CS setuptime"
 	help
 		Say Y here if need to adjust CS setuptime.
+
+config GOODIX_ESD_ENABLE
+   bool "Support TP esd check"
+   help
+		Say Y here if need to support TP esd check feature.
