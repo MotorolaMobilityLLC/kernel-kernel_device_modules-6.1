@@ -302,7 +302,7 @@ if(ctx->version == 1){
 		lcm_dcs_write_seq_static(ctx, 0xF0,0xAA,0x1B);
 		lcm_dcs_write_seq_static(ctx, 0x65,0x0C);
 		lcm_dcs_write_seq_static(ctx, 0xD6,0x04,0x04,0x04,0x04);
-		lcm_dcs_write_seq_static(ctx, 0xD0,0x11);
+		lcm_dcs_write_seq_static(ctx, 0xD0,0x11,0x02);
 		lcm_dcs_write_seq_static(ctx, 0xF0,0xAA,0x10);
 		lcm_dcs_write_seq_static(ctx, 0xCF,0x16);
 		break;
@@ -311,7 +311,7 @@ if(ctx->version == 1){
 		lcm_dcs_write_seq_static(ctx, 0x71,0x00);
 		lcm_dcs_write_seq_static(ctx, 0x75,0x02);
 		lcm_dcs_write_seq_static(ctx, 0xF0,0xAA,0x1B);
-		lcm_dcs_write_seq_static(ctx, 0xD0,0x11);
+		lcm_dcs_write_seq_static(ctx, 0xD0,0x11,0x02);
 		lcm_dcs_write_seq_static(ctx, 0xF0,0xAA,0x10);
 		lcm_dcs_write_seq_static(ctx, 0xCF,0x09);
 		break;
@@ -1252,7 +1252,7 @@ static void mode_switch_to_24(struct drm_panel *panel,
 		lcm_dcs_write_seq_static(ctx, 0xF0,0xAA,0x1B);
 		lcm_dcs_write_seq_static(ctx, 0x65,0x0C);
 		lcm_dcs_write_seq_static(ctx, 0xD6,0x04,0x04,0x04,0x04);
-		lcm_dcs_write_seq_static(ctx, 0xD0,0x11);
+		lcm_dcs_write_seq_static(ctx, 0xD0,0x11,0x02);
 		lcm_dcs_write_seq_static(ctx, 0xF0,0xAA,0x10);
 		lcm_dcs_write_seq_static(ctx, 0xCF,0x16);
 
@@ -1271,7 +1271,7 @@ static void mode_switch_to_10(struct drm_panel *panel,
 		msleep(10);
 		lcm_dcs_write_seq_static(ctx, 0x75,0x02);
 		lcm_dcs_write_seq_static(ctx, 0xF0,0xAA,0x1B);
-		lcm_dcs_write_seq_static(ctx, 0xD0,0x11);
+		lcm_dcs_write_seq_static(ctx, 0xD0,0x11,0x02);
 		lcm_dcs_write_seq_static(ctx, 0xF0,0xAA,0x10);
 		lcm_dcs_write_seq_static(ctx, 0xCF,0x09);
 
@@ -1291,7 +1291,7 @@ static void mode_switch_to_1(struct drm_panel *panel,
 		msleep(10);
 		lcm_dcs_write_seq_static(ctx, 0x75, 0x03);
 		lcm_dcs_write_seq_static(ctx, 0xF0, 0xAA,0x1B);
-		lcm_dcs_write_seq_static(ctx, 0xD0, 0x11);
+		lcm_dcs_write_seq_static(ctx, 0xD0, 0x11,0x02);
 
 		lcm_dcs_write_seq_static(ctx, 0xF0, 0xAA,0x10);
 		lcm_dcs_write_seq_static(ctx, 0xCF, 0x09);
@@ -1448,14 +1448,29 @@ static int panel_hbm_set_cmdq(struct lcm *ctx, void *dsi, dcs_grp_write_gce cb, 
 	return 0;
 }
 
+static struct mtk_panel_para_table panel_dc_off[] = {
+	{2, {0x5e, 0x00}},
+};
+
+static struct mtk_panel_para_table panel_dc_on[] = {
+	{2, {0x5e, 0x01}},
+};
+
 static int pane_dc_set_cmdq(struct lcm *ctx, void *dsi, dcs_grp_write_gce cb, void *handle, uint32_t dc_state)
 {
+	unsigned int para_count = 0;
+	struct mtk_panel_para_table *pTable;
+
 	if (dc_state) {
-		lcm_dcs_write_seq_static(ctx, 0x5e, 0x01);
+		para_count = sizeof(panel_dc_on) / sizeof(struct mtk_panel_para_table);
+		pTable = panel_dc_on;
 	} else {
-		lcm_dcs_write_seq_static(ctx, 0x5e, 0x00);
+		para_count = sizeof(panel_dc_off) / sizeof(struct mtk_panel_para_table);
+		pTable = panel_dc_off;
 	}
+	cb(dsi, handle, pTable, para_count);
 	atomic_set(&ctx->dc_mode, dc_state);
+	pr_info("%s: current_fps %d\n", __func__, atomic_read(&ctx->current_fps));
 	return 0;
 }
 
