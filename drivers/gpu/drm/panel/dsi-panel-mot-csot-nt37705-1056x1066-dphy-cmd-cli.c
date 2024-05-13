@@ -303,8 +303,10 @@ static int lcm_unprepare(struct drm_panel *panel)
 
 
 	pr_info("%s+\n", __func__);
-	if (!ctx->prepared)
+	if (!ctx->prepared){
+		pr_info("cli/%s: lcm is not prepared, return\n", __func__);
 		return 0;
+	}
 
 	lcm_dcs_write_seq_static(ctx, MIPI_DCS_SET_DISPLAY_OFF);
 	lcm_dcs_write_seq_static(ctx, MIPI_DCS_ENTER_SLEEP_MODE);
@@ -312,7 +314,7 @@ static int lcm_unprepare(struct drm_panel *panel)
 
 	ctx->error = 0;
 	ctx->prepared = false;
-
+	pr_info("%s-\n", __func__);
 	return 0;
 }
 
@@ -321,9 +323,11 @@ static int lcm_prepare(struct drm_panel *panel)
 	struct lcm *ctx = panel_to_lcm(panel);
 	int ret;
 
-	pr_info("%s+\n", __func__);
-	if (ctx->prepared)
+	pr_info("cli: %s+\n", __func__);
+	if (ctx->prepared) {
+		pr_info("cli/%s: lcm has been prepared, return\n", __func__);
 		return 0;
+	}
 
 	// lcd reset L->H -> L -> L
 	ctx->reset_gpio = devm_gpiod_get(ctx->dev, "reset", GPIOD_OUT_LOW);
@@ -341,7 +345,10 @@ static int lcm_prepare(struct drm_panel *panel)
 	lcm_panel_init(ctx);
 
 	ret = ctx->error;
-	if (ret < 0) goto error;
+	if (ret < 0) {
+		pr_info("cli/%s: lcm_panel_init failed, return\n", __func__);
+		goto error;
+	}
 
 	ctx->prepared = true;
 #ifdef PANEL_SUPPORT_READBACK
@@ -354,7 +361,7 @@ static int lcm_prepare(struct drm_panel *panel)
 	atomic_set(&ctx->current_fps, 60);
 	atomic_set(&ctx->ce_mode, 1);
 
-	pr_info("%s-\n", __func__);
+	pr_info("cli: %s-\n", __func__);
 	return ret;
 error:
 	lcm_unprepare(panel);
@@ -971,6 +978,11 @@ static int panel_ext_init_power(struct drm_panel *panel)
 	int ret;
 	struct lcm *ctx = panel_to_lcm(panel);
 
+	if (ctx->prepared) {
+	    pr_info("cli/%s: lcm has been prepared, return\n", __func__);
+	    return 0;
+	}
+
 	ctx->reset_gpio = devm_gpiod_get(ctx->dev, "reset", GPIOD_OUT_HIGH);
 	gpiod_set_value(ctx->reset_gpio, 0);
 	devm_gpiod_put(ctx->dev, ctx->reset_gpio);
@@ -984,8 +996,10 @@ static int panel_ext_powerdown(struct drm_panel *panel)
 	struct lcm *ctx = panel_to_lcm(panel);
 
 	pr_info("%s+\n", __func__);
-	if (ctx->prepared)
+	if (ctx->prepared) {
+	    pr_info("cli/%s: lcm is still prepared, return\n", __func__);
 	    return 0;
+	}
 
 	ctx->reset_gpio = devm_gpiod_get(ctx->dev, "reset", GPIOD_OUT_HIGH);
 	gpiod_set_value(ctx->reset_gpio, 0);
