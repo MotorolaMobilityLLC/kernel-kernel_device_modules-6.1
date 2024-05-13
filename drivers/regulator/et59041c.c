@@ -101,7 +101,7 @@ static const int ldo34CurTable[]={
 /*Output: 	true or false									 */
 
 /******************************************************/
-int Binary2Char( unsigned char*  binary,  int len, char*  buff,  int size)
+int Binary2Char(u8*  binary,  int len, char*  buff,  int size)
 {
 	    int  i, n;
 
@@ -170,9 +170,13 @@ int Char2Binary(const char* token,  int len, unsigned char*  binary,  int size)
 
 static int et59041c_regulator_dump_regs(struct et59041c_regulator *regular, u8 *regArr)
 {
-	//u8 regArr[0x1F];
-
-	regmap_bulk_read(regular->regmap, 0x00, regArr, 0x10);
+	int i;
+	unsigned int val;
+	for (i=0; i<ET5904_REG_NUM; i++) {
+		if (i>= 0x0C && i<= 0x0D) continue;
+		regmap_read(regular->regmap, i, &val);
+		regArr[i] = val;
+	}
 	ET_DBG("CHIPID: 0x%x\n", regArr[ET59041C_REG_CHIPID]);
 	ET_DBG("LDO_ILIMIT: 0x%x\n", regArr[ET59041C_REG_ILIMIT]);
 	ET_DBG("LDO_EN: 0x%x\n", regArr[ET59041C_REG_LDO_EN]);
@@ -186,7 +190,6 @@ static int et59041c_regulator_dump_regs(struct et59041c_regulator *regular, u8 *
 	ET_DBG("SEQ_C: 0x%x\n", regArr[ET59041C_REG_SEQ_C]);
 	ET_DBG("ILIMT_COAR: 0x%x\n", regArr[ET59041C_REG_ILIMT_COAR]);
 
-
 	return 0;
 }
 
@@ -194,10 +197,10 @@ ssize_t et59041c_reg_show(struct device *dev, struct device_attribute *attr,
 			char *buf)
 {
 	int len = 0;
-	u8 regArr[0x10];
+	u8 regArr[ET5904_REG_NUM];
 	struct et59041c_regulator *regular = dev_get_drvdata(dev);
 	et59041c_regulator_dump_regs(regular, regArr);
-	len = Binary2Char( regArr, 0x10,  buf,  200);
+	len = Binary2Char( regArr, ET5904_REG_NUM,  buf,  200);
 	if(len>0)	{
 		ET_DBG("%s: buf = %s  \n", __func__,buf);
 		return len;
