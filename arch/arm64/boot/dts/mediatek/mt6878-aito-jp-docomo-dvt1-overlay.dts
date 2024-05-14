@@ -36,6 +36,8 @@
 &charger {
 	/*typec_otp*/
 	mmi,typecotp-charger;
+	mmi,wire-rechg-soc = <95>;
+	mmi,wireless-rechg-soc = <99>;
 };
 
 &spmi {

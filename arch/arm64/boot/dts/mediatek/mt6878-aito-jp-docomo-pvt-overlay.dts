@@ -37,6 +37,8 @@
 	/*typec_otp*/
 	mmi,typecotp-charger;
 	mmi,wls-boost-using-otg;
+	mmi,wire-rechg-soc = <95>;
+	mmi,wireless-rechg-soc = <99>;
 };
 
 &spmi {
