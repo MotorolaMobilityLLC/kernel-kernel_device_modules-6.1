@@ -3013,7 +3013,7 @@ static int accdet_tcp_notifier_call(struct notifier_block *nb,
 			/* enable AudioAccessory connection */
 			pr_err(" fsa4480 enable AudioAccessory connection\n");
 			fsa4480_switch_event(FSA_TYPEC_ACCESSORY_AUDIO);
-			msleep(300);
+			//msleep(300);
 			typec_headset_handler();
 		} else if (old_state == TYPEC_ATTACHED_AUDIO &&
 			   new_state == TYPEC_UNATTACHED) {
