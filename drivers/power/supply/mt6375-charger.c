@@ -106,7 +106,7 @@ enum mt6375_chg_reg_field {
 	/* MT6375_REG_CHG_BATPRO */
 	F_BATINT, F_BATPROTECT_EN,
 	/* MT6375_REG_CHG_TOP1 */
-	F_CHG_EN, F_BUCK_EN, F_HZ, F_BATFET_DISDLY, F_BATFET_DIS, F_PP_PG_FLAG,
+	F_CHG_EN, F_BUCK_EN, F_OTG_EN, F_HZ, F_BATFET_DISDLY, F_BATFET_DIS, F_PP_PG_FLAG,
 	/* MT6375_REG_CHG_TOP2 */
 	F_VBUS_OV,
 	/* MT6375_REG_CHG_AICR */
@@ -441,6 +441,7 @@ static const struct mt6375_chg_field mt6375_chg_fields[F_MAX] = {
 	MT6375_CHG_FIELD(F_BATPROTECT_EN, MT6375_REG_CHG_BATPRO, 7, 7),
 	MT6375_CHG_FIELD(F_CHG_EN, MT6375_REG_CHG_TOP1, 0, 0),
 	MT6375_CHG_FIELD(F_BUCK_EN, MT6375_REG_CHG_TOP1, 1, 1),
+	MT6375_CHG_FIELD(F_OTG_EN, MT6375_REG_CHG_TOP1, 2, 2),
 	MT6375_CHG_FIELD(F_HZ, MT6375_REG_CHG_TOP1, 3, 3),
 	MT6375_CHG_FIELD(F_BATFET_DISDLY, MT6375_REG_CHG_TOP1, 5, 5),
 	MT6375_CHG_FIELD(F_BATFET_DIS, MT6375_REG_CHG_TOP1, 6, 6),
@@ -816,6 +817,18 @@ static int mt6375_chg_is_enabled(struct mt6375_chg_data *ddata, bool *en)
 	u32 val = 0;
 
 	ret = mt6375_chg_field_get(ddata, F_CHG_EN, &val);
+	if (ret < 0)
+		return ret;
+	*en = val;
+	return 0;
+}
+
+static int mt6375_chg_is_otg_enabled(struct mt6375_chg_data *ddata, bool *en)
+{
+	int ret = 0;
+	u32 val = 0;
+
+	ret = mt6375_chg_field_get(ddata, F_OTG_EN, &val);
 	if (ret < 0)
 		return ret;
 	*en = val;
@@ -1648,6 +1661,13 @@ static int mt6375_is_enabled(struct charger_device *chgdev, bool *en)
 	struct mt6375_chg_data *ddata = charger_get_data(chgdev);
 
 	return mt6375_chg_is_enabled(ddata, en);
+}
+
+static int mt6375_is_otg_enabled(struct charger_device *chgdev, bool *en)
+{
+	struct mt6375_chg_data *ddata = charger_get_data(chgdev);
+
+	return mt6375_chg_is_otg_enabled(ddata, en);
 }
 
 static int mt6375_set_ichg(struct charger_device *chgdev, u32 uA)
@@ -3234,6 +3254,7 @@ static const struct charger_ops mt6375_chg_ops = {
 	/* OTG */
 	.config_otg = mt6375_config_otg,
 	.enable_otg = mt6375_enable_otg,
+	.is_otg_enabled = mt6375_is_otg_enabled,
 	.enable_discharge = mt6375_enable_discharge,
 	/* charger type detection */
 	.enable_chg_type_det = mt6375_enable_chg_type_det,
