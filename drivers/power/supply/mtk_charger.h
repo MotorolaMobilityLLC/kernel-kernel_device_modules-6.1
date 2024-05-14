@@ -439,6 +439,8 @@ struct mmi_params {
 	int			charge_rate;
 	unsigned int	active_fast_alg;
 	int			typec_rp_max_current;
+	int			wire_rechg_soc;
+	int			wireless_rechg_soc;
 
 	int			pd_pmax_mw;
 	int			power_max_design_mw;
