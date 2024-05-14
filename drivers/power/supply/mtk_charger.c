@@ -4555,7 +4555,8 @@ static int mmi_dual_charge_sm(struct mtk_charger *chg,
 				prm->pres_chrg_step = STEP_FULL;
 		}
 	} else if (prm->pres_chrg_step == STEP_FULL) {
-		if (stat->batt_soc <= 95) {
+		if (stat->batt_soc <=
+			(chg->chr_type == POWER_SUPPLY_TYPE_WIRELESS) ? chg->mmi.wireless_rechg_soc : chg->mmi.wire_rechg_soc) {
 			prm->chrg_taper_cnt = 0;
 			prm->pres_chrg_step = STEP_NORM;
 		}
@@ -5537,6 +5538,16 @@ static int parse_mmi_dt(struct mtk_charger *info, struct device *dev)
 
 	info->wls_boost_using_otg = of_property_read_bool(node, "mmi,wls-boost-using-otg");
 	pr_info("%s wls_boost_using_otg:%d \n", __func__, info->wls_boost_using_otg);
+
+	rc = of_property_read_u32(node, "mmi,wire-rechg-soc",
+				  &info->mmi.wire_rechg_soc);
+	if (rc)
+		info->mmi.wire_rechg_soc = 95;
+
+	rc = of_property_read_u32(node, "mmi,wireless-rechg-soc",
+				  &info->mmi.wireless_rechg_soc);
+	if (rc)
+		info->mmi.wireless_rechg_soc = 95;
 
 	return rc;
 }
