@@ -362,3 +362,17 @@
 	hwid-node= <92>;
 	adie-sku = <0 1>; /* mt6637 = 0, mt6631 = 1*/
 };
+
+&md_power_throttling {
+	lbat-max-level = <3>;
+	lbat-reduce-tx-lv1 = <0>;
+	lbat-reduce-tx-lv2 = <0>;
+	lbat-reduce-tx-lv3 = <0>;
+
+	oc-max-level = <2>;
+	oc-reduce-tx-lv1 = <0>;
+	oc-reduce-tx-lv2 = <0>;
+
+	soc-max-level = <1>;
+	soc-reduce-tx-lv1 = <6>;
+};
