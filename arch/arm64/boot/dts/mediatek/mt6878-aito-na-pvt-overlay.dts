@@ -42,6 +42,8 @@
 	/*pe5 && pdc && wlc*/
 	fast_charging_indicator = <0x8014>;
 	mmi,wls-boost-using-otg;
+	mmi,wire-rechg-soc = <95>;
+	mmi,wireless-rechg-soc = <99>;
 };
 
 &mmi_pehv {
