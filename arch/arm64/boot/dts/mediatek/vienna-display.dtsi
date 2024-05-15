@@ -11,6 +11,9 @@
  */
 #include "mediatek/mt6369.dtsi"
 
+//no need init vdigrf ldo which will close apu sarm supply.
+/delete-node/ &mt6369_vdigrf;
+
 &mtk_leds {
 	backlight {
 		/delete-property/ max-hw-brightness;
