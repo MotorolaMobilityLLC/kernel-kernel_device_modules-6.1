@@ -85,3 +85,8 @@ config GOODIX_ESD_ENABLE
    bool "Support TP esd check"
    help
 		Say Y here if need to support TP esd check feature.
+
+config GTP_SPI_PINCTRL
+	bool "Set SPI mode"
+	help
+		Say Y here if need to adjust SPI mode.
