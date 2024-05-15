@@ -8,23 +8,18 @@
 	status = "okay";
 	#address-cells = <1>;
 	#size-cells = <0>;
-	pinctrl-names = "default", "gt9896s_int_active",
-		"gt9896s_reset_active", "gt9896s_int_suspend",
-		"gt9896s_reset_suspend", "gt9896s_spi_mode";
-	pinctrl-0 = <&ctp_gt9896s_pins_default>;
-	pinctrl-1 = <&ctp_gt9896s_int_active>;
-	pinctrl-2 = <&ctp_gt9896s_reset_active>;
-	pinctrl-3 = <&ctp_gt9896s_int_suspend>;
-	pinctrl-4 = <&ctp_gt9896s_reset_suspend>;
-	pinctrl-5 = <&ctp_gt9896s_spi_mode>;
+
 
 	goodix_ts_spi@0 {
 		status = "okay";
 		compatible = "goodix,gt9916S";
 		reg = <0x0>;
-		pinctrl-names = "pmx_ts_active", "pmx_ts_suspend", "stylus_clk_active", "stylus_clk_suspend";
-		pinctrl-0 = <&ctp_gt9896s_int_active &ctp_gt9896s_reset_active>;
-		pinctrl-1 = <&ctp_gt9896s_int_suspend &ctp_gt9896s_reset_suspend>;
+		pinctrl-names = "pmx_ts_active", "pmx_ts_suspend", "stylus_clk_active", "stylus_clk_suspend","gt9916_spi_mode";
+		pinctrl-0 = <&ctp_gt9896s_int_active>;
+		pinctrl-1 = <&ctp_gt9896s_int_suspend>;
+		pinctrl-2 = <&ctp_gt9896s_reset_active>;
+		pinctrl-3 = <&ctp_gt9896s_reset_suspend>;
+		pinctrl-4 = <&ctp_gt9896s_spi_mode>;
 		spi-max-frequency = <15000000>;  /* 4800000,9600000,15000000,19200000 */
 		mmi,status = "/chosen","mmi,panel_name","contains","csot_vtdr6130","tianma_nt37707";
 		goodix,panel-supplier = "csot","tianma";
@@ -139,7 +134,7 @@
 				<PINMUX_GPIO69__FUNC_SPI3_CSB>,
 				<PINMUX_GPIO70__FUNC_SPI3_MO>,
 				<PINMUX_GPIO71__FUNC_SPI3_MI>;
-			drive-strength = <2>;
+			drive-strength = <1>;
 		};
 	};
 	ctp_gpio_release: gpio_release {
