@@ -338,7 +338,6 @@ mgk_64_k61_device_modules = [
     "drivers/misc/mediatek/lpm/modules/platform/v1/mtk-lpm-plat-v1.ko",
     "drivers/misc/mediatek/lpm/mtk-lpm.ko",
     "drivers/misc/mediatek/masp/sec.ko",
-    "drivers/misc/mediatek/mbraink/mtk_mbraink.ko",
     "drivers/misc/mediatek/mcupm/v2/mcupm.ko",
     "drivers/misc/mediatek/mddp/mddp.ko",
     "drivers/misc/mediatek/mdp/cmdq_helper_inf.ko",
