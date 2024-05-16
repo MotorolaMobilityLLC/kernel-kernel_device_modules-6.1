@@ -4556,7 +4556,7 @@ static int mmi_dual_charge_sm(struct mtk_charger *chg,
 		}
 	} else if (prm->pres_chrg_step == STEP_FULL) {
 		if (stat->batt_soc <=
-			(chg->chr_type == POWER_SUPPLY_TYPE_WIRELESS) ? chg->mmi.wireless_rechg_soc : chg->mmi.wire_rechg_soc) {
+			((chg->chr_type == POWER_SUPPLY_TYPE_WIRELESS) ? chg->mmi.wireless_rechg_soc : chg->mmi.wire_rechg_soc)) {
 			prm->chrg_taper_cnt = 0;
 			prm->pres_chrg_step = STEP_NORM;
 		}
