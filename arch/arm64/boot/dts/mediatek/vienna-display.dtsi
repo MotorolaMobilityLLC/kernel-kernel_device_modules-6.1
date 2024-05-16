@@ -9,10 +9,21 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  */
-#include "mediatek/mt6369.dtsi"
 
-//no need init vdigrf ldo which will close apu sarm supply.
-/delete-node/ &mt6369_vdigrf;
+&spmi {
+	second_pmic@5 {
+		regulators {
+			mt6369_vmch: vmch {
+				regulator-compatible = "VMCH";
+				regulator-name = "mt6369_vmch";
+				regulator-min-microvolt = <1200000>;
+				regulator-max-microvolt = <3500000>;
+				regulator-enable-ramp-delay = <680>;
+				regulator-allowed-modes = <0 2>;
+			};
+		};
+	};
+};
 
 &mtk_leds {
 	backlight {
