@@ -10086,7 +10086,7 @@ static int mtk_dsi_io_cmd(struct mtk_ddp_comp *comp, struct cmdq_pkt *handle,
 	struct drm_display_mode **mode;
 	bool *enable, async;
 	unsigned int vfp_low_power = 0;
-	int ret;
+	int ret, force_lcm_update;
 
 	switch (cmd) {
 	case REQ_PANEL_EXT:
@@ -10122,7 +10122,10 @@ static int mtk_dsi_io_cmd(struct mtk_ddp_comp *comp, struct cmdq_pkt *handle,
 		mtk_dsi_trigger(comp, handle);
 		break;
 	case CONNECTOR_PANEL_ENABLE:
-		mtk_output_dsi_enable(dsi, true);
+		force_lcm_update = params != NULL ? *((int *)params) : 1;
+		DDPMSG("%s: connector panel enable, force_lcm_update=%d\n",
+				__func__, force_lcm_update);
+		mtk_output_dsi_enable(dsi, force_lcm_update);
 		break;
 	case CONNECTOR_PANEL_DISABLE:
 	{
