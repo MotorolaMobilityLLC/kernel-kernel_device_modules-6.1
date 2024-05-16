@@ -14065,6 +14065,8 @@ static void mtk_drm_crtc_atomic_begin(struct drm_crtc *crtc,
 			}
 			goto end;
 		} else if (mtk_crtc->enabled == 0 && priv->usage[crtc_idx] == DISP_ENABLE) {
+			int force_lcm_update = 0;
+
 			CRTC_MMP_MARK(index, atomic_begin, 0, __LINE__);
 			mtk_drm_crtc_enable(crtc);
 			if (comp && mtk_ddp_comp_get_type(comp->id) == MTK_DISP_WDMA) {
@@ -14081,7 +14083,7 @@ static void mtk_drm_crtc_atomic_begin(struct drm_crtc *crtc,
 			}
 			CRTC_MMP_MARK(index, atomic_begin, 1, __LINE__);
 			if (comp)
-				mtk_ddp_comp_io_cmd(comp, NULL, CONNECTOR_PANEL_ENABLE, NULL);
+				mtk_ddp_comp_io_cmd(comp, NULL, CONNECTOR_PANEL_ENABLE, &force_lcm_update);
 			else
 				DDPPR_ERR("%s %d invalid output_comp\n", __func__, __LINE__);
 			CRTC_MMP_MARK(index, atomic_begin, 2, __LINE__);
