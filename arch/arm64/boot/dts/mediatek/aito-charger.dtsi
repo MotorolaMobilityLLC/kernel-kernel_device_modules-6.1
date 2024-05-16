@@ -179,6 +179,9 @@
 
 	mmi,power-max-design-mw = <30000>;
 
+	mmi,wire-rechg-soc = <95>;
+	mmi,wireless-rechg-soc = <99>;
+
 	mmi,mmi-normal-zones = <0 4200 148>,
 			<10 4530 148>,
 			<15 4530 148>,
