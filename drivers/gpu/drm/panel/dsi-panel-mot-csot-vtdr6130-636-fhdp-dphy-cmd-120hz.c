@@ -603,7 +603,6 @@ static struct mtk_panel_params ext_params = {
 	},
 	.lcm_color_mode = MTK_DRM_COLOR_MODE_DISPLAY_P3,
 	.lp_perline_en = 1,
-	.te_delay = 1,
 	.output_mode = MTK_PANEL_DSC_SINGLE_PORT,
 	.lcm_index = 0,
 	.dsc_params = {
@@ -911,7 +910,6 @@ static struct mtk_panel_params ext_params_24hz = {
 	},
 	.lcm_color_mode = MTK_DRM_COLOR_MODE_DISPLAY_P3,
 	.lp_perline_en = 1,
-	.te_delay = 1,
 	.output_mode = MTK_PANEL_DSC_SINGLE_PORT,
 	.lcm_index = 0,
 	.dsc_params = {
@@ -988,7 +986,6 @@ static struct mtk_panel_params ext_params_10hz = {
 	},
 	.lcm_color_mode = MTK_DRM_COLOR_MODE_DISPLAY_P3,
 	.lp_perline_en = 1,
-	.te_delay = 1,
 	.output_mode = MTK_PANEL_DSC_SINGLE_PORT,
 	.lcm_index = 0,
 	.dsc_params = {
@@ -1065,7 +1062,6 @@ static struct mtk_panel_params ext_params_1hz = {
 	},
 	.lcm_color_mode = MTK_DRM_COLOR_MODE_DISPLAY_P3,
 	.lp_perline_en = 1,
-	.te_delay = 1,
 	.output_mode = MTK_PANEL_DSC_SINGLE_PORT,
 	.lcm_index = 0,
 	.dsc_params = {
