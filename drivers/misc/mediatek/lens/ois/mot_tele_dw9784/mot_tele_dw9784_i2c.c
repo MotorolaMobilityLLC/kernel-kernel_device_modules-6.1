@@ -40,7 +40,7 @@ int ois_i2c_rd_u16(struct i2c_client *i2c_client, u16 reg, u16 *val)
 		return ret;
 	}
 	*val = ((u16)buf[0] << 8) | buf[1];
-	LOG_INF("OIS read 0x%x: 0x%x (%d)\n", reg, *val, *val);
+	//LOG_INF("OIS read 0x%x: 0x%x (%d)\n", reg, *val, *val);
 
 	return 0;
 }
@@ -80,8 +80,7 @@ int ois_i2c_wr_u16(struct i2c_client *i2c_client, u16 reg, u16 val)
 	struct i2c_msg msg;
 	u16 addr = i2c_client->addr;
 
-	LOG_INF("OIS write 0x%x: 0x%x (%d)\n", reg, val, val);
-
+	//LOG_INF("OIS write 0x%x: 0x%x (%d)\n", reg, val, val);
 	buf[0] = reg >> 8;
 	buf[1] = reg & 0xff;
 	buf[2] = val >> 8;
