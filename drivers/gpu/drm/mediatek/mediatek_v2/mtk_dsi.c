@@ -9817,6 +9817,27 @@ static void mtk_dsi_cmd_timing_change(struct mtk_dsi *dsi,
 			if (dsi->driver_data && dsi->driver_data->mmclk_by_datarate)
 				dsi->driver_data->mmclk_by_datarate(dsi, mtk_crtc, 1);
 
+		if (dsi->ext &&
+			dsi->ext->params &&
+			dsi->ext->params->te_delay == 1 &&
+			!(dsi->mode_flags & MIPI_DSI_MODE_VIDEO)) {
+			struct drm_display_mode *src_m = get_mode_by_id(&dsi->conn, src_mode);
+			struct drm_display_mode *dst_m = get_mode_by_id(&dsi->conn, dst_mode);
+			int src_fresh = drm_mode_vrefresh(src_m);
+			int dst_fresh = drm_mode_vrefresh(dst_m);
+			if(dsi->ext->params->te_delay_high_to_low_fps_period){
+				if(src_fresh > dst_fresh){
+					DDPINFO("%s: fps is from %d to %d, delay 1 frame for te\n",
+					__func__, src_fresh, dst_fresh);
+					mdelay(1000/dst_fresh);
+				}
+			}else{
+				DDPINFO("%s: fps is from %d to %d, delay 1 frame for te\n",
+					__func__, src_fresh, dst_fresh);
+				mdelay(1000/dst_fresh);
+			}
+		}
+
 		goto skip_change_mipi;
 	}
 
