@@ -4821,11 +4821,8 @@ static void mmi_dual_charge_control(struct mtk_charger *chg,
 	}
 
 	mmi->sm_param[BASE_BATT].pres_chrg_step = main_p->pres_chrg_step;
-	if (main_p->target_fv > flip_p->target_fv)
-		target_fv = main_p->target_fv;
-	else
-		target_fv = flip_p->target_fv;
 
+	target_fv = main_p->target_fv;
 
 	if (chg->blance_thermal_fcc > 0 && (flip_p->target_fcc > chg->blance_thermal_fcc / 1000)) {
 		flip_p->target_fcc = chg->blance_thermal_fcc / 1000;
