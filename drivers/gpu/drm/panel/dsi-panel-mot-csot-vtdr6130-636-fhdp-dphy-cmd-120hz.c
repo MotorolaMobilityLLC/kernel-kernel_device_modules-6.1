@@ -1394,7 +1394,7 @@ static int panel_lhbm_set_cmdq(void *dsi, dcs_grp_write_gce cb, void *handle, ui
 		  cb(dsi, handle, pTable_EVT, para_count_EVT);
 	      cb(dsi, handle, pTable, para_count);
 		}
-		else if(ctx->version == 2){
+		else{
 		  cb(dsi, handle, pTable, para_count);
 		}
 	} else {
