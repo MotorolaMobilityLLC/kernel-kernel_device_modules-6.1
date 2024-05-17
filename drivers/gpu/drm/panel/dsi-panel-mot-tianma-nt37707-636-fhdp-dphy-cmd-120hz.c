@@ -1166,9 +1166,8 @@ static void mode_switch_to_90(struct drm_panel *panel,
 		lcm_dcs_write_seq_static(ctx, 0x6F, 0x04);
 		lcm_dcs_write_seq_static(ctx, 0x35, 0x00);
 		lcm_dcs_write_seq_static(ctx, 0x53, 0x20);
-
 		lcm_dcs_write_seq_static(ctx, 0x2F,0x04);
-		lcm_dcs_write_seq_static(ctx, 0x44, 0x00, 0x00);
+
 		atomic_set(&ctx->current_fps, 90);
 	}
 }
@@ -1182,9 +1181,8 @@ static void mode_switch_to_120(struct drm_panel *panel,
 		lcm_dcs_write_seq_static(ctx, 0x6F, 0x04);
 		lcm_dcs_write_seq_static(ctx, 0x35, 0x00);
 		lcm_dcs_write_seq_static(ctx, 0x53, 0x20);
-
 		lcm_dcs_write_seq_static(ctx, 0x2F, 0x02);
-		lcm_dcs_write_seq_static(ctx, 0x44, 0x00, 0x00);
+
 		atomic_set(&ctx->current_fps, 120);
 	}
 }
@@ -1205,15 +1203,12 @@ static void mode_switch_to_60(struct drm_panel *panel,
 
 		lcm_dcs_write_seq_static(ctx, 0x6F, 0x06);
 		lcm_dcs_write_seq_static(ctx, 0x6D, 0x03);
-
-		lcm_dcs_write_seq_static(ctx, 0xF0, 0x55, 0xAA, 0x52, 0x08, 0x00);
-		lcm_dcs_write_seq_static(ctx, 0x6F, 0x08);
-		lcm_dcs_write_seq_static(ctx, 0xB2, 0x80);
-
+		lcm_dcs_write_seq_static(ctx, 0x6F, 0x02);
+		lcm_dcs_write_seq_static(ctx, 0x8C, 0x03);
 		lcm_dcs_write_seq_static(ctx, 0xF0, 0x55, 0xAA, 0x52, 0x08, 0x00);
 		lcm_dcs_write_seq_static(ctx, 0x6F, 0xD9);
 		lcm_dcs_write_seq_static(ctx, 0xBA, 0x00);
-		lcm_dcs_write_seq_static(ctx, 0x44, 0x00, 0x21);
+
 		atomic_set(&ctx->current_fps, 60);
 	}
 }
@@ -1233,15 +1228,12 @@ static void mode_switch_to_30(struct drm_panel *panel,
 		lcm_dcs_write_seq_static(ctx, 0x6D, 0x01, 0x00);
 		lcm_dcs_write_seq_static(ctx, 0x6F, 0x06);
 		lcm_dcs_write_seq_static(ctx, 0x6D, 0x00);
-		lcm_dcs_write_seq_static(ctx, 0xF0, 0x55, 0xAA, 0x52, 0x08, 0x00);
-		lcm_dcs_write_seq_static(ctx, 0x6F, 0x08);
-
-		lcm_dcs_write_seq_static(ctx, 0xB2, 0x80);
-
+		lcm_dcs_write_seq_static(ctx, 0x6F, 0x02);
+		lcm_dcs_write_seq_static(ctx, 0x8C, 0x03);
 		lcm_dcs_write_seq_static(ctx, 0xF0, 0x55, 0xAA, 0x52, 0x08, 0x00);
 		lcm_dcs_write_seq_static(ctx, 0x6F, 0xD9);
 		lcm_dcs_write_seq_static(ctx, 0xBA, 0x04);
-		lcm_dcs_write_seq_static(ctx, 0x44, 0x00, 0x21);
+
 		atomic_set(&ctx->current_fps, 30);
 	}
 }
@@ -1260,17 +1252,14 @@ static void mode_switch_to_24(struct drm_panel *panel,
 		lcm_dcs_write_seq_static(ctx, 0x6D, 0x02, 0x00);
 		lcm_dcs_write_seq_static(ctx, 0x6F, 0x06);
 		lcm_dcs_write_seq_static(ctx, 0x6D, 0X00);
-		lcm_dcs_write_seq_static(ctx, 0xF0, 0x55, 0xAA, 0x52, 0x08, 0x00);
-		lcm_dcs_write_seq_static(ctx, 0x6F, 0x08);
-
-		lcm_dcs_write_seq_static(ctx, 0xB2, 0XC0);
-
+		lcm_dcs_write_seq_static(ctx, 0x6F, 0x02);
+		lcm_dcs_write_seq_static(ctx, 0x8C, 0x13);
 		lcm_dcs_write_seq_static(ctx, 0xF0, 0x55, 0xAA, 0x52, 0x08, 0x00);
 		lcm_dcs_write_seq_static(ctx, 0x6F, 0xD9);
-		lcm_dcs_write_seq_static(ctx, 0xBA, 0x00);
+		lcm_dcs_write_seq_static(ctx, 0xBA, 0X00);
 		lcm_dcs_write_seq_static(ctx, 0x6F, 0x05);
 		lcm_dcs_write_seq_static(ctx, 0xB2, 0x05, 0x05);
-		lcm_dcs_write_seq_static(ctx, 0x44, 0x00, 0x00);
+
 		atomic_set(&ctx->current_fps, 24);
 	}
 }
@@ -1289,15 +1278,12 @@ static void mode_switch_to_10(struct drm_panel *panel,
 		lcm_dcs_write_seq_static(ctx, 0x6D, 0x00);
 		lcm_dcs_write_seq_static(ctx, 0x2F, 0x30);
 		lcm_dcs_write_seq_static(ctx, 0x6D, 0x03, 0x00);
-		lcm_dcs_write_seq_static(ctx, 0xF0, 0x55, 0xAA, 0x52, 0x08, 0x00);
-		lcm_dcs_write_seq_static(ctx, 0x6F, 0x08);
-
-		lcm_dcs_write_seq_static(ctx, 0xB2, 0xC0);
-
+		lcm_dcs_write_seq_static(ctx, 0x6F, 0x02);
+		lcm_dcs_write_seq_static(ctx, 0x8C, 0x13);
 		lcm_dcs_write_seq_static(ctx, 0xF0, 0x55, 0xAA, 0x52, 0x08, 0x00);
 		lcm_dcs_write_seq_static(ctx, 0x6F, 0xD9);
 		lcm_dcs_write_seq_static(ctx, 0xBA, 0x00);
-		lcm_dcs_write_seq_static(ctx, 0x44, 0x00, 0x00);
+
 		atomic_set(&ctx->current_fps, 10);
 	}
 }
@@ -1314,18 +1300,14 @@ static void mode_switch_to_1(struct drm_panel *panel,
 		lcm_dcs_write_seq_static(ctx, 0x5A, 0x00);
 		lcm_dcs_write_seq_static(ctx, 0x6F, 0x06);
 		lcm_dcs_write_seq_static(ctx, 0x6D, 0x00);
-
 		lcm_dcs_write_seq_static(ctx, 0x2F, 0x30);
 		lcm_dcs_write_seq_static(ctx, 0x6D, 0x04, 0x00);
-		lcm_dcs_write_seq_static(ctx, 0xF0, 0x55, 0xAA, 0x52, 0x08, 0x00);
-		lcm_dcs_write_seq_static(ctx, 0x6F, 0x08);
-
-		lcm_dcs_write_seq_static(ctx, 0xB2, 0xC0);
-
+		lcm_dcs_write_seq_static(ctx, 0x6F, 0x02);
+		lcm_dcs_write_seq_static(ctx, 0x8C, 0x13);
 		lcm_dcs_write_seq_static(ctx, 0xF0, 0x55, 0xAA, 0x52, 0x08, 0x00);
 		lcm_dcs_write_seq_static(ctx, 0x6F, 0xD9);
 		lcm_dcs_write_seq_static(ctx, 0xBA, 0x00);
-		lcm_dcs_write_seq_static(ctx, 0x44, 0x00, 0x00);
+
 		atomic_set(&ctx->current_fps, 1);
 	}
 }
