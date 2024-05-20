@@ -1517,7 +1517,6 @@ static int panel_feature_set(struct drm_panel *panel, void *dsi,
 			ret = -1;
 			break;
 		case PARAM_HBM:
-			atomic_set(&ctx->hbm_mode, param_info.value);
 			panel_hbm_set_cmdq(ctx, dsi, cb, handle, param_info.value);
 			break;
 		case PARAM_DC:
