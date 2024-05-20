@@ -1398,6 +1398,10 @@ static int panel_lhbm_set_cmdq(void *dsi, dcs_grp_write_gce cb, void *handle, ui
 		  cb(dsi, handle, pTable, para_count);
 		}
 	} else {
+			if(atomic_read(&ctx->hbm_mode) != 2){
+				pr_info("%s: lhbm_mode is already off \n", __func__);
+				return 0;
+			}
 			pTable = &panel_lhbm_dark_off[1];
 			pTable->para_list[1] = (bl_level >> 8) & 0xFF;
 			pTable->para_list[2] = bl_level & 0xFF;
