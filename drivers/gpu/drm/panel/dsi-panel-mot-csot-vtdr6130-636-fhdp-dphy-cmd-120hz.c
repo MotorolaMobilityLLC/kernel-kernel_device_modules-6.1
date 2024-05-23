@@ -602,6 +602,8 @@ static struct mtk_panel_params ext_params = {
 		.para_list[2] = 0x00,
 	},
 	.lcm_color_mode = MTK_DRM_COLOR_MODE_DISPLAY_P3,
+	.physical_width_um = 66240,
+	.physical_height_um = 147384,
 	.lp_perline_en = 1,
 	.output_mode = MTK_PANEL_DSC_SINGLE_PORT,
 	.lcm_index = 0,
@@ -678,6 +680,8 @@ static struct mtk_panel_params ext_params_90hz = {
 		.para_list[2] = 0x00,
 	},
 	.lcm_color_mode = MTK_DRM_COLOR_MODE_DISPLAY_P3,
+	.physical_width_um = 66240,
+	.physical_height_um = 147384,
 	.lp_perline_en = 1,
 	.te_delay = 1,
 	.output_mode = MTK_PANEL_DSC_SINGLE_PORT,
@@ -755,6 +759,8 @@ static struct mtk_panel_params ext_params_60hz = {
 		.para_list[2] = 0x00,
 	},
 	.lcm_color_mode = MTK_DRM_COLOR_MODE_DISPLAY_P3,
+	.physical_width_um = 66240,
+	.physical_height_um = 147384,
 	.lp_perline_en = 1,
 	.te_delay = 1,
 	.output_mode = MTK_PANEL_DSC_SINGLE_PORT,
@@ -832,6 +838,8 @@ static struct mtk_panel_params ext_params_30hz = {
 		.para_list[2] = 0x00,
 	},
 	.lcm_color_mode = MTK_DRM_COLOR_MODE_DISPLAY_P3,
+	.physical_width_um = 66240,
+	.physical_height_um = 147384,
 	.lp_perline_en = 1,
 	.te_delay = 1,
 	.output_mode = MTK_PANEL_DSC_SINGLE_PORT,
@@ -909,6 +917,8 @@ static struct mtk_panel_params ext_params_24hz = {
 		.para_list[2] = 0x00,
 	},
 	.lcm_color_mode = MTK_DRM_COLOR_MODE_DISPLAY_P3,
+	.physical_width_um = 66240,
+	.physical_height_um = 147384,
 	.lp_perline_en = 1,
 	.output_mode = MTK_PANEL_DSC_SINGLE_PORT,
 	.lcm_index = 0,
@@ -985,6 +995,8 @@ static struct mtk_panel_params ext_params_10hz = {
 		.para_list[2] = 0x00,
 	},
 	.lcm_color_mode = MTK_DRM_COLOR_MODE_DISPLAY_P3,
+	.physical_width_um = 66240,
+	.physical_height_um = 147384,
 	.lp_perline_en = 1,
 	.output_mode = MTK_PANEL_DSC_SINGLE_PORT,
 	.lcm_index = 0,
@@ -1061,6 +1073,8 @@ static struct mtk_panel_params ext_params_1hz = {
 		.para_list[2] = 0x00,
 	},
 	.lcm_color_mode = MTK_DRM_COLOR_MODE_DISPLAY_P3,
+	.physical_width_um = 66240,
+	.physical_height_um = 147384,
 	.lp_perline_en = 1,
 	.output_mode = MTK_PANEL_DSC_SINGLE_PORT,
 	.lcm_index = 0,
@@ -1398,10 +1412,6 @@ static int panel_lhbm_set_cmdq(void *dsi, dcs_grp_write_gce cb, void *handle, ui
 		  cb(dsi, handle, pTable, para_count);
 		}
 	} else {
-			if(atomic_read(&ctx->hbm_mode) != 2){
-				pr_info("%s: lhbm_mode is already off \n", __func__);
-				return 0;
-			}
 			pTable = &panel_lhbm_dark_off[1];
 			pTable->para_list[1] = (bl_level >> 8) & 0xFF;
 			pTable->para_list[2] = bl_level & 0xFF;
@@ -1883,6 +1893,7 @@ static int lcm_probe(struct mipi_dsi_device *dsi)
 	atomic_set(&ctx->hbm_mode, 0);
 	atomic_set(&ctx->dc_mode, 0);
 	atomic_set(&ctx->current_fps, 120);
+	atomic_set(&ctx->current_backlight, 1644);
 
 	ctx->lhbm_en = 1;
 	printk("%s exit  \n",__func__);
