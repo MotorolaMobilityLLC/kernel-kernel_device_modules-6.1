@@ -1292,6 +1292,8 @@ static int dw9784_init(struct dw9784_device *dw9784)
 	dw_ois_mode = OIS_MODEINIT;
 
 	client->addr = DW9784_OIS_I2C_SLAVE_ADDR >> 1;
+	// there are at least 10ms from drv_vdd to ois_reset, plus 6ms in power_on.
+	ois_mdelay(4);
 	ois_reset();
 	ret = ois_i2c_rd_u16(client, 0x7011, &lock_ois);
 	LOG_INF("Check HW lock_ois: %x\n", lock_ois);
