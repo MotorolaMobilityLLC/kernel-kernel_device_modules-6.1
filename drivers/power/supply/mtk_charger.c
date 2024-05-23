@@ -4701,12 +4701,8 @@ static void mmi_dual_charge_control(struct mtk_charger *chg,
 	} else
 		chg_stat_flip.batt_soc = pval.intval;
 
-	rc = power_supply_get_property(chg->main_batt_psy, POWER_SUPPLY_PROP_TEMP, &pval);
-	if (rc < 0) {
-		pr_err("Error getting Main Batt Temperature rc = %d\n", rc);
-		return;
-	} else
-		chg_stat_main.batt_temp = pval.intval / 10;
+	/*use ui temp to control main battery*/
+	chg_stat_main.batt_temp = state->batt_temp;
 
 	rc = power_supply_get_property(chg->flip_batt_psy, POWER_SUPPLY_PROP_TEMP, &pval);
 	if (rc < 0) {
