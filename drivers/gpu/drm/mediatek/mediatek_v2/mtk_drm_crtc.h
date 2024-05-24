@@ -744,6 +744,14 @@ struct disp_ccorr_config {
 	bool featureFlag;
 };
 
+struct disp_ccorr_config_backup {
+	int mode;
+	int color_matrix[16];
+	bool featureFlag;
+	bool linear;
+	bool update;
+};
+
 struct user_cwb_image {
 	u8 *image;
 	int width, height;
@@ -1141,6 +1149,8 @@ struct mtk_drm_crtc {
 	unsigned int usage_ovl_weight[OVL_LAYER_NR];
 
 	bool is_plane0_updated;
+
+	struct disp_ccorr_config_backup ccorr_config_backup;
 };
 
 enum BL_GAMMA_GAIN {
