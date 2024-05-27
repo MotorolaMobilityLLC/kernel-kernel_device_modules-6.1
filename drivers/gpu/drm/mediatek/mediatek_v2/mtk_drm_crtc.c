@@ -12757,6 +12757,8 @@ void mml_cmdq_pkt_init(struct drm_crtc *crtc, struct cmdq_pkt *cmdq_handle)
 	}
 }
 
+extern void mtk_crtc_color_matrix_backup(struct drm_crtc *crtc);
+
 struct cmdq_pkt *mtk_crtc_gce_commit_begin(struct drm_crtc *crtc,
 						struct drm_crtc_state *old_crtc_state,
 						struct mtk_crtc_state *crtc_state,
@@ -13756,6 +13758,9 @@ static void mtk_drm_crtc_atomic_begin(struct drm_crtc *crtc,
 		DRM_ERROR("new event while there is still a pending event\n");
 
 	comp = mtk_ddp_comp_request_output(mtk_crtc);
+
+	mtk_crtc_color_matrix_backup(crtc);
+
 	if (mtk_drm_helper_get_opt(priv->helper_opt, MTK_DRM_OPT_SPHRT)) {
 		if (priv->usage[crtc_idx] == DISP_OPENING) {
 			if (!(comp && mtk_ddp_comp_get_type(comp->id) == MTK_DISP_WDMA)) {
@@ -14687,51 +14692,64 @@ static void mtk_crtc_backup_color_matrix_data(struct drm_crtc *crtc,
 }
 #endif
 
-static void mtk_crtc_dl_config_color_matrix(struct drm_crtc *crtc,
-				struct disp_ccorr_config *ccorr_config,
-				struct cmdq_pkt *cmdq_handle)
+void mtk_crtc_color_matrix_backup(struct drm_crtc *crtc)
 {
-
 	struct mtk_drm_crtc *mtk_crtc = to_mtk_crtc(crtc);
-	int set = -1, i;
-	bool linear;
-	struct mtk_ddp_comp *comp;
-	struct mtk_disp_ccorr *ccorr_data;
 	struct mtk_crtc_state *state = to_mtk_crtc_state(crtc->state);
+	struct disp_ccorr_config *ccorr_config = NULL;
+	int i;
+
+	DDPINFO("%s +\n", __func__);
+
+	ccorr_config = mtk_crtc_get_color_matrix_data(crtc);
 
 	if (!ccorr_config)
 		return;
 
-	linear = state->prop_val[CRTC_PROP_AOSP_CCORR_LINEAR];
+	mtk_crtc->ccorr_config_backup.mode = ccorr_config->mode;
+	mtk_crtc->ccorr_config_backup.featureFlag= ccorr_config->featureFlag;
+	for (i = 0; i < 16; i++)
+		mtk_crtc->ccorr_config_backup.color_matrix[i] = ccorr_config->color_matrix[i];
+
+	mtk_crtc->ccorr_config_backup.linear = state->prop_val[CRTC_PROP_AOSP_CCORR_LINEAR];
+	mtk_crtc->ccorr_config_backup.update = true;
+
+	DDPINFO("%s backup done\n", __func__);
+}
+
+static void mtk_crtc_dl_config_color_matrix(struct drm_crtc *crtc,
+				struct cmdq_pkt *cmdq_handle)
+{
+
+	struct mtk_drm_crtc *mtk_crtc = to_mtk_crtc(crtc);
+	int set = -1;
+	int i;
+	struct mtk_ddp_comp *comp;
+
+	DDPINFO("%s +\n", __func__);
+
+	if (!mtk_crtc->ccorr_config_backup.update)
+		return;
 
 	for_each_comp_in_crtc_target_path(comp, mtk_crtc, i, DDP_FIRST_PATH) {
 		if (mtk_ddp_comp_get_type(comp->id) == MTK_DISP_CCORR) {
 			set = disp_ccorr_set_color_matrix(comp, cmdq_handle,
-					ccorr_config->color_matrix, ccorr_config->mode,
-					ccorr_config->featureFlag, linear);
+					mtk_crtc->ccorr_config_backup.color_matrix,
+					mtk_crtc->ccorr_config_backup.mode,
+					mtk_crtc->ccorr_config_backup.featureFlag,
+					mtk_crtc->ccorr_config_backup.linear);
 			if (set != 0)
 				continue;
-			if (mtk_crtc->is_dual_pipe) {
-				ccorr_data = comp_to_ccorr(comp);
-				set = disp_ccorr_set_color_matrix(ccorr_data->companion,
-						cmdq_handle,
-						ccorr_config->color_matrix, ccorr_config->mode,
-						ccorr_config->featureFlag, linear);
-			}
-			if (!set)
-				break;
 		}
 	}
 
-#ifdef IF_ZERO /* not ready for dummy register method */
-	if (!set)
-		mtk_crtc_backup_color_matrix_data(crtc, ccorr_config,
-						cmdq_handle);
-	else
-#else
+	mtk_crtc->ccorr_config_backup.update = false;
+
 	if (set < 0 || set == 2)
-#endif
-		DDPPR_ERR("Cannot not find ccorr with linear %d\n", linear);
+		DDPPR_ERR("Cannot not find ccorr with linear %d\n",
+		mtk_crtc->ccorr_config_backup.linear);
+
+	DDPINFO("%s config color matrix done\n", __func__);
 }
 
 static void mtk_drm_discrete_cb(struct cmdq_cb_data data)
@@ -14806,7 +14824,6 @@ int mtk_crtc_gce_flush(struct drm_crtc *crtc, void *gce_cb,
 {
 	struct mtk_drm_crtc *mtk_crtc = to_mtk_crtc(crtc);
 	struct mtk_crtc_state *state = to_mtk_crtc_state(crtc->state);
-	struct disp_ccorr_config *ccorr_config = NULL;
 	int is_from_dal = 0, event = 0;
 	int crtc_index = drm_crtc_index(crtc);
 	struct cmdq_pkt *handle;
@@ -14847,11 +14864,9 @@ int mtk_crtc_gce_flush(struct drm_crtc *crtc, void *gce_cb,
 		is_from_dal = 1;
 
 	/* apply color matrix if crtc0 or crtc3 is DL */
-	ccorr_config = mtk_crtc_get_color_matrix_data(crtc);
 	if ((drm_crtc_index(crtc) == 0 || drm_crtc_index(crtc) == 3)
 		&& (!mtk_crtc_is_dc_mode(crtc)))
-		mtk_crtc_dl_config_color_matrix(crtc, ccorr_config,
-			cmdq_handle);
+		mtk_crtc_dl_config_color_matrix(crtc, cmdq_handle);
 
 	//discrete mdp_rdma need fill full frame
 	if (mtk_crtc->path_data->is_discrete_path) {
