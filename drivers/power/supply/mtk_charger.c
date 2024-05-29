@@ -6223,6 +6223,7 @@ static void mmi_check_typec_conn_temp(struct mtk_charger *info)
 {
 	struct thermal_zone_device *usb_conn_zone;
 	int conn_ntc = 0;
+	int ret = 0;
 
 	if (!info->typecotp_charger || info->mmi.factory_mode) {
 		chr_err("%s Error: typec-otp not support\n", __func__);
@@ -6240,7 +6241,13 @@ static void mmi_check_typec_conn_temp(struct mtk_charger *info)
 		return;
 	}
 
-	conn_ntc = usb_conn_zone->temperature / 100;
+	ret = thermal_zone_get_temp(usb_conn_zone, &conn_ntc);
+	if (ret) {
+		pr_err("%s Error reading temperature for conn_ntc:%d\n", __func__, ret);
+		return;
+	}
+
+	conn_ntc = conn_ntc / 100;
 	pr_info("otp conn_ntc = %d\n",conn_ntc);
 	if ((conn_ntc >= TYPEC_OTP_THRES) && (get_vbus(info) > VBUS_THRES)) {
 		mmi_typec_otp_set_cur_state(info->tcd, true);
