@@ -944,6 +944,7 @@ def get_overlay_modules_list():
         mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/misc/foursemi/fs3001:fs3001")
         mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/misc/sx937x:sx937x_sar")
         mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/power/cps4038_mmi:cps4038_mmi")
+        mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/power/qpnp_adaptive_charge:qpnp_adaptive_charge")
         mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/power/nfg1000_fg_mmi:nfg1000_fg_mmi")
 
         mgk_64_k61_device_modules.append("drivers/gpu/drm/panel/dsi-panel-mot-csot-vtdr6130-636-fhdp-dphy-cmd-120hz.ko")
