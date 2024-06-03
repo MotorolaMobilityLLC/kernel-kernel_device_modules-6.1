@@ -26,6 +26,7 @@
 #define FSA4480_DELAY_L_MIC     0x0E
 #define FSA4480_DELAY_L_SENSE   0x0F
 #define FSA4480_DELAY_L_AGND    0x10
+#define FSA4480_FUN_EN          0x12
 #define FSA4480_RESET           0x1E
 
 struct fsa4480_priv {
@@ -54,20 +55,16 @@ static const struct regmap_config fsa4480_regmap_config = {
 };
 
 static const struct fsa4480_reg_val fsa_reg_i2c_defaults[] = {
-	{FSA4480_SLOW_L, 0x00},
-	{FSA4480_SLOW_R, 0x00},
-	{FSA4480_SLOW_MIC, 0x00},
-	{FSA4480_SLOW_SENSE, 0x00},
-	{FSA4480_SLOW_GND, 0x00},
+	{FSA4480_SLOW_L, 0xBF},
+	{FSA4480_SLOW_R, 0xBF},
+	{FSA4480_SLOW_MIC, 0xBF},
+	{FSA4480_SLOW_SENSE, 0xBF},
+	{FSA4480_SLOW_GND, 0xBF},
 	{FSA4480_DELAY_L_R, 0x00},
 	{FSA4480_DELAY_L_MIC, 0x00},
 	{FSA4480_DELAY_L_SENSE, 0x00},
-	{FSA4480_DELAY_L_AGND, 0x09},
-#ifdef CONFIG_FSA4480_SENS_TO_GND
-	{FSA4480_SWITCH_SETTINGS, 0x9D},
-#else
+	{FSA4480_DELAY_L_AGND, 0x00},
 	{FSA4480_SWITCH_SETTINGS, 0x98},
-#endif
 };
 
 static struct fsa4480_priv *fsa_priv;
@@ -120,7 +117,12 @@ int fsa4480_switch_event(enum fsa_function event)
 		break;
 	case FSA_TYPEC_ACCESSORY_AUDIO:
 		/* activate switches */
-		fsa4480_usbc_update_settings(fsa_priv, 0x00, 0x9F);
+		//fsa4480_usbc_update_settings(fsa_priv, 0x00, 0x9F);
+		regmap_write(fsa_priv->regmap, FSA4480_SWITCH_SETTINGS, 0x9F);
+			usleep_range(50, 55);
+		regmap_write(fsa_priv->regmap, FSA4480_SWITCH_CONTROL, 0x00);
+			usleep_range(50, 55);
+		regmap_write(fsa_priv->regmap, FSA4480_FUN_EN, 0x09);
 		break;
 	case FSA_TYPEC_ACCESSORY_NONE:
 		/* deactivate switches */
