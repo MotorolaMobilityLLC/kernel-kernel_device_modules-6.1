@@ -1143,6 +1143,10 @@ static int pe50_stop(struct pe50_algo_info *info, struct pe50_stop_info *sinfo)
 			pe50_enable_ta_charging(info, false, PE50_VTA_INIT,
 						PE50_ITA_INIT);
 	}
+
+	if (data->cv_limit > 0)
+		pe50_hal_set_cv(info->alg, CHG1, data->cv_limit * 1000);
+
 	pe50_enable_swchg_charging(info, true);
 	pe50_hal_enable_sw_vbusovp(info->alg, true);
 	pe50_send_notification(info, EVT_ALGO_STOP, &notify);
