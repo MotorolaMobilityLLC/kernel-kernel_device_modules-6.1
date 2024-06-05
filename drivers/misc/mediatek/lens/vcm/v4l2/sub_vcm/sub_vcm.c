@@ -257,6 +257,14 @@ static int sub_vcm_release(struct sub_vcm_device *sub_vcm)
 
 	struct i2c_client *client = v4l2_get_subdevdata(&sub_vcm->sd);
 
+#ifndef CONFIG_AF_NOISE_ELIMINATION
+	if (g_vcmconfig.origin_focus_pos == 0xffffffff) {
+		LOG_INF("%s Skip park lens.", __func__);
+		register_setting(client, g_vcmconfig.wr_rls_table, 8);
+		return 0;
+	}
+#endif
+
 	diff_dac = g_vcmconfig.origin_focus_pos - sub_vcm->focus->val;
 
 	nStep_count = (diff_dac < 0 ? (diff_dac*(-1)) : diff_dac) /
