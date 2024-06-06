@@ -1,0 +1,26 @@
+/*
+ * Copyright (C) 2023 Motorola Inc.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 as
+ * published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See http://www.gnu.org/licenses/gpl-2.0.html for more details.
+ */
+aito-atl-2910mah {
+	serialnum = "SB18E39389";
+	fcc_design = <2910>;
+	config_profile_info = [ 46 00 00 00 00 00 00 00
+				B1 C1 C1 C2 AD A7 D3 B9
+				AA E8 CA 99 82 67 55 49
+				41 37 2B 86 68 E2 F9 EF
+				E5 C3 CC D3 DA DB D8 D5
+				D0 CB CD D8 B2 9E 92 88
+				82 7D 89 92 A8 A0 58 E2
+				20 00 AB 10 00 A3 64 00
+				00 00 64 0E B2 33 00 00
+				00 00 00 00 00 00 00 C8];
+};
