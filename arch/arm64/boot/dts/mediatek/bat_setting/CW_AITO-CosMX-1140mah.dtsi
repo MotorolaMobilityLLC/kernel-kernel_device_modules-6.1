@@ -14,7 +14,7 @@ aito-cosmx-1140mah {
 	serialnum = "SB18E19548";
 	fcc_design = <1140>;
 	//ui_full = <98>;
-	config_profile_info = [ 46 00 00 00 00 00 00 00
+	config_profile_info = [ 3C 00 00 00 00 00 00 00
 				AB C2 C2 C7 B6 AD C5 A4
 				96 FF E4 BB 94 81 67 55
 				4B 46 41 85 5D E3 03 F1
@@ -23,5 +23,5 @@ aito-cosmx-1140mah {
 				B1 B9 9F D5 D3 FF FF EE
 				20 00 AB 10 00 80 C9 00
 				00 00 64 19 90 04 00 00
-				00 00 00 00 00 00 00 14];
+				00 00 00 00 00 00 00 D9];
 };
