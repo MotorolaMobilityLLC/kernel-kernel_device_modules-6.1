@@ -233,13 +233,13 @@
 				"optus",	/* 213 */
 				"retkr",	/* 214 */
 				"retjio",	/* 215 */
-				"undefined",	/* 216 */
-				"undefined",	/* 217 */
-				"undefined",	/* 218 */
-				"undefined",	/* 219 */
-				"undefined",	/* 220 */
-				"undefined",	/* 221 */
-				"undefined",	/* 222 */
+				"ymobile",	/* 216 */
+				"lguplus",	/* 217 */
+				"docomo",	/* 218 */
+				"retanz",	/* 219 */
+				"cbncn",	/* 220 */
+				"kddi",		/* 221 */
+				"rakuten",	/* 222 */
 				"undefined",	/* 223 */
 				"undefined",	/* 224 */
 				"undefined",	/* 225 */
