@@ -176,6 +176,40 @@ static void handle_pd_rdy_attach(struct mtk_ctd_info *mci, int idx,
 }
 
 #ifdef CONFIG_MOTO_CHANNEL_SWITCH
+static int control_cp_vbusovp(bool val)
+{
+	struct mtk_charger *info = NULL;
+	struct power_supply *chg_psy = NULL;
+	int ret = 0;
+
+	if(val)
+		pr_info("%s:enable\n",__func__);
+	else
+		pr_info("%s:disable\n",__func__);
+
+	chg_psy = power_supply_get_by_name("mtk-master-charger");
+	if (chg_psy == NULL || IS_ERR(chg_psy)) {
+		pr_err("%s:Couldn't get chg_psy\n",__func__);
+		return -1;
+	} else {
+		info = (struct mtk_charger *)power_supply_get_drvdata(chg_psy);
+	}
+
+	info->dvchg1_dev = get_charger_by_name("primary_dvchg");
+	if (info->dvchg1_dev)
+		pr_err("%s:Found primary divider charger\n",__func__);
+	else {
+		pr_err("%s,*** Error : can't find primary divider charger ***\n",__func__);
+		return -1;
+	}
+
+	ret = charger_dev_enable_vbusovp(info->dvchg1_dev,val);
+	if(ret)
+		pr_err("%s,enable ovp failed ret = %d\n",__func__,ret);
+
+	return ret;
+}
+
 static int wireless_get_wireless_online(int *online)
 {
 	int ret = 0;
@@ -229,6 +263,7 @@ static int wireless_get_charger_type(struct mtk_ctd_info *mci,int idx)
 	if (((adc_vol == true) && wireless_online) || (!wireless_online)) {
 		pr_err("%s:wlc_factory_en = %d\n", __func__,wlc_factory_en);
 		if(!wlc_factory_en){
+			control_cp_vbusovp(true);
 			mmi_mux_typec_chg_chan(MMI_MUX_CHANNEL_TYPEC_CHG, true);
 			handle_typec_pd_attach(mci, idx, ATTACH_TYPE_TYPEC);
 		}else{
