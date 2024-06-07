@@ -554,11 +554,11 @@ static int lcm_setbacklight_cmdq(void *dsi, dcs_write_gce cb,
 	char bl_tb[] = {0x51, 0x0F, 0xff};
 	struct lcm *ctx = g_ctx;
 
-	if (atomic_read(&ctx->hbm_mode) && level) {
+	/*if (atomic_read(&ctx->hbm_mode) && level) {
 		pr_info("hbm_mode = %d, skip backlight(%d)\n", atomic_read(&ctx->hbm_mode), level);
 		atomic_set(&ctx->current_backlight, level);
 		return 0;
-	}
+	}*/
 
 	if (!(atomic_read(&ctx->current_backlight) && level))
 		pr_info("backlight changed from %u to %u\n", atomic_read(&ctx->current_backlight),level);
