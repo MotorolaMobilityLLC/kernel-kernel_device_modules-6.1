@@ -1497,6 +1497,31 @@ static int panel_feature_set(struct drm_panel *panel, void *dsi,
 	return ret;
 }
 
+static int panel_hbm_waitfor_fps_valid(struct drm_panel *panel, unsigned int timeout_ms)
+{
+	struct lcm *ctx = panel_to_lcm(panel);
+	unsigned int count = timeout_ms;
+	unsigned int poll_interval = 1;
+	unsigned int fps = atomic_read(&ctx->current_fps);
+	if (count == 0) return 0;
+	pr_info("%s+, fps = %d \n", __func__, fps);
+	while((fps != 120)) {
+		if (!count) {
+			pr_warn("%s: it is timeout, and current_fps = %d\n", __func__, fps);
+			break;
+		} else if (count > poll_interval) {
+			usleep_range(poll_interval * 1000, poll_interval *1000);
+			count -= poll_interval;
+		} else {
+			usleep_range(count * 1000, count *1000);
+			count = 0;
+		}
+		fps = atomic_read(&ctx->current_fps);
+	}
+	pr_info("%s-, fps = %d \n", __func__, fps);
+	return 0;
+}
+
 static int panel_ext_init_power(struct drm_panel *panel)
 {
 	int ret;
@@ -1602,6 +1627,7 @@ static struct mtk_panel_funcs ext_funcs = {
 	.ata_check = panel_ata_check,
 	.panel_feature_set = panel_feature_set,
 	.panel_feature_get = panel_feature_get,
+	.panel_hbm_waitfor_fps_valid = panel_hbm_waitfor_fps_valid,
 };
 #endif
 
