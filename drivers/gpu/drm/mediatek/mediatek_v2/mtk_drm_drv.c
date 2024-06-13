@@ -8099,7 +8099,7 @@ static int mtk_drm_ioctl_set_panel_feature(struct drm_device *dev, void *data,
 	struct mtk_panel_params *panel_ext = NULL;
 	int ret = 0;
 	//unsigned int bl_level = 0;
-	//unsigned int timeout = 30;
+	unsigned int timeout = 30;
 	unsigned int i;
 
 	for (i = 0 ; i < MAX_CRTC ; ++i) {
@@ -8124,10 +8124,9 @@ static int mtk_drm_ioctl_set_panel_feature(struct drm_device *dev, void *data,
 
 		switch (param_info->param_idx) {
 			case PARAM_HBM:
-			#if 0
 				if (comp && comp->funcs && comp->funcs->io_cmd && (param_info->value ==2))
 					comp->funcs->io_cmd(comp, NULL, PANEL_HBM_WAITFOR_FPS_VALID, &timeout);
-
+			#if 0
 				if (panel_ext->hbm_type == HBM_MODE_DCS_ONLY) {
 					bl_level = (param_info->value) ? BRIGHTNESS_HBM_ON_SKIP_BL : BRIGHTNESS_HBM_OFF;
 				} else {
