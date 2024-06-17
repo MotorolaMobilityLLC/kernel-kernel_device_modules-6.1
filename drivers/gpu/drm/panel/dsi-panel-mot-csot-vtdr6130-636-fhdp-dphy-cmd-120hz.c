@@ -200,7 +200,52 @@ static int lcm_panel_get_ab_data(struct drm_panel *panel)
 
 #endif
 
+static int read_gamma_flag = 0;
 
+static struct mtk_panel_para_table panel_lhbm_on_normal[] = {
+	{3, {0xf0,0xaa,0x13}},
+	{13, {0xc5,0x02,0x42,0x02,0x0C,0x02,0xAE,0x02,0x42,0x02,0x0C,0x02,0xAE}},
+};
+
+struct mtk_panel_para_table *pTable_normal = &panel_lhbm_on_normal[1];
+
+static int lcm_dcs_read(struct lcm *ctx, u8 cmd, void *data, size_t len)
+{
+	struct mipi_dsi_device *dsi = to_mipi_dsi_device(ctx->dev);
+	ssize_t ret;
+
+	if (ctx->error < 0)
+		return 0;
+
+	ret = mipi_dsi_dcs_read(dsi, cmd, data, len);
+	if (ret < 0) {
+		dev_err(ctx->dev, "error %zd reading dcs seq:(%#x)\n", ret, cmd);
+		ctx->error = ret;
+	}
+
+	return ret;
+}
+
+static void lcm_panel_get_data(struct lcm *ctx)
+{
+	int i = 0;
+	u8 buffer[25] = {0};
+	int ret = 0;
+	lcm_dcs_write_seq_static(ctx, 0xF0,0xAA,0x13);
+	lcm_dcs_write_seq_static(ctx, 0x65,0x00);
+
+	ret = lcm_dcs_read(ctx,  0xc5, buffer, 6);
+	if (ret < 0) {
+		printk("%s lcm_dcs_write_seq_static read fail ret =  %d \n",__func__, ret);
+	}else{
+		for(i = 0; i< 6; i++){
+			printk("return %d data(0x%02x) to dsi engine\n",
+			ret, buffer[i] );
+			pTable_normal->para_list[i+1] = buffer[i];
+			pTable_normal->para_list[i+1+6] = buffer[i];
+		}
+	}
+}
 
 static void lcm_panel_init(struct lcm *ctx)
 {
@@ -225,6 +270,11 @@ static void lcm_panel_init(struct lcm *ctx)
 	msleep(20);
 	devm_gpiod_put(ctx->dev, ctx->reset_gpio);
 
+	//read panel original gamma code for lhbm
+	lcm_panel_get_data(ctx);
+	if(0 == read_gamma_flag){
+		read_gamma_flag = 1;
+	}
 	lcm_dcs_write_seq_static(ctx, 0x59, 0x09);
 	lcm_dcs_write_seq_static(ctx, 0x03, 0x01);
 	lcm_dcs_write_seq_static(ctx, 0x35, 0x00);
@@ -262,6 +312,15 @@ if(ctx->version == 1){
 	lcm_dcs_write_seq_static(ctx, 0xf0,0xaa,0x10);
 	lcm_dcs_write_seq_static(ctx, 0xc1,0x80);
 }
+
+	lcm_dcs_write_seq_static(ctx, 0xFF,0x5A,0x81);
+	lcm_dcs_write_seq_static(ctx, 0x65,0x1B);
+	lcm_dcs_write_seq_static(ctx, 0xF8,0x04);
+	lcm_dcs_write_seq_static(ctx, 0x65,0x1A);
+	lcm_dcs_write_seq_static(ctx, 0xF8,0x0F);
+	lcm_dcs_write_seq_static(ctx, 0x65,0x0A);
+	lcm_dcs_write_seq_static(ctx, 0xF8,0xFB);
+
 	pr_info("%s current_fps:%d\n", __func__, atomic_read(&ctx->current_fps));
 	switch (atomic_read(&ctx->current_fps)) {
 	case 120:
@@ -1366,8 +1425,13 @@ static struct mtk_panel_para_table panel_lhbm_on_EVT[] = {
 	{25, {0xc5,0x02,0xC4,0x02,0x8A,0x03,0x47,0x02,0xC4,0x02,0x8A,0x03,0x47,0x02,0xC4,0x02,0x8A,0x03,0x46,0x02,0xC3,0x02,0x89,0x03,0x45}},
 };
 
+static struct mtk_panel_para_table panel_lhbm_on_hbm[] = {
+	{3, {0xf0,0xaa,0x13}},
+	{25, {0xc5,0x02,0x42,0x02,0x0C,0x02,0xAE,0x02,0x42,0x02,0x0C,0x02,0xAE,0x02,0x41,0x02,0x0B,0x02,0xAE,0x02,0x3F,0x02,0x09,0x02,0xAC}},
+};
+
 static struct mtk_panel_para_table panel_lhbm_bright_on[] = {
-    {5, {0x63, 0x0f, 0xff,0x0f,0xff}},
+    {5, {0x63, 0x10, 0x00,0x0f,0xff}},
     {2, {0x62, 0x03}},
 };
 
@@ -1382,7 +1446,14 @@ static struct mtk_panel_para_table panel_lhbm_dark_off[] = {
 	{3, {0x51, 0x03, 0xff}},
 
 };
-static void set_lhbm_alpha(unsigned int bl_level)
+
+static struct mtk_panel_para_table panel_lhbm_hbm_on[] = {
+	{5, {0x63, 0x0f, 0xff, 0x0f, 0xa0}},
+	{2, {0x62, 0x03}},
+
+};
+
+static void set_lhbm_alpha_pwm(unsigned int bl_level)
 {
 	struct mtk_panel_para_table *pTable = &panel_lhbm_dark_on[0];
 
@@ -1391,8 +1462,8 @@ static void set_lhbm_alpha(unsigned int bl_level)
 
 	if (bl_level == 0)
 		lhbm_alpha_index = 0;
-	else if (bl_level > sizeof(lhbm_alpha))
-		lhbm_alpha_index = sizeof(lhbm_alpha)-1;
+	else if (bl_level > 1322)
+		lhbm_alpha_index = 1322;
 
 	alpha = lhbm_alpha[lhbm_alpha_index];
 
@@ -1403,20 +1474,66 @@ static void set_lhbm_alpha(unsigned int bl_level)
 	pr_info("%s: backlight %d alpha %d(0x%x, 0x%x)\n", __func__, bl_level, alpha, pTable->para_list[1], pTable->para_list[2]);
 }
 
+static void set_lhbm_alpha_hbm(unsigned int bl_level)
+{
+	struct mtk_panel_para_table *pTable = &panel_lhbm_hbm_on[0];
+
+	unsigned int alpha = 0;
+	unsigned int lhbm_alpha_index = bl_level-3515;
+
+
+	if (bl_level > 3999){
+		lhbm_alpha_index = 483;
+		printk("lhbm_alpha_index = %d\n", lhbm_alpha_index);
+	}
+	alpha = lhbm_alpha_hbm[lhbm_alpha_index];
+
+	pTable->para_list[1] = (alpha >> 8) & 0xFF;
+	pTable->para_list[2] = alpha & 0xFF;
+	pTable->para_list[3] = 0x0F;
+	pTable->para_list[4] = 0xA0;
+	pr_info("%s: backlight %d alpha_hbm %d(0x%x, 0x%x)\n", __func__, bl_level, alpha, pTable->para_list[1], pTable->para_list[2]);
+}
+
 static int panel_lhbm_set_cmdq(void *dsi, dcs_grp_write_gce cb, void *handle, uint32_t on, uint32_t bl_level, uint32_t fps)
 {
 	unsigned int para_count = 0;
 	unsigned int para_count_EVT = 0;
+	unsigned int para_count_HBM = 0;
+	unsigned int para_count_normal = 0;
+	static unsigned int hbm_flag = 0;
+	int i = 0;
 	struct lcm *ctx = g_ctx;
 	struct mtk_panel_para_table *pTable;
 	struct mtk_panel_para_table *pTable_EVT = &panel_lhbm_on_EVT[0];
+	struct mtk_panel_para_table *pTable_HBM = &panel_lhbm_on_hbm[0];
+
+	if(read_gamma_flag ==0 ){
+		lcm_panel_get_data(ctx);
+		read_gamma_flag = 1;
+		for(i = 0; i < 13; i++){
+			printk("pTable_normal->para_list[%d] = 0x%02x\n", i, pTable_normal->para_list[i]);
+		}
+	}
+
 	para_count_EVT = sizeof(panel_lhbm_on_EVT) / sizeof(struct mtk_panel_para_table);
+	para_count_HBM = sizeof(panel_lhbm_on_hbm) / sizeof(struct mtk_panel_para_table);
+	para_count_normal = sizeof(panel_lhbm_on_normal) / sizeof(struct mtk_panel_para_table);
+
 	if (on) {
 		if (bl_level <= ARRAY_SIZE(lhbm_alpha)) {
-			set_lhbm_alpha(bl_level);
+			hbm_flag = 0;
+			set_lhbm_alpha_pwm(bl_level);
 			para_count = sizeof(panel_lhbm_dark_on) / sizeof(struct mtk_panel_para_table);
 			pTable = panel_lhbm_dark_on;
+		}else if(bl_level >= 3515){
+			hbm_flag = 1;
+			set_lhbm_alpha_hbm(bl_level);
+			para_count = sizeof(panel_lhbm_hbm_on) / sizeof(struct mtk_panel_para_table);
+			pTable = panel_lhbm_hbm_on;
+			cb(dsi, handle, pTable_HBM, para_count_HBM);
 		} else {
+			hbm_flag = 0;
 			para_count = sizeof(panel_lhbm_bright_on) / sizeof(struct mtk_panel_para_table);
 			panel_lhbm_bright_on[0].para_list[3] = (bl_level >> 8) & 0xFF;
 			panel_lhbm_bright_on[0].para_list[4] = bl_level & 0xFF;
@@ -1424,18 +1541,24 @@ static int panel_lhbm_set_cmdq(void *dsi, dcs_grp_write_gce cb, void *handle, ui
 		}
 		if(ctx->version == 1){
 		  cb(dsi, handle, pTable_EVT, para_count_EVT);
+		  cb(dsi, handle, pTable_normal, para_count_normal);
 	      cb(dsi, handle, pTable, para_count);
 		}
 		else{
 		  cb(dsi, handle, pTable, para_count);
 		}
 	} else {
+
 			pTable = &panel_lhbm_dark_off[1];
 			pTable->para_list[1] = (bl_level >> 8) & 0xFF;
 			pTable->para_list[2] = bl_level & 0xFF;
 			para_count = sizeof(panel_lhbm_dark_off) / sizeof(struct mtk_panel_para_table);
 			pTable = panel_lhbm_dark_off;
 			cb(dsi, handle, pTable, para_count);
+			if(hbm_flag == 1){
+				cb(dsi, handle, pTable_normal, para_count_normal);
+				hbm_flag = 0;
+			}
 	}
 	return 0;
 
@@ -1652,6 +1775,33 @@ static int panel_ext_powerdown(struct drm_panel *panel)
 
 	return 0;
 }
+
+static int panel_hbm_waitfor_fps_valid(struct drm_panel *panel, unsigned int timeout_ms)
+{
+	struct lcm *ctx = panel_to_lcm(panel);
+	//unsigned int count = timeout_ms;
+	unsigned int count = 50;
+	unsigned int poll_interval = 1;
+	unsigned int fps = atomic_read(&ctx->current_fps);
+	if (count == 0) return 0;
+	pr_info("%s+, fps = %d \n", __func__, fps);
+	while((fps != 120)) {
+		if (!count) {
+			pr_warn("%s: it is timeout, and current_fps = %d\n", __func__, fps);
+			break;
+		} else if (count > poll_interval) {
+			usleep_range(poll_interval * 1000, poll_interval *1000);
+			count -= poll_interval;
+		} else {
+			usleep_range(count * 1000, count *1000);
+			count = 0;
+		}
+		fps = atomic_read(&ctx->current_fps);
+	}
+	pr_info("%s-, fps = %d \n", __func__, fps);
+	return 0;
+}
+
 static struct mtk_panel_funcs ext_funcs = {
 	.reset = panel_ext_reset,
 	.set_backlight_cmdq = lcm_setbacklight_cmdq,
@@ -1662,6 +1812,7 @@ static struct mtk_panel_funcs ext_funcs = {
 	.ata_check = panel_ata_check,
 	.panel_feature_set = panel_feature_set,
 	.panel_feature_get = panel_feature_get,
+	.panel_hbm_waitfor_fps_valid = panel_hbm_waitfor_fps_valid,
 };
 #endif
 
