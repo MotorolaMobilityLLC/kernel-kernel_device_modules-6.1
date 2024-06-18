@@ -403,8 +403,13 @@ static int wlc_sc_set_charger(struct chg_alg_device *alg)
 			return -1;
 		}
 
-		wlc_hal_set_charging_current(alg, CHG1, wlc->charging_current1);
-		wlc_hal_set_input_current(alg, CHG1, wlc->input_current1);
+		if (NULL != wls_chg_ops &&
+			NULL != wls_chg_ops->wls_set_current) {
+			wls_chg_ops->wls_set_current(wlc->input_current1, wlc->charging_current1);
+		} else {
+			wlc_hal_set_charging_current(alg, CHG1, wlc->charging_current1);
+			wlc_hal_set_input_current(alg, CHG1, wlc->input_current1);
+		}
 	}
 	if (wlc->old_cv == 0 || (wlc->old_cv != wlc->cv) ||
 	    wlc->wlc_6pin_en == 0) {
