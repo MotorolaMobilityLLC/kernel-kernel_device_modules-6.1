@@ -1718,9 +1718,23 @@ static int tfa98xx_set_fade_ctl(struct snd_kcontrol *kcontrol,
 	            //    kthread_stop(fade_thrd);
 	            //    fade_thrd = NULL;
 	            //}
-	            tfa98xx_fade_task();
+	            if(is_fading ==0) {
+	                tfa98xx_fade_task();
+	            }
+
 	        } else {
 	            fade_status  = 1;
+	        }
+	    } else if (fade_status == 1 ) {
+	        if(mute_status == 0) {
+	            //if (!IS_ERR_OR_NULL(fade_thrd)) {
+	            //    kthread_stop(fade_thrd);
+	            //    fade_thrd = NULL;
+	            //}
+	            if(is_fading ==0) {
+	                tfa98xx_fade_task();
+	            }
+	            fade_status = 0;
 	        }
 	    }
 	} else {
