@@ -371,7 +371,7 @@ static const struct drm_display_mode switch_mode_60hz = {
 	.vtotal		= VACT + VFP + VSA + VBP,
 };
 
-
+/*
 static const struct drm_display_mode switch_mode_48hz = {
 	.clock = 56288,
 	.hdisplay	= HACT,
@@ -383,6 +383,7 @@ static const struct drm_display_mode switch_mode_48hz = {
 	.vsync_end	= VACT + VFP + VSA,
 	.vtotal		= VACT + VFP + VSA + VBP,
 };
+*/
 
 static const struct drm_display_mode switch_mode_90hz = {
 	.clock = 105538,
@@ -477,7 +478,7 @@ static struct mtk_panel_params ext_params_60hz = {
 	.check_panel_feature = 1,
 };
 
-
+/*
 static struct mtk_panel_params ext_params_48hz = {
 	.dyn_fps = {
 		.vact_timing_fps = 60,
@@ -517,7 +518,7 @@ static struct mtk_panel_params ext_params_48hz = {
 
 	.check_panel_feature = 1,
 };
-
+*/
 
 static int panel_ata_check(struct drm_panel *panel)
 {
@@ -608,8 +609,8 @@ static int mtk_panel_ext_param_set(struct drm_panel *panel,
 
 	if (drm_mode_vrefresh(m) == 60)
 		ext->params = &ext_params_60hz;
-	else if (drm_mode_vrefresh(m) == 48)
-		ext->params = &ext_params_48hz;
+	/*else if (drm_mode_vrefresh(m) == 48)
+		ext->params = &ext_params_48hz;*/
 	else if (drm_mode_vrefresh(m) == 90)
 		ext->params = &ext_params_90hz;
 	else
@@ -642,6 +643,7 @@ static void mode_switch_to_60(struct drm_panel *panel,
 	}
 }
 
+/*
 static void mode_switch_to_48(struct drm_panel *panel,
 	enum MTK_PANEL_MODE_SWITCH_STAGE stage)
 {
@@ -652,6 +654,7 @@ static void mode_switch_to_48(struct drm_panel *panel,
 		atomic_set(&ctx->current_fps, 48);
 	}
 }
+*/
 
 static int mode_switch(struct drm_panel *panel,
 		struct drm_connector *connector, unsigned int cur_mode,
@@ -665,8 +668,8 @@ static int mode_switch(struct drm_panel *panel,
 
 	if (drm_mode_vrefresh(m) == 60) {
 		mode_switch_to_60(panel, stage);
-	} else if (drm_mode_vrefresh(m) == 48) {
-		mode_switch_to_48(panel, stage);
+/*	} else if (drm_mode_vrefresh(m) == 48) {
+		mode_switch_to_48(panel, stage);*/
 	} else if (drm_mode_vrefresh(m) == 90) {
 		mode_switch_to_90(panel, stage);
 	} else
@@ -921,7 +924,7 @@ static int lcm_get_modes(struct drm_panel *panel,
 					struct drm_connector *connector)
 {
 	struct drm_display_mode *mode;
-	struct drm_display_mode *mode_1;
+	//struct drm_display_mode *mode_1;
 	struct drm_display_mode *mode_2;
 
 	mode = drm_mode_duplicate(connector->dev, &switch_mode_60hz);
@@ -935,6 +938,7 @@ static int lcm_get_modes(struct drm_panel *panel,
 	mode->type = DRM_MODE_TYPE_DRIVER | DRM_MODE_TYPE_PREFERRED;
 	drm_mode_probed_add(connector, mode);
 
+/*
 	mode_1 = drm_mode_duplicate(connector->dev, &switch_mode_48hz);
 	if (!mode_1) {
 		dev_info(connector->dev->dev, "failed to add mode %ux%ux@%u\n",
@@ -945,6 +949,7 @@ static int lcm_get_modes(struct drm_panel *panel,
 	drm_mode_set_name(mode_1);
 	mode_1->type = DRM_MODE_TYPE_DRIVER ;
 	drm_mode_probed_add(connector, mode_1);
+*/
 
 	mode_2 = drm_mode_duplicate(connector->dev, &switch_mode_90hz);
 	if (!mode_2) {
