@@ -31,7 +31,7 @@ int pe50_get_log_level(void)
 
 /* Parameters */
 #define PE50_VTA_INIT		5000	/* mV */
-#define PE50_ITA_INIT		2000	/* mA */
+#define PE50_ITA_INIT		3000	/* mA */
 #define PE50_TA_WDT_MIN		10000	/* ms */
 #define PE50_VTA_GAP_MIN	200	/* mV */
 #define PE50_VTA_VAR_MIN	103	/* % */
@@ -1062,6 +1062,7 @@ static int pe50_enable_ta_charging(struct pe50_algo_info *info, bool en, int mV,
 	int ret;
 	struct pe50_algo_data *data = info->data;
 	struct pe50_algo_desc *desc = info->desc;
+	struct pe50_ta_auth_data *auth_data = &data->ta_auth_data;
 	u32 wdt = max(desc->polling_interval * 2, (u32)PE50_TA_WDT_MIN);
 
 	PE50_INFO("en = %d\n", en);
@@ -1077,6 +1078,15 @@ static int pe50_enable_ta_charging(struct pe50_algo_info *info, bool en, int mV,
 			return ret;
 		}
 	}
+
+	if (auth_data->vta_min > mV) {
+		mV = auth_data->vta_min;
+	}
+
+	if (auth_data->ita_max < mA) {
+		mA = auth_data->ita_max;
+	}
+
 	ret = pe50_hal_enable_ta_charging(info->alg, en, mV, mA);
 	if (ret < 0) {
 		PE50_ERR("en ta charging fail(%d)\n", ret);
