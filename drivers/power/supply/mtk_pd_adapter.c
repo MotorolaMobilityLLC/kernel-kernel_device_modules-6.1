@@ -487,6 +487,7 @@ stop_repeat:
 						 NULL, &src_cap_ext);
 	if (ret_tcp == TCP_DPM_RET_SUCCESS) {
 		data->pdp = src_cap_ext.source_pdp;
+		data->pwr_lmt = false;
 		if (data->pdp > 0 && !data->pwr_lmt)
 			data->pwr_lmt = true;
 	} else {
