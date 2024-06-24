@@ -15,4 +15,33 @@ config MOTO_USBNET_DEBUG
     help
       Debug moto usbnet issue
 
+config SX937X_USB_CAL
+    tristate "Moto sx937x usb cal"
+    default n
+    help
+      This feature will enable usb cal in sx937x
+
+config SX937X_POWER_SUPPLY_ONLINE
+    tristate "SX937X power supply online"
+    default n
+    help
+      Use online node
+
+config SX937X_MTK_KERNEL5XX_CHARGER_TYPE
+    tristate "SX937X mtk kernel5xx charger type"
+    default n
+    help
+      Use mtk charge type for kernel5xx
+
+config AW96XX_POWER_SUPPLY_ONLINE
+    tristate "AW96XX power supply online"
+    default n
+    help
+      Use online node
+
+config AW96XX_MTK_KERNEL5XX_CHARGER_TYPE
+    tristate "AW96XX mtk kernel5xx charger type"
+    default n
+    help
+      Use mtk charge type for kernel5xx
 endmenu
