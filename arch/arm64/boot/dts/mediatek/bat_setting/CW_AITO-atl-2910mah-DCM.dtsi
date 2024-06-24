@@ -13,7 +13,7 @@
 aito-atl-2910mah {
 	serialnum = "SB18E39389";
 	fcc_design = <2910>;
-	config_profile_info = [ 46 00 00 00 00 00 00 00
+	config_profile_info = [ 50 00 00 00 00 00 00 00
 				B1 C1 C1 C2 AD A7 D3 B9
 				AA E8 CA 99 82 67 55 49
 				41 37 2B 86 68 E2 F9 EF
@@ -22,5 +22,5 @@ aito-atl-2910mah {
 				82 7D 89 92 A8 A0 58 E2
 				20 00 AB 10 00 A3 64 00
 				00 00 64 0E B2 33 00 00
-				00 00 00 00 00 00 00 C8];
+				00 00 00 00 00 00 00 8B];
 };
