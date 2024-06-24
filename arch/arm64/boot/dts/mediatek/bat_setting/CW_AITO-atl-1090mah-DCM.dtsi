@@ -13,7 +13,7 @@
 aito-atl-1090mah {
 	serialnum = "SB18E39389";
 	fcc_design = <1090>;
-	config_profile_info = [ 46 00 00 00 00 00 00 00
+	config_profile_info = [ 50 00 00 00 00 00 00 00
 				B7 AE C1 CA B6 AF C2 A0
 				8C FF F7 A6 87 6F 5C 4D
 				42 38 2B 86 58 E3 07 F2
@@ -22,5 +22,5 @@ aito-atl-1090mah {
 				81 7B 87 91 A8 A0 5A F4
 				20 00 AB 10 00 80 F7 00
 				00 00 64 0E 90 2A 00 00
-				00 00 00 00 00 00 00 A7];
+				00 00 00 00 00 00 00 E4];
 };
