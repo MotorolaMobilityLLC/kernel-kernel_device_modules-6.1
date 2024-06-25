@@ -446,7 +446,7 @@ int fsm_afe_mod_ctrl(bool enable)
 #endif
 	for (dev = 0; dev < cfg->dev_count; dev++) {
 		fsm_dev = fsm_get_fsm_dev_by_id(dev);
-		if (fsm_dev == NULL || fsm_skip_device(fsm_dev))
+		if (fsm_dev == NULL)
 			continue;
 		index = fsm_get_index_by_position(fsm_dev->pos_mask);
 #ifdef CONFIG_FSM_KERNEL_RW_SUPPORT
