@@ -3566,7 +3566,7 @@ static void mmi_find_temp_zone(struct mtk_charger *info, struct mmi_sm_params *p
 				return;
 			}
 		}
-		if (temp_c < MIN_TEMP_C)
+		if (temp_c <= MIN_TEMP_C)
 			prm->pres_temp_zone = ZONE_COLD;
 		else
 			prm->pres_temp_zone =
@@ -3630,7 +3630,7 @@ static void mmi_find_temp_zone(struct mtk_charger *info, struct mmi_sm_params *p
 		if (zones[prev_zone].fcc_max_ma < colder_fcc)
 			colder_t -= HYSTERISIS_DEGC;
 
-		if (temp_c < MIN_TEMP_C)
+		if (temp_c <= MIN_TEMP_C)
 			prm->pres_temp_zone = ZONE_COLD;
 		else if (temp_c >= max_temp)
 			prm->pres_temp_zone = ZONE_HOT;
@@ -3645,7 +3645,7 @@ static void mmi_find_temp_zone(struct mtk_charger *info, struct mmi_sm_params *p
 							zones,
 							num_zones);
 	} else {
-		if (temp_c < MIN_TEMP_C)
+		if (temp_c <= MIN_TEMP_C)
 			prm->pres_temp_zone = ZONE_COLD;
 		else if (temp_c >= max_temp)
 			prm->pres_temp_zone = ZONE_HOT;
