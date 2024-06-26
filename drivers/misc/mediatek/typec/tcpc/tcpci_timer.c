@@ -14,7 +14,7 @@
 #define TIMEOUT_VAL(val)		((val) * USEC_PER_MSEC)
 #define TIMEOUT_RANGE(min, max)		(((min) * 4 + (max)) * USEC_PER_MSEC / 5)
 
-static inline uint64_t tcpc_get_timer_tick(struct tcpc_device *tcpc)
+uint64_t tcpc_get_timer_tick(struct tcpc_device *tcpc)
 {
 	uint64_t tick;
 	unsigned long flags;
@@ -25,6 +25,7 @@ static inline uint64_t tcpc_get_timer_tick(struct tcpc_device *tcpc)
 
 	return tick;
 }
+EXPORT_SYMBOL(tcpc_get_timer_tick);
 
 static inline uint64_t tcpc_get_and_clear_all_timer_tick(
 	struct tcpc_device *tcpc)
@@ -402,9 +403,10 @@ void tcpc_reset_typec_try_timer(struct tcpc_device *tcpc)
 static void tcpc_handle_timer_triggered(struct tcpc_device *tcpc)
 {
 	int i = 0;
-	uint64_t tick = tcpc_get_and_clear_all_timer_tick(tcpc);
+	uint64_t tick = 0;
 
 	atomic_inc(&tcpc->suspend_pending);
+	tick = tcpc_get_and_clear_all_timer_tick(tcpc);
 
 #if IS_ENABLED(CONFIG_USB_POWER_DELIVERY)
 	for (i = 0; i < PD_PE_TIMER_END_ID; i++) {

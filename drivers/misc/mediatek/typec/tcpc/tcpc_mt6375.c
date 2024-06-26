@@ -2910,23 +2910,56 @@ static void mt6375_shutdown(struct platform_device *pdev)
 	tcpm_shutdown(ddata->tcpc);
 }
 
-static int tcpc_mt6375_prepare(struct device *dev)
+static int mt6375_tcpc_suspend_check(struct tcpc_device *tcpc, const char *func)
 {
-	struct mt6375_tcpc_data *ddata = dev_get_drvdata(dev);
-	struct tcpc_device *tcpc = ddata->tcpc;
 
-	dev_info(dev, "%s: suspend_pending: %d, pending_event: %d\n", __func__,
+	dev_info(&tcpc->dev, "%s: sp: %d, pe: %d, tt: %llu\n", func,
 		 atomic_read(&tcpc->suspend_pending),
-		 atomic_read(&tcpc->pending_event));
-	if (atomic_read(&tcpc->suspend_pending) > 0 ||
-	    atomic_read(&tcpc->pending_event) > 0)
+		 atomic_read(&tcpc->pending_event),
+		 tcpc_get_timer_tick(tcpc));
+	/*
+	 * the following 3 if statements are lockless solutions
+	 * for preventing some race conditions
+	 */
+	if (atomic_read(&tcpc->suspend_pending) > 0)
 		return -EBUSY;
+
+	if (atomic_read(&tcpc->pending_event) > 0 ||
+	    tcpc_get_timer_tick(tcpc))
+		return -EBUSY;
+
+	if (atomic_read(&tcpc->suspend_pending) > 0)
+		return -EBUSY;
+
 	return 0;
 }
 
-static const struct dev_pm_ops tcpc_mt6375_pm_ops = {
-	.prepare = tcpc_mt6375_prepare,
-};
+static int mt6375_tcpc_prepare(struct device *dev)
+{
+	struct mt6375_tcpc_data *ddata = dev_get_drvdata(dev);
+
+	return mt6375_tcpc_suspend_check(ddata->tcpc, __func__);
+}
+
+static int mt6375_tcpc_suspend(struct device *dev)
+{
+	struct mt6375_tcpc_data *ddata = dev_get_drvdata(dev);
+
+	return mt6375_tcpc_suspend_check(ddata->tcpc, __func__);
+}
+
+static int mt6375_tcpc_suspend_noirq(struct device *dev)
+{
+	struct mt6375_tcpc_data *ddata = dev_get_drvdata(dev);
+
+	return mt6375_tcpc_suspend_check(ddata->tcpc, __func__);
+}
+
+static const struct dev_pm_ops mt6375_tcpc_pm_ops = {
+	.prepare = mt6375_tcpc_prepare,
+	.suspend = mt6375_tcpc_suspend,
+	.suspend_noirq = mt6375_tcpc_suspend_noirq,
+ };
 
 static const struct of_device_id __maybe_unused mt6375_tcpc_of_match[] = {
 	{ .compatible = "mediatek,mt6375-tcpc", },
@@ -2939,7 +2972,7 @@ static struct platform_driver mt6375_tcpc_driver = {
 	.shutdown = mt6375_shutdown,
 	.driver = {
 		.name = "mt6375-tcpc",
-		.pm = &tcpc_mt6375_pm_ops,
+		.pm = &mt6375_tcpc_pm_ops,
 		.of_match_table = of_match_ptr(mt6375_tcpc_of_match),
 	},
 };
