@@ -37,7 +37,7 @@ int pe50_get_log_level(void)
 #define PE50_VTA_VAR_MIN	103	/* % */
 #define PE50_ITA_TRACKING_GAP	150	/* mA */
 #define PE50_DVCHG_VBUSALM_GAP	100	/* mV */
-#define PE50_DVCHG_STARTUP_CONVERT_RATIO	220	/* % */
+#define PE50_DVCHG_STARTUP_CONVERT_RATIO	210	/* % */
 #define PE50_DVCHG_CHARGING_CONVERT_RATIO	202	/* % */
 #define PE50_VBUSOVP_RATIO	110
 #define PE50_IBUSOCP_RATIO	110
@@ -1422,7 +1422,7 @@ static int pe50_adjust_vta_with_ta_cv(struct pe50_algo_info *info)
 			PE50_ERR("get vbushigherr fail(%d)\n", ret);
 			return ret;
 		}
-
+		PE50_INFO("vbuslowerr (%d), vbushigherr (%d)\n", vbuslow, vbushigh);
 		if (!vbuslow && !vbushigh)
 			break;
 
@@ -1676,6 +1676,7 @@ static int pe50_algo_init_with_ta_cv(struct pe50_algo_info *info)
 		goto err;
 	}
 
+	PE50_INFO("charger pump vout (%d)\n",vout);
 	/* Adjust VBUS to make sure DVCHG can be turned on */
 	ret = pe50_set_ta_cap_cv(info, pe50_vout2vbus(info, vout),
 				 data->idvchg_ss_init);
