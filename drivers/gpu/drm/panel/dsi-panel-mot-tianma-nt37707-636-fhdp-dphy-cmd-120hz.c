@@ -212,7 +212,6 @@ static void lcm_panel_init(struct lcm *ctx)
 	char bl_tb[] = {0x51, 0x0f, 0xff};
 	unsigned int level = 0;
 	printk("%s enter  \n",__func__);
-	udelay(2000);
 	ctx->reset_gpio =
 		devm_gpiod_get(ctx->dev, "reset", GPIOD_OUT_LOW);
 	if (IS_ERR(ctx->reset_gpio)) {
@@ -220,14 +219,12 @@ static void lcm_panel_init(struct lcm *ctx)
 			__func__, PTR_ERR(ctx->reset_gpio));
 		return;
 	}
-	gpiod_set_value(ctx->reset_gpio, 0);
-	udelay(3 * 1000);
 	gpiod_set_value(ctx->reset_gpio, 1);
 	udelay(1 * 1000);
 	gpiod_set_value(ctx->reset_gpio, 0);
-	msleep(30);
+	msleep(1);
 	gpiod_set_value(ctx->reset_gpio, 1);
-	msleep(20);
+	msleep(10);
 	devm_gpiod_put(ctx->dev, ctx->reset_gpio);
 
 	lcm_dcs_write_seq_static(ctx, 0xF0,0x55,0xAA,0x52,0x08,0x00);
@@ -1555,8 +1552,7 @@ static int panel_ext_init_power(struct drm_panel *panel)
 	ret = regulator_enable(ctx->oled_vci);
 	if (ret < 0)
 		pr_err("enable regulator ctx->oled_vci fail, ret = %d\n", ret);
-
-	msleep(15);
+	msleep(10);
 	return ret;
 }
 
