@@ -211,6 +211,12 @@ config WORK_AROUND_FOR_REG_RESET
         help
           This is to enable Work around for reg reset.
 
+config WORK_AROUND_FOR_CHARGE_PANIC
+        bool "Enable WORK AROUND FOR CHARGE PANIC"
+        default n
+        help
+          This is to enable Work around for charge panic.
+
 config MOTO_WLC_ALG_SUPPORT
 	tristate "moto wlc interface driver for charger"
 	help

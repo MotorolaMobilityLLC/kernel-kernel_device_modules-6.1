@@ -58,7 +58,11 @@ static int mt6375_adc_read_channel(struct mt6375_priv *priv, int chan, int *val)
 	if (ret)
 		goto adc_unlock;
 
+#ifdef WORK_AROUND_FOR_CHARGE_PANIC
+	udelay(ADC_CONV_TIME_US * 3 / 2);
+#else
 	usleep_range(ADC_CONV_TIME_US, ADC_CONV_TIME_US * 3 / 2);
+#endif
 
 bypass_oneshot:
 	ret = regmap_read_poll_timeout(priv->regmap, MT6375_REG_ADC_CFG3, regval,
