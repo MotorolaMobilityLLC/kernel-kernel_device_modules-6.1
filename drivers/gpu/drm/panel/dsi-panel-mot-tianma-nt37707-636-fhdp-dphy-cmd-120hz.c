@@ -102,6 +102,7 @@ struct lcm {
 	int error;
 	atomic_t hbm_mode;
 	atomic_t dc_mode;
+	atomic_t apl_mode;
 	atomic_t current_backlight;
 	atomic_t current_fps;
 	enum panel_version version;
@@ -120,6 +121,8 @@ static struct lcm *g_ctx = NULL;
 	static const u8 d[] = { seq };\
 	lcm_dcs_write(ctx, d, ARRAY_SIZE(d));\
 })
+
+#define APL_THRESHOLD 3520
 
 static inline struct lcm *panel_to_lcm(struct drm_panel *panel)
 {
@@ -303,13 +306,21 @@ static void lcm_panel_init(struct lcm *ctx)
 	lcm_dcs_write_seq_static(ctx, 0x6F,0x02);
 	lcm_dcs_write_seq_static(ctx, 0xC7,0x03,0x47);
 	lcm_dcs_write_seq_static(ctx, 0x26,0x00);
+if(ctx->version < 4){
 	lcm_dcs_write_seq_static(ctx, 0xF0,0x55,0xAA,0x52,0x08,0x00);
 	lcm_dcs_write_seq_static(ctx, 0x6F,0x8B);
 	lcm_dcs_write_seq_static(ctx, 0xDF,0x28,0xFC,0x28,0xFC,0x28,0xFC);
+}else{
+	lcm_dcs_write_seq_static(ctx, 0xFF,0xAA,0x55,0xA5,0x81);
+	lcm_dcs_write_seq_static(ctx, 0x6F,0x0B);
+	lcm_dcs_write_seq_static(ctx, 0xFD,0x04);
+}
 if(ctx->version < 4){
 	lcm_dcs_write_seq_static(ctx, 0xF0,0x55,0xAA,0x52,0x08,0x01);
 	lcm_dcs_write_seq_static(ctx, 0x6F,0x23);
 	lcm_dcs_write_seq_static(ctx, 0xD9,0xC1);
+}else{
+	lcm_dcs_write_seq_static(ctx, 0x5F,0x01,0x00);
 }
 
 
@@ -324,6 +335,7 @@ if(ctx->version < 4){
 	lcm_dcs_write_seq_static(ctx, 0x29);
 	atomic_set(&ctx->hbm_mode, 0);
 	atomic_set(&ctx->dc_mode, 0);
+	atomic_set(&ctx->apl_mode, 0);
 	atomic_set(&ctx->current_backlight, 0);
 	atomic_set(&ctx->current_fps, 120);
 	printk("%s exit  \n",__func__);
@@ -396,6 +408,7 @@ static int lcm_prepare(struct drm_panel *panel)
 #endif
 	atomic_set(&ctx->hbm_mode, 0);
 	atomic_set(&ctx->dc_mode, 0);
+	atomic_set(&ctx->apl_mode, 0);
 	atomic_set(&ctx->current_backlight, 0);
 	atomic_set(&ctx->current_fps, 120);
 
@@ -554,14 +567,26 @@ static int lcm_setbacklight_cmdq(void *dsi, dcs_write_gce cb,
 	void *handle, unsigned int level)
 {
 	char bl_tb[] = {0x51, 0x0F, 0xff};
+	char apl_off[] = {0x5F, 0x01, 0x00};
+	char apl_on[] = {0x5F, 0x01, 0x01};
 	struct lcm *ctx = g_ctx;
-
+	unsigned int current_backlight;
 	/*if (atomic_read(&ctx->hbm_mode) && level) {
 		pr_info("hbm_mode = %d, skip backlight(%d)\n", atomic_read(&ctx->hbm_mode), level);
 		atomic_set(&ctx->current_backlight, level);
 		return 0;
 	}*/
 
+	current_backlight = atomic_read(&ctx->current_backlight);
+	if (atomic_read(&ctx->apl_mode) && (level <= APL_THRESHOLD)) {
+		pr_info("%s: disable DIC APL (BL: %d -> %d)\n", __func__, current_backlight, level);
+		cb(dsi, handle, apl_off, ARRAY_SIZE(apl_off));
+		atomic_set(&ctx->apl_mode, 0);
+	} else if(!(atomic_read(&ctx->apl_mode))  && (level > APL_THRESHOLD)) {
+		pr_info("%s: enable DIC APL (BL: %d -> %d)\n", __func__, current_backlight, level);
+		cb(dsi, handle, apl_on, ARRAY_SIZE(apl_on));
+		atomic_set(&ctx->apl_mode, 1);
+	}
 	if (!(atomic_read(&ctx->current_backlight) && level))
 		pr_info("backlight changed from %u to %u\n", atomic_read(&ctx->current_backlight),level);
 	else
@@ -1872,6 +1897,7 @@ static int lcm_probe(struct mipi_dsi_device *dsi)
 #endif
 	atomic_set(&ctx->hbm_mode, 0);
 	atomic_set(&ctx->dc_mode, 0);
+	atomic_set(&ctx->apl_mode, 0);
 	atomic_set(&ctx->current_fps, 120);
 
 	ctx->lhbm_en = 1;
