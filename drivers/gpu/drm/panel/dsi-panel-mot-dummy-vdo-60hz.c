@@ -63,15 +63,14 @@ static int dummy_panel_enable(struct drm_panel *panel)
 #define HSA (60)
 #define HBP (12)
 #define HACT (600)
-#define VFP (54)
+#define VFP (500)
 #define VSA (10)
 #define VBP (10)
 #define VACT (800)
-#define PLL_CLOCK (263)
 
 
 static const struct drm_display_mode default_mode = {
-	.clock = 39254,
+	.clock = 59242,
 	.hdisplay	= HACT,
 	.hsync_start	= HACT + HFP,
 	.hsync_end	= HACT + HFP + HSA,
@@ -84,8 +83,8 @@ static const struct drm_display_mode default_mode = {
 
 #if defined(CONFIG_MTK_PANEL_EXT)
 static struct mtk_panel_params ext_params = {
-	.pll_clk = 125,
-	.data_rate = 250,
+	.pll_clk = 190,
+	.data_rate = 380,
 
 	.lp_perline_en = 1,
 
