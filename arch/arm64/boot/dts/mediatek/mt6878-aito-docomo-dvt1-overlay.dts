@@ -15,7 +15,6 @@
 
 #include "mediatek/mt6878-aito-common-overlay.dtsi"
 
-#define AITO_JP_RADIO 4
 #define AITO_DOCOMO_RADIO 5
 
 /* Board match root node */
@@ -24,7 +23,7 @@
 		target-path = "/";
 		__overlay__ {
 			mot,model = "aito";
-			mot,board-id = <(AITO_JP_RADIO << 8 | 0x41) 0xB100>, <(AITO_DOCOMO_RADIO << 8 | 0x41) 0xB100>;
+			mot,board-id = <(AITO_DOCOMO_RADIO << 8 | 0x41) 0xB100>;
 		};
 	};
 };

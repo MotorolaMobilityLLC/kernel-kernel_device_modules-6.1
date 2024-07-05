@@ -16,7 +16,6 @@
 #include "mediatek/mt6878-aito-common-overlay.dtsi"
 
 #define AITO_JP_RADIO 4
-#define AITO_DOCOMO_RADIO 5
 
 /* Board match root node */
 / {
@@ -24,7 +23,7 @@
 		target-path = "/";
 		__overlay__ {
 			mot,model = "aito";
-			mot,board-id = <(AITO_JP_RADIO << 8 | 0x43) 0xC000>, <(AITO_DOCOMO_RADIO << 8 | 0x43) 0xC000>;
+			mot,board-id = <(AITO_JP_RADIO << 8 | 0x41) 0xB100>;
 		};
 	};
 };
@@ -36,7 +35,6 @@
 &charger {
 	/*typec_otp*/
 	mmi,typecotp-charger;
-	mmi,wls-boost-using-otg;
 };
 
 &spmi {
@@ -53,20 +51,5 @@
 	mmi,otp-mos-regulator-name = "mt6369_mos_con1";
 };
 
-&cps_wls_charger {
-	wireless-tx-support;
-	config-otg-support;
-	config-otg-vout = <5500000>;
-	config-otg-iout = <1800000>;
-};
-
-&tfa9865_spk {
-    support_1_8_V=<1>;
-};
-
-&tfa9865_rcv {
-    support_1_8_V=<1>;
-};
-
-#include <aito_pvt/cust.dtsi>
+#include <aito_dvt1/cust.dtsi>
 /*End of this file, DO NOT ADD ANYTHING HERE*/
