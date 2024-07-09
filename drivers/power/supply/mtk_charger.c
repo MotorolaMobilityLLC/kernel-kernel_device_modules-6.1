@@ -3194,12 +3194,15 @@ static int mtk_charger_plug_out(struct mtk_charger *info)
 	charger_dev_set_input_current(info->chg1_dev, 100000);
 	charger_dev_set_mivr(info->chg1_dev, info->data.min_charger_voltage);
 	charger_dev_plug_out(info->chg1_dev);
-	if (info->blance_dev && info->blance_can_charging) {
-		ret = charger_dev_enable(info->blance_dev, false);
-		if (ret < 0) {
-			pr_info("%s blance disable charging failed\n",__func__);
-		} else
-			info->blance_can_charging = false;
+	if (info->blance_dev) {
+		charger_dev_set_charging_current(info->blance_dev, 0); // SC7603 Default min 50mA
+		if (!info->blance_can_charging) {
+			ret = charger_dev_enable(info->blance_dev, true);
+			if (ret < 0) {
+				pr_info("%s blance enable charging failed\n",__func__);
+			} else
+				info->blance_can_charging = true;
+		}
 	}
 	if (info->dvchg1_dev)
 		charger_dev_enable_adc(info->dvchg1_dev, false);
