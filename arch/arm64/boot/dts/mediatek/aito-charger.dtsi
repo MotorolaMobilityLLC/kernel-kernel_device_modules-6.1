@@ -335,10 +335,10 @@
 		pinctrl-2 = <&sc760x_disable>;
 
 		sc,sc760x,bat-chg-lim-disable = <0>;
-		sc,sc760x,bat-chg-lim = <31>; /*50 + val * 50*/
+		sc,sc760x,bat-chg-lim = <0>; /*50 + val * 50*/
 		sc,sc760x,pow-lim-disable = <0>;
 		sc,sc760x,ilim-disable = <0>;
-		sc,sc760x,load-switch-disable = <1>;
+		sc,sc760x,load-switch-disable = <0>;
 		sc,sc760x,auto-bsm-disable = <0>;
 		sc,sc760x,low-power-mode-enable = <0>;
 		sc,sc760x,itrichg = <3>; /*12.5 + val * 12.5*/
