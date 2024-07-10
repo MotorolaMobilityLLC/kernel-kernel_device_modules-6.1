@@ -28,6 +28,16 @@
 	};
 };
 
+&cw2217_master {
+	df-serialnum = "SB18E39389";
+	#include "bat_setting/CW_AITO-atl-2910mah-DCM.dtsi"
+};
+
+&cw2217_flip {
+	df-serialnum = "SB18E39389";
+	#include "bat_setting/CW_AITO-atl-1090mah-DCM.dtsi"
+};
+
 &mt6375_typec {
 	mmi,en-moto-typec-otp;
 };
