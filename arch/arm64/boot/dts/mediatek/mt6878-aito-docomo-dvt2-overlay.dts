@@ -28,6 +28,13 @@
 	};
 };
 
+&lk_charger {
+	boot-battery-voltage = <3600000>;
+	boot-battery-voltage-max = <3600000>;
+	/*boot battery voltage when using AC charger*/
+	ac_charger_boot_battery_voltage = <3500000>;
+};
+
 &cw2217_master {
 	df-serialnum = "SB18E39389";
 	#include "bat_setting/CW_AITO-atl-2910mah-DCM.dtsi"
