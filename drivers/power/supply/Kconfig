@@ -217,6 +217,12 @@ config WORK_AROUND_FOR_CHARGE_PANIC
         help
           This is to enable Work around for charge panic.
 
+config WORK_AROUND_FOR_EN_DISVACDRV
+        bool "Enable WORK AROUND FOR EN DISVACDRV"
+        default n
+        help
+          This is to enable Work around for enable disvacdrv.
+
 config MOTO_WLC_ALG_SUPPORT
 	tristate "moto wlc interface driver for charger"
 	help
