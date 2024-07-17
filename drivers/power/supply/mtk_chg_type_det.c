@@ -233,7 +233,9 @@ static int wireless_get_wireless_online(int *online)
 
 	return ret;
 }
-
+#ifdef CONFIG_SUPPORT_MMI_ADAPTER
+extern bool mmi_tcpc_get_pd_flag(void);
+#endif
 extern bool wlc_factory_en;
 static int wireless_get_charger_type(struct mtk_ctd_info *mci,int idx)
 {
@@ -241,8 +243,14 @@ static int wireless_get_charger_type(struct mtk_ctd_info *mci,int idx)
 	int adc_vol = 0;
 	int wireless_online = 0;
 	struct charger_device *dev;
+#ifdef CONFIG_SUPPORT_MMI_ADAPTER
+	bool pd_flag;
 
 	pr_info("%s enter\n", __func__);
+	pd_flag = mmi_tcpc_get_pd_flag();
+#else
+	pr_info("%s enter\n", __func__);
+#endif
 	dev = get_charger_by_name("primary_dvchg");
 	if (!dev) {
 		pr_err("%s:find primary divider charger fail\n", __func__);
@@ -260,7 +268,13 @@ static int wireless_get_charger_type(struct mtk_ctd_info *mci,int idx)
 		pr_err("%s:get vmos adc fail\n", __func__);
 		return -EINVAL;
 	}
+#ifdef CONFIG_SUPPORT_MMI_ADAPTER
+	pr_info("%s:adc_vol = %d, wireless_online = %d, pd_flag = %d\n", __func__, adc_vol, wireless_online, pd_flag);
+
+	if (((adc_vol == true) && wireless_online) || (!wireless_online) || pd_flag) {
+#else
 	if (((adc_vol == true) && wireless_online) || (!wireless_online)) {
+#endif
 		pr_err("%s:wlc_factory_en = %d\n", __func__,wlc_factory_en);
 		if(!wlc_factory_en){
 			control_cp_vbusovp(true);
