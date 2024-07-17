@@ -232,6 +232,7 @@ bool mmi_tcpc_get_pd_flag(void){
 	pr_notice("%s  pd flag:%d\n", __func__, g_tcpc_pd_adapter_flag);
 	return g_tcpc_pd_adapter_flag;
 }
+EXPORT_SYMBOL(mmi_tcpc_get_pd_flag);
 #endif
 #ifdef CONFIG_MOTO_WLS_OTG_SWITCH
 static void tcpc_wireless_get_tcmd_val(bool *val)
