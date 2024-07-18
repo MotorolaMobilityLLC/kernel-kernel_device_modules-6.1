@@ -287,7 +287,9 @@ static bool is_ovl_standard(struct drm_device *dev, enum mtk_drm_dataspace ds,
 				if (!is_ovl_wcg(ds) && (std != MTK_DRM_DATASPACE_STANDARD_BT2020) &&
 					(std != MTK_DRM_DATASPACE_STANDARD_BT2020_CONSTANT_LUMINANCE))
 					ret = true; /* OVL handle */
-			} else if ((color_mode == HAL_COLOR_MODE_NATIVE) && is_ovl_wcg(ds)){
+			} else if (color_mode == HAL_COLOR_MODE_NATIVE) {
+				if (is_ovl_wcg(ds) || (std == MTK_DRM_DATASPACE_STANDARD_BT2020) ||
+					(std == MTK_DRM_DATASPACE_STANDARD_BT2020_CONSTANT_LUMINANCE))
 					ret = false;
 			} else {  /* other CM is OVL handle */
 				ret = true;
