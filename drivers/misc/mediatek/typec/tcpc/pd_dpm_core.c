@@ -66,13 +66,17 @@ static const struct svdm_svid_ops svdm_svid_ops[] = {
 /*
  * DPM Init
  */
-
+#ifdef CONFIG_SUPPORT_MMI_ADAPTER
+extern bool mmi_tcpc_get_pd_flag(void);
+#endif
 static void pd_dpm_update_pdos_flags(struct pd_port *pd_port, uint32_t pdo,
 				     bool src)
 {
 	uint16_t dpm_flags = pd_port->pe_data.dpm_flags
 		& ~DPM_FLAGS_RESET_PARTNER_MASK;
-
+#ifdef CONFIG_SUPPORT_MMI_ADAPTER
+	bool dynamic_dpm_caps = mmi_tcpc_get_pd_flag();
+#endif
 	/* Only update PDO flags if pdo's type is fixed */
 	if ((pdo & PDO_TYPE_MASK) == PDO_TYPE_FIXED) {
 		if (pdo & PDO_FIXED_DUAL_ROLE)
@@ -92,6 +96,13 @@ static void pd_dpm_update_pdos_flags(struct pd_port *pd_port, uint32_t pdo,
 	}
 
 	pd_port->pe_data.dpm_flags = dpm_flags;
+#ifdef CONFIG_SUPPORT_MMI_ADAPTER
+	DPM_INFO("pd_dpm_update_pdos_flags,flag:%d,dpm_flag:%d,dpm_caps:%d\n",dynamic_dpm_caps,pd_port->pe_data.dpm_flags,pd_port->dpm_caps);
+	if(dynamic_dpm_caps && (pdo & PDO_FIXED_COMM_CAP)) {
+		pd_port->dpm_caps &= ~DPM_CAP_DR_CHECK_PROP(2);
+		DPM_INFO("pd_dpm_update_pdos_flags, dpm_caps:%d\n",pd_port->dpm_caps);
+	}
+#endif
 }
 
 
@@ -2137,7 +2148,6 @@ int pd_dpm_notify_pe_startup(struct pd_port *pd_port)
 	uint32_t reactions = DPM_REACTION_CAP_ALWAYS;
 #ifdef CONFIG_SUPPORT_MMI_ADAPTER
 	bool dynamic_dpm_caps = mmi_tcpc_get_pd_flag();
-
 	if(dynamic_dpm_caps) {
 		//0x80e98b
 		pd_port->dpm_caps |= DPM_CAP_DR_CHECK_PROP(2);
