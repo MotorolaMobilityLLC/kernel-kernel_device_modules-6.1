@@ -321,6 +321,10 @@ if(ctx->version == 1){
 	lcm_dcs_write_seq_static(ctx, 0x65,0x0A);
 	lcm_dcs_write_seq_static(ctx, 0xF8,0xFB);
 
+	lcm_dcs_write_seq_static(ctx, 0xF0,0xAA,0x12);
+	lcm_dcs_write_seq_static(ctx, 0x65,0x0B);
+	lcm_dcs_write_seq_static(ctx, 0xD2,0x10);
+
 	pr_info("%s current_fps:%d\n", __func__, atomic_read(&ctx->current_fps));
 	switch (atomic_read(&ctx->current_fps)) {
 	case 120:
