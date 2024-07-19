@@ -160,5 +160,14 @@
 	lvsys-thd-volt-h = <3243>;
 };
 
+&cpu_power_throttling {
+	lbat-limit-freq-lv2 = < 1800000  1800000 1800000>;
+	lbat-limit-freq-lv3 = < 1200000  1200000 1200000>;
+};
+
+&gpu_power_throttling {
+	lbat-limit-freq = <1200000 700000 600000>;
+};
+
 #include <aito_pvt/cust.dtsi>
 /*End of this file, DO NOT ADD ANYTHING HERE*/
