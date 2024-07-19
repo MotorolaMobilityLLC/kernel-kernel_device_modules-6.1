@@ -131,5 +131,18 @@
 	mmi,otp-mos-regulator-name = "mt6369_mos_con1";
 };
 
+&low_battery_throttling {
+	thd-volts-l = <
+		3369 3243 3133
+		3772 3412 3277
+		4231 3753 3570>;
+	thd-volts-h = <
+		3469 3369 3243
+		3872 3772 3412
+		4331 4231 3753>;
+	lvsys-thd-volt-l = <3133>;
+	lvsys-thd-volt-h = <3243>;
+};
+
 #include <aito_dvt1/cust.dtsi>
 /*End of this file, DO NOT ADD ANYTHING HERE*/
