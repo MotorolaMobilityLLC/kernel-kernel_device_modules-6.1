@@ -90,12 +90,3 @@ config GTP_SPI_PINCTRL
 	bool "Set SPI mode"
 	help
 		Say Y here if need to adjust SPI mode.
-config TOUCHSCREEN_EARLY_RESET_ON_RESUME
-    bool "enable touch mmi early resume"
-    help
-           enable touch mmi early resume
-config ENABLE_GTP_VIRTUAL_FOD
-    bool "enable virtaul FOD key sysfs"
-    help
-           provide sysfs for userspace to check FOD key status
-
