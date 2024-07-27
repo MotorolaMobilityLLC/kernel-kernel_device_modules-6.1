@@ -246,7 +246,7 @@
 		fs3001_brk_slopeth=< 20 >;
 		fs3001_brk_gain=< 128 >;
 		fs3001_brk_times=< 20 >;
-		fs3001_brk_noise_gate=< 16 >;
+		fs3001_brk_noise_gate=< 32 >;
 		fs3001_brk_1_period=< 468 >;
 		fs3001_brk_pgagain=< 5 >;
 		fs3001_brk_margin=< 48 >;
