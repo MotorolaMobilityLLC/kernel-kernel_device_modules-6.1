@@ -2543,8 +2543,8 @@ void get_qc_charger_type_func_work(struct work_struct *work)
 	}
 
 	if(ddata->qc_chg_type == USB_TYPE_QC20){
-		adapter_dev_dp_dm(ddata->qc_dev, DP_DM_FORCE_QC2_5V);
-		pr_err("Force set qc2 5V");
+		adapter_dev_dp_dm(ddata->qc_dev, DP_DM_FORCE_QC2_9V);
+		pr_err("Force set qc2 9V");
 	}else if(ddata->qc_chg_type == USB_TYPE_QC30){
 		adapter_dev_dp_dm(ddata->qc_dev, DP_DM_FORCE_QC3_5V);
 		ddata->pulse_cnt = 0;
@@ -2556,7 +2556,8 @@ void get_qc_charger_type_func_work(struct work_struct *work)
 	if (ddata->dcp15w.support) {
 		ret = power_supply_get_property(ddata->psy, POWER_SUPPLY_PROP_ONLINE, &val);
 		if (ret == 0 && val.intval &&
-			(ddata->qc_chg_type != USB_TYPE_QC30
+			(ddata->qc_chg_type != USB_TYPE_QC20
+			&& ddata->qc_chg_type != USB_TYPE_QC30
 			&& ddata->qc_chg_type != USB_TYPE_QC3P_18
 			&& ddata->qc_chg_type != USB_TYPE_QC3P_27)) {
 			pr_info("dcp15w start detect_dwork after qc detected end\n");
