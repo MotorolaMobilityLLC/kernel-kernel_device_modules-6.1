@@ -273,7 +273,7 @@
 	dcp15w-icl-max = <3000>; //mA
 	dcp15w-icl-step = <500>; //mA
 	dcp15w-time-step = <300>; //ms
-	dcp15w-time-plug = <500>; //ms
+	dcp15w-time-plug = <800>; //ms
 };
 
 &moto_chg_tcmd {
