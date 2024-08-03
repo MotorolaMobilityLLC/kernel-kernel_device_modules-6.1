@@ -3353,6 +3353,26 @@ static char *stepchg_str[] = {
 	[STEP_NONE]		= "NONE",
 };
 
+int mmi_set_prop_to_battery(struct mtk_charger *info,
+				enum power_supply_property psp,
+				union power_supply_propval *val)
+{
+	int rc;
+
+	if (!info->bat_psy) {
+		info->bat_psy = power_supply_get_by_name("battery");
+
+		if (!info->bat_psy) {
+			pr_err("[%s]Error getting battery power sypply\n", __func__);
+			return -EINVAL;
+		}
+	}
+
+	rc = power_supply_set_property(info->bat_psy, psp, val);
+
+	return rc;
+}
+
 int mmi_get_prop_from_battery(struct mtk_charger *info,
 				enum power_supply_property psp,
 				union power_supply_propval *val)
@@ -4223,8 +4243,8 @@ static void mmi_basic_charge_sm(struct mtk_charger *info,
 #ifdef CONFIG_MOTO_1200_CYCLE
 	int rc = 0;
 	int batt_cv_delata = 0;
-	union power_supply_propval val;
 #endif
+	union power_supply_propval val;
 
 	if (!prm->temp_zones) {
 		pr_err("[%s]temp_zones is NULL\n", __func__);
@@ -4256,8 +4276,14 @@ static void mmi_basic_charge_sm(struct mtk_charger *info,
 	if ( info->dvchg1_dev != NULL && (info->pd_type == MTK_PD_CONNECT_PE_READY_SNK_APDO ||
                 qc_chg_type == USB_TYPE_QC3P_27)) {
 		max_fv_mv = mmi_get_zone_fv(prm, prm->ffc_zones, prm->num_ffc_zones, state->batt_temp);
+
+		val.intval = true;
+		mmi_set_prop_to_battery(info, POWER_SUPPLY_PROP_TYPE, &val);
 	} else {
 		max_fv_mv = mmi_get_zone_fv(prm, prm->normal_zones, prm->num_normal_zones, state->batt_temp);
+
+		val.intval = false;
+		mmi_set_prop_to_battery(info, POWER_SUPPLY_PROP_TYPE, &val);
 	}
 
 #ifdef CONFIG_MOTO_1200_CYCLE
