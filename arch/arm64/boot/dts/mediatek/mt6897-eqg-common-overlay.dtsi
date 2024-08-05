@@ -19,6 +19,7 @@
 //#include "mediatek/eqg-ntc.dtsi"
 #include "mediatek/eqg-display.dtsi"
 //#include "mediatek/eqg-touch.dtsi"
+#include "mediatek/eqg-connfem.dtsi"
 
 &rt5133 {
 	status = "disabled";

@@ -1,0 +1,48 @@
+/* Copyright (c) 2023, Motorola Mobility Inc. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
+&qm45197_wf0 {
+	pins-cmd-dat {
+		pinmux = <PINMUX_GPIO173__FUNC_ANT_SEL0>,
+			<PINMUX_GPIO174__FUNC_ANT_SEL1>,
+			<PINMUX_GPIO176__FUNC_ANT_SEL3>;
+		mapping = <0 0x4a 0>,	/* ANTSEL  0 <-> PIN #10: PAEN */
+			<1 0x4b 0>,	/* ANTSEL  1 <-> PIN #11: LNAEN */
+			<3 0x4c 0>;	/* ANTSEL  3 <-> PIN #12: SEL3 */
+        };
+};
+&qm45197_wf1 {
+	pins-cmd-dat {
+		pinmux = <PINMUX_GPIO177__FUNC_ANT_SEL4>,
+			<PINMUX_GPIO178__FUNC_ANT_SEL5>,
+			<PINMUX_GPIO175__FUNC_ANT_SEL2>;
+		mapping = <4 0xca 0>,	/* ANTSEL 4 <-> PIN #10: PAEN */
+			<5 0xcb 0>,	/* ANTSEL 5 <-> PIN #11: LNAEN */
+			<2 0xcc 0>;	/* ANTSEL 2 <-> PIN #12: SEL3 */
+	};
+};
+
+&connfem {
+	epa-elna {
+		parts = <&nofem &qm45197>;
+		wifi {
+			flags-0 {
+				/* open-loop; */
+			};
+		};
+		bt {
+			flags-0 {
+				bypass;
+			};
+		};
+	};
+};
