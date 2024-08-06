@@ -21,6 +21,7 @@
 #include "mot_tele_dw9784_ois.h"
 
 #include "hf_manager.h"
+#define FW_UPDATE_DEBUG
 
 #define DRIVER_NAME "dw9784"
 
@@ -1234,7 +1235,10 @@ int dw9784_check_fw_download(void)
 
 		LOG_INF("[dw9784] fw_version_current = 0x%x, fw_version_latest = 0x%x",
 			              fw_version_current, fw_version_latest);
-
+#ifdef FW_UPDATE_DEBUG
+		if (ois_fw_update > 0)
+			g_downloadByForce = 1;
+#endif
 		/* download firmware, check if need update, download firmware to flash */
 		if (g_downloadByForce || ((fw_version_current & 0xFFFF) < (fw_version_latest & 0xFFFF))) {
 			g_downloadByForce = 1;
@@ -1295,45 +1299,6 @@ static int dw9784_init(struct dw9784_device *dw9784)
 	ois_mdelay(5);
 	ois_reset();
 	//ret = ois_i2c_wr_u16(m_client, 0x7020, 0x0000);//master
-
-	//set gyro pol and orientation
-	if (0 == strcmp("oulu", CONFIG_MTK_PROJECT_NAME)) {
-		u16 gyro_pol_x = 0;
-		u16 gyro_pol_y = 0;
-		u16 gyro_rot_x1 = 0;
-		u16 gyro_rot_x2 = 0;
-		u16 gyro_rot_y1 = 0;
-		u16 gyro_rot_y2 = 0;
-#if 0
-		ret = ois_i2c_rd_u16(client, 0x7184, &gyro_pol_x);
-		ret = ois_i2c_rd_u16(client, 0x7185, &gyro_pol_y);
-		ret = ois_i2c_rd_u16(client, 0x7186, &gyro_rot_x1);
-		ret = ois_i2c_rd_u16(client, 0x7187, &gyro_rot_x2);
-		ret = ois_i2c_rd_u16(client, 0x7188, &gyro_rot_y1);
-		ret = ois_i2c_rd_u16(client, 0x7189, &gyro_rot_y2);
-		LOG_INF("Check HW gyro pol and orient: 0x%x 0x%x 0x%x 0x%x 0x%x 0x%x\n",
-			gyro_pol_x, gyro_pol_y, gyro_rot_x1,
-			gyro_rot_x2, gyro_rot_y1, gyro_rot_y2);
-#endif
-		ret = ois_i2c_wr_u16(client, 0x7184, 0xFFFF);
-		ret = ois_i2c_wr_u16(client, 0x7185, 0x0001);
-		ret = ois_i2c_wr_u16(client, 0x7186, 0x8000);
-		ret = ois_i2c_wr_u16(client, 0x7187, 0x0000);
-		ret = ois_i2c_wr_u16(client, 0x7188, 0x8000);
-		ret = ois_i2c_wr_u16(client, 0x7189, 0x0000);
-
-		ret = ois_i2c_rd_u16(client, 0x7184, &gyro_pol_x);
-		ret = ois_i2c_rd_u16(client, 0x7185, &gyro_pol_y);
-		ret = ois_i2c_rd_u16(client, 0x7186, &gyro_rot_x1);
-		ret = ois_i2c_rd_u16(client, 0x7187, &gyro_rot_x2);
-		ret = ois_i2c_rd_u16(client, 0x7188, &gyro_rot_y1);
-		ret = ois_i2c_rd_u16(client, 0x7189, &gyro_rot_y2);
-		LOG_INF("Check HW gyro pol and orient: 0x%x 0x%x 0x%x 0x%x 0x%x 0x%x\n",
-			gyro_pol_x, gyro_pol_y, gyro_rot_x1,
-			gyro_rot_x2, gyro_rot_y1, gyro_rot_y2);
-	} else {
-		LOG_INF("not modify gyro pol and orient\n");
-	}
 
 	ret = ois_i2c_rd_u16(client, 0x7011, &lock_ois);
 	LOG_INF("Check HW lock_ois: %x\n", lock_ois);
@@ -1872,6 +1837,12 @@ static ssize_t ois_debug_store(struct device *dev,
 	LOG_INF("dw9784_ois_debug hfmgr(%d) dbg(%d) hall(%d) fw(%d) log_1(%d), log_2(%d), data(%d), buf:%s\n",
 		ois_hfmgr_test, ois_debug_en, ois_hall_check, ois_fw_update,
 		ois_log_en, ois_log_dbg_en, ois_data_dbg_en, buf);
+
+#ifdef FW_UPDATE_DEBUG
+	if (ois_fw_update > 0) {
+		dw9784_download_fw();
+	}
+#endif
 
 	return size;
 }
