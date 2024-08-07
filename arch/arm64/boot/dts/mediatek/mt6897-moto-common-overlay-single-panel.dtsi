@@ -77,12 +77,13 @@ long powerkey reset setting
 };
 
 &mtk_leds {
-	compatible = "mediatek,i2c-leds";
+	compatible = "mediatek,disp-conn-leds";
 
 	backlight {
-		led-mode = <6>;
-		gate-enable = <1>;
-		pwm-config = <0 1 0 0 0>;
+		led-mode = <4>;
+		max-brightness = <4095>;
+		min-brightness = <4>;
+		max-hw-brightness = <4095>;
 	};
 };
 
@@ -265,60 +266,6 @@ long powerkey reset setting
 
 &dsi0 {
 	status = "okay";
-	#address-cells = <1>;
-	#size-cells = <0>;
-	panel1@0 {
-		compatible = "jdi,nt36672e,vdo,120hz";
-		reg = <0>;
-		pm-enable-gpios = <&pio 64 0>;
-		reset-gpios = <&pio 41 0>;
-		gate-ic = <4831>;
-		pinctrl-names = "default";
-		port {
-			panel_in1: endpoint {
-				remote-endpoint = <&dsi_out>;
-			};
-		};
-	};
-	panel2@1 {
-		compatible = "truly,td4330,cmd";
-		reg = <1>;
-		pm-enable-gpios = <&pio 64 0>;
-		reset-gpios = <&pio 41 0>;
-		gate-ic = <4831>;
-		pinctrl-names = "default";
-		port {
-			panel_in2: endpoint {
-				remote-endpoint = <&dsi_out2>;
-			};
-		};
-	};
-	panel3@2 {
-		compatible = "nt37801,cmd,fhd";
-		reg = <2>;
-		pm-enable-gpios = <&pio 64 0>;
-		reset-gpios = <&pio 41 0>;
-		gate-ic = <4831>;
-		pinctrl-names = "default";
-		port {
-			panel_in3: endpoint {
-				remote-endpoint = <&dsi_out3>;
-			};
-		};
-	};
-	ports {
-		port {
-			dsi_out: endpoint {
-				remote-endpoint = <&panel_in1>;
-			};
-			dsi_out2: endpoint2 {
-				remote-endpoint = <&panel_in2>;
-			};
-			dsi_out3: endpoint3 {
-				remote-endpoint = <&panel_in3>;
-			};
-		};
-	};
 };
 
 /* usb typec mux start */
