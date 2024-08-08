@@ -15,7 +15,7 @@
 
 //#include "mediatek/cust_cybert_camera_v4l2.dtsi"
 //#include "mediatek/cybert-charger.dtsi"
-//#include "mediatek/cybert-fps.dtsi"
+#include "mediatek/cybert-fps.dtsi"
 //#include "mediatek/cybert-ntc.dtsi"
 #include "mediatek/cybert-display.dtsi"
 //#include "mediatek/cybert-touch.dtsi"
