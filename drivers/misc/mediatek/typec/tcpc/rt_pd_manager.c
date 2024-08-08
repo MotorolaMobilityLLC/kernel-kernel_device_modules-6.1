@@ -156,7 +156,8 @@ static int pd_tcp_notifier_call(struct notifier_block *nb,
 			/* disable AudioAccessory connection */
 		}
 
-		if (new_state == TYPEC_UNATTACHED) {
+		if ((new_state == TYPEC_UNATTACHED) ||
+			(new_state == TYPEC_PROTECTION)) {
 			typec_unregister_partner(rpmd->partner[idx]);
 			rpmd->partner[idx] = NULL;
 			if (rpmd->typec_caps[idx].prefer_role == TYPEC_SOURCE) {
