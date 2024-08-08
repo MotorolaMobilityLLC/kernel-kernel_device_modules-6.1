@@ -101,7 +101,7 @@ static void pd_dpm_update_pdos_flags(struct pd_port *pd_port, uint32_t pdo,
 	pd_port->pe_data.dpm_flags = dpm_flags;
 #ifdef CONFIG_SUPPORT_MMI_ADAPTER
 	DPM_INFO("pd_dpm_update_pdos_flags,flag:%d,dpm_flag:%d,dpm_caps:%d\n",dynamic_dpm_caps,pd_port->pe_data.dpm_flags,pd_port->dpm_caps);
-	if(dynamic_dpm_caps && (pdo & PDO_FIXED_COMM_CAP)) {
+	if(dynamic_dpm_caps && ((pdo & PDO_FIXED_USB_COMM) || !pd_is_source_support_apdo(pd_port))) {
 		pd_port->dpm_caps &= ~DPM_CAP_DR_CHECK_PROP(2);
 		DPM_INFO("pd_dpm_update_pdos_flags, dpm_caps:%d\n",pd_port->dpm_caps);
 	}
