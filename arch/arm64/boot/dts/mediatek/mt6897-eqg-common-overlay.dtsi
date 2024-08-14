@@ -1,0 +1,39 @@
+/* Copyright (c) 2023, Motorola Mobility Inc. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
+#include "mediatek/mt6897-moto-common-overlay-single-panel.dtsi"
+
+
+//#include "mediatek/cust_eqg_camera_v4l2.dtsi"
+//#include "mediatek/eqg-charger.dtsi"
+//#include "mediatek/eqg-fps.dtsi"
+//#include "mediatek/eqg-ntc.dtsi"
+#include "mediatek/eqg-display.dtsi"
+//#include "mediatek/eqg-touch.dtsi"
+
+&rt5133 {
+	status = "disabled";
+};
+
+&regulator_vibrator {
+	status = "disabled";
+};
+
+&mmc1 {
+	status = "disabled";
+};
+
+
+&therm_intf {
+	/*Vsensor name should be CASE DIFFERENT with the name in config file*/
+	mmi,temperature-names = "BACK_TEMP", "FRONT_TEMP";/*for "back_temp" in config file*/
+};

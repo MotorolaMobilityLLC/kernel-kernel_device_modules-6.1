@@ -16531,3 +16531,6 @@ FLL0_out,FLL1_out,FLL4_out,FLL5_out,FLL6_out";
 		compatible = "mediatek,mt6685-consys";
 	};
 };
+
+#include "mediatek/mt6897-moto-base.dtsi"
+
