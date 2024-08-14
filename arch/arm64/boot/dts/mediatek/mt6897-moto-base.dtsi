@@ -1,0 +1,42 @@
+/*
+ * Things can done here:
+ * 	Add nodes or properties to root node
+ * 	Delete nodes or properties
+*/
+
+/ {
+	utags: utags { };
+	hw: hw { };
+	moto_chg_tcmd: moto_chg_tcmd { };
+	smart_battery: smart_battery { };
+	moto_wlc: moto_wlc { };
+	mmi_pehv: mmi_pehv{};
+	mt6363_thermistor2: mt6363_thermistor2 { };
+	mt6363_thermistor3: mt6363_thermistor3 { };
+	mt6363_thermistor4: mt6363_thermistor4 { };
+	mt6363_thermistor5: mt6363_thermistor5 { };
+	mt6363_thermistor6: mt6363_thermistor6 { };
+	mt6363_thermistor7: mt6363_thermistor7 { };
+	mt6369_thermistor2: mt6369_thermistor2 { };
+	mt6375_thermistor: mt6375_thermistor { };
+	swtp: swtp {
+		compatible = "mediatek, swtp-eint";
+	};
+	swtp_1: swtp_1 {
+		compatible = "mediatek, swtp1-eint";
+	};
+	swtp_2: swtp_2 {
+		compatible = "mediatek, swtp2-eint";
+	};
+	swtp_3: swtp_3 {
+		compatible = "mediatek, swtp3-eint";
+	};
+	swtp_4: swtp_4 {
+		compatible = "mediatek, swtp4-eint";
+	};
+};
+
+&mt6375_typec {
+	/* Remove mtk typec otp */
+	/delete-property/ tcpc,en-typec-otp;
+};
