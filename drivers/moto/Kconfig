@@ -44,4 +44,10 @@ config AW96XX_MTK_KERNEL5XX_CHARGER_TYPE
     default n
     help
       Use mtk charge type for kernel5xx
+
+config UWB_USES_MTK_RESERVED_CLOCK
+    tristate "Force enabling the reserved clock for Qorvo UWB"
+    default n
+    help
+      Use mtk reserved clock PMIC_RFCK_BUF2B for qorvo uwb
 endmenu
