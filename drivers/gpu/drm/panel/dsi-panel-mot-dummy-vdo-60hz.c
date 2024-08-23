@@ -62,11 +62,11 @@ static int dummy_panel_enable(struct drm_panel *panel)
 #define HFP (76)
 #define HSA (60)
 #define HBP (12)
-#define HACT (600)
+#define HACT (1080)
 #define VFP (500)
 #define VSA (10)
 #define VBP (10)
-#define VACT (800)
+#define VACT (2400)
 
 
 static const struct drm_display_mode default_mode = {
