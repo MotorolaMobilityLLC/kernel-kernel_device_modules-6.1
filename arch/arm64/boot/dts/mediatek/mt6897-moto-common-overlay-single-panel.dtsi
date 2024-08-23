@@ -64,12 +64,8 @@ long powerkey reset setting
 #   3      : 5 sec
 #
 */
-&spmi {
-	main_pmic: pmic@4 {
-		mt6363keys: mt6363keys {
-			power-off-time-sec = <1>;
-		};
-	};
+&mt6363keys {
+	power-off-time-sec = <1>;
 };
 
 &chosen {
@@ -304,13 +300,6 @@ long powerkey reset setting
 			remote-endpoint = <&tcpc_typec_usb>;
 		};
 	};
-};
-
-&ps5170 {
-	pinctrl-names = "enable", "disable";
-	pinctrl-0 = <&ps_enable>;
-	pinctrl-1 = <&ps_disable>;
-	status = "okay";
 };
 
 &usb_dp_selector {
