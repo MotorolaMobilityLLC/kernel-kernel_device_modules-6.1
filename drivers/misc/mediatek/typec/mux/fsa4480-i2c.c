@@ -12,6 +12,12 @@
 #include "fsa4480-i2c.h"
 #include <linux/iio/consumer.h>
 
+#include <linux/usb/typec_dp.h>
+#include <linux/usb/typec_mux.h>
+#if IS_ENABLED(CONFIG_MTK_USB_TYPEC_MUX)
+#include "mux_switch.h"
+#endif
+
 #define FSA4480_I2C_NAME	"fsa4480-driver"
 
 #define FSA4480_SWITCH_SETTINGS 0x04
@@ -28,6 +34,13 @@
 #define FSA4480_DELAY_L_AGND    0x10
 #define FSA4480_RESET           0x1E
 
+#define FSA4480_ENABLE_DEVICE	BIT(7)
+#define FSA4480_ENABLE_SBU	GENMASK(6, 5)
+#define FSA4480_ENABLE_USB	GENMASK(4, 3)
+
+#define FSA4480_SEL_SBU_REVERSE	GENMASK(6, 5)
+#define FSA4480_SEL_USB		GENMASK(4, 3)
+
 struct fsa4480_priv {
 	struct regmap *regmap;
 	struct device *dev;
@@ -37,9 +50,14 @@ struct fsa4480_priv {
 	atomic_t usbc_mode;
 	struct work_struct usbc_analog_work;
 	struct blocking_notifier_head fsa4480_notifier;
-	struct mutex notification_lock;
+	struct mutex fsa4480_lock;
 	u32 use_powersupply;
 	int switch_control;
+
+	struct typec_switch_dev *sw;
+	struct typec_mux_dev *mux;
+	u8 cur_enable;
+	u8 cur_select;
 };
 
 struct fsa4480_reg_val {
@@ -82,11 +100,14 @@ static void fsa4480_usbc_update_settings(struct fsa4480_priv *fsa_priv,
 		return;
 	}
 
+	mutex_lock(&fsa_priv->fsa4480_lock);
+
 	regmap_read(fsa_priv->regmap, FSA4480_SWITCH_CONTROL, &prev_control);
 	regmap_read(fsa_priv->regmap, FSA4480_SWITCH_SETTINGS, &prev_enable);
 
 	if (prev_control == switch_control && prev_enable == switch_enable) {
 		dev_dbg(fsa_priv->dev, "%s: settings unchanged\n", __func__);
+		mutex_unlock(&fsa_priv->fsa4480_lock);
 		return;
 	}
 
@@ -95,6 +116,13 @@ static void fsa4480_usbc_update_settings(struct fsa4480_priv *fsa_priv,
 	/* FSA4480 chip hardware requirement */
 	usleep_range(50, 55);
 	regmap_write(fsa_priv->regmap, FSA4480_SWITCH_SETTINGS, switch_enable);
+
+	fsa_priv->cur_select = switch_control;
+	fsa_priv->cur_enable = switch_enable;
+	dev_info(fsa_priv->dev, "%s: cur_enable %x, cur_select %x\n",
+		__func__, fsa_priv->cur_enable, fsa_priv->cur_select);
+
+	mutex_unlock(&fsa_priv->fsa4480_lock);
 }
 
 /*
@@ -150,10 +178,101 @@ static void fsa4480_update_reg_defaults(struct regmap *regmap)
 				   fsa_reg_i2c_defaults[i].val);
 }
 
+
+static int fsa4480_switch_set(struct typec_switch_dev *sw,
+			      enum typec_orientation orientation)
+{
+	struct fsa4480_priv *fsa = typec_switch_get_drvdata(sw);
+	u8 new_sel;
+	u8 new_enable = fsa->cur_enable;
+
+	mutex_lock(&fsa->fsa4480_lock);
+	new_sel = FSA4480_SEL_USB;
+
+	if (orientation == TYPEC_ORIENTATION_REVERSE)
+		new_sel |= FSA4480_SEL_SBU_REVERSE;
+	else if (orientation == TYPEC_ORIENTATION_NONE) {
+		new_enable = FSA4480_ENABLE_DEVICE | FSA4480_ENABLE_USB;
+		dev_info(fsa->dev, "%s: orientation %d, disable SBU, new_enable %x\n",
+			__func__, orientation, new_enable);
+	}
+
+	dev_info(fsa->dev, "%s: orientation %d, new_enable %x, cur_enable %x, new_sel %x, cur_select %x\n",
+		__func__, orientation, new_enable, fsa->cur_enable, new_sel, fsa->cur_select);
+
+	if(new_sel == fsa->cur_select && new_enable == fsa->cur_enable)
+		goto out_unlock;
+
+	if (new_enable & FSA4480_ENABLE_SBU) {
+		/* Disable SBU output while re-configuring the switch */
+		regmap_write(fsa->regmap, FSA4480_SWITCH_SETTINGS,
+			     new_enable & ~FSA4480_ENABLE_SBU);
+
+		/* 35us to allow the SBU switch to turn off */
+		usleep_range(35, 1000);
+	}
+
+	regmap_write(fsa->regmap, FSA4480_SWITCH_CONTROL, new_sel);
+	fsa->cur_select = new_sel;
+
+	if (new_enable & FSA4480_ENABLE_SBU || new_enable != fsa->cur_enable) {
+		regmap_write(fsa->regmap, FSA4480_SWITCH_SETTINGS, new_enable);
+
+		/* 15us to allow the SBU switch to turn on again */
+		usleep_range(15, 1000);
+
+		if(new_enable != fsa->cur_enable)
+			fsa->cur_enable = new_enable;
+	}
+
+out_unlock:
+	mutex_unlock(&fsa->fsa4480_lock);
+
+	return 0;
+}
+
+static int fsa4480_mux_set(struct typec_mux_dev *mux, struct typec_mux_state *state)
+{
+	struct fsa4480_priv *fsa = typec_mux_get_drvdata(mux);
+	struct typec_displayport_data *dp_data = state->data;
+	u8 new_enable;
+
+	mutex_lock(&fsa->fsa4480_lock);
+
+	new_enable = FSA4480_ENABLE_DEVICE | FSA4480_ENABLE_USB;
+
+	if (dp_data->conf) {
+		new_enable |= FSA4480_ENABLE_SBU;
+
+		dev_info(fsa->dev, "%s: conf %d, new_enable %x, cur_enable %x\n",
+			__func__, dp_data->conf, new_enable, fsa->cur_enable);
+
+		if (new_enable == fsa->cur_enable)
+			goto out_unlock;
+
+		regmap_write(fsa->regmap, FSA4480_SWITCH_SETTINGS, new_enable);
+		fsa->cur_enable = new_enable;
+
+		if (new_enable & FSA4480_ENABLE_SBU) {
+			/* 15us to allow the SBU switch to turn off */
+			usleep_range(15, 1000);
+		}
+	}
+out_unlock:
+	mutex_unlock(&fsa->fsa4480_lock);
+
+	return 0;
+}
+
 static int fsa4480_probe(struct i2c_client *i2c,
 			 const struct i2c_device_id *id)
 {
 	int rc = 0;
+	struct device *dev = &i2c->dev;
+	struct typec_switch_desc sw_desc = { };
+	struct typec_mux_desc mux_desc = { };
+
+	dev_info(dev, "%s: enter\n", __func__);
 
 	fsa_priv = devm_kzalloc(&i2c->dev, sizeof(*fsa_priv),
 				GFP_KERNEL);
@@ -177,8 +296,46 @@ static int fsa4480_probe(struct i2c_client *i2c,
 
 	fsa4480_update_reg_defaults(fsa_priv->regmap);
 
-	mutex_init(&fsa_priv->notification_lock);
+	mutex_init(&fsa_priv->fsa4480_lock);
+
+	sw_desc.drvdata = fsa_priv;
+	sw_desc.fwnode = dev->fwnode;
+	sw_desc.set = fsa4480_switch_set;
+
+#if IS_ENABLED(CONFIG_MTK_USB_TYPEC_MUX)
+	fsa_priv->sw = mtk_typec_switch_register(dev, &sw_desc);
+#else
+	fsa_priv->sw = typec_switch_register(dev, &sw_desc);
+#endif
+	if (IS_ERR(fsa_priv->sw)) {
+		dev_info(dev, "error registering typec switch: %ld\n",
+			PTR_ERR(fsa_priv->sw));
+		return PTR_ERR(fsa_priv->sw);
+	}
+
+	mux_desc.drvdata = fsa_priv;
+	mux_desc.fwnode = dev->fwnode;
+	mux_desc.set = fsa4480_mux_set;
+
+#if IS_ENABLED(CONFIG_MTK_USB_TYPEC_MUX)
+	fsa_priv->mux = mtk_typec_mux_register(dev, &mux_desc);
+#else
+	fsa_priv->mux = typec_mux_register(dev, &mux_desc);
+#endif
+	if (IS_ERR(fsa_priv->mux)) {
+#if IS_ENABLED(CONFIG_MTK_USB_TYPEC_MUX)
+		mtk_typec_switch_unregister(fsa_priv->sw);
+#else
+		mtk_typec_switch_unregister(fsa_priv->sw);
+#endif
+		dev_info(dev, "error registering typec mux: %ld\n",
+			PTR_ERR(fsa_priv->mux));
+		return PTR_ERR(fsa_priv->mux);
+	}
+
 	i2c_set_clientdata(i2c, fsa_priv);
+
+	dev_info(dev, "%s: done\n", __func__);
 
 	return 0;
 
@@ -198,7 +355,7 @@ static void fsa4480_remove(struct i2c_client *i2c)
 	fsa4480_usbc_update_settings(fsa_priv, 0x18, 0x98);
 #endif
 	pm_relax(fsa_priv->dev);
-	mutex_destroy(&fsa_priv->notification_lock);
+	mutex_destroy(&fsa_priv->fsa4480_lock);
 	dev_set_drvdata(&i2c->dev, NULL);
 
 }
