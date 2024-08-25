@@ -865,6 +865,7 @@ def get_overlay_modules_list():
         mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/mmi_relay:mmi_relay")
         mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/moto_swap:moto_swap")
         mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/moto_sched:moto_sched")
+        mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/moto_binder:moto_binder")
         mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/moto_mmap_fault:moto_mmap_fault")
         mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/moto_f_usbnet:moto_f_usbnet")
         mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/moto_netopt/con_dfpar:con_dfpar")
