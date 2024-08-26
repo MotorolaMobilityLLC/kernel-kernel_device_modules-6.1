@@ -173,7 +173,7 @@ static char *debug_buffer;
 static bool logger_enable = 1;
 unsigned int g_trace_log = 1;
 #else
-static bool logger_enable;
+static bool logger_enable = 1;
 unsigned int g_trace_log;
 #endif
 
