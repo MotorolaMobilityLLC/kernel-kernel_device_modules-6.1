@@ -497,9 +497,9 @@
 
     sensor2: sensor2@10 {
         compatible = "mediatek,imgsensor";
-        sensor-names = "mot_vienna_gc13a2_mipi_raw";
+        sensor-names = "mot_vienna_gc13a2_mipi_raw", "mot_vienna_gc13a2_vcm_blad";
         reg = <0x10>;
-        reindex-match = "mot_vienna_gc13a2_mipi_raw";
+        reindex-match = "mot_vienna_gc13a2_mipi_raw", "mot_vienna_gc13a2_vcm_blad";
 
         #thermal-sensor-cells = <0>;
 

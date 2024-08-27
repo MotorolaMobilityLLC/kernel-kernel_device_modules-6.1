@@ -624,6 +624,8 @@
 #define SENSOR_DRVNAME_MOT_VIENNA_GC13A2_MIPI_RAW          "mot_vienna_gc13a2_mipi_raw"
 #define MOT_VIENNA_S5K3K1_SENSOR_ID                        0x30B1
 #define SENSOR_DRVNAME_MOT_VIENNA_S5K3K1_MIPI_RAW          "mot_vienna_s5k3k1_mipi_raw"
+#define MOT_VIENNA_GC13A2_VCM_BLAD_SENSOR_ID               0x13a3
+#define SENSOR_DRVNAME_MOT_VIENNA_GC13A2_VCM_BLAD          "mot_vienna_gc13a2_vcm_blad"
 
 /*PAS (PixArt Image)*/
 #define SENSOR_DRVNAME_PAS6180_SERIAL_YUV       "pas6180_serial_yuv"
