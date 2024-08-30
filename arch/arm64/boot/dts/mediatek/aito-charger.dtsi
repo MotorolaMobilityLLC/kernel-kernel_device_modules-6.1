@@ -397,6 +397,7 @@
 		df-serialnum = "SB18E12803";
 		fg-psy-name = "main_battery";
 		has_ext_ntc;
+		use_quiet_ntc;/*use quiet ntc as batt ntc when WLC online*/
 		io-channels = <&mt6375_auxadc MT6375_AUXADC_BATON>,
 			      <&mt6375_auxadc MT6375_AUXADC_VREF>;
 		io-channel-names = "bat_temp", "vref";
