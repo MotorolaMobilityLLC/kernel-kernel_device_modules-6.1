@@ -134,6 +134,7 @@ enum chg_alg_props {
 	ALG_REF_VBAT,
 	ALG_WLC_STATE,
 	ALG_WLC_TX_MODE,
+	ALG_NOTIFY_OTG_PLUGIN
 };
 
 struct chg_alg_ops {
