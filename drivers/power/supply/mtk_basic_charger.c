@@ -1041,6 +1041,7 @@ static int mmi_mux_switch(struct mtk_charger *info, enum mmi_mux_channel channel
 		case MMI_MUX_CHANNEL_TYPEC_OTG:
 			if (on) {
 				if (pre_chan == MMI_MUX_CHANNEL_WLC_CHG) {
+					mmi_wlc_set_prop(info, ALG_NOTIFY_OTG_PLUGIN, 1);
 					mmi_mux_config(info, MMI_MUX_CHANNEL_TYPEC_OTG_WLC_CHG);
 					info->mmi.mux_channel.chan = MMI_MUX_CHANNEL_TYPEC_OTG_WLC_CHG;
 					info->mmi.mux_channel.on = true;
