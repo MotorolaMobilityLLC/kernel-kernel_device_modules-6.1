@@ -796,6 +796,11 @@ int _wlc_set_prop(struct chg_alg_device *alg,
 			wls_chg_ops->wls_set_tx_mode(!!value);
 		}
 		break;
+	case ALG_NOTIFY_OTG_PLUGIN:
+		if (!IS_ERR_OR_NULL(wls_chg_ops) && wls_chg_ops->wls_notify_otg_plugin) {
+			wls_chg_ops->wls_notify_otg_plugin(!!value);
+		}
+		break;
 	default:
 		break;
 	}

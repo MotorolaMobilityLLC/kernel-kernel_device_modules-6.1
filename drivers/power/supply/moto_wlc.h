@@ -118,6 +118,7 @@ struct moto_wls_chg_ops {
 	void (*wls_notify_cur_state)(int cur_state, int wls_ccl);
 	int (*wls_set_tx_mode)(bool en);
 	int (*wls_set_current)(int icl, int cc);
+	int (*wls_notify_otg_plugin)(bool en);
 };
 
 extern int wlc_hal_init_hardware(struct chg_alg_device *alg);
