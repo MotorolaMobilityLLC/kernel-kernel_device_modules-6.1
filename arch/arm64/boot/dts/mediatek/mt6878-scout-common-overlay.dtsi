@@ -279,22 +279,32 @@
 &i2c6 {
  	status = "okay";
 	clock-frequency = <400000>;
-	fs16xx_smartpa_0: fs16xx@34 {
-		compatible = "foursemi,fs16xx";
- 		#sound-dai-cells = <0>;
-		fsm,rst-gpio = <&pio 80 0>;
-		fsm,irq-gpio = <&pio 10 0>;
+
+	aw882xx_smartpa_rcv: aw882xx@34 {
+		compatible = "awinic,aw882xx_smartpa";
+		#sound-dai-cells = <0>;
 		reg = <0x34>;
- 		status = "okay";
- 	};
-	fs16xx_smartpa_1: fs16xx@35 {
-		compatible = "foursemi,fs16xx";
- 		#sound-dai-cells = <0>;
-		fsm,rst-gpio = <&pio 193 0>;
-		fsm,irq-gpio = <&pio 17 0>;
+		irq-gpio = <&pio 17 0x0>;
+		/*sync-load = <1>;*/
+		sound-channel = <0>; /*0:pri_l 1:pri_r 2:sec_l 3:sec_r*/
+		aw-re-min = <4000>;
+		aw-re-max= <30000>;
+		/*aw-cali-mode = "none";*/
+		status = "okay";
+	};
+	aw882xx_smartpa_spk: aw882xx@35 {
+		compatible = "awinic, aw882xx_smartpa";
+		#sound-dai-cells = <0>;
 		reg = <0x35>;
- 		status = "okay";
- 	};
+		irq-gpio = <&pio 10 0x0>;
+		/*sync-load = <1>;*/
+		sound-channel = <1>; /*0:pri_l 1:pri_r 2:sec_l 3:sec_r*/
+		aw-re-min = <4000>;
+		aw-re-max= <30000>;
+		/*aw-cali-mode = "none";*/
+		status = "okay";
+	};
+
 	fsa4480: fsa4480@42 {
 		compatible = "fsa,fsa4480-i2c";
 		reg = <0x42>;
@@ -305,7 +315,7 @@
 &sound {
 	mediatek,spk-i2s = <25 24>;
 	mediatek,speaker-codec {
-		sound-dai = <&fs16xx_smartpa_0>;
+		sound-dai = <&aw882xx_smartpa_rcv &aw882xx_smartpa_spk>;
 	};
 };
 
