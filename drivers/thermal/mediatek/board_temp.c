@@ -79,6 +79,7 @@ struct board_ntc_info {
 	struct iio_channel *chan_rec_ntc;
 	struct iio_channel *chan_chg_ntc;
 	struct iio_channel *chan_conn_ntc;
+	struct iio_channel *chan_schg_ntc;
 };
 
 unsigned int tia2_rc_sel_to_value(unsigned int sel)
@@ -207,6 +208,9 @@ static int board_ntc_get_temp(struct thermal_zone_device *tz, int *temp)
 		r_type = 0;
 	}  else if (!PTR_ERR_OR_ZERO(ntc_info->chan_mchg_ntc)){
 		iio_read_channel_raw(ntc_info->chan_mchg_ntc, &val);
+		r_type = 0;
+	}  else if (!PTR_ERR_OR_ZERO(ntc_info->chan_schg_ntc)){
+		iio_read_channel_raw(ntc_info->chan_schg_ntc, &val);
 		r_type = 0;
 	}  else if (!PTR_ERR_OR_ZERO(ntc_info->chan_rec_ntc)){
 		iio_read_channel_raw(ntc_info->chan_rec_ntc, &val);
@@ -412,6 +416,7 @@ static int board_ntc_probe(struct platform_device *pdev)
 	ntc_info->chan_tspk_ntc =  devm_iio_channel_get(&pdev->dev, "SPK_NTC");
 	ntc_info->chan_quiet_ntc =  devm_iio_channel_get(&pdev->dev, "QUIET_NTC");
 	ntc_info->chan_mchg_ntc =  devm_iio_channel_get(&pdev->dev, "MCHG_NTC");
+	ntc_info->chan_schg_ntc =  devm_iio_channel_get(&pdev->dev, "SCHG_NTC");
 	ntc_info->chan_rec_ntc =  devm_iio_channel_get(&pdev->dev, "REC_NTC");
 	ntc_info->chan_chg_ntc =  devm_iio_channel_get(&pdev->dev, "CHG_NTC");
 	ntc_info->chan_conn_ntc =  devm_iio_channel_get(&pdev->dev, "CONN_NTC");
@@ -421,6 +426,7 @@ static int board_ntc_probe(struct platform_device *pdev)
 			(!PTR_ERR_OR_ZERO(ntc_info->chan_tspk_ntc)) ||
 			(!PTR_ERR_OR_ZERO(ntc_info->chan_quiet_ntc)) ||
 			(!PTR_ERR_OR_ZERO(ntc_info->chan_mchg_ntc)) ||
+			(!PTR_ERR_OR_ZERO(ntc_info->chan_schg_ntc)) ||
 			(!PTR_ERR_OR_ZERO(ntc_info->chan_rec_ntc)) ||
 			(!PTR_ERR_OR_ZERO(ntc_info->chan_chg_ntc)) ||
 			(!PTR_ERR_OR_ZERO(ntc_info->chan_conn_ntc)) )
