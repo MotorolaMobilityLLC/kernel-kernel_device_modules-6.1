@@ -17,6 +17,7 @@
 	mt6363_thermistor5: mt6363_thermistor5 { };
 	mt6363_thermistor6: mt6363_thermistor6 { };
 	mt6363_thermistor7: mt6363_thermistor7 { };
+	mt6369_thermistor1: mt6369_thermistor1 { };
 	mt6369_thermistor2: mt6369_thermistor2 { };
 	mt6375_thermistor: mt6375_thermistor { };
 	swtp: swtp {
