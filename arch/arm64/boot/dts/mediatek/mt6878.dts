@@ -12717,7 +12717,7 @@ TOP_LDRO7,TOP_LDRO8,TOP_LDRO9,TOP_LDRO10,TOP_LDRO11,TOP_LDRO12,TOP_LDRO13,TOP_LD
 /delete-node/ &mt6363_vbuck2_sshub;
 /delete-node/ &mt6363_vbuck4_sshub;
 /delete-node/ &mt6369_vmch;
-/delete-node/ &mt6369_vmch_eint_low;
+/* /delete-node/ &mt6369_vmch_eint_low; */
 /delete-node/ &mt6369_vdigrf;
 
 &main_pmic {

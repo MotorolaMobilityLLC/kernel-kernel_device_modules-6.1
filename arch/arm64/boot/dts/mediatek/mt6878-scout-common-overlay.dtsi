@@ -19,6 +19,8 @@
 #include "mediatek/scout-display.dtsi"
 #include "mediatek/scout-touch.dtsi"
 
+#include <dt-bindings/gpio/gpio.h>
+
 &pio {
 	nfc_spi_cs_mode_spi: nfc_spi_cs_mode_spi {
 		pins_cmd_dat {
@@ -255,7 +257,8 @@
 };
 
 &mmc1 {
-	status = "disabled";
+	cd-gpios = <&pio 14 GPIO_ACTIVE_HIGH>;
+	vmmc-supply = <&mt6369_vmch_eint_low>;
 };
 
 &i2c6 {
