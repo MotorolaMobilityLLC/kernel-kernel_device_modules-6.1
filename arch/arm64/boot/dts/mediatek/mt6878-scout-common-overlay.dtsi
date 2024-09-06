@@ -102,6 +102,10 @@
 	regulator-always-on;
 };
 
+&mt6363_vio18 {
+	regulator-min-microvolt = <1800000>;
+	regulator-max-microvolt = <2100000>;
+};
 
 &i2c10 {
 	status = "ok";
@@ -118,7 +122,7 @@
 		status = "ok";
 	};
 
-	sx937x@2c { /* SAR sensor */
+	sx937x: sx937x@2c { /* SAR sensor */
 		compatible = "Semtech,sx937x";
 		reg = <0x2c>;
 		Semtech,power-supply-type = <0>;
@@ -128,14 +132,14 @@
 		pinctrl-1 = <&sar_int_sleep>;
 		interrupt-parent = <&pio>;
 		interrupts = <14 0x02>;
-		interrupt-names = "capsense0_irq";
+		interrupt-names = "sx937x_irq";
 		Semtech,nirq-gpio= <&pio 14 0x02>;
 		esd-reinit-on = <1>;
 		/*use PH5/6 as the reference sensor
 		set it to 0xff if the ref-phases-x is not used*/
-		Semtech,ref-phases-a = <5>;
-		Semtech,ref-phases-b = <6>;
-		Semtech,ref-phases-c = <0xff>;
+		Semtech,ref-phases-a = <4>;
+		Semtech,ref-phases-b = <5>;
+		Semtech,ref-phases-c = <6>;
 		Semtech,button-flag = <0x0f>;
 		Semtech,reg-num = <58>;
 		Semtech,reg-init = <
@@ -143,22 +147,23 @@
 			0x4004 0x00000074
 			0x4008 0x00000008
 			0x8020 0x00000032
-			0x8028 0x0000089E
-			0x8034 0x0000086E
-			0x8040 0x00000876
-			0x804C 0x0000086E
-			0x8058 0x00000876
-			0x8064 0x00000866
-			0x8070 0x0000085E
-			0x807C 0x0000085E
-			0x8030 0x00924925
-			0x803C 0x00924964
-			0x8048 0x00925924
-			0x8054 0x0092C924
-			0x8060 0x00B24924
-			0x806C 0x0092492C
-			0x8078 0x00964924
-			0x8084 0x00FFF9FF
+			0x8028 0x0000089E    /*AFE_PARAM_PH0*/
+			0x8034 0x0000086E    /*AFE_PARAM_PH1*/
+			0x8040 0x00000876    /*AFE_PARAM_PH2*/
+			0x804C 0x0000086E    /*AFE_PARAM_PH3*/
+			0x8058 0x00000876    /*AFE_PARAM_PH4*/
+			0x8064 0x00000866    /*AFE_PARAM_PH5*/
+			0x8070 0x0000085E    /*AFE_PARAM_PH6*/
+			0x807C 0x0000085E    /*AFE_PARAM_PH7*/
+			/*set CS3 to HZ, because it used as IRQ pin*/
+			0x8030 0x00FFF9FD    /*REG_AFEPH_PH0, CS0, ANT0*/
+			0x803C 0x00FEF9FF    /*REG_AFEPH_PH1, CS5, ANT1*/
+			0x8048 0x00F7F9FF    /*REG_AFEPH_PH2, CS6, ANT3/4/5*/
+			0x8054 0x00BFF9FF    /*REG_AFEPH_PH3, CS7, ANT2*/
+			0x8060 0x00FFF9EF    /*REG_AFEPH_PH4, CS1, ANT0_REF*/
+			0x806C 0x00FFF97F    /*REG_AFEPH_PH5, CS2, ANT3/4/5 REF*/
+			0x8078 0x00FFD9FF    /*REG_AFEPH_PH6, CS4, ANT1 REF*/
+			0x8084 0x00FFF9FF    /*REG_AFEPH_PH7, NOT USE*/
 			0x8098 0x00006F46
 			0x80B8 0x00002020
 			0x80D8 0x00005959
@@ -199,29 +204,6 @@
 			0x816C 0x60200030
 		>;
 		status = "okay";
-	};
-	awinic_sar:awinic_sar@12 {
-			/* common node */
-			compatible = "awinic,aw_sar";
-			reg = < 0x12 >;
-			sar-num = < 0 >;
-			pinctrl-names = "default","sleep";
-			pinctrl-0 = <&sar_int_default>;
-			pinctrl-1 = <&sar_int_sleep>;
-			interrupt-parent = <&pio>;
-			interrupts = <14 0x02>;
-			interrupt-names = "awinic_irq";
-			irq-gpio = <&pio 14 0x02>;
-			//vcc0-supply = <&mt6363_vio18>;
-			channel_use_flag = <0x0f>;
-			monitor_esd_flag = <1>;
-			aw_sar,use_plug_cail;
-			aw_sar,update_fw;
-			aw_sar,using_pm_ops;
-			/* private node belongs to aw963xx */
-			start-mode = < 1 >; // 0: start in rom  1: start in ram
-			irq-mux = < 2 >; // set csx as irq pin. config this field when connect to aw96308/aw96310
-			status = "okay";
 	};
 };
 
