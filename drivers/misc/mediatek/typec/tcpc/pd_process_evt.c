@@ -120,9 +120,9 @@ static const char *const pd_hw_msg_name[] = {
 	"tx_err",
 	"discard",
 
-#if CONFIG_USB_PD_REV30_COLLISION_AVOID
+#if CONFIG_USB_PD_REV30
 	"sink_tx_change",
-#endif	/* CONFIG_USB_PD_REV30_COLLISION_AVOID */
+#endif	/* CONFIG_USB_PD_REV30 */
 #if CONFIG_USB_PD_RETRY_CRC_DISCARD
 	"tx_retransmit",
 #endif	/* CONFIG_USB_PD_RETRY_CRC_DISCARD */
@@ -152,8 +152,8 @@ static inline void print_pe_msg_event(struct tcpc_device *tcpc, uint8_t msg)
 static const char * const pd_dpm_msg_name[] = {
 	"ack",
 	"nak",
-	"cap_change",
 	"not_support",
+	"cable_not_support",
 };
 
 static inline void print_dpm_msg_event(struct tcpc_device *tcpc, uint8_t msg)
@@ -215,14 +215,10 @@ static const char *const tcp_dpm_evt_name[] = {
 	"dp_status",
 	"dp_config",
 
-#if CONFIG_USB_PD_CUSTOM_VDM
-	"uvdm",
-#endif	/* CONFIG_USB_PD_CUSTOM_VDM */
+	"cvdm",
 
-#if CONFIG_USB_PD_DFP_READY_DISCOVER_ID
 	"disc_cable_svids",
 	"disc_cable_modes",
-#endif /* CONFIG_USB_PD_DFP_READY_DISCOVER_ID */
 
 	/* TCP_DPM_EVT_IMMEDIATELY */
 	"hard_reset",
@@ -488,7 +484,7 @@ bool pd_process_tx_failed_discard(struct pd_port *pd_port, uint8_t msg)
 
 	if (pd_check_pe_state_ready(pd_port) ||
 		pd_check_pe_during_hard_reset(pd_port)) {
-		PE_DBG("Ignore tx_failed\n");
+		PE_INFO("Ignore tx_failed\n");
 		return false;
 	}
 
@@ -514,27 +510,21 @@ bool pd_process_tx_failed_discard(struct pd_port *pd_port, uint8_t msg)
 
 /*---------------------------------------------------------------------------*/
 
-#if CONFIG_USB_PD_RESET_CABLE
 static inline bool pd_process_cable_ctrl_msg_accept(
 	struct pd_port *pd_port, struct pd_event *pd_event)
 {
 	switch (pd_port->pe_state_curr) {
-#if CONFIG_PD_SRC_RESET_CABLE
 	case PE_SRC_CBL_SEND_SOFT_RESET:
 		vdm_put_dpm_discover_cable_id_event(pd_port);
 		return false;
-#endif	/* CONFIG_PD_SRC_RESET_CABLE */
 
-#if CONFIG_PD_DFP_RESET_CABLE
 	case PE_DFP_CBL_SEND_SOFT_RESET:
 		pe_transit_ready_state(pd_port);
 		return true;
-#endif	/* CONFIG_PD_DFP_RESET_CABLE */
 	}
 
 	return false;
 }
-#endif	/* CONFIG_USB_PD_RESET_CABLE */
 
 static inline bool pd_process_event_cable(
 	struct pd_port *pd_port, struct pd_event *pd_event)
@@ -542,10 +532,8 @@ static inline bool pd_process_event_cable(
 	bool ret = false;
 	struct tcpc_device __maybe_unused *tcpc = pd_port->tcpc;
 
-#if CONFIG_USB_PD_RESET_CABLE
 	if (pd_event->msg == PD_CTRL_ACCEPT)
 		ret = pd_process_cable_ctrl_msg_accept(pd_port, pd_event);
-#endif	/* CONFIG_USB_PD_RESET_CABLE */
 
 	if (!ret)
 		PE_DBG("Ignore not SOP Ctrl Msg\n");
@@ -614,7 +602,7 @@ static inline void pd_copy_msg_data_from_evt(
 static inline bool pe_is_valid_pd_msg_id(struct pd_port *pd_port,
 			struct pd_event *pd_event, struct pd_msg *pd_msg)
 {
-	uint8_t sop_type = pd_msg->frame_type;
+	enum tcpm_transmit_type sop_type = pd_msg->frame_type;
 	uint8_t msg_id = pd_get_msg_hdr_id(pd_port);
 	struct tcpc_device __maybe_unused *tcpc = pd_port->tcpc;
 
@@ -648,7 +636,8 @@ static inline bool pe_is_valid_pd_msg_id(struct pd_port *pd_port,
 
 	if (pd_port->pe_data.msg_id_rx[sop_type] == msg_id) {
 		PE_INFO("Repeat msg: %c:%d:%d\n",
-			(pd_event->event_type == PD_EVT_CTRL_MSG) ? 'C' : 'D',
+			(pd_event->event_type == PD_EVT_CTRL_MSG) ? 'C' :
+			(pd_event->event_type == PD_EVT_DATA_MSG) ? 'D' : 'E',
 			pd_event->msg, msg_id);
 		return false;
 	}
@@ -717,7 +706,8 @@ static inline void pe_translate_pd_msg_event(struct pd_port *pd_port,
 	if (PD_HEADER_EXT(msg_hdr))
 		pd_event->event_type = PD_EVT_EXT_MSG;
 
-	if (pd_msg->frame_type == TCPC_TX_SOP_PRIME) {
+	if (pd_msg->frame_type == TCPC_TX_SOP_PRIME &&
+	    !pd_event_ctrl_msg_match(pd_event, PD_CTRL_GOOD_CRC)) {
 		pd_sync_sop_prime_spec_revision(
 			pd_port, PD_HEADER_REV(msg_hdr));
 	}

@@ -153,13 +153,13 @@ static inline bool pd_process_ctrl_msg(
 			return true;
 		break;
 #endif	/* CONFIG_USB_PD_REV30_STATUS_LOCAL */
-#endif	/* CONFIG_USB_PD_REV30 */
 
 	case PD_CTRL_GET_SINK_CAP_EXT:
 		if (PE_MAKE_STATE_TRANSIT_SINGLE(
 			PE_SNK_READY, PE_SNK_GIVE_SINK_CAP_EXT))
 			return true;
 		break;
+#endif	/* CONFIG_USB_PD_REV30 */
 
 	default:
 		pd_port->curr_unsupported_msg = true;
@@ -279,10 +279,10 @@ static inline bool pd_process_dpm_msg(
  * [BLOCK] Process HW MSG
  */
 
+#if CONFIG_USB_PD_REV30
 static inline bool pd_process_hw_msg_sink_tx_change(
 	struct pd_port *pd_port, struct pd_event *pd_event)
 {
-#if CONFIG_USB_PD_REV30_COLLISION_AVOID
 	struct pe_data *pe_data = &pd_port->pe_data;
 	uint8_t pd_traffic;
 
@@ -301,11 +301,12 @@ static inline bool pd_process_hw_msg_sink_tx_change(
 		return false;
 
 	pe_data->pd_traffic_control = pd_traffic;
-	dpm_reaction_set_ready_once(pd_port);
-#endif	/* CONFIG_USB_PD_REV30_COLLISION_AVOID */
+	if (pd_traffic == PD_SINK_TX_OK)
+		dpm_reaction_set_ready_once(pd_port);
 
 	return false;
 }
+#endif	/* CONFIG_USB_PD_REV30 */
 
 static inline bool pd_process_vbus_absent(struct pd_port *pd_port)
 {
@@ -336,10 +337,10 @@ static inline bool pd_process_hw_msg(
 	case PD_HW_TX_DISCARD:
 		return pd_process_tx_failed_discard(pd_port, pd_event->msg);
 
-#if CONFIG_USB_PD_REV30_COLLISION_AVOID
+#if CONFIG_USB_PD_REV30
 	case PD_HW_SINK_TX_CHANGE:
 		return pd_process_hw_msg_sink_tx_change(pd_port, pd_event);
-#endif /* CONFIG_USB_PD_REV30_COLLISION_AVOID */
+#endif	/* CONFIG_USB_PD_REV30 */
 	};
 
 	return false;
@@ -431,35 +432,33 @@ static inline bool pd_process_timer_msg(
 		}
 		break;
 
-#if CONFIG_USB_PD_DFP_READY_DISCOVER_ID
 	case PD_TIMER_DISCOVER_ID:
 		vdm_put_dpm_discover_cable_id_event(pd_port);
 		break;
-#endif	/* CONFIG_USB_PD_DFP_READY_DISCOVER_ID */
 #if CONFIG_USB_PD_REV30
 	case PD_TIMER_CK_NOT_SUPPORTED:
 		return PE_MAKE_STATE_TRANSIT_SINGLE(
 			PE_SNK_CHUNK_RECEIVED, PE_SNK_SEND_NOT_SUPPORTED);
-#if CONFIG_USB_PD_REV30_COLLISION_AVOID
 #if CONFIG_USB_PD_REV30_SNK_FLOW_DELAY_STARTUP
-		fallthrough;
 	case PD_TIMER_SNK_FLOW_DELAY:
-		if (pe_data->pd_traffic_control == PD_SINK_TX_START) {
-			if (typec_get_cc_res() == TYPEC_CC_VOLT_SNK_3_0)
-				pe_data->pd_traffic_control = PD_SINK_TX_OK;
-			else
-				pe_data->pd_traffic_control = PD_SINK_TX_NG;
+		if (pe_data->pd_traffic_control != PD_SINK_TX_START)
+			break;
+
+		if (typec_get_cc_res() == TYPEC_CC_VOLT_SNK_3_0 &&
+		    tcpc->typec_remote_rp_level == TYPEC_CC_VOLT_SNK_3_0) {
+			pe_data->pd_traffic_control = PD_SINK_TX_OK;
 			dpm_reaction_set_ready_once(pd_port);
-		}
+		} else
+			pe_data->pd_traffic_control = PD_SINK_TX_NG;
 		break;
 #endif	/* CONFIG_USB_PD_REV30_SNK_FLOW_DELAY_STARTUP */
-#endif	/* CONFIG_USB_PD_REV30_COLLISION_AVOID */
 #if CONFIG_USB_PD_REV30_PPS_SINK
 	case PD_TIMER_PPS_REQUEST:
 		if (pd_port->request_apdo) {
 			pd_put_deferred_tcp_event(tcpc, &tcp_event);
 			pd_restart_timer(pd_port, PD_TIMER_PPS_REQUEST);
-		}
+		} else
+			pm_relax(&tcpc->dev);
 		break;
 #endif	/* CONFIG_USB_PD_REV30_PPS_SINK */
 #endif	/* CONFIG_USB_PD_REV30 */

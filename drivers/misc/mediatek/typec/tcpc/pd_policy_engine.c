@@ -35,14 +35,10 @@ static const char *const pe_state_name[] = {
 	"PE_SRC_SEND_SOFT_RESET",
 	"PE_SRC_SOFT_RESET",
 /* Source Startup Discover Cable */
-#if CONFIG_USB_PD_SRC_STARTUP_DISCOVER_ID
-#if CONFIG_PD_SRC_RESET_CABLE
 	"PE_SRC_CBL_SEND_SOFT_RESET",
-#endif	/* CONFIG_PD_SRC_RESET_CABLE */
 	"PE_SRC_VDM_IDENTITY_REQUEST",
 	"PE_SRC_VDM_IDENTITY_ACKED",
 	"PE_SRC_VDM_IDENTITY_NAKED",
-#endif	/* PD_CAP_PE_SRC_STARTUP_DISCOVER_ID */
 /* Source for PD30 */
 #if CONFIG_USB_PD_REV30
 	"PE_SRC_SEND_NOT_SUPPORTED",
@@ -205,10 +201,8 @@ static const char *const pe_state_name[] = {
 	"PE_DFP_VDM_MODE_EXIT_REQUEST",
 	"PE_DFP_VDM_MODE_EXIT_ACKED",
 	"PE_DFP_VDM_ATTENTION_REQUEST",
-#if CONFIG_PD_DFP_RESET_CABLE
 	"PE_DFP_CBL_SEND_SOFT_RESET",
 	"PE_DFP_CBL_SEND_CABLE_RESET",
-#endif	/* CONFIG_PD_DFP_RESET_CABLE */
 	"PE_DFP_VDM_DP_STATUS_UPDATE_REQUEST",
 	"PE_DFP_VDM_DP_STATUS_UPDATE_ACKED",
 	"PE_DFP_VDM_DP_STATUS_UPDATE_NAKED",
@@ -216,12 +210,10 @@ static const char *const pe_state_name[] = {
 	"PE_DFP_VDM_DP_CONFIGURATION_ACKED",
 	"PE_DFP_VDM_DP_CONFIGURATION_NAKED",
 /******************* UVDM & SVDM *******************/
-#if CONFIG_USB_PD_CUSTOM_VDM
-	"PE_UFP_UVDM_RECV",
-	"PE_DFP_UVDM_SEND",
-	"PE_DFP_UVDM_ACKED",
-	"PE_DFP_UVDM_NAKED",
-#endif/* CONFIG_USB_PD_CUSTOM_VDM */
+	"PE_UFP_CVDM_RECV",
+	"PE_DFP_CVDM_SEND",
+	"PE_DFP_CVDM_ACKED",
+	"PE_DFP_CVDM_NAKED",
 	"PE_UFP_VDM_SEND_NAK",
 /******************* PD30 Common *******************/
 #if CONFIG_USB_PD_REV30
@@ -264,9 +256,6 @@ static const char *const pe_state_name[] = {
 #if CONFIG_USB_PD_CUSTOM_DBGACC
 	"PE_DBG_READY",
 #endif/* CONFIG_USB_PD_CUSTOM_DBGACC */
-#if CONFIG_USB_PD_RECV_HRESET_COUNTER
-	"PE_OVER_RECV_HRESET_LIMIT",
-#endif/* CONFIG_USB_PD_RECV_HRESET_COUNTER */
 	"PE_REJECT",
 	"PE_ERROR_RECOVERY",
 #if CONFIG_USB_PD_ERROR_RECOVERY_ONCE
@@ -309,14 +298,10 @@ static const char *const pe_state_name[] = {
 	"SRC_SEND_SRESET",
 	"SRC_SRESET",
 /* Source Startup Discover Cable */
-#if CONFIG_USB_PD_SRC_STARTUP_DISCOVER_ID
-#if CONFIG_PD_SRC_RESET_CABLE
 	"SRC_CBL_SEND_SRESET",
-#endif	/* CONFIG_PD_SRC_RESET_CABLE */
 	"SRC_VDM_ID_REQ",
 	"SRC_VDM_ID_ACK",
 	"SRC_VDM_ID_NAK",
-#endif	/* PD_CAP_PE_SRC_STARTUP_DISCOVER_ID */
 /* Source for PD30 */
 #if CONFIG_USB_PD_REV30
 	"SRC_NO_SUPP",
@@ -481,10 +466,8 @@ static const char *const pe_state_name[] = {
 	"D_MODE_EX_REQ",
 	"D_MODE_EX_ACK",
 	"D_ATTENTION",
-#if CONFIG_PD_DFP_RESET_CABLE
 	"D_C_SRESET",
 	"D_C_CRESET",
-#endif	/* CONFIG_PD_DFP_RESET_CABLE */
 	"D_DP_STATUS_REQ",
 	"D_DP_STATUS_ACK",
 	"D_DP_STATUS_NAK",
@@ -492,12 +475,10 @@ static const char *const pe_state_name[] = {
 	"D_DP_CONFIG_ACK",
 	"D_DP_CONFIG_NAK",
 /******************* UVDM & SVDM *******************/
-#if CONFIG_USB_PD_CUSTOM_VDM
-	"U_UVDM_RECV",
-	"D_UVDM_SEND",
-	"D_UVDM_ACKED",
-	"D_UVDM_NAKED",
-#endif/* CONFIG_USB_PD_CUSTOM_VDM */
+	"U_CVDM_RECV",
+	"D_CVDM_SEND",
+	"D_CVDM_ACKED",
+	"D_CVDM_NAKED",
 	"U_SEND_NAK",
 /******************* PD30 Common *******************/
 #if CONFIG_USB_PD_REV30
@@ -540,9 +521,6 @@ static const char *const pe_state_name[] = {
 #if CONFIG_USB_PD_CUSTOM_DBGACC
 	"DBG_READY",
 #endif/* CONFIG_USB_PD_CUSTOM_DBGACC */
-#if CONFIG_USB_PD_RECV_HRESET_COUNTER
-	"OVER_HRESET_LIMIT",
-#endif/* CONFIG_USB_PD_RECV_HRESET_COUNTER */
 	"REJECT",
 	"ERR_RECOVERY",
 #if CONFIG_USB_PD_ERROR_RECOVERY_ONCE
@@ -595,14 +573,10 @@ static const struct pe_state_actions pe_state_actions[] = {
 	PE_STATE_ACTIONS(pe_src_send_soft_reset),
 	PE_STATE_ACTIONS(pe_src_soft_reset),
 /* Source Startup Discover Cable */
-#if CONFIG_USB_PD_SRC_STARTUP_DISCOVER_ID
-#if CONFIG_PD_SRC_RESET_CABLE
 	PE_STATE_ACTIONS(pe_src_cbl_send_soft_reset),
-#endif	/* CONFIG_PD_SRC_RESET_CABLE */
 	PE_STATE_ACTIONS(pe_src_vdm_identity_request),
 	PE_STATE_ACTIONS(pe_src_vdm_identity_acked),
 	PE_STATE_ACTIONS(pe_src_vdm_identity_naked),
-#endif	/* PD_CAP_PE_SRC_STARTUP_DISCOVER_ID */
 /* Source for PD30 */
 #if CONFIG_USB_PD_REV30
 	PE_STATE_ACTIONS(pe_src_send_not_supported),
@@ -767,10 +741,8 @@ static const struct pe_state_actions pe_state_actions[] = {
 	PE_STATE_ACTIONS(pe_dfp_vdm_mode_exit_request),
 	PE_STATE_ACTIONS(pe_dfp_vdm_mode_exit_acked),
 	PE_STATE_ACTIONS(pe_dfp_vdm_attention_request),
-#if CONFIG_PD_DFP_RESET_CABLE
 	PE_STATE_ACTIONS(pe_dfp_cbl_send_soft_reset),
 	PE_STATE_ACTIONS(pe_dfp_cbl_send_cable_reset),
-#endif	/* CONFIG_PD_DFP_RESET_CABLE */
 	PE_STATE_ACTIONS(pe_dfp_vdm_dp_status_update_request),
 	PE_STATE_ACTIONS(pe_dfp_vdm_dp_status_update_acked),
 	PE_STATE_ACTIONS(pe_dfp_vdm_dp_status_update_naked),
@@ -778,12 +750,10 @@ static const struct pe_state_actions pe_state_actions[] = {
 	PE_STATE_ACTIONS(pe_dfp_vdm_dp_configuration_acked),
 	PE_STATE_ACTIONS(pe_dfp_vdm_dp_configuration_naked),
 /******************* UVDM & SVDM *******************/
-#if CONFIG_USB_PD_CUSTOM_VDM
-	PE_STATE_ACTIONS(pe_ufp_uvdm_recv),
-	PE_STATE_ACTIONS(pe_dfp_uvdm_send),
-	PE_STATE_ACTIONS(pe_dfp_uvdm_acked),
-	PE_STATE_ACTIONS(pe_dfp_uvdm_naked),
-#endif/* CONFIG_USB_PD_CUSTOM_VDM */
+	PE_STATE_ACTIONS(pe_ufp_cvdm_recv),
+	PE_STATE_ACTIONS(pe_dfp_cvdm_send),
+	PE_STATE_ACTIONS(pe_dfp_cvdm_acked),
+	PE_STATE_ACTIONS(pe_dfp_cvdm_naked),
 	PE_STATE_ACTIONS(pe_ufp_vdm_send_nak),
 /******************* PD30 Common *******************/
 #if CONFIG_USB_PD_REV30
@@ -825,9 +795,6 @@ static const struct pe_state_actions pe_state_actions[] = {
 #if CONFIG_USB_PD_CUSTOM_DBGACC
 	PE_STATE_ACTIONS(pe_dbg_ready),
 #endif/* CONFIG_USB_PD_CUSTOM_DBGACC */
-#if CONFIG_USB_PD_RECV_HRESET_COUNTER
-	PE_STATE_ACTIONS(pe_over_recv_hreset_limit),
-#endif/* CONFIG_USB_PD_RECV_HRESET_COUNTER */
 	PE_STATE_ACTIONS(pe_reject),
 	PE_STATE_ACTIONS(pe_error_recovery),
 #if CONFIG_USB_PD_ERROR_RECOVERY_ONCE
@@ -1050,7 +1017,6 @@ static inline void pd_pe_state_change(
 		pd_disable_pe_state_timer(pd_port);
 
 	pe_data->pe_state_flags = 0;
-	pe_data->pe_state_flags2 = 0;
 
 	if (prev_exit_action)
 		prev_exit_action(pd_port);
@@ -1077,8 +1043,8 @@ static int pd_handle_event(
 	struct pe_data *pe_data = &pd_port->pe_data;
 
 	if (pd_curr_is_vdm_evt(pd_port)) {
-		dpm_imme = pd_port->pe_data.vdm_state_flags
-			& VDM_STATE_FLAG_DPM_ACK_IMMEDIATELY;
+		dpm_imme = pd_port->pe_data.vdm_state_flags &
+			VDM_STATE_FLAG_DPM_ACK_IMMEDIATELY;
 		if ((pe_data->reset_vdm_state && (!dpm_imme)) ||
 			(pd_event->event_type == PD_EVT_TCP_MSG)) {
 			pe_data->reset_vdm_state = false;
@@ -1122,9 +1088,7 @@ static inline bool pd_try_get_vdm_event(
 	case PE_SRC_READY:
 	case PE_SRC_STARTUP:
 	case PE_SRC_DISCOVERY:
-#if CONFIG_PD_SRC_RESET_CABLE
 	case PE_SRC_CBL_SEND_SOFT_RESET:
-#endif	/* CONFIG_PD_SRC_RESET_CABLE */
 #endif	/* CONFIG_USB_PD_PE_SOURCE */
 #if CONFIG_USB_PD_CUSTOM_DBGACC
 	case PE_DBG_READY:
@@ -1143,18 +1107,15 @@ static inline bool pd_try_get_vdm_event(
 
 static inline bool pd_check_sink_tx_ok(struct pd_port *pd_port)
 {
-#if CONFIG_USB_PD_REV30_COLLISION_AVOID
 	if (pd_check_rev30(pd_port) &&
 		(pd_port->pe_data.pd_traffic_control != PD_SINK_TX_OK))
 		return false;
-#endif	/* CONFIG_USB_PD_REV30_COLLISION_AVOID */
 
 	return true;
 }
 
 static inline bool pd_check_source_tx_ok(struct pd_port *pd_port)
 {
-#if CONFIG_USB_PD_REV30_COLLISION_AVOID
 	if (!pd_check_rev30(pd_port))
 		return true;
 
@@ -1165,9 +1126,6 @@ static inline bool pd_check_source_tx_ok(struct pd_port *pd_port)
 		pd_set_sink_tx(pd_port, PD30_SINK_TX_NG);
 
 	return false;
-#else
-	return true;
-#endif	/* CONFIG_USB_PD_REV30_COLLISION_AVOID */
 }
 
 static inline bool pd_check_pd30_tx_ready(struct pd_port *pd_port)
@@ -1233,6 +1191,9 @@ static inline bool pd_check_tx_ready(struct pd_port *pd_port)
 	if (pd_port->pe_data.vdm_state_timer < PD_TIMER_NR)
 		return false;
 
+	if (mutex_is_locked(&pd_port->tcpc->rxbuf_lock))
+		return false;
+
 #if CONFIG_USB_PD_REV30
 	return pd_check_pd30_tx_ready(pd_port);
 #else
@@ -1280,15 +1241,16 @@ static inline uint8_t pd_try_get_active_event(
 	uint8_t ret;
 	uint8_t from_pe = PD_TCP_FROM_PE;
 	struct pd_port *pd_port = &tcpc->pd_port;
+	struct pe_data *pe_data = &pd_port->pe_data;
 
 	if (!pd_check_tx_ready(pd_port))
 		return PE_NEW_EVT_NULL;
 
 #if CONFIG_USB_PD_DISCARD_AND_UNEXPECT_MSG
-	if (pd_port->pe_data.pd_unexpected_event_pending) {
-		pd_port->pe_data.pd_unexpected_event_pending = false;
-		*pd_event = pd_port->pe_data.pd_unexpected_event;
-		pd_port->pe_data.pd_unexpected_event.pd_msg = NULL;
+	if (pe_data->pd_unexpected_event_pending) {
+		pe_data->pd_unexpected_event_pending = false;
+		*pd_event = pe_data->pd_unexpected_event;
+		pe_data->pd_unexpected_event.pd_msg = NULL;
 		PE_INFO("##$$120\n");
 		DPM_INFO("Re-Run Unexpected Msg");
 		return PE_NEW_EVT_PD;
@@ -1303,10 +1265,9 @@ static inline uint8_t pd_try_get_active_event(
 	}
 
 #if DPM_DBG_ENABLE
-	if ((ret != 0) && (ret != DPM_READY_REACTION_BUSY)) {
+	if ((ret != 0) && (ret != DPM_READY_REACTION_BUSY))
 		DPM_DBG("from_pe: %d, evt:%d, reaction:0x%x\n",
-			from_pe, ret, pd_port->pe_data.dpm_reaction_id);
-	}
+			from_pe, ret, pe_data->dpm_reaction_id);
 #endif	/* DPM_DBG_ENABLE */
 
 	if (ret == DPM_READY_REACTION_BUSY)
@@ -1321,7 +1282,7 @@ static inline uint8_t pd_try_get_active_event(
 		return PE_NEW_EVT_VDM;
 
 #if CONFIG_USB_PD_DISCARD_AND_UNEXPECT_MSG
-	pd_port->pe_data.pd_sent_ams_init_cmd = false;
+	pe_data->pd_sent_ams_init_cmd = false;
 #endif	/* CONFIG_USB_PD_DISCARD_AND_UNEXPECT_MSG */
 
 	return PE_NEW_EVT_PD;
@@ -1369,11 +1330,11 @@ static inline int pd_handle_dpm_immediately(
 	struct tcpc_device __maybe_unused *tcpc = pd_port->tcpc;
 
 	if (pd_curr_is_vdm_evt(pd_port)) {
-		dpm_immediately = pd_port->pe_data.vdm_state_flags
-			& VDM_STATE_FLAG_DPM_ACK_IMMEDIATELY;
+		dpm_immediately = pd_port->pe_data.vdm_state_flags &
+			VDM_STATE_FLAG_DPM_ACK_IMMEDIATELY;
 	} else {
-		dpm_immediately = pd_port->pe_data.pe_state_flags2
-			& PE_STATE_FLAG_DPM_ACK_IMMEDIATELY;
+		dpm_immediately = pd_port->pe_data.pe_state_flags &
+			PE_STATE_FLAG_DPM_ACK_IMMEDIATELY;
 	}
 
 	if (dpm_immediately) {

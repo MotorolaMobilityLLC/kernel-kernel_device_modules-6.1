@@ -67,10 +67,8 @@ static inline int pd_handle_tcp_event_vconn_swap(
 		return TCP_DPM_RET_DENIED_SAME_ROLE;
 
 	if (!old_role) {
-#if CONFIG_TCPC_VCONN_SUPPLY_MODE
 		if (tcpc->tcpc_vconn_supply == TCPC_VCONN_SUPPLY_NEVER)
 			return TCP_DPM_RET_DENIED_LOCAL_CAP;
-#endif	/* CONFIG_TCPC_VCONN_SUPPLY_MODE */
 #if CONFIG_USB_PD_VCONN_SAFE5V_ONLY
 		if (pd_port->pe_data.vconn_highv_prot) {
 			PE_DBG("VC_OVER5V\n");
@@ -111,19 +109,17 @@ static inline int pd_handle_tcp_event_softreset(struct pd_port *pd_port)
 	return TCP_DPM_RET_SENT;
 }
 
-#if CONFIG_PD_DFP_RESET_CABLE
 static inline int pd_handle_tcp_event_cable_softreset(struct pd_port *pd_port)
 {
 	if (!pd_check_pe_state_ready(pd_port))
 		return TCP_DPM_RET_DENIED_NOT_READY;
 
 	if (!pd_is_cable_communication_available(pd_port))
-		return TCP_DPM_RET_DENIED_WRONG_DATA_ROLE;
+		return TCP_DPM_RET_DENIED_WRONG_ROLE;
 
 	PE_TRANSIT_STATE(pd_port, PE_DFP_CBL_SEND_SOFT_RESET);
 	return TCP_DPM_RET_SENT;
 }
-#endif	/* CONFIG_PD_DFP_RESET_CABLE */
 
 static inline int pd_handle_tcp_event_get_source_cap(struct pd_port *pd_port)
 {
@@ -384,9 +380,7 @@ static inline int pd_handle_tcp_dpm_event(
 		break;
 
 	case TCP_DPM_EVT_CABLE_SOFTRESET:
-#if CONFIG_PD_DFP_RESET_CABLE
 		ret = pd_handle_tcp_event_cable_softreset(pd_port);
-#endif	/* CONFIG_PD_DFP_RESET_CABLE */
 		break;
 
 	case TCP_DPM_EVT_GET_SOURCE_CAP:
@@ -505,4 +499,3 @@ bool pd_process_event_tcp(struct pd_port *pd_port, struct pd_event *pd_event)
 	pd_notify_tcp_event_1st_result(pd_port, ret);
 	return ret == TCP_DPM_RET_SENT;
 }
-

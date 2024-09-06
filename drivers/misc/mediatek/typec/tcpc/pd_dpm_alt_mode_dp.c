@@ -101,9 +101,6 @@ static void dp_dfp_u_set_state(struct pd_port *pd_port, uint8_t state)
 bool dp_dfp_u_notify_pe_startup(
 		struct pd_port *pd_port, struct svdm_svid_data *svid_data)
 {
-	if (!pd_is_support_modal_operation(pd_port))
-		return false;
-
 	if (pd_port->dpm_caps & DPM_CAP_ATTEMPT_ENTER_DP_MODE)
 		dp_dfp_u_set_state(pd_port, DP_DFP_U_DISCOVER_ID);
 
@@ -349,7 +346,7 @@ bool dp_dfp_u_notify_discover_modes(
 		pd_port->cable_mode_svid = 0;
 		pd_port->cable_mode_obj_pos = 0;
 		pd_port->cable_svid_to_discover = 0;
-		pd_port->pe_data.discover_id_counter = 0;
+		pd_port->pe_data.discover_cable_id_counter = 0;
 		pd_port->pe_data.cable_discovered_state = CABLE_DISCOVERED_NONE;
 		dp_dfp_u_set_state(pd_port, DP_DFP_U_DISCOVER_CABLE);
 		dpm_reaction_set(pd_port, DPM_REACTION_DISCOVER_CABLE_FLOW);
@@ -560,7 +557,7 @@ static bool dp_dfp_u_notify_dp_status_update(struct pd_port *pd_port, bool ack)
 {
 	bool oper_mode = false;
 	bool valid_connected = true;
-	uint32_t *ptr;
+	uint32_t *payload;
 	struct dp_data *dp_data = pd_get_dp_data(pd_port);
 	struct tcpc_device __maybe_unused *tcpc = pd_port->tcpc;
 
@@ -587,11 +584,11 @@ static bool dp_dfp_u_notify_dp_status_update(struct pd_port *pd_port, bool ack)
 		return false;
 	}
 
-	ptr = pd_get_msg_vdm_data_payload(pd_port);
-	if (!ptr)
+	payload = pd_get_msg_vdm_data_payload(pd_port);
+	if (!payload)
 		dp_data->remote_status = 0;
 	else
-		dp_data->remote_status = ptr[0];
+		dp_data->remote_status = payload[0];
 	DP_INFO("dp_status: 0x%x\n", dp_data->remote_status);
 
 	if (oper_mode) {
@@ -648,14 +645,13 @@ bool dp_dfp_u_notify_attention(struct pd_port *pd_port,
 {
 	bool valid_connected = true;
 	struct dp_data *dp_data = pd_get_dp_data(pd_port);
-	uint32_t *ptr;
+	uint32_t *payload = pd_get_msg_vdm_data_payload(pd_port);
 	struct tcpc_device __maybe_unused *tcpc = pd_port->tcpc;
 
-	ptr = pd_get_msg_vdm_data_payload(pd_port);
-	if (!ptr)
+	if (!payload)
 		dp_data->remote_status = 0;
 	else
-		dp_data->remote_status = ptr[0];
+		dp_data->remote_status = payload[0];
 
 	DP_INFO("dp_status: 0x%x\n", dp_data->remote_status);
 
@@ -919,7 +915,7 @@ bool dp_ufp_u_request_exit_mode(
 	return false;
 }
 
-static inline bool dp_ufp_u_update_dp_connected(struct pd_port *pd_port)
+static inline void dp_ufp_u_update_dp_connected(struct pd_port *pd_port)
 {
 	bool valid_connected = false;
 	uint32_t dp_connected, dp_local_connected;
@@ -944,48 +940,42 @@ static inline bool dp_ufp_u_update_dp_connected(struct pd_port *pd_port)
 		break;
 	}
 
-	return valid_connected;
+	DP_DBG("dp_connected: 0x%x\n", dp_connected);
+	DP_DBG("dp_local_connected: 0x%x\n", dp_local_connected);
+	DP_DBG("valid_connected: %d\n", valid_connected);
 }
 
 static inline int dp_ufp_u_request_dp_status(struct pd_port *pd_port)
 {
-	bool ack;
 	struct dp_data *dp_data = pd_get_dp_data(pd_port);
-	uint32_t *ptr;
+	uint32_t *payload = pd_get_msg_vdm_data_payload(pd_port);
 
-	ptr = pd_get_msg_vdm_data_payload(pd_port);
-	if (!ptr)
+	if (!payload)
 		dp_data->remote_status = 0;
 	else
-		dp_data->remote_status = ptr[0];
+		dp_data->remote_status = payload[0];
 
 	switch (dp_data->ufp_u_state) {
 	case DP_UFP_U_WAIT:
-		ack = dp_ufp_u_update_dp_connected(pd_port);
+		dp_ufp_u_update_dp_connected(pd_port);
 		break;
 
 	case DP_UFP_U_STARTUP:
 	case DP_UFP_U_OPERATION:
-		ack = true;
 		tcpci_dp_status_update(
 			pd_port->tcpc, dp_data->remote_status);
 		break;
 
 	default:
-		ack = false;
 		break;
 	}
 
-	if (ack) {
-		dp_data->local_status |= DPSTS_DP_ENABLED;
-		if (pd_port->dpm_caps & DPM_CAP_DP_PREFER_MF)
-			dp_data->local_status |= DPSTS_DP_MF_PREF;
+	dp_data->local_status |= DPSTS_DP_ENABLED;
+	if (pd_port->dpm_caps & DPM_CAP_DP_PREFER_MF)
+		dp_data->local_status |= DPSTS_DP_MF_PREF;
 
-		return pd_reply_svdm_request(pd_port,
-			CMDT_RSP_ACK, 1, &dp_data->local_status);
-	} else {
-		return dpm_vdm_reply_svdm_nak(pd_port);
-	}
+	return pd_reply_svdm_request(pd_port,
+		CMDT_RSP_ACK, 1, &dp_data->local_status);
 }
 
 static bool dp_ufp_u_is_valid_dp_config(struct pd_port *pd_port,
@@ -1039,15 +1029,14 @@ static inline void dp_ufp_u_auto_attention(struct pd_port *pd_port)
 static inline int dp_ufp_u_request_dp_config(struct pd_port *pd_port)
 {
 	bool ack = false;
-	uint32_t dp_config, *ptr;
+	uint32_t dp_config, *payload = pd_get_msg_vdm_data_payload(pd_port);
 	struct dp_data *dp_data = pd_get_dp_data(pd_port);
 	struct tcpc_device __maybe_unused *tcpc = pd_port->tcpc;
 
-	ptr = pd_get_msg_vdm_data_payload(pd_port);
-	if (!ptr)
+	if (!payload)
 		dp_config = 0;
 	else
-		dp_config = ptr[0];
+		dp_config = payload[0];
 	DPM_DBG("dp_config: 0x%x\n", dp_config);
 
 	switch (dp_data->ufp_u_state) {
@@ -1180,7 +1169,7 @@ bool dp_parse_svid_data(
 	const char *connection;
 	uint32_t ufp_d_pin_cap = 0, dfp_d_pin_cap = 0;
 	uint32_t ufp_d_pin = 0, dfp_d_pin = 0;
-	uint32_t sig = DP_SIG_HBR3, receptacle = 1, usb2 = 0;
+	uint32_t sig = DP_SIG_HBR3, receptacle = 0, usb2 = 0;
 	int i = 0;
 
 	np = of_find_node_by_name(

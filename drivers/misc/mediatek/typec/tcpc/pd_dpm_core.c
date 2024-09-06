@@ -79,20 +79,23 @@ static void pd_dpm_update_pdos_flags(struct pd_port *pd_port, uint32_t pdo,
 #endif
 	/* Only update PDO flags if pdo's type is fixed */
 	if ((pdo & PDO_TYPE_MASK) == PDO_TYPE_FIXED) {
-		if (pdo & PDO_FIXED_DUAL_ROLE)
+		if (pdo & PDO_FIXED_DUAL_ROLE_POWER)
 			dpm_flags |= DPM_FLAGS_PARTNER_DR_POWER;
 
-		if (pdo & PDO_FIXED_DATA_SWAP)
-			dpm_flags |= DPM_FLAGS_PARTNER_DR_DATA;
+		if (src && pdo & PDO_FIXED_USB_SUSPEND)
+			dpm_flags |= DPM_FLAGS_PARTNER_USB_SUSPEND;
 
-		if (pdo & PDO_FIXED_EXTERNAL)
+		if (!src && pdo & PDO_FIXED_HIGH_CAP)
+			dpm_flags |= DPM_FLAGS_PARTNER_HIGH_CAP;
+
+		if (pdo & PDO_FIXED_UNCONSTRAINED_POWER)
 			dpm_flags |= DPM_FLAGS_PARTNER_EXTPOWER;
 
-		if (pdo & PDO_FIXED_COMM_CAP)
+		if (pdo & PDO_FIXED_USB_COMM)
 			dpm_flags |= DPM_FLAGS_PARTNER_USB_COMM;
 
-		if (src && pdo & PDO_FIXED_SUSPEND)
-			dpm_flags |= DPM_FLAGS_PARTNER_USB_SUSPEND;
+		if (pdo & PDO_FIXED_DUAL_ROLE_DATA)
+			dpm_flags |= DPM_FLAGS_PARTNER_DR_DATA;
 	}
 
 	pd_port->pe_data.dpm_flags = dpm_flags;
@@ -151,17 +154,16 @@ void pd_dpm_inform_cable_id(struct pd_port *pd_port, bool ack, bool src_startup)
 	uint32_t *payload = pd_get_msg_vdm_data_payload(pd_port);
 	uint8_t cnt = pd_get_msg_vdm_data_count(pd_port);
 	struct tcpc_device __maybe_unused *tcpc = pd_port->tcpc;
-	int i = 0;
-	char buf[100];
+	int i = 0, offset = 0;
+	char buf[100] = "\0";
+	size_t buf_size = sizeof(buf);
 
 	if (ack && payload) {
-		buf[0] = '\0';
-		snprintf(buf + strlen(buf), sizeof(buf) - strlen(buf),
-			 "InformCableID");
+		offset += snprintf(buf + offset, buf_size - offset, "InformCableID");
 		for (i = 0; i < cnt; i++)
-			snprintf(buf + strlen(buf), sizeof(buf) - strlen(buf),
-				 ", 0x%08x", payload[i]);
-		snprintf(buf + strlen(buf), sizeof(buf) - strlen(buf), "\n");
+			offset += snprintf(buf + offset, buf_size - offset, ", 0x%08x", payload[i]);
+
+		offset += snprintf(buf + offset, buf_size - offset, "\n");
 		DPM_DBG("%s", buf);
 
 		memcpy(pe_data->cable_vdos, payload, sizeof(uint32_t) * cnt);
@@ -182,17 +184,16 @@ void pd_dpm_inform_cable_svids(struct pd_port *pd_port, bool ack)
 	uint32_t *payload = pd_get_msg_vdm_data_payload(pd_port);
 	uint8_t cnt = pd_get_msg_vdm_data_count(pd_port);
 	struct tcpc_device __maybe_unused *tcpc = pd_port->tcpc;
-	int i = 0;
-	char buf[100];
+	int i = 0, offset = 0;
+	char buf[100] = "\0";
+	size_t buf_size = sizeof(buf);
 
 	if (ack && payload) {
-		buf[0] = '\0';
-		snprintf(buf + strlen(buf), sizeof(buf) - strlen(buf),
-			 "InformCableSVIDs");
+		offset += snprintf(buf + offset, buf_size - offset, "InformCableSVIDs");
 		for (i = 0; i < cnt; i++)
-			snprintf(buf + strlen(buf), sizeof(buf) - strlen(buf),
-				 ", 0x%08x", payload[i]);
-		snprintf(buf + strlen(buf), sizeof(buf) - strlen(buf), "\n");
+			offset += snprintf(buf + offset, buf_size - offset, ", 0x%08x", payload[i]);
+
+		offset += snprintf(buf + offset, buf_size - offset, "\n");
 		DPM_DBG("%s", buf);
 
 		if (cnt < VDO_MAX_NR ||
@@ -212,32 +213,31 @@ void pd_dpm_inform_cable_modes(struct pd_port *pd_port, bool ack)
 	struct pe_data *pe_data = &pd_port->pe_data;
 	uint32_t *payload = pd_get_msg_vdm_data_payload(pd_port);
 	uint8_t cnt = pd_get_msg_vdm_data_count(pd_port);
-	uint16_t svid = 0, expected_svid = pd_port->cable_mode_svid;
+	uint16_t svid = dpm_vdm_get_svid(pd_port);
+	uint16_t expected_svid = pd_port->cable_mode_svid;
 	struct tcpc_device __maybe_unused *tcpc = pd_port->tcpc;
-	int i = 0;
-	char buf[100];
+	int i = 0, offset = 0;
+	char buf[100] = "\0";
+	size_t buf_size = sizeof(buf);
+
+	if (svid != expected_svid)
+		DPM_INFO("Not expected SVID (0x%04x, 0x%04x)\n",
+			 svid, expected_svid);
 
 	if (ack && payload) {
-		buf[0] = '\0';
-		snprintf(buf + strlen(buf), sizeof(buf) - strlen(buf),
-			 "InformCableModes");
+		offset += snprintf(buf + offset, buf_size - offset, "InformCableModes");
 		for (i = 0; i < cnt; i++)
-			snprintf(buf + strlen(buf), sizeof(buf) - strlen(buf),
-				 ", 0x%08x", payload[i]);
-		snprintf(buf + strlen(buf), sizeof(buf) - strlen(buf), "\n");
+			offset += snprintf(buf + offset, buf_size - offset, ", 0x%08x", payload[i]);
+
+		offset += snprintf(buf + offset, buf_size - offset, "\n");
 		DPM_DBG("%s", buf);
 
-		svid = dpm_vdm_get_svid(pd_port);
-		if (svid != expected_svid)
-			DPM_INFO("Not expected SVID (0x%04x, 0x%04x)\n",
-				 svid, expected_svid);
-		else
+		if (svid == expected_svid)
 			pe_data->cable_discovered_state =
 				CABLE_DISCOVERED_MODES;
 	}
 
 	svdm_dfp_inform_cable_modes(pd_port, svid, ack, payload, cnt);
-
 	VDM_STATE_DPM_INFORMED(pd_port);
 }
 
@@ -343,7 +343,7 @@ static bool dpm_build_request_info_pdo(
 		}
 	}
 
-	return max_uw > 0;
+	return max_uw >= 0;
 }
 
 static bool dpm_build_request_info(
@@ -1036,14 +1036,13 @@ void pd_dpm_ufp_request_svid_info(struct pd_port *pd_port)
 void pd_dpm_ufp_request_mode_info(struct pd_port *pd_port)
 {
 	uint16_t svid = dpm_vdm_get_svid(pd_port);
-	bool ack = dpm_get_svdm_svid_data(pd_port, svid) != NULL;
 
-	if (!ack) {
-		dpm_vdm_reply_svdm_nak(pd_port);
+	if (dpm_get_svdm_svid_data(pd_port, svid)) {
+		dpm_vdm_ufp_response_modes(pd_port);
 		return;
 	}
 
-	dpm_vdm_ufp_response_modes(pd_port);
+	dpm_vdm_reply_svdm_nak(pd_port);
 }
 
 void pd_dpm_ufp_request_enter_mode(struct pd_port *pd_port)
@@ -1068,13 +1067,14 @@ static inline void dpm_dfp_update_partner_id(
 			struct pd_port *pd_port, uint32_t *payload)
 {
 #if CONFIG_USB_PD_KEEP_PARTNER_ID
+	struct pe_data *pe_data = &pd_port->pe_data;
 	uint8_t cnt = pd_get_msg_vdm_data_count(pd_port);
 	uint32_t size = sizeof(uint32_t) * (cnt);
 
-	pd_port->pe_data.partner_id_present = true;
-	memcpy(pd_port->pe_data.partner_vdos, payload, size);
-	memset((char *)pd_port->pe_data.partner_vdos + size, 0,
+	memcpy(pe_data->partner_vdos, payload, size);
+	memset((char *)pe_data->partner_vdos + size, 0,
 		sizeof(uint32_t) * VDO_MAX_NR - size);
+	pe_data->partner_id_present = true;
 #endif	/* CONFIG_USB_PD_KEEP_PARTNER_ID */
 }
 static inline void dpm_dfp_update_svid_data_exist(
@@ -1097,7 +1097,7 @@ static inline void dpm_dfp_update_svid_data_exist(
 		svid_data = &pd_port->svid_data[k];
 
 		if (svid_data->svid == svid)
-			svid_data->exist = 1;
+			svid_data->exist = true;
 	}
 }
 
@@ -1117,14 +1117,11 @@ static inline void dpm_dfp_update_svid_data_modes(struct pd_port *pd_port,
 		return;
 
 	svid_data->remote_mode.mode_cnt = count;
-
-	if (count != 0) {
-		memcpy(svid_data->remote_mode.mode_vdo,
-			mode_list, sizeof(uint32_t) * count);
-	}
+	memcpy(svid_data->remote_mode.mode_vdo, mode_list,
+	       sizeof(uint32_t) * count);
 }
 
-static inline void dpm_dfp_update_svid_enter_mode(
+static inline void dpm_dfp_update_svid_data_enter_mode(
 	struct pd_port *pd_port, uint16_t svid, uint8_t ops)
 {
 	struct svdm_svid_data *svid_data;
@@ -1157,19 +1154,18 @@ void pd_dpm_dfp_inform_id(struct pd_port *pd_port, bool ack)
 	uint32_t *payload = pd_get_msg_vdm_data_payload(pd_port);
 	uint8_t cnt = pd_get_msg_vdm_data_count(pd_port);
 	struct tcpc_device __maybe_unused *tcpc = pd_port->tcpc;
-	int i = 0;
-	char buf[100];
+	int i = 0, offset = 0;
+	char buf[100] = "\0";
+	size_t buf_size = sizeof(buf);
 
 	VDM_STATE_DPM_INFORMED(pd_port);
 
 	if (ack && payload) {
-		buf[0] = '\0';
-		snprintf(buf + strlen(buf), sizeof(buf) - strlen(buf),
-			 "InformID");
+		offset += snprintf(buf + offset, buf_size - offset, "InformID");
 		for (i = 0; i < cnt; i++)
-			snprintf(buf + strlen(buf), sizeof(buf) - strlen(buf),
-				 ", 0x%08x", payload[i]);
-		snprintf(buf + strlen(buf), sizeof(buf) - strlen(buf), "\n");
+			offset += snprintf(buf + offset, buf_size - offset, ", 0x%08x", payload[i]);
+
+		offset += snprintf(buf + offset, buf_size - offset, "\n");
 		DPM_DBG("%s", buf);
 
 		dpm_dfp_update_partner_id(pd_port, payload);
@@ -1180,7 +1176,7 @@ void pd_dpm_dfp_inform_id(struct pd_port *pd_port, bool ack)
 		 * For PD compliance test,
 		 * If device doesn't reply discoverID
 		 * or doesn't support modal operation,
-		 * then don't send discoverSVID
+		 * then don't send discoverSVIDs
 		 */
 		if (!ack || !payload)
 			dpm_reaction_clear(pd_port,
@@ -1255,66 +1251,62 @@ void pd_dpm_dfp_inform_modes(struct pd_port *pd_port, bool ack)
 {
 	uint32_t *payload = pd_get_msg_vdm_data_payload(pd_port);
 	uint8_t cnt = pd_get_msg_vdm_data_count(pd_port);
-	uint16_t svid = 0, expected_svid = pd_port->mode_svid;
+	uint16_t svid = dpm_vdm_get_svid(pd_port);
+	uint16_t expected_svid = pd_port->mode_svid;
 	struct tcpc_device __maybe_unused *tcpc = pd_port->tcpc;
 
-	if (ack && payload) {
-		svid = dpm_vdm_get_svid(pd_port);
+	if (svid != expected_svid)
+		DPM_INFO("Not expected SVID (0x%04x, 0x%04x)\n",
+			 svid, expected_svid);
 
-		if (svid != expected_svid) {
-			ack = false;
-			DPM_INFO("Not expected SVID (0x%04x, 0x%04x)\n",
-				 svid, expected_svid);
-		} else {
-			dpm_dfp_update_svid_data_modes(
-					pd_port, svid, payload, cnt);
-		}
-	}
+	if (ack && payload)
+		dpm_dfp_update_svid_data_modes(pd_port, svid, payload, cnt);
 
-	svdm_dfp_inform_modes(pd_port, expected_svid, ack);
+	svdm_dfp_inform_modes(pd_port, svid, ack);
 	VDM_STATE_DPM_INFORMED(pd_port);
 }
 
 void pd_dpm_dfp_inform_enter_mode(struct pd_port *pd_port, bool ack)
 {
-	uint8_t ops = 0;
-	uint16_t svid = 0;
+	uint16_t svid = dpm_vdm_get_svid(pd_port);
 	uint16_t expected_svid = pd_port->mode_svid;
+	uint8_t ops = dpm_vdm_get_ops(pd_port);
+	uint8_t expected_ops = pd_port->mode_obj_pos;
 	struct tcpc_device __maybe_unused *tcpc = pd_port->tcpc;
 
-	if (ack) {
-		ops = dpm_vdm_get_ops(pd_port);
-		svid = dpm_vdm_get_svid(pd_port);
+	if (svid != expected_svid)
+		DPM_INFO("Not expected SVID (0x%04x, 0x%04x)\n",
+			 svid, expected_svid);
+	else if (ops != expected_ops)
+		DPM_INFO("Not expected ops (%d, %d)\n", ops, expected_ops);
 
-		/* TODO: check ops later ?! */
-		if (svid != expected_svid) {
-			ack = false;
-			DPM_INFO("Not expected SVID (0x%04x, 0x%04x)\n",
-				svid, expected_svid);
-		} else {
-			dpm_dfp_update_svid_enter_mode(pd_port, svid, ops);
-		}
-	}
+	if (ack)
+		dpm_dfp_update_svid_data_enter_mode(pd_port, svid, ops);
 
-	svdm_dfp_inform_enter_mode(pd_port, expected_svid, ops, ack);
+	svdm_dfp_inform_enter_mode(pd_port, svid, ops, ack);
 	VDM_STATE_DPM_INFORMED(pd_port);
 }
 
 void pd_dpm_dfp_inform_exit_mode(struct pd_port *pd_port)
 {
+	bool ack = PD_VDO_CMDT(pd_get_msg_vdm_hdr(pd_port)) == CMDT_RSP_ACK;
 	uint16_t svid = dpm_vdm_get_svid(pd_port);
-	uint8_t ops = dpm_vdm_get_ops(pd_port);
 	uint16_t expected_svid = pd_port->mode_svid;
+	uint8_t ops = dpm_vdm_get_ops(pd_port);
 	uint8_t expected_ops = pd_port->mode_obj_pos;
 	struct tcpc_device __maybe_unused *tcpc = pd_port->tcpc;
 
-	if ((expected_svid != svid) || (expected_ops != ops))
-		DPM_DBG("expected_svid & ops wrong\n");
+	if (svid != expected_svid)
+		DPM_INFO("Not expected SVID (0x%04x, 0x%04x)\n",
+			 svid, expected_svid);
+	else if (ops != expected_ops)
+		DPM_INFO("Not expected ops (%d, %d)\n", ops, expected_ops);
 
-	dpm_dfp_update_svid_data_exit_mode(
-		pd_port, expected_svid, expected_ops);
+	if (ack) {
+		dpm_dfp_update_svid_data_exit_mode(pd_port, svid, ops);
+		svdm_dfp_inform_exit_mode(pd_port, svid, ops);
+	}
 
-	svdm_dfp_inform_exit_mode(pd_port, expected_svid, expected_ops);
 	VDM_STATE_DPM_INFORMED(pd_port);
 }
 
@@ -1334,80 +1326,74 @@ void pd_dpm_dfp_inform_attention(struct pd_port *pd_port)
 
 /* ---- Unstructured VDM ---- */
 
-#if CONFIG_USB_PD_CUSTOM_VDM
-
-void pd_dpm_ufp_recv_uvdm(struct pd_port *pd_port)
+void pd_dpm_ufp_recv_cvdm(struct pd_port *pd_port)
 {
-	struct svdm_svid_data *svid_data;
+	struct pd_event *pd_event = pd_get_curr_pd_event(pd_port);
+	bool cable = pd_event->pd_msg->frame_type != TCPC_TX_SOP;
 	uint16_t svid = dpm_vdm_get_svid(pd_port);
+	struct svdm_svid_data *svid_data = cable ?
+					   dpm_get_svdm_svid_data_via_cable_svids(pd_port, svid) :
+					   dpm_get_svdm_svid_data(pd_port, svid);
 
-	svid_data = dpm_get_svdm_svid_data(pd_port, svid);
-
-	pd_port->uvdm_svid = svid;
-	pd_port->uvdm_cnt = pd_get_msg_data_count(pd_port);
-
-	memcpy(pd_port->uvdm_data,
-		pd_get_msg_data_payload(pd_port),
-		pd_get_msg_data_size(pd_port));
+	pd_port->cvdm_cable = cable;
+	pd_port->cvdm_cnt = pd_get_msg_data_count(pd_port);
+	memcpy(pd_port->cvdm_data,
+	       pd_get_msg_data_payload(pd_port),
+	       pd_get_msg_data_size(pd_port));
+	pd_port->cvdm_svid = svid;
 
 	if (svid_data) {
-		if (svid_data->ops->ufp_notify_uvdm)
-			svid_data->ops->ufp_notify_uvdm(pd_port, svid_data);
+		if (svid_data->ops->ufp_notify_cvdm)
+			svid_data->ops->ufp_notify_cvdm(pd_port, svid_data);
 		else
 			VDM_STATE_DPM_INFORMED(pd_port);
 
-		tcpci_notify_uvdm(pd_port->tcpc, true);
+		tcpci_notify_cvdm(pd_port->tcpc, true);
 	} else {
-		pd_put_dpm_event(pd_port, PD_DPM_NOT_SUPPORT);
+		pd_put_dpm_event(pd_port, cable ? PD_DPM_CABLE_NOT_SUPPORT :
+						  PD_DPM_NOT_SUPPORT);
 		VDM_STATE_DPM_INFORMED(pd_port);
 	}
 }
 
-void pd_dpm_dfp_send_uvdm(struct pd_port *pd_port)
+void pd_dpm_dfp_send_cvdm(struct pd_port *pd_port)
 {
-	pd_send_custom_vdm(pd_port, TCPC_TX_SOP);
-	pd_port->uvdm_svid = PD_VDO_VID(pd_port->uvdm_data[0]);
+	pd_send_custom_vdm(pd_port, pd_port->cvdm_cable ? TCPC_TX_SOP_PRIME : TCPC_TX_SOP);
 
-	if (pd_port->uvdm_wait_resp)
-		VDM_STATE_RESPONSE_CMD(pd_port, PD_TIMER_UVDM_RESPONSE);
+	if (pd_port->cvdm_wait_resp)
+		VDM_STATE_RESPONSE_CMD(pd_port, PD_TIMER_CVDM_RESPONSE);
 }
 
-void pd_dpm_dfp_inform_uvdm(struct pd_port *pd_port, bool ack)
+void pd_dpm_dfp_inform_cvdm(struct pd_port *pd_port, bool ack)
 {
-	uint16_t svid;
-	uint16_t expected_svid = pd_port->uvdm_svid;
-	struct svdm_svid_data *svid_data =
-		dpm_get_svdm_svid_data(pd_port, expected_svid);
-	struct tcpc_device __maybe_unused *tcpc = pd_port->tcpc;
+	uint16_t svid = dpm_vdm_get_svid(pd_port);
+	uint16_t expected_svid = pd_port->cvdm_svid;
+	struct svdm_svid_data *svid_data = pd_port->cvdm_cable ?
+			dpm_get_svdm_svid_data_via_cable_svids(pd_port, svid) :
+			dpm_get_svdm_svid_data(pd_port, svid);
+	struct tcpc_device *tcpc = pd_port->tcpc;
 
-	if (ack && pd_port->uvdm_wait_resp) {
-		svid = dpm_vdm_get_svid(pd_port);
+	if (svid != expected_svid)
+		DPM_INFO("Not expected SVID (0x%04x, 0x%04x)\n",
+			 svid, expected_svid);
 
-		if (svid != expected_svid) {
-			ack = false;
-			DPM_INFO("Not expected SVID (0x%04x, 0x%04x)\n",
-				svid, expected_svid);
-		} else {
-			pd_port->uvdm_cnt = pd_get_msg_data_count(pd_port);
-			memcpy(pd_port->uvdm_data,
-				pd_get_msg_data_payload(pd_port),
-				pd_get_msg_data_size(pd_port));
-		}
+	if (ack) {
+		pd_port->cvdm_cnt = pd_get_msg_data_count(pd_port);
+		memcpy(pd_port->cvdm_data,
+		       pd_get_msg_data_payload(pd_port),
+		       pd_get_msg_data_size(pd_port));
 	}
 
 	if (svid_data) {
-		if (svid_data->ops->dfp_notify_uvdm)
-			svid_data->ops->dfp_notify_uvdm(
-				pd_port, svid_data, ack);
+		if (svid_data->ops->dfp_notify_cvdm)
+			svid_data->ops->dfp_notify_cvdm(pd_port, svid_data, ack);
 	}
 
-	tcpci_notify_uvdm(tcpc, ack);
+	tcpci_notify_cvdm(tcpc, ack);
 	pd_notify_tcp_vdm_event_2nd_result(pd_port,
 		ack ? TCP_DPM_RET_VDM_ACK : TCP_DPM_RET_VDM_NAK);
 	VDM_STATE_DPM_INFORMED(pd_port);
 }
-
-#endif	/* CONFIG_USB_PD_CUSTOM_VDM */
 
 void pd_dpm_ufp_send_svdm_nak(struct pd_port *pd_port)
 {
@@ -1466,46 +1452,56 @@ void pd_dpm_dr_inform_source_cap(struct pd_port *pd_port)
  */
 
 #if CONFIG_USB_PD_DR_SWAP
+bool __weak pd_dpm_drs_is_usb_ready(struct pd_port *pd_port, uint8_t role)
+{
+	return true;
+}
 
 void pd_dpm_drs_evaluate_swap(struct pd_port *pd_port, uint8_t role)
 {
-	pd_put_dpm_ack_event(pd_port);
+	if (pd_dpm_drs_is_usb_ready(pd_port, role))
+		pd_put_dpm_ack_event(pd_port);
+	else
+		pd_put_dpm_nak_event(pd_port, PD_DPM_NAK_WAIT);
 }
 
 void pd_dpm_drs_change_role(struct pd_port *pd_port, uint8_t role)
 {
-#if CONFIG_USB_PD_RESET_CABLE
-	if (role == PD_ROLE_DFP)
-		dpm_reaction_set(pd_port, DPM_REACTION_CAP_RESET_CABLE);
-#endif	/* CONFIG_USB_PD_RESET_CABLE */
-
-	pd_set_data_role(pd_port, role);
+	uint32_t set = 0, clear = 0;
 
 	pd_port->pe_data.pe_ready = false;
 
-#if CONFIG_USB_PD_REV30_COLLISION_AVOID
+#if CONFIG_USB_PD_REV30
 	pd_port->pe_data.pd_traffic_idle = false;
-#endif	/* CONFIG_USB_PD_REV30_COLLISION_AVOID */
+#endif	/* CONFIG_USB_PD_REV30 */
+
+	pd_set_data_role(pd_port, role);
+
+	if (role == PD_ROLE_DFP)
+		set |= DPM_REACTION_CAP_RESET_CABLE;
 
 #if CONFIG_USB_PD_DFP_FLOW_DELAY_DRSWAP
-	dpm_reaction_set(pd_port, DPM_REACTION_DFP_FLOW_DELAY);
+	set |= DPM_REACTION_DFP_FLOW_DELAY;
 #else
-	dpm_reaction_clear(pd_port, DPM_REACTION_DFP_FLOW_DELAY);
+	clear |= DPM_REACTION_DFP_FLOW_DELAY;
 #endif	/* CONFIG_USB_PD_DFP_FLOW_DELAY_DRSWAP */
 
-	if (pd_is_support_modal_operation(pd_port)) {
-		svdm_reset_state(pd_port);
+	svdm_reset_state(pd_port);
+
+	if (pd_port->dpm_caps & DPM_CAP_ATTEMPT_ENTER_DP_MODE) {
 		if (role == PD_ROLE_DFP) {
-			dpm_reaction_set(pd_port, DPM_REACTION_DISCOVER_ID);
 			svdm_notify_pe_startup(pd_port);
+			set |= DPM_REACTION_DISCOVER_ID;
 		} else
-			dpm_reaction_clear(pd_port, DPM_REACTION_DISCOVER_ID |
-					   DPM_REACTION_DISCOVER_SVIDS);
+			clear |= DPM_REACTION_DISCOVER_ID |
+				 DPM_REACTION_DISCOVER_SVIDS;
 	}
 
 	if (pd_port->dpm_caps & DPM_CAP_ATTEMPT_DISCOVER_ID_DFP &&
 	    role == PD_ROLE_DFP)
-		dpm_reaction_set(pd_port, DPM_REACTION_DISCOVER_ID);
+		set |= DPM_REACTION_DISCOVER_ID;
+
+	dpm_reaction_set_clear(pd_port, set, clear);
 
 	PE_STATE_DPM_INFORMED(pd_port);
 }
@@ -1614,12 +1610,14 @@ void pd_dpm_prs_enable_power_source(struct pd_port *pd_port, bool en)
 
 void pd_dpm_prs_change_role(struct pd_port *pd_port, uint8_t role)
 {
-#if CONFIG_USB_PD_REV30_COLLISION_AVOID
-	pd_port->pe_data.pd_traffic_idle = false;
-#endif	/* CONFIG_USB_PD_REV30_COLLISION_AVOID */
+	pd_port->pe_data.pe_ready = false;
 
-	dpm_reaction_clear(pd_port, DPM_REACTION_REQUEST_PR_SWAP);
+#if CONFIG_USB_PD_REV30
+	pd_port->pe_data.pd_traffic_idle = false;
+#endif	/* CONFIG_USB_PD_REV30 */
+
 	pd_set_power_role(pd_port, role);
+	dpm_reaction_clear(pd_port, DPM_REACTION_REQUEST_PR_SWAP);
 	pd_put_dpm_ack_event(pd_port);
 }
 
@@ -1637,10 +1635,8 @@ void pd_dpm_vcs_evaluate_swap(struct pd_port *pd_port)
 	struct tcpc_device __maybe_unused *tcpc = pd_port->tcpc;
 
 	if (!tcpm_inquire_pd_vconn_role(tcpc)) {
-#if CONFIG_TCPC_VCONN_SUPPLY_MODE
 		if (tcpc->tcpc_vconn_supply == TCPC_VCONN_SUPPLY_NEVER)
 			accept = false;
-#endif	/* CONFIG_TCPC_VCONN_SUPPLY_MODE */
 #if CONFIG_USB_PD_VCONN_SAFE5V_ONLY
 		if (pd_port->pe_data.vconn_highv_prot) {
 			DPM_DBG("VC_OVER5V\n");
@@ -2027,7 +2023,7 @@ int pd_dpm_send_status(struct pd_port *pd_port)
 	if (sdb.event_flags & PD_STATUS_EVENT_OTP)
 		sdb.temp_status = PD_STATUS_TEMP_SET_PTF(PD_PTF_OVER_TEMP);
 
-	if (pd_port->power_role !=  PD_ROLE_SINK)
+	if (pd_port->power_role != PD_ROLE_SINK)
 		sdb.event_flags &= ~PD_STATUS_EVENT_OVP;
 
 	return pd_send_sop_ext_msg(pd_port, PD_EXT_STATUS,
@@ -2090,7 +2086,6 @@ int pd_dpm_send_revision(struct pd_port *pd_port)
 
 void pd_dpm_dynamic_enable_vconn(struct pd_port *pd_port)
 {
-#if CONFIG_TCPC_VCONN_SUPPLY_MODE
 	struct tcpc_device *tcpc = pd_port->tcpc;
 
 	if (tcpc->tcpc_vconn_supply <= TCPC_VCONN_SUPPLY_ALWAYS)
@@ -2100,12 +2095,10 @@ void pd_dpm_dynamic_enable_vconn(struct pd_port *pd_port)
 		DPM_INFO2("DynamicVCEn\n");
 		pd_set_vconn(pd_port, PD_ROLE_VCONN_DYNAMIC_ON);
 	}
-#endif	/* CONFIG_TCPC_VCONN_SUPPLY_MODE */
 }
 
 void pd_dpm_dynamic_disable_vconn(struct pd_port *pd_port)
 {
-#if CONFIG_TCPC_VCONN_SUPPLY_MODE
 	bool keep_vconn;
 	struct tcpc_device *tcpc = pd_port->tcpc;
 
@@ -2134,7 +2127,6 @@ void pd_dpm_dynamic_disable_vconn(struct pd_port *pd_port)
 		DPM_INFO2("DynamicVCDis\n");
 		pd_set_vconn(pd_port, PD_ROLE_VCONN_DYNAMIC_OFF);
 	}
-#endif	/* CONFIG_TCPC_VCONN_SUPPLY_MODE */
 }
 
 /*
@@ -2190,7 +2182,7 @@ int pd_dpm_notify_pe_startup(struct pd_port *pd_port)
 	if (pd_port->dpm_caps & DPM_CAP_ATTEMPT_DISCOVER_CABLE)
 		reactions |= DPM_REACTION_DISCOVER_CABLE_FLOW;
 
-	if (pd_is_support_modal_operation(pd_port) &&
+	if (pd_port->dpm_caps & DPM_CAP_ATTEMPT_ENTER_DP_MODE &&
 	    pd_port->data_role == PD_ROLE_DFP)
 		reactions |= DPM_REACTION_DISCOVER_ID;
 
@@ -2202,40 +2194,26 @@ int pd_dpm_notify_pe_startup(struct pd_port *pd_port)
 	if (pd_port->dpm_caps & DPM_CAP_ATTEMPT_DISCOVER_SVIDS)
 		reactions |= DPM_REACTION_DISCOVER_SVIDS;
 
-	dpm_reaction_set(pd_port, reactions);
-
 	svdm_reset_state(pd_port);
 	svdm_notify_pe_startup(pd_port);
+	dpm_reaction_set(pd_port, reactions);
 	return 0;
 
 }
 
 int pd_dpm_notify_pe_hardreset(struct pd_port *pd_port)
 {
-	struct pe_data *pe_data = &pd_port->pe_data;
-
 	svdm_reset_state(pd_port);
 
-	pe_data->pe_ready = false;
-
-#if CONFIG_USB_PD_REV30_COLLISION_AVOID
-	pe_data->pd_traffic_idle = false;
-#endif	/* CONFIG_USB_PD_REV30_COLLISION_AVOID */
-
-	if (pe_data->dpm_svdm_retry_cnt >= CONFIG_USB_PD_DPM_SVDM_RETRY)
-		return 0;
-
-	pe_data->dpm_svdm_retry_cnt++;
-
-	if (pd_is_support_modal_operation(pd_port)) {
-		if (pd_port->data_role == PD_ROLE_DFP)
+	if (pd_port->dpm_caps & DPM_CAP_ATTEMPT_ENTER_DP_MODE) {
+		if (pd_port->data_role == PD_ROLE_DFP) {
+			svdm_notify_pe_startup(pd_port);
 			dpm_reaction_set(pd_port, DPM_REACTION_DISCOVER_ID);
-		else
+		} else
 			dpm_reaction_clear(pd_port, DPM_REACTION_DISCOVER_ID |
 					   DPM_REACTION_DISCOVER_SVIDS);
 	}
 
-	svdm_notify_pe_startup(pd_port);
 	return 0;
 }
 

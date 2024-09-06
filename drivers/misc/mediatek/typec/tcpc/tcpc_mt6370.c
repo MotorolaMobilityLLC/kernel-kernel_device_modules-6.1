@@ -23,6 +23,7 @@
 
 #include "inc/tcpci.h"
 #include "inc/mt6370.h"
+#include "inc/tcpci_typec.h"
 
 #if IS_ENABLED(CONFIG_RT_REGMAP)
 #include "inc/rt-regmap.h"
@@ -651,7 +652,7 @@ static int mt6370_tcpc_init(struct tcpc_device *tcpc, bool sw_reset)
 	mt6370_i2c_write8(tcpc, MT6370_REG_PHY_CTRL1,
 		MT6370_REG_PHY_CTRL1_SET(retry_discard_old, 7, 0, 1));
 
-	tcpci_alert_status_clear(tcpc, 0xffffffff);
+	mt6370_alert_status_clear(tcpc, 0xffffffff);
 
 	mt6370_init_power_status_mask(tcpc);
 	mt6370_init_alert_mask(tcpc);
@@ -870,7 +871,8 @@ static int mt6370_set_cc(struct tcpc_device *tcpc, int pull)
 
 		pull1 = pull2 = pull;
 
-		if (pull == TYPEC_CC_RP && tcpc->typec_is_attached_src) {
+		if (pull == TYPEC_CC_RP &&
+		    tcpc->typec_state == typec_attached_src) {
 			if (tcpc->typec_polarity)
 				pull1 = TYPEC_CC_OPEN;
 			else
@@ -1069,7 +1071,7 @@ static int mt6370_retransmit(struct tcpc_device *tcpc)
 			TCPC_V10_REG_TRANSMIT_SET(
 			tcpc->pd_retry_count, TCPC_TX_SOP));
 }
-#endif
+#endif /* CONFIG_USB_PD_RETRY_CRC_DISCARD */
 
 static int mt6370_transmit(struct tcpc_device *tcpc,
 	enum tcpm_transmit_type type, uint16_t header, const uint32_t *data)
@@ -1236,7 +1238,6 @@ static int mt6370_tcpcdev_init(struct mt6370_chip *chip, struct device *dev)
 		}
 	}
 
-#if CONFIG_TCPC_VCONN_SUPPLY_MODE
 	if (of_property_read_u32(np, "mt-tcpc,vconn-supply", &val) >= 0 ||
 	    of_property_read_u32(np, "mt-tcpc,vconn_supply", &val) >= 0) {
 		if (val >= TCPC_VCONN_SUPPLY_NR)
@@ -1247,7 +1248,6 @@ static int mt6370_tcpcdev_init(struct mt6370_chip *chip, struct device *dev)
 		dev_info(dev, "use default VconnSupply\n");
 		desc->vconn_supply = TCPC_VCONN_SUPPLY_ALWAYS;
 	}
-#endif	/* CONFIG_TCPC_VCONN_SUPPLY_MODE */
 
 	if (of_property_read_string(np, "mt-tcpc,name",
 				(char const **)&name) < 0) {
@@ -1342,7 +1342,7 @@ static inline int mt6370_check_revision(struct i2c_client *client)
 }
 
 static int mt6370_i2c_probe(struct i2c_client *client,
-				const struct i2c_device_id *id)
+			    const struct i2c_device_id *id)
 {
 	struct mt6370_chip *chip;
 	int ret = 0, chip_id;
