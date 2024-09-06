@@ -30,6 +30,8 @@
 #endif
 
 /* provide to TCPC interface */
+extern int tcpci_report_usb_port_attached(struct tcpc_device *tcpc);
+extern int tcpci_report_usb_port_detached(struct tcpc_device *tcpc);
 extern int tcpci_report_usb_port_changed(struct tcpc_device *tcpc);
 extern int tcpci_report_power_control(struct tcpc_device *tcpc, bool en);
 extern int tcpc_typec_init(struct tcpc_device *tcpc, uint8_t typec_role);
@@ -48,10 +50,9 @@ extern int tcpc_device_irq_enable(struct tcpc_device *tcpc);
 extern void *tcpc_get_dev_data(struct tcpc_device *tcpc);
 extern void tcpci_lock_typec(struct tcpc_device *tcpc);
 extern void tcpci_unlock_typec(struct tcpc_device *tcpc);
-extern int tcpci_alert(struct tcpc_device *tcpc);
+extern int tcpci_alert(struct tcpc_device *tcpc, bool masked);
 
-extern void tcpci_vbus_level_init(
-		struct tcpc_device *tcpc, uint16_t power_status);
+extern void tcpci_vbus_level_refresh(struct tcpc_device *tcpc);
 int tcpci_alert_wakeup(struct tcpc_device *tcpc);
 
 static inline int tcpci_check_vbus_valid(struct tcpc_device *tcpc)
@@ -65,9 +66,9 @@ int tcpci_alert_status_clear(struct tcpc_device *tcpc, uint32_t mask);
 int tcpci_fault_status_clear(struct tcpc_device *tcpc, uint8_t status);
 int tcpci_set_alert_mask(struct tcpc_device *tcpc, uint32_t mask);
 int tcpci_get_alert_mask(struct tcpc_device *tcpc, uint32_t *mask);
-int tcpci_get_alert_status(struct tcpc_device *tcpc, uint32_t *alert);
+int tcpci_get_alert_status_and_mask(struct tcpc_device *tcpc, uint32_t *alert, uint32_t *mask);
 int tcpci_get_fault_status(struct tcpc_device *tcpc, uint8_t *fault);
-int tcpci_get_power_status(struct tcpc_device *tcpc, uint16_t *pw_status);
+int tcpci_get_power_status(struct tcpc_device *tcpc);
 int tcpci_init(struct tcpc_device *tcpc, bool sw_reset);
 int tcpci_init_alert_mask(struct tcpc_device *tcpc);
 
@@ -98,7 +99,6 @@ int tcpci_set_low_power_mode(struct tcpc_device *tcpc, bool en);
 int tcpci_alert_vendor_defined_handler(struct tcpc_device *tcpc);
 int tcpci_set_auto_dischg_discnt(struct tcpc_device *tcpc, bool en);
 int tcpci_get_vbus_voltage(struct tcpc_device *tcpc, u32 *vbus);
-int tcpci_is_vsafe0v(struct tcpc_device *tcpc);
 
 #if CONFIG_WATER_DETECTION
 int tcpci_set_water_protection(struct tcpc_device *tcpc, bool en);
@@ -167,6 +167,7 @@ int tcpci_notify_cc_hi(struct tcpc_device *tcpc, int cc_hi);
 #if IS_ENABLED(CONFIG_USB_POWER_DELIVERY)
 
 int tcpci_notify_hard_reset_state(struct tcpc_device *tcpc, uint8_t state);
+int tcpci_notify_wait_new_cap(struct tcpc_device *tcpc);
 
 int tcpci_enter_mode(struct tcpc_device *tcpc,
 	uint16_t svid, uint8_t ops, uint32_t mode);
@@ -184,9 +185,7 @@ int tcpci_dp_notify_config_start(struct tcpc_device *tcpc);
 int tcpci_dp_notify_config_done(struct tcpc_device *tcpc,
 	uint32_t local_cfg, uint32_t remote_cfg, bool ack);
 
-#if CONFIG_USB_PD_CUSTOM_VDM
-int tcpci_notify_uvdm(struct tcpc_device *tcpc, bool ack);
-#endif	/* CONFIG_USB_PD_CUSTOM_VDM */
+int tcpci_notify_cvdm(struct tcpc_device *tcpc, bool ack);
 
 #if CONFIG_USB_PD_REV30
 
