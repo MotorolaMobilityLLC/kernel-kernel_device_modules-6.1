@@ -21,6 +21,7 @@
 //#include "mediatek/eqg-touch.dtsi"
 #include "mediatek/eqg-connfem.dtsi"
 #include "mediatek/eqg-qorvo-uwb.dtsi"
+#include "mediatek/eqg-audio.dtsi"
 
 &rt5133 {
 	status = "disabled";
