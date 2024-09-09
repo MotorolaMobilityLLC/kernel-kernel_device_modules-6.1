@@ -1074,7 +1074,6 @@ def get_overlay_modules_list():
         mgk_64_k61_device_modules.append("drivers/power/supply/moto_chg_tcmd.ko")
         mgk_64_k61_device_modules.append("drivers/power/supply/moto_wlc_alg.ko")
         mgk_64_k61_device_modules.append("drivers/regulator/hl7603-regulator.ko")
-        mgk_64_k61_device_modules.append("sound/soc/codecs/tfa9865/snd-soc-tfa9865.ko")
 
         mgk_64_k61_device_modules.remove("sound/soc/codecs/tfa98xx/snd-soc-tfa98xx.ko")
 
@@ -1093,7 +1092,6 @@ def get_overlay_modules_list():
         mgk_64_k61_device_modules.append("drivers/misc/mediatek/typec/mux/fsa4480-i2c.ko")
         mgk_64_k61_device_modules.append("drivers/regulator/et5904.ko")
         mgk_64_k61_device_modules.append("drivers/regulator/et59041c.ko")
-        mgk_64_k61_device_modules.append("sound/soc/codecs/fs19xx/snd-soc-fs19xx.ko")
 
     if "fpga.config" in DEFCONFIG_OVERLAYS:
         mgk_64_k61_kleaf_modules.remove("//vendor/mediatek/kernel_modules/fpsgo_cus:fpsgo_cus")
