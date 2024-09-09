@@ -1088,6 +1088,7 @@ def get_overlay_modules_list():
         mgk_64_k61_device_modules.append("drivers/misc/mediatek/flashlight/flashlights-ocp81373.ko")
         mgk_64_k61_device_modules.append("drivers/misc/mediatek/lens/ois/mot_tele_dw9784/mot_tele_dw9784.ko")
         mgk_64_k61_device_modules.append("drivers/misc/mediatek/typec/mux/fsa4480-i2c.ko")
+        mgk_64_k61_device_modules.append("sound/soc/codecs/aw882xx/snd-soc-aw882xx.ko")
         mgk_64_k61_device_modules.append("drivers/regulator/et5904.ko")
         mgk_64_k61_device_modules.append("drivers/regulator/et59041c.ko")
 
