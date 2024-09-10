@@ -575,21 +575,20 @@
 
 };
 
-&i2c10 {
+&i2c12 {
     #address-cells = <1>;
     #size-cells = <0>;
-    ocp81373:ocp81373@63 {
-        compatible = "mediatek,flashlights_ocp81373";
+    sgm37864:sgm37864@63 {
+        compatible = "mediatek,sgm37864";
         #address-cells = <1>;
         #size-cells = <0>;
         reg = <0x63>;
         #cooling-cells = <2>;
         pinctrl-names = "default", "hwen-high", "hwen-low";
-        pinctrl-0 = <&ocp81373_pins_default>;
-        pinctrl-1 = <&ocp81373_pins_hwen_high>;
-        pinctrl-2 = <&ocp81373_pins_hwen_low>;
+        pinctrl-0 = <&sgm37864_pins_default>;
+        pinctrl-1 = <&sgm37864_pins_hwen_high>;
+        pinctrl-2 = <&sgm37864_pins_hwen_low>;
         status = "okay";
-        decouple = <1>;
         flash@0{
             reg = <0>;
             type = <0>;
@@ -607,20 +606,20 @@
 
 
 &pio {
-    ocp81373_pins_default: default {
+    sgm37864_pins_default: default {
     };
 
-    ocp81373_pins_hwen_high: hwen-high {
+    sgm37864_pins_hwen_high: hwen-high {
         pins-cmd-dat {
-            pinmux = <PINMUX_GPIO153__FUNC_GPIO153>;
+            pinmux = <PINMUX_GPIO154__FUNC_GPIO154>;
             slew-rate = <1>;
             output-high;
         };
     };
 
-    ocp81373_pins_hwen_low: hwen-low {
+    sgm37864_pins_hwen_low: hwen-low {
         pins-cmd-dat {
-            pinmux = <PINMUX_GPIO153__FUNC_GPIO153>;
+            pinmux = <PINMUX_GPIO154__FUNC_GPIO154>;
             slew-rate = <1>;
             output-low;
         };
