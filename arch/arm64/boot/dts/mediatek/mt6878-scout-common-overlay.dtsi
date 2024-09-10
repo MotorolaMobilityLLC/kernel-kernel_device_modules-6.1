@@ -275,7 +275,7 @@
 		status = "okay";
 	};
 	aw882xx_smartpa_spk: aw882xx@35 {
-		compatible = "awinic, aw882xx_smartpa";
+		compatible = "awinic,aw882xx_smartpa";
 		#sound-dai-cells = <0>;
 		reg = <0x35>;
 		irq-gpio = <&pio 10 0x0>;
