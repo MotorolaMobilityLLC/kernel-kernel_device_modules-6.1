@@ -958,6 +958,7 @@ def get_overlay_modules_list():
         mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/nfc/st54lnfc/st54spi:st54lspi")
         mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/power/mmi_gauge_class:mmi_gauge_class")
         mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/power/smart_battery:smart_battery")
+        mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/misc/awinic/aw862xx:aw862xx")
         mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/sensors:sensors_class")
         mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/misc/sx937x_multi:sx937x_multi")
         mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/power/bq25980_mmi:bq25980_mmi")
