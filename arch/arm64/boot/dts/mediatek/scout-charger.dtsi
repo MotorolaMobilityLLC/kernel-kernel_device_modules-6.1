@@ -42,30 +42,6 @@
 		input-enable;
 		bias-pull-up;
 	};
-
-	wls_cps4038_int_default: wls_cps4038_int_default {
-		wls_int {
-			pinmux = <PINMUX_GPIO34__FUNC_GPIO34>;
-			input-enable;
-			//bias-pull-up;
-		};
-		wls_det_int {
-			pinmux = <PINMUX_GPIO36__FUNC_GPIO36>;
-			input-enable;
-			//bias-disable;
-		};
-		wls_mode_select {
-			pinmux = <PINMUX_GPIO81__FUNC_GPIO81>;
-			output-low;
-		};
-	};
-
-	mmi_control_wls_default: mmi_control_wls_default {
-		wls_control {
-			pinmux = <PINMUX_GPIO79__FUNC_GPIO79>;
-			output-low;
-		};
-	};
 };
 
 &mtk_gauge {
@@ -115,20 +91,12 @@
 	ac-charger-input-current = <2000000>;
 	charging-host-charger-current = <1500000>;
 
-	/*pe5 && pdc && pe2 && wlc*/
-	fast_charging_indicator = <0x8014>;
+	/*pe5 && pdc && pe2*/
+	fast_charging_indicator = <0x0014>;
 	/*swchg + 2CP*/
 	charger_configuration= <4>;
 
-	wireless_factory_max_current = <3000000>;
-	wireless_factory_max_input_current = <600000>;
-
 	disable-aicl;
-
-	mmi,enable-mux;
-
-	// mmi,mux_wls_switch_en = <&pio 99 0x0>;
-	// mmi,mux_switch_enn_en = <&pio 32 0x0>;
 
 	/* dynamic mivr */
 	enable-dynamic-mivr;
@@ -197,29 +165,6 @@
 	status = "okay";
 	compatible = "mmi,smart-battery";
 	mmi,ui_full_soc = <97>;
-};
-
-
-&i2c10 {
-	clock-frequency = <400000>;
-	status = "okay";
-
-	cps_wls_charger@38 {
-		compatible = "cps,wls-charger-cps4038";
-		wireless-fw-name = "cps4038.bin";
-		enable_stop_epp = <1>;
-		enable_rx_offset_detect = <1>;
-		/*stop rx offset detect battery soc*/
-		rod_stop_battery_soc = <90>;
-		bootmode = <&chosen>;
-		reg = <0x38>;
-		cps_wls_int = <&pio 34 0x0>;
-		cps_det_int = <&pio 36 0x0>;
-		wls_mode_select = <&pio 81 0x0>;
-		pinctrl-names = "default";
-		pinctrl-0 = <&wls_cps4038_int_default>;
-		status = "okay";
-	};
 };
 
 &i2c3 {
@@ -304,20 +249,6 @@
 		pinctrl-names = "default";
 		pinctrl-0 = <&nu2115_int_default_slave>;
 	};
-};
-
-&moto_wlc {
-	compatible = "moto,charger,wlc";
-	gauge = <&smart_battery>;
-	min_charger_voltage = <4600000>;
-	wlc_max_charger_current = <3150000>;
-	wlc_max_input_current = <1150000>;
-	mmi,wls_control_en = <&pio 79 0x0>;
-	pinctrl-names = "default";
-	pinctrl-0 = <&mmi_control_wls_default>;
-	#cooling-cells = <2>;
-	mmi,wlc-rx-mitigation = <(-1) 2500000 2000000 1800000 1200000
-							1000000 800000 500000>;
 };
 
 &pdc {
