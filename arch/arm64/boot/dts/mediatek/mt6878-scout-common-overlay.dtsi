@@ -206,43 +206,33 @@
 
 &i2c12 {
 	clock-frequency = <400000>;
-	status = "okay";
-		fshaptic@34{
-		compatible="foursemi,fshaptic";
-		reg=<0x34>;
-		fs3001_i2c_addr=<0x34>;
-		reset-gpio=<&pio 41 0>;//In pio section, please set the gpio based on the platform
-		irq-gpio=<&pio 9 0>;//In pio section, please set the gpio based on the platform
-
-		fs3001_f0_ref=< 2050 >;
-		fs3001_auto_brake=< 0 >;
-		fs3001_f0_cali_mode=< 1 >;
-		fs3001_cont_drv1_lvl=< 127 >;
-		fs3001_cont_drv2_lvl=< 54 >;
-		fs3001_cont_drv1_time=< 4 >;
-		fs3001_cont_drv2_time=< 20 >;
-		fs3001_cont_1_period=< 702 >;
-		fs3001_brk_slopeth=< 20 >;
-		fs3001_brk_gain=< 128 >;
-		fs3001_brk_times=< 20 >;
-		fs3001_brk_noise_gate=< 32 >;
-		fs3001_brk_1_period=< 468 >;
-		fs3001_brk_pgagain=< 5 >;
-		fs3001_brk_margin=< 48 >;
-		fs3001_play_ram_srate=< 0 >;
-		fs3001_play_rtp_srate=< 0 >;
-		fs3001_lk_f0_cali=< 0 >;
-		fs3001_default_vib_mode=< 3 >;
-		fs3001_vbat_mode=< 0 >;
-		fs3001_bypass_system_gain=< 1 >;
-		fs3001_f0_cali_data_mode=< 0 >;
-		fs3001_lr_pgagain=< 5 >;
-		fs3001_gain_adjust=< 0 >;
-		fs3001_rtp_max=< 53 >;
-		fs3001_rtp_time=< 20 20 20 >;
-		fs3001_reg_inits=< 0xffffff 0xffffff 0xffffff 0xffffff 0xffffff 0xffffff 0xffffff 0xffffff 0xffffff 0xffffff >;
-		fs3001_rtp_id_boundary=< 3 >;
-		fs3001_duration_time=< 34 67 100 >;
+	status = "ok";
+	haptic_nv@5A{
+		compatible = "awinic,haptic_nv";
+		reg = < 0x5A >;
+		aw862xx_i2c_addr = < 0x58 >;
+		/* aw8624x_no_reset; */
+		reset-gpio = <&pio 41 0>;
+		irq-gpio = <&pio 9 0>;
+		aw8623x_gain_bypass = < 1 >;
+		aw8623x_vib_lk_f0_cali = < 0 >;
+		aw8623x_vib_mode = < 2 >; /* mode: RAM -> 2; CONT -> 3 */
+		aw8623x_vib_f0_pre = < 2050 >;
+		aw8623x_vib_f0_cali_percen = < 7 >;
+		aw8623x_vib_cont_drv1_lvl = < 0x7F >;
+		aw8623x_vib_lra_vrms = < 1000 >; /* Motor rated voltage, mV */
+		aw8623x_vib_cont_brk_time = < 0x06 >;
+		aw8623x_vib_cont_brk_gain = < 0x08 >;
+		aw8623x_vib_cont_drv1_time = < 0x04 >;
+		aw8623x_vib_cont_drv2_time = < 0x14 >;
+		aw8623x_vib_cont_track_margin = < 0x0F >;
+		aw8623x_vib_d2s_gain = < 0x05 >;
+		aw8623x_vib_trig_config = < 0 0 0 1 0 2 0
+					    0 0 0 1 0 2 0
+					    0 0 0 1 0 2 0 >;
+		aw8623x_vib_duration_time = < 20 30 60 >;
+		aw8623x_vib_is_enabled_track_en;
+		/* aw8623x_vib_is_enabled_auto_brk; */
 		status = "okay";
 	};
 };
