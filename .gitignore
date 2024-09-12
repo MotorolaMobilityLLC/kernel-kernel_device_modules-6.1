@@ -175,3 +175,5 @@ sphinx_*/
 /kernel/configs/moto-mgk_64_k61-df.config
 /kernel/configs/moto-mgk_64_k61.config
 /kernel/configs/factory-mgk_64_k61.config
+/kernel/configs/moto-mgk_64_k61-cybert.config
+/kernel/configs/debug-mgk_64_k61-cybert.config
