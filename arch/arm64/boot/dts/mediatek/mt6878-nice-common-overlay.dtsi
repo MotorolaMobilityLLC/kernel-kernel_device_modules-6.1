@@ -1,0 +1,368 @@
+/* Copyright (c) 2023, Motorola Mobility Inc. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
+#include "mediatek/mt6878-moto-common-overlay-single-panel.dtsi"
+
+#include "mediatek/cust_nice_camera_v4l2.dtsi"
+#include "mediatek/nice-charger.dtsi"
+#include "mediatek/nice-fps.dtsi"
+#include "mediatek/nice-ntc.dtsi"
+#include "mediatek/nice-display.dtsi"
+#include "mediatek/nice-touch.dtsi"
+
+&pio {
+	nfc_spi_cs_mode_spi: nfc_spi_cs_mode_spi {
+		pins_cmd_dat {
+			pinmux = <PINMUX_GPIO73__FUNC_SPI5_CSB>;
+			bias-disable;
+		};
+	};
+
+	nfc_spi_cs_mode_idle: nfc_spi_cs_mode_idle {
+		pins_cmd_dat {
+			pinmux = <PINMUX_GPIO73__FUNC_GPIO73>;
+			bias-disable;
+		};
+	};
+
+	sar_int_default: sar_int_default {
+		pins_cmd_dat {
+			pinmux = <PINMUX_GPIO14__FUNC_GPIO14>;
+			input-enable;
+			drive-strength = <2>;
+			bias-pull-up;
+		};
+	};
+
+	sar_int_sleep: sar_int_sleep {
+		pins_cmd_dat {
+			pinmux = <PINMUX_GPIO14__FUNC_GPIO14>;
+			input-enable;
+			drive-strength = <2>;
+			bias-pull-up;
+		};
+	};
+};
+
+
+&spi5 {
+	st54spi: st54spi@0 {
+		compatible = "st,st54spi";
+		reg = <0>;
+		spi-max-frequency = <1000000>;
+		gpio-power_nreset = <35>;
+		gpio-power_nreset-std = <&pio 35 0x00>;
+		power_mode = "ST54J";
+		bootmode = <&chosen>;
+		pinctrl-names = "pinctrl_state_mode_spi",
+				"pinctrl_state_mode_idle";
+		pinctrl-0 = <&nfc_spi_cs_mode_spi>;
+		pinctrl-1 = <&nfc_spi_cs_mode_idle>;
+		status = "okay";
+	};
+};
+
+&u2port0{
+	mediatek,eye-vrt = <0x64>;
+	mediatek,eye-vrt-host = <0x64>;
+	mediatek,eye-term = <0x64>;
+	mediatek,eye-term-host = <0x64>;
+	mediatek,rev6 = <0xa>;
+	mediatek,rev6-host = <0xa>;
+};
+
+/* BOB */
+&i2c5 {
+	hl7603@77 {
+		status = "ok";
+		compatible = "hl7603";
+		reg = <0x77>;
+		/* hl7603_vout_voltage = <0x0B>; //3.4v */
+	};
+};
+
+
+&rt5133 {
+	status = "disabled";
+};
+
+//for alsps sensor
+&mt6369_vmc {
+	regulator-min-microvolt = <3300000>;
+	regulator-max-microvolt = <3300000>;
+	regulator-always-on;
+};
+
+&mt6363_vio18 {
+	regulator-min-microvolt = <1800000>;
+	regulator-max-microvolt = <2100000>;
+};
+
+&i2c10 {
+	status = "ok";
+
+	st21nfc: st21nfc@0x08 {
+		compatible = "st,st21nfc";
+		reg = <0x08>;
+		interrupt-parent = <&pio>;
+		interrupts = <2 0>;
+		bootmode = <&chosen>;
+		reset-gpios = <&pio 40 0x00>;
+		irq-gpios = <&pio 2 0x00>;
+		clkreq-gpios = <&pio 151 0x00>;
+		status = "ok";
+	};
+
+	sx937x: sx937x@2c { /* SAR sensor */
+		compatible = "Semtech,sx937x";
+		reg = <0x2c>;
+		Semtech,power-supply-type = <0>;
+		cap_vdd-supply = <&mt6363_vio18>;
+		pinctrl-names = "default","sleep";
+		pinctrl-0 = <&sar_int_default>;
+		pinctrl-1 = <&sar_int_sleep>;
+		interrupt-parent = <&pio>;
+		interrupts = <14 0x02>;
+		interrupt-names = "sx937x_irq";
+		Semtech,nirq-gpio= <&pio 14 0x02>;
+		esd-reinit-on = <1>;
+		/*use PH5/6 as the reference sensor
+		set it to 0xff if the ref-phases-x is not used*/
+		Semtech,ref-phases-a = <4>;
+		Semtech,ref-phases-b = <5>;
+		Semtech,ref-phases-c = <6>;
+		Semtech,button-flag = <0x0f>;
+		Semtech,reg-num = <58>;
+		Semtech,reg-init = <
+			0x8024 0x00007F00
+			0x4004 0x00000074
+			0x4008 0x00000008
+			0x8020 0x00000032
+			0x8028 0x0000089E    /*AFE_PARAM_PH0*/
+			0x8034 0x0000086E    /*AFE_PARAM_PH1*/
+			0x8040 0x00000876    /*AFE_PARAM_PH2*/
+			0x804C 0x0000086E    /*AFE_PARAM_PH3*/
+			0x8058 0x00000876    /*AFE_PARAM_PH4*/
+			0x8064 0x00000866    /*AFE_PARAM_PH5*/
+			0x8070 0x0000085E    /*AFE_PARAM_PH6*/
+			0x807C 0x0000085E    /*AFE_PARAM_PH7*/
+			/*set CS3 to HZ, because it used as IRQ pin*/
+			0x8030 0x00FFF9FD    /*REG_AFEPH_PH0, CS0, ANT0*/
+			0x803C 0x00FEF9FF    /*REG_AFEPH_PH1, CS5, ANT1*/
+			0x8048 0x00F7F9FF    /*REG_AFEPH_PH2, CS6, ANT3/4/5*/
+			0x8054 0x00BFF9FF    /*REG_AFEPH_PH3, CS7, ANT2*/
+			0x8060 0x00FFF9EF    /*REG_AFEPH_PH4, CS1, ANT0_REF*/
+			0x806C 0x00FFF97F    /*REG_AFEPH_PH5, CS2, ANT3/4/5 REF*/
+			0x8078 0x00FFD9FF    /*REG_AFEPH_PH6, CS4, ANT1 REF*/
+			0x8084 0x00FFF9FF    /*REG_AFEPH_PH7, NOT USE*/
+			0x8098 0x00006F46
+			0x80B8 0x00002020
+			0x80D8 0x00005959
+			0x80F8 0x00004E36
+			0x8118 0x000000FF
+			0x8138 0x000000FF
+			0x8158 0x000000FF
+			0x8178 0x000000FF
+			0x80A0 0x1F1F0001
+			0x80C0 0x2C2C0001
+			0x80E0 0x12120002
+			0x8100 0x37370002
+			0x8188 0x08000015
+			0x818C 0x08000016
+			0x8090 0x18005000
+			0x80B0 0x649C5007
+			0x80D0 0x0C005000
+			0x80F0 0x08005000
+			0x8110 0x00005000
+			0x8130 0x00005000
+			0x8150 0x00005000
+			0x8170 0x00005000
+			0x8088 0x00300000
+			0x80A8 0x00300000
+			0x80C8 0x00300000
+			0x80E8 0x00300000
+			0x8108 0x00300000
+			0x8128 0x06300000
+			0x8148 0x06300000
+			0x8168 0x06300000
+			0x808C 0x60200064
+			0x80AC 0x6020003C
+			0x80CC 0x60200050
+			0x80EC 0x6020003C
+			0x810C 0x60200030
+			0x812C 0x60200030
+			0x814C 0x60200030
+			0x816C 0x60200030
+		>;
+		status = "okay";
+	};
+};
+
+&i2c12 {
+	clock-frequency = <400000>;
+	status = "okay";
+		fshaptic@34{
+		compatible="foursemi,fshaptic";
+		reg=<0x34>;
+		fs3001_i2c_addr=<0x34>;
+		reset-gpio=<&pio 41 0>;//In pio section, please set the gpio based on the platform
+		irq-gpio=<&pio 9 0>;//In pio section, please set the gpio based on the platform
+
+		fs3001_f0_ref=< 2050 >;
+		fs3001_auto_brake=< 0 >;
+		fs3001_f0_cali_mode=< 1 >;
+		fs3001_cont_drv1_lvl=< 127 >;
+		fs3001_cont_drv2_lvl=< 54 >;
+		fs3001_cont_drv1_time=< 4 >;
+		fs3001_cont_drv2_time=< 20 >;
+		fs3001_cont_1_period=< 702 >;
+		fs3001_brk_slopeth=< 20 >;
+		fs3001_brk_gain=< 128 >;
+		fs3001_brk_times=< 20 >;
+		fs3001_brk_noise_gate=< 32 >;
+		fs3001_brk_1_period=< 468 >;
+		fs3001_brk_pgagain=< 5 >;
+		fs3001_brk_margin=< 48 >;
+		fs3001_play_ram_srate=< 0 >;
+		fs3001_play_rtp_srate=< 0 >;
+		fs3001_lk_f0_cali=< 0 >;
+		fs3001_default_vib_mode=< 3 >;
+		fs3001_vbat_mode=< 0 >;
+		fs3001_bypass_system_gain=< 1 >;
+		fs3001_f0_cali_data_mode=< 0 >;
+		fs3001_lr_pgagain=< 5 >;
+		fs3001_gain_adjust=< 0 >;
+		fs3001_rtp_max=< 53 >;
+		fs3001_rtp_time=< 20 20 20 >;
+		fs3001_reg_inits=< 0xffffff 0xffffff 0xffffff 0xffffff 0xffffff 0xffffff 0xffffff 0xffffff 0xffffff 0xffffff >;
+		fs3001_rtp_id_boundary=< 3 >;
+		fs3001_duration_time=< 34 67 100 >;
+		status = "okay";
+	};
+};
+
+&regulator_vibrator {
+	status = "disabled";
+};
+
+&mmc1 {
+	status = "disabled";
+};
+
+&i2c6 {
+ 	status = "okay";
+	clock-frequency = <400000>;
+
+	aw882xx_smartpa_rcv: aw882xx@34 {
+		compatible = "awinic,aw882xx_smartpa";
+		#sound-dai-cells = <0>;
+		reg = <0x34>;
+		irq-gpio = <&pio 17 0x0>;
+		/*sync-load = <1>;*/
+		sound-channel = <0>; /*0:pri_l 1:pri_r 2:sec_l 3:sec_r*/
+		aw-re-min = <4000>;
+		aw-re-max= <30000>;
+		/*aw-cali-mode = "none";*/
+		status = "okay";
+	};
+	aw882xx_smartpa_spk: aw882xx@35 {
+		compatible = "awinic,aw882xx_smartpa";
+		#sound-dai-cells = <0>;
+		reg = <0x35>;
+		irq-gpio = <&pio 10 0x0>;
+		/*sync-load = <1>;*/
+		sound-channel = <1>; /*0:pri_l 1:pri_r 2:sec_l 3:sec_r*/
+		aw-re-min = <4000>;
+		aw-re-max= <30000>;
+		/*aw-cali-mode = "none";*/
+		status = "okay";
+	};
+
+	fsa4480: fsa4480@42 {
+		compatible = "fsa,fsa4480-i2c";
+		reg = <0x42>;
+		status = "okay";
+    };
+ };
+
+&sound {
+	mediatek,spk-i2s = <25 24>;
+	mediatek,speaker-codec {
+		sound-dai = <&aw882xx_smartpa_rcv &aw882xx_smartpa_spk>;
+	};
+};
+
+&afe {
+	mediatek,ap-dmic = <0>;
+};
+
+&swtp {
+	interrupt-parent = <&pio>;
+	interrupts = <20 IRQ_TYPE_LEVEL_HIGH 20 0>;
+	deb-gpios = <&pio 20 0>;
+	debounce = <512>;
+	status = "okay";
+};
+
+&swtp_1 {
+	interrupt-parent = <&pio>;
+	interrupts = <21 IRQ_TYPE_LEVEL_HIGH 21 0>;
+	deb-gpios = <&pio 21 0>;
+	debounce = <512>;
+	status = "okay";
+};
+&swtp_2 {
+	interrupt-parent = <&pio>;
+	interrupts = <23 IRQ_TYPE_LEVEL_HIGH 23 0>;
+	deb-gpios = <&pio 23 0>;
+	debounce = <512>;
+	status = "okay";
+};
+&swtp_3 {
+	interrupt-parent = <&pio>;
+	interrupts = <22 IRQ_TYPE_LEVEL_HIGH 22 0>;
+	deb-gpios = <&pio 22 0>;
+	debounce = <512>;
+	status = "okay";
+};
+&swtp_4 {
+        interrupt-parent = <&pio>;
+        interrupts = <29 IRQ_TYPE_LEVEL_HIGH 29 0>;
+        deb-gpios = <&pio 29 0>;
+        debounce = <512>;
+        status = "okay";
+};
+
+&therm_intf {
+	/*Vsensor name should be CASE DIFFERENT with the name in config file*/
+	mmi,temperature-names = "BACK_TEMP", "FRONT_TEMP";/*for "back_temp" in config file*/
+};
+
+&consys {
+	hwid-node = <>;
+	adie-sku = <>;
+	mot-sku = <1>;  /* mt6637 = 0, mt6631 = 1 , mt6631 + mt6686 = 2 */
+};
+
+&md_power_throttling {
+	lbat-max-level = <3>;
+	lbat-reduce-tx-lv1 = <0>;
+	lbat-reduce-tx-lv2 = <0>;
+	lbat-reduce-tx-lv3 = <0>;
+
+	oc-max-level = <2>;
+	oc-reduce-tx-lv1 = <0>;
+	oc-reduce-tx-lv2 = <0>;
+
+	soc-max-level = <1>;
+	soc-reduce-tx-lv1 = <6>;
+};
