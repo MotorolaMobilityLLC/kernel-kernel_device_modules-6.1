@@ -21,19 +21,19 @@
 		pinctrl-3 = <&ctp_gt9896s_reset_suspend>;
 		pinctrl-4 = <&ctp_gt9896s_spi_mode>;
 		spi-max-frequency = <15000000>;  /* 4800000,9600000,15000000,19200000 */
-		mmi,status = "/chosen","mmi,panel_name","contains","csot_vtdr6130","tianma_nt37707";
-		goodix,panel-supplier = "csot","tianma";
+		mmi,status = "/chosen","mmi,panel_name","contains","tm_nt37706";
+		goodix,panel-supplier = "tm";
 		goodix,reset-gpio = <&pio 152 0x0>;
 		goodix,irq-gpio = <&pio 7 0x2002>;
-		goodix,avdd-gpio = <&pio 189 0x0>;
-		vibr-supply = <&mt6369_vibr>;
-		goodix,iovdd-name = "vibr";
+		goodix,avdd-gpio = <&pio 184 0x0>;
+		iovdd-supply = <&mt6369_vtp>;
+		goodix,iovdd-name = "iovdd";
 		goodix,irq-flags = <0x2002>; /* 1:trigger rising, 2:trigger falling;*/
 		goodix,panel-max-id = <10>;
-		goodix,panel-max-x = <19200>;
-		goodix,panel-max-y = <42720>;
+		goodix,panel-max-x = <19520>;
+		goodix,panel-max-y = <43392>;
 		goodix,panel-max-w = <256>;
-		goodix,panel-max-p = <256>;
+		goodix,panel-max-p = <4096>;
 		goodix,edge-ctrl;
 		goodix,sample-ctrl;
 		goodix,interpolation-ctrl;
