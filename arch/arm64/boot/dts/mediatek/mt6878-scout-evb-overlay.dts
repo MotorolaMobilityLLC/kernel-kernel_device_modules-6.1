@@ -38,8 +38,25 @@
 
 &mt6375_typec {
 	mmi,support_CID;
-        tcpc,en_wd;
-	mmi_cid_int = <&pio 37 0x0>;
+};
+
+&charger {
+	/*typec_otp*/
+	mmi,typecotp-charger;
+};
+
+&spmi {
+	second_pmic@5 {
+		regulators {
+			mt6369_mos_con1: mos-con1 {
+				regulator-name = "mt6369_mos_con1";
+			};
+		};
+	};
+};
+
+&mt6375_chg {
+	mmi,otp-mos-regulator-name = "mt6369_mos_con1";
 };
 
 #include <scout_evb/cust.dtsi>
