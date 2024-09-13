@@ -41,7 +41,7 @@
 		pinctrl-names = "default";
 	};
 
-	panel2@0 {
+	panel2@1 {
 		/delete-property/ compatible;
 		/delete-property/ pm-enable-gpios;
 		/delete-property/ reset-gpios;
