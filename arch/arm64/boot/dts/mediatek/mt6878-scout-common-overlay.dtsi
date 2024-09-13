@@ -36,7 +36,7 @@
 
 	sar_int_default: sar_int_default {
 		pins_cmd_dat {
-			pinmux = <PINMUX_GPIO14__FUNC_GPIO14>;
+			pinmux = <PINMUX_GPIO114__FUNC_GPIO114>;
 			input-enable;
 			drive-strength = <2>;
 			bias-pull-up;
@@ -45,7 +45,7 @@
 
 	sar_int_sleep: sar_int_sleep {
 		pins_cmd_dat {
-			pinmux = <PINMUX_GPIO14__FUNC_GPIO14>;
+			pinmux = <PINMUX_GPIO114__FUNC_GPIO114>;
 			input-enable;
 			drive-strength = <2>;
 			bias-pull-up;
@@ -131,9 +131,9 @@
 		pinctrl-0 = <&sar_int_default>;
 		pinctrl-1 = <&sar_int_sleep>;
 		interrupt-parent = <&pio>;
-		interrupts = <14 0x02>;
+		interrupts = <114 0x02>;
 		interrupt-names = "sx937x_irq";
-		Semtech,nirq-gpio= <&pio 14 0x02>;
+		Semtech,nirq-gpio= <&pio 114 0x02>;
 		esd-reinit-on = <1>;
 		/*use PH5/6 as the reference sensor
 		set it to 0xff if the ref-phases-x is not used*/
