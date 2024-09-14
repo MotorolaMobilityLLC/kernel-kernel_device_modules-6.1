@@ -256,6 +256,21 @@
 	status = "disabled";
 };
 
+&spmi {
+	second_pmic@5 {
+		regulators {
+			mt6369_vmch_eint_low: vmch-eint-low {
+				regulator-compatible = "VMCH_EINT_LOW";
+				regulator-name = "mt6369_vmch_eint_low";
+				regulator-min-microvolt = <1200000>;
+				regulator-max-microvolt = <3500000>;
+				regulator-enable-ramp-delay = <680>;
+				regulator-allowed-modes = <0 2>;
+			};
+		};
+	};
+};
+
 &mmc1 {
 	cd-gpios = <&pio 14 GPIO_ACTIVE_HIGH>;
 	vmmc-supply = <&mt6369_vmch_eint_low>;
