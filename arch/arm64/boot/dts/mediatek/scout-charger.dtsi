@@ -235,12 +235,12 @@
 		//batt_versions = /bits/ 16 <01>;
 	};
 
-	bq25960_master:bq25960-master@6a {
+	bq25960_master:bq25960-master@6b {
 		status = "okay";
 		compatible = "ti,bq25960-master";
-		reg = <0x6a>;
+		reg = <0x6b>;
 
-		sc8541-addr = <0x6a>;
+		sc8541-addr = <0x6b>;
 		sc8541-name = "sc8541-master";
 
 		interrupt-parent = <&pio>;
@@ -251,12 +251,12 @@
 		pinctrl-0 = <&bq25960_int_default_master>;
 	};
 
-	bq25960_slave:bq25960-slave@6b {
+	bq25960_slave:bq25960-slave@6c {
 		status = "okay";
 		compatible = "ti,bq25960-slave";
-		reg = <0x6b>;
+		reg = <0x6c>;
 
-		sc8541-addr = <0x6b>;
+		sc8541-addr = <0x6c>;
 		sc8541-name = "sc8541-slave";
 
 		interrupt-parent = <&pio>;
