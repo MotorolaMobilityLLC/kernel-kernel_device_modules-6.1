@@ -140,6 +140,8 @@
 	/* dynamic mivr */
 	enable-dynamic-mivr;
 
+	mmi,enable-mux;
+
 	/*mmi config*/
 	mmi,typec-rp-max-current = <2000000>;
 
