@@ -71,6 +71,7 @@ obj-$(CONFIG_DRM_PANEL_CSOT_NT37705_1056x1066_DPHY_CMD_CLI) += dsi-panel-mot-cso
 obj-$(CONFIG_DRM_PANEL_CSOT_NT37705_1056x1066_DPHY_CMD_C6_CLI) += dsi-panel-mot-csot-nt37705-1056x1066-dphy-cmd-c6-cli.o
 obj-$(CONFIG_DRM_PANEL_CSOT_VTDR6130_636_FHDP_DPHY_CMD_120HZ) += dsi-panel-mot-csot-vtdr6130-636-fhdp-dphy-cmd-120hz.o
 obj-$(CONFIG_DRM_PANEL_TIANMA_NT37707_636_FHDP_DPHY_CMD_120HZ) += dsi-panel-mot-tianma-nt37707-636-fhdp-dphy-cmd-120hz.o
+obj-$(CONFIG_DRM_PANEL_CSOT_NT37706_667_1220x2712_DPHY_VDO_120HZ) += dsi-panel-mot-csot-nt37706-667-1220x2712-dphy-vdo-120hz.o
 obj-$(CONFIG_DRM_PANEL_TM_NT37706_667_1220x2712_DPHY_VDO_120HZ) += dsi-panel-mot-tm-nt37706-667-1220x2712-dphy-vdo-120hz.o
 obj-$(CONFIG_DRM_PANEL_MOT_DUMMY_VDO_60HZ) += dsi-panel-mot-dummy-vdo-60hz.o
 obj-$(CONFIG_DRM_PANEL_MOT_DUMMY_CMD_60HZ) += dsi-panel-mot-dummy-cmd-60hz.o
