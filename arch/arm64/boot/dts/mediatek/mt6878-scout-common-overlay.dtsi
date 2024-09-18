@@ -98,7 +98,7 @@
 };
 
 //for alsps sensor
-&mt6369_vmc {
+&mt6369_vio28 {
 	regulator-min-microvolt = <3300000>;
 	regulator-max-microvolt = <3300000>;
 	regulator-always-on;
