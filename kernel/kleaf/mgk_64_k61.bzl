@@ -914,8 +914,8 @@ def get_overlay_modules_list():
 
     if "scout" in DEFCONFIG_OVERLAYS:
         mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/input/misc/fpc_fps_mmi:fpc_mtk_tee")
-        mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/nfc/st54lnfc/st21nfc:st54lnfc")
-        mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/nfc/st54lnfc/st54spi:st54lspi")
+        mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/nfc/nxpI2C:nxp_i2c")
+        mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/nfc/nxpese:nxp_ese")
         mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/power/mmi_gauge_class:mmi_gauge_class")
         mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/power/smart_battery:smart_battery")
         mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/sensors:sensors_class")
