@@ -10,7 +10,7 @@
  * GNU General Public License for more details.
  */
 
-/*&spk {
+&spk {
 	status = "disable";
 };
 
@@ -46,7 +46,7 @@
         mediatek,speaker-codec {
                 sound-dai = <&tfa9864_spk &tfa9864_rcv>;
         };
-};*/
+};
 
 &afe {
         mediatek,ap-dmic = <0>;
