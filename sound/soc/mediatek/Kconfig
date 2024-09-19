@@ -273,6 +273,12 @@ config SND_SOC_TFA9865
 	help
 	  This option enables support for goodix tfa9865 Smart PA.
 
+config SND_SOC_TFA9864
+	tristate "SoC Audio for goodix tfa9864"
+	depends on I2C
+	help
+	  This option enables support for goodix tfa9864 Smart PA.
+
 config SND_SOC_FS19XX
 	tristate "FourSemi FS19xx speaker amplifier"
 	depends on I2C

@@ -171,7 +171,7 @@ int mtk_spk_update_info(struct snd_soc_card *card,
 	unsigned int i2s_set[2];
 	unsigned int is_ipm2p0;
 
-#if IS_ENABLED(CONFIG_SND_SOC_TFA9865) || IS_ENABLED(CONFIG_SND_SMARTPA_AW882XX)
+#if IS_ENABLED(CONFIG_SND_SOC_TFA9865) || IS_ENABLED(CONFIG_SND_SMARTPA_AW882XX) || IS_ENABLED(CONFIG_SND_SOC_TFA9864)
 #else
 	if (mtk_spk_type == MTK_SPK_NOT_SMARTPA)
 		goto BYPASS_UPDATE;
@@ -305,7 +305,7 @@ int mtk_spk_update_info(struct snd_soc_card *card,
 		return -ENODEV;
 	}
 
-#if IS_ENABLED(CONFIG_SND_SOC_TFA9865) || IS_ENABLED(CONFIG_SND_SMARTPA_AW882XX)
+#if IS_ENABLED(CONFIG_SND_SOC_TFA9865) || IS_ENABLED(CONFIG_SND_SMARTPA_AW882XX) || IS_ENABLED(CONFIG_SND_SOC_TFA9864)
 #else
 BYPASS_UPDATE:
 #endif
