@@ -1005,7 +1005,6 @@ def get_overlay_modules_list():
         mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/power/mmi_gauge_class:mmi_gauge_class")
         mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/power/smart_battery:smart_battery")
         mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/sensors:sensors_class")
-        mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/misc/sx937x_multi:sx937x_multi")
         mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/power/bq25980_mmi:bq25980_mmi")
         mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/power/nu2115_mmi:nu2115_mmi")
         mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/power/mmi_pephv:mmi_pephv")
@@ -1028,7 +1027,6 @@ def get_overlay_modules_list():
         mgk_64_k61_device_modules.remove("sound/soc/codecs/tfa98xx/snd-soc-tfa98xx.ko")
 
         #new product
-        mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/misc/awinic/sarsensor:awinic_sar")
         mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/misc/foursemi/fs3001:fs3001")
         mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/misc/sx937x:sx937x_sar")
         mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/power/cps4038_mmi:cps4038_mmi")
