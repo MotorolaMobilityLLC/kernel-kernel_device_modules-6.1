@@ -10,21 +10,6 @@
  * GNU General Public License for more details.
  */
 
-&spmi {
-	second_pmic@5 {
-		regulators {
-			mt6369_vmch: vmch {
-				regulator-compatible = "VMCH";
-				regulator-name = "mt6369_vmch";
-				regulator-min-microvolt = <1200000>;
-				regulator-max-microvolt = <3500000>;
-				regulator-enable-ramp-delay = <680>;
-				regulator-allowed-modes = <0 2>;
-			};
-		};
-	};
-};
-
 &mtk_leds {
 	backlight {
 		/delete-property/ max-hw-brightness;
@@ -47,12 +32,13 @@
 		/delete-property/ reset-gpios;
 		/delete-property/ gate-ic;
 
-		compatible = "csot,vtdr6130,cmd,636";
-		reg = <1>;
-		vddi-gpios = <&pio 188 0>;
-		dvdd-gpios = <&pio 28 0>;
-		oled-vci-supply = <&mt6369_vmch>;
-		reset-gpios = <&pio 90 0>;
+		compatible = "csot,nt37706,vdo,667";
+		reg = <0>;
+
+                pm-enable-gpios = <&pio 188 0>,
+                          <&pio 28 0>,
+                          <&pio 185 0>;
+                reset-gpios = <&pio 90 0>;
 		pinctrl-names = "default";
 	};
 
@@ -61,13 +47,13 @@
 		/delete-property/ pm-enable-gpios;
 		/delete-property/ reset-gpios;
 		/delete-property/ gate-ic;
+		/delete-property/ swap-from-dts;
+		/delete-property/ lane-swap-setting;
+		/delete-property/ pn-swap-setting;
 
-		compatible = "tianma,nt37707,cmd,636";
-		reg = <2>;
-		vddi-gpios = <&pio 188 0>;
-		dvdd-gpios = <&pio 28 0>;
-		oled-vci-supply = <&mt6369_vmch>;
-		reset-gpios = <&pio 90 0>;
+                compatible = "mot,dummy,vdo,60hz";
+                reg = <1>;
+                reset-gpios = <&pio 90 0>;
 		pinctrl-names = "default";
 	};
 
@@ -76,11 +62,27 @@
 		/delete-property/ pm-enable-gpios;
 		/delete-property/ reset-gpios;
 		/delete-property/ gate-ic;
-		/delete-property/ swap-from-dts;
-		/delete-property/ lane-swap-setting;
-		/delete-property/ pn-swap-setting;
 
-		compatible = "mot,dummy,vdo,60hz";
+		compatible = "tianma,nt37707,vdo,667";
+		reg = <2>;
+
+                pm-enable-gpios = <&pio 188 0>,
+                          <&pio 28 0>,
+                          <&pio 185 0>;
+                reset-gpios = <&pio 90 0>;
+		pinctrl-names = "default";
+		port {
+			panel_in3: endpoint {
+				remote-endpoint = <&dsi_out3>;
+			};
+		};
+	};
+	ports {
+		port {
+			dsi_out3: endpoint3 {
+				remote-endpoint = <&panel_in3>;
+			};
+		};
 	};
 };
 
@@ -101,13 +103,14 @@
 
 	pinctrl-names = "lcm_rst_out0_gpio", "mode_te_te",
 		"oled_vci_en_gpio", "oled_vio_en_gpio",
-		"oled_dvdd_en_gpio";
+		"oled_dvdd_vin_en_gpio", "oled_dvdd_en_gpio";
 
 	pinctrl-0 = <&mtkfb_pins_lcm_rst_out_gpio>;
 	pinctrl-1 = <&mtkfb_pins_lcm_dsi_te>;
 	pinctrl-2 = <&mtkfb_pins_oled_vci_en>;
 	pinctrl-3 = <&mtkfb_pins_oled_vio_en>;
-	pinctrl-4 = <&mtkfb_pins_oled_avdd_en0>;
+	pinctrl-4 = <&mtkfb_pins_oled_dvdd_vin_en>;
+	pinctrl-5 = <&mtkfb_pins_oled_dvdd_en>;
 
 	status = "okay";
 
@@ -117,7 +120,7 @@
 &pio {
 	mtkfb_pins_oled_vci_en: oled_vci_en_gpio {
 		pins_cmd_dat {
-			pinmux = <PINMUX_GPIO153__FUNC_GPIO153>;
+			pinmux = <PINMUX_GPIO185__FUNC_GPIO185>;
 			slew-rate = <1>;
 			output-low;
 		};
@@ -131,7 +134,16 @@
 		};
 	};
 
-	mtkfb_pins_oled_avdd_en0: oled_dvdd_en_gpio {
+	mtkfb_pins_oled_dvdd_vin_en: oled_dvdd_vin_en_gpio {
+		pins_cmd_dat {
+			pinmux = <PINMUX_GPIO58__FUNC_GPIO58>;
+			slew-rate = <1>;
+			output-low;
+		};
+	};
+
+
+	mtkfb_pins_oled_dvdd_en: oled_dvdd_en_gpio {
 		pins_cmd_dat {
 			pinmux = <PINMUX_GPIO28__FUNC_GPIO28>;
 			slew-rate = <1>;
