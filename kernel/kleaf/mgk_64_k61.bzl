@@ -1022,9 +1022,6 @@ def get_overlay_modules_list():
         mgk_64_k61_device_modules.append("drivers/power/supply/moto_chg_tcmd.ko")
         mgk_64_k61_device_modules.append("drivers/power/supply/moto_wlc_alg.ko")
         mgk_64_k61_device_modules.append("drivers/regulator/hl7603-regulator.ko")
-        mgk_64_k61_device_modules.append("sound/soc/codecs/tfa9865/snd-soc-tfa9865.ko")
-
-        mgk_64_k61_device_modules.remove("sound/soc/codecs/tfa98xx/snd-soc-tfa98xx.ko")
 
         #new product
         mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/misc/foursemi/fs3001:fs3001")
@@ -1037,10 +1034,12 @@ def get_overlay_modules_list():
         mgk_64_k61_device_modules.append("drivers/gpu/drm/panel/dsi-panel-mot-tianma-nt37707-636-fhdp-dphy-cmd-120hz.ko")
         mgk_64_k61_device_modules.append("drivers/misc/mediatek/flashlight/flashlights-ocp81373.ko")
         mgk_64_k61_device_modules.append("drivers/misc/mediatek/lens/ois/mot_tele_dw9784/mot_tele_dw9784.ko")
-        mgk_64_k61_device_modules.append("drivers/misc/mediatek/typec/mux/fsa4480-i2c.ko")
         mgk_64_k61_device_modules.append("drivers/regulator/et5904.ko")
         mgk_64_k61_device_modules.append("drivers/regulator/et59041c.ko")
-        mgk_64_k61_device_modules.append("sound/soc/codecs/fs19xx/snd-soc-fs19xx.ko")
+        #audio
+        mgk_64_k61_device_modules.remove("sound/soc/codecs/tfa98xx/snd-soc-tfa98xx.ko")
+        mgk_64_k61_device_modules.append("drivers/misc/mediatek/typec/mux/fsa4480-i2c.ko")
+        mgk_64_k61_device_modules.append("sound/soc/codecs/aw882xx/snd-soc-aw882xx.ko")
 
     if "vienna" in DEFCONFIG_OVERLAYS:
         mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/input/misc/fpc_fps_mmi:fpc_mtk_tee")
