@@ -253,5 +253,17 @@ config MOTO_ET59041C
 	help
 	  This driver supports ETEK ET5904 Four LDO output
 	  support the voltage and current regulators .
+
+config MOTO_AW37004
+	tristate "AW37004 regulator driver"
+	help
+	    This option enables support for the aw37004 power connected
+	    through I2C. Say Y to enable support for the aw37004 .
+
+config MOTO_AW370041C
+	tristate "AW370041c regulator driver"
+	help
+	    This option enables support for the aw370041c power connected
+	    through I2C. Say Y to enable support for the aw370041c .
 endif
 
