@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: GPL-2.0
 /* Copyright (c) 2020 MediaTek Inc. */
 #include <dt-bindings/clock/mt6878-clk.h>
-#include <mediatek/et5904.dtsi>
-#include <mediatek/et59041c.dtsi>
+#include <mediatek/aw37004.dtsi>
+#include <mediatek/aw370041c.dtsi>
 
 &seninf_top {
         seninf_csi_port_2: seninf-csi-port-2 {
@@ -103,20 +103,7 @@
             output-high;
         };
     };
-    camera_pins_cam0_avdd2_0: cam0@4 {
-        pins-cmd-dat {
-            pinmux = <PINMUX_GPIO114__FUNC_GPIO114>;
-            slew-rate = <1>;
-            output-low;
-        };
-    };
-    camera_pins_cam0_avdd2_1: cam0@5 {
-        pins-cmd-dat {
-            pinmux = <PINMUX_GPIO114__FUNC_GPIO114>;
-            slew-rate = <1>;
-            output-high;
-        };
-    };
+
 
     camera_pins_cam1_mclk_off: camera-pins-cam1-mclk-off {
         pins-cmd-dat {
@@ -206,36 +193,8 @@
             output-high;
         };
     };
-    /*
-     camera_pins_cam2_avdd_0: cam2@2 {
-            pins-cmd-dat {
-                    pinmux = <PINMUX_GPIO192__FUNC_GPIO192>;
-                    slew-rate = <1>;
-                    output-low;
-                };
-        };
-    camera_pins_cam2_avdd_1: cam2@3 {
-            pins-cmd-dat {
-                        pinmux = <PINMUX_GPIO192__FUNC_GPIO192>;
-                        slew-rate = <1>;
-                        output-high;
-                };
-        };
-    camera_pins_cam2_dvdd_0: cam2@4 {
-             pins-cmd-dat {
-                    pinmux = <PINMUX_GPIO191__FUNC_GPIO191>;
-                    slew-rate = <1>;
-                    output-low;
-                };
-        };
-    camera_pins_cam2_dvdd_1: cam2@5 {
-            pins-cmd-dat {
-                    pinmux = <PINMUX_GPIO191__FUNC_GPIO191>;
-                    slew-rate = <1>;
-                    output-high;
-                };
-        };
-    */
+
+
     camera_pins_cam4_mclk_off: camera-pins-cam4-mclk-off {
         pins-cmd-dat {
             pinmux = <PINMUX_GPIO93__FUNC_GPIO93>;
@@ -288,23 +247,49 @@
 /* CAMERA GPIO end */
 
 &odm {
-        camera_common_dovdd: camera-common-dovdd {
-                compatible = "regulator-fixed";
-                regulator-name = "camera-common-dovdd";
-                regulator-min-microvolt = <1800000>;
-                regulator-max-microvolt = <1800000>;
-                enable-active-high;
-                vin-supply = <&mt6363_vio18>;
-        };
-        cam_oisvdd_ldo: gpio194-fixed {
+        cam_iovdd_ldo: gpio194-fixed {
             compatible = "regulator-fixed";
-            regulator-name = "vcama_gpio_regulator";
-            regulator-min-microvolt = <2800000>;
-            regulator-max-microvolt = <2800000>;
+            regulator-name = "cam_iovdd_gpio_regulator";
+            regulator-min-microvolt = <1800000>;
+            regulator-max-microvolt = <1800000>;
             enable-active-high;
             gpio = <&pio 194 0x0>;
         };
+        cam_rm_avdd_ldo: gpio153-fixed {
+            compatible = "regulator-fixed";
+            regulator-name = "rm_avdd_gpio_regulator";
+            regulator-min-microvolt = <1800000>;
+            regulator-max-microvolt = <1800000>;
+            enable-active-high;
+            gpio = <&pio 153 0x0>;
+        };
 
+        cam_rm_afdd_ldo: gpio195-fixed {
+            compatible = "regulator-fixed";
+            regulator-name = "rm_afdd_gpio_regulator";
+            regulator-min-microvolt = <2800000>;
+            regulator-max-microvolt = <2800000>;
+            enable-active-high;
+            gpio = <&pio 195 0x0>;
+        };
+
+         cam_rm_avdd2_ldo: gpio30-fixed {
+            compatible = "regulator-fixed";
+            regulator-name = "rm_avdd2_gpio_regulator";
+            regulator-min-microvolt = <2800000>;
+            regulator-max-microvolt = <2800000>;
+            enable-active-high;
+            gpio = <&pio 30 0x0>;
+        };
+
+        cam_f_avdd_ldo: gpio58-fixed {
+            compatible = "regulator-fixed";
+            regulator-name = "f_avdd_gpio_regulator";
+            regulator-min-microvolt = <2800000>;
+            regulator-max-microvolt = <2800000>;
+            enable-active-high;
+            gpio = <&pio 58 0x0>;
+        };
 };
 
 &mtk_composite_v4l2_2 {
@@ -316,26 +301,7 @@
             remote-endpoint = <&main_af>;
         };
     };
-    port@1 {
-        reg = <1>;
-        wide_af_endpoint: endpoint {
-            remote-endpoint = <&wide_af>;
-        };
-    };
 
-    port@2 {
-        reg = <2>;
-        tele_af_endpoint: endpoint {
-            remote-endpoint = <&tele_af>;
-        };
-    };
-
-    port@3 {
-        reg = <3>;
-        tele_ois_endpoint: endpoint {
-            remote-endpoint = <&tele_ois>;
-        };
-    };
 };
 
 &i2c8 {
@@ -361,7 +327,7 @@
 
     sensor0: sensor0@20 {
         compatible = "mediatek,imgsensor";
-        sensor-names = "mot_vienna_imx896_mipi_raw";
+        sensor-names = "mot_scout_imx896_mipi_raw";
         reg = <0x20>;
 
         #thermal-sensor-cells = <0>;
@@ -372,9 +338,7 @@
                 "mclk_6mA",
                 "mclk_8mA",
                 "rst_low",
-                "rst_high",
-                "avdd2_off",
-                "avdd2_on";
+                "rst_high";
 
         pinctrl-0 = <&camera_pins_cam0_mclk_off>;
         pinctrl-1 = <&camera_pins_cam0_mclk_2ma>;
@@ -383,13 +347,12 @@
         pinctrl-4 = <&camera_pins_cam0_mclk_8ma>;
         pinctrl-5 = <&camera_pins_cam0_rst_0>;
         pinctrl-6 = <&camera_pins_cam0_rst_1>;
-        pinctrl-7 = <&camera_pins_cam0_avdd2_0>;
-        pinctrl-8 = <&camera_pins_cam0_avdd2_1>;
 
-        dvdd-supply = <&et5904_ldo1>;
-        avdd-supply = <&et5904_ldo3>;
-        afvdd-supply = <&mt6369_vtp>;
-        dovdd-supply = <&camera_common_dovdd>;
+        dvdd-supply = <&cam_rm_dvdd_ldo>;
+        avdd-supply = <&cam_rm_avdd_ldo>;
+        avdd2-supply = <&cam_rm_avdd2_ldo>;
+        afvdd-supply = <&cam_rm_afdd_ldo>;
+        dovdd-supply = <&cam_iovdd_ldo>;
 
         clocks = <&topckgen_clk CLK_TOP_UVPLL192M_D32>,
             <&topckgen_clk CLK_TOP_UVPLL192M_D16>,
@@ -416,17 +379,11 @@
     status = "okay";
     clock-frequency = <1000000>;
 
-    mtk_camera_eeprom1:camera-eeprom1@51 {
-        compatible = "mediatek,camera_eeprom";
-        reg = <0x51>;
-        status = "okay";
-    };
 
     sensor1: sensor1@10 {
         compatible = "mediatek,imgsensor";
-        sensor-names = "mot_vienna_s5kjd1_mipi_raw";
+        sensor-names = "mot_scout_gc32e1_mipi_raw";
         reg = <0x10>;
-        reindex-match = "mot_vienna_s5kjd1_mipi_raw";
 
         #thermal-sensor-cells = <0>;
 
@@ -444,9 +401,9 @@
         pinctrl-4 = <&camera_pins_cam1_mclk_8ma>;
         pinctrl-5 = <&camera_pins_cam1_rst_0>;
         pinctrl-6 = <&camera_pins_cam1_rst_1>;
-        dvdd-supply = <&et5904_ldo2>;
-        avdd-supply = <&et5904_ldo4>;
-        dovdd-supply = <&camera_common_dovdd>;
+        dvdd-supply = <&cam_f_dvdd_ldo>;
+        avdd-supply = <&cam_f_avdd_ldo>;
+        dovdd-supply = <&cam_iovdd_ldo>;
 
         clocks = <&topckgen_clk CLK_TOP_UVPLL192M_D32>,
             <&topckgen_clk CLK_TOP_UVPLL192M_D16>,
@@ -470,28 +427,11 @@
 &i2c2 {
     status = "okay";
     clock-frequency = <1000000>;
-    camera-af-wide@b {
-        compatible = "mediatek,main2_vcm";
-        reg = <0x0b>;
-        vin-supply = <&mt6369_vio28>;
-        port {
-            wide_af: endpoint {
-                remote-endpoint = <&wide_af_endpoint>;
-            };
-        };
-    };
-
-    mtk_camera_eeprom2:camera-eeprom2@52 {
-        compatible = "mediatek,camera_eeprom";
-        reg = <0x52>;
-        status = "okay";
-    };
 
     sensor2: sensor2@10 {
         compatible = "mediatek,imgsensor";
-        sensor-names = "mot_vienna_gc13a2_mipi_raw";
+        sensor-names = "mot_scout_gc13a2_mipi_raw";
         reg = <0x10>;
-        reindex-match = "mot_vienna_gc13a2_mipi_raw";
 
         #thermal-sensor-cells = <0>;
 
@@ -510,10 +450,9 @@
         pinctrl-5 = <&camera_pins_cam2_rst_0>;
         pinctrl-6 = <&camera_pins_cam2_rst_1>;
 
-        avdd-supply = <&et59041c_ldo3>;
-        dvdd-supply = <&et59041c_ldo1>;
-        afvdd-supply = <&mt6369_vio28>;
-        dovdd-supply = <&camera_common_dovdd>;
+        avdd-supply = <&cam_rw_avdd_ldo>;
+        dvdd-supply = <&cam_rw_dvdd_ldo>;
+        dovdd-supply = <&cam_iovdd_ldo>;
 
         clocks = <&topckgen_clk CLK_TOP_UVPLL192M_D32>,
             <&topckgen_clk CLK_TOP_UVPLL192M_D16>,
@@ -538,57 +477,12 @@
     status = "okay";
     clock-frequency = <1000000>;
 
-    camera-af-tele@a {
-        compatible = "mediatek,main3_vcm";
-        reg = <0x0a>;
-        vdd-supply = <&cam_oisvdd_ldo>;
-        //vin-supply = <&cam_oidvin_ldo>;
-//        pinctrl-names = "vcamaf_off",
-//                "vcamaf_on",
-//                "oisen_off",
-//                "oisen_on";
 
-//        pinctrl-0 = <&camera_pins_cam3_afvdd_0>;
-//        pinctrl-1 = <&camera_pins_cam3_afvdd_1>;
-//        pinctrl-2 = <&camera_pins_cam3_oisen_0>;
-//        pinctrl-3 = <&camera_pins_cam3_oisen_1>;
-
-        status = "okay";
-        port {
-            tele_af: endpoint {
-                remote-endpoint = <&tele_af_endpoint>;
-            };
-        };
-    };
-
-    camera-ois-tele@72 {
-        compatible = "mediatek,mot_tele_dw9784";
-        reg = <0x72>;
-        vdd-supply = <&cam_oisvdd_ldo>;
-        //vin-supply = <&cam_oidvin_ldo>;
-//        pinctrl-names = "afvdd_off",
-//                "afvdd_on",
-//                "oisen_off",
-//                "oisen_on";
-
-//        pinctrl-0 = <&camera_pins_cam3_afvdd_0>;
-//        pinctrl-1 = <&camera_pins_cam3_afvdd_1>;
-//        pinctrl-2 = <&camera_pins_cam3_oisen_0>;
-//        pinctrl-3 = <&camera_pins_cam3_oisen_1>;
-
-        status = "okay";
-        port {
-            tele_ois: endpoint {
-                remote-endpoint = <&tele_ois_endpoint>;
-            };
-        };
-    };
 
     sensor4: sensor4@10 {
         compatible = "mediatek,imgsensor";
-        sensor-names = "mot_vienna_s5k3k1_mipi_raw";
+        sensor-names = "mot_scout_s5k3k1_mipi_raw";
         reg = <0x10>;
-        reindex-match = "mot_vienna_s5k3k1_mipi_raw";
 
         #thermal-sensor-cells = <0>;
 
@@ -606,9 +500,9 @@
         pinctrl-4 = <&camera_pins_cam4_mclk_8ma>;
         pinctrl-5 = <&camera_pins_cam4_rst_0>;
         pinctrl-6 = <&camera_pins_cam4_rst_1>;
-        avdd-supply = <&et59041c_ldo4>;
-        dvdd-supply = <&et59041c_ldo2>;
-        dovdd-supply = <&camera_common_dovdd>;
+        avdd-supply = <&cam_rt_avdd_ldo>;
+        dvdd-supply = <&cam_rt_dvdd_ldo>;
+        dovdd-supply = <&cam_iovdd_ldo>;
 
         clocks = <&topckgen_clk CLK_TOP_UVPLL192M_D32>,
             <&topckgen_clk CLK_TOP_UVPLL192M_D16>,
@@ -628,11 +522,6 @@
         };
     };
 
-    mtk_camera_eeprom4:camera-eeprom4@50 {
-        compatible = "mediatek,camera_eeprom";
-        reg = <0x50>;
-        status = "okay";
-    };
 };
 
 &thermal_zones {

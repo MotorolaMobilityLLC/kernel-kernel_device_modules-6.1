@@ -945,8 +945,8 @@ def get_overlay_modules_list():
         mgk_64_k61_device_modules.append("drivers/gpu/drm/panel/dsi-panel-mot-tm-nt37706-667-1220x2712-dphy-vdo-120hz.ko")
         mgk_64_k61_device_modules.append("drivers/misc/mediatek/flashlight/flashlights-ocp81373.ko")
         mgk_64_k61_device_modules.append("drivers/misc/mediatek/lens/ois/mot_tele_dw9784/mot_tele_dw9784.ko")
-        mgk_64_k61_device_modules.append("drivers/regulator/et5904.ko")
-        mgk_64_k61_device_modules.append("drivers/regulator/et59041c.ko")
+        mgk_64_k61_device_modules.append("drivers/regulator/aw37004-regulator.ko")
+        mgk_64_k61_device_modules.append("drivers/regulator/aw370041c-regulator.ko")
         #audio
         mgk_64_k61_device_modules.remove("sound/soc/codecs/tfa98xx/snd-soc-tfa98xx.ko")
         mgk_64_k61_device_modules.append("drivers/misc/mediatek/typec/mux/fsa4480-i2c.ko")
