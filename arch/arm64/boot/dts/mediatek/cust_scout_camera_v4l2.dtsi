@@ -379,10 +379,9 @@
     status = "okay";
     clock-frequency = <1000000>;
 
-
     sensor1: sensor1@10 {
         compatible = "mediatek,imgsensor";
-        sensor-names = "mot_scout_gc32e1_mipi_raw";
+        sensor-names = "mot_scout_s5kjns_mipi_raw", "mot_scout_gc32e1_mipi_raw";
         reg = <0x10>;
 
         #thermal-sensor-cells = <0>;
