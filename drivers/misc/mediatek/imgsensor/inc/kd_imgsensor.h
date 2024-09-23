@@ -629,6 +629,9 @@
 
 #define MOT_SCOUT_IMX896_SENSOR_ID                        0x0897
 #define SENSOR_DRVNAME_MOT_SCOUT_IMX896_MIPI_RAW          "mot_scout_imx896_mipi_raw"
+#define MOT_SCOUT_S5KJNS_SENSOR_ID                        0x38EE
+#define SENSOR_DRVNAME_MOT_SCOUT_S5KJNS_MIPI_RAW          "mot_scout_s5kjns_mipi_raw"
+
 /*PAS (PixArt Image)*/
 #define SENSOR_DRVNAME_PAS6180_SERIAL_YUV       "pas6180_serial_yuv"
 /*Panasoic*/
