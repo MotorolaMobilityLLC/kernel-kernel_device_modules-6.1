@@ -627,6 +627,8 @@
 #define MOT_VIENNA_GC13A2_VCM_BLAD_SENSOR_ID               0x13a3
 #define SENSOR_DRVNAME_MOT_VIENNA_GC13A2_VCM_BLAD          "mot_vienna_gc13a2_vcm_blad"
 
+#define MOT_SCOUT_IMX896_SENSOR_ID                        0x0897
+#define SENSOR_DRVNAME_MOT_SCOUT_IMX896_MIPI_RAW          "mot_scout_imx896_mipi_raw"
 /*PAS (PixArt Image)*/
 #define SENSOR_DRVNAME_PAS6180_SERIAL_YUV       "pas6180_serial_yuv"
 /*Panasoic*/
