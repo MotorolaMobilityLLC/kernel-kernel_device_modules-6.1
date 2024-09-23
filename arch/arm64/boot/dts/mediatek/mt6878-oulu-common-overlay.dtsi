@@ -88,6 +88,16 @@
 		reg = <0x77>;
 		/* hl7603_vout_voltage = <0x0B>; //3.4v */
 	};
+
+	rt6160@75 {
+		status = "disabled";
+	};
+
+	sgm62110@75 {
+		status = "ok";
+		compatible = "sgm62110";
+		reg = <0x75>;
+	};
 };
 
 

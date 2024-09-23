@@ -1013,6 +1013,7 @@ def get_overlay_modules_list():
         mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/mm_iosched:mm_iosched")
         mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/moto_netopt/skb_latency:skb_latency")
 
+        mgk_64_k61_device_modules.append("drivers/regulator/sgm62110-regulator.ko")
         mgk_64_k61_device_modules.append("drivers/gpu/drm/panel/dsi-panel-mot-dummy-vdo-60hz.ko")
         mgk_64_k61_device_modules.append("drivers/gpu/drm/panel/dsi-panel-mot-dummy-cmd-60hz.ko")
         mgk_64_k61_device_modules.append("drivers/misc/mediatek/lens/ois/mot_dw9784/mot_dw9784.ko")
