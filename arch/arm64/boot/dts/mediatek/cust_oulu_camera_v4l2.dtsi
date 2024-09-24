@@ -304,15 +304,6 @@
             enable-active-high;
             gpio = <&pio 194 0x0>;
         };
-
-        cam_oidvin_ldo: gpio185-fixed {
-            compatible = "regulator-fixed";
-            regulator-name = "vcamd_gpio_regulator";
-            regulator-min-microvolt = <2800000>;
-            regulator-max-microvolt = <2800000>;
-            enable-active-high;
-            gpio = <&pio 185 0x0>;
-        };
 };
 
 &mtk_composite_v4l2_2 {
@@ -550,7 +541,7 @@
         compatible = "mediatek,main3_vcm";
         reg = <0x0a>;
         vdd-supply = <&cam_oisvdd_ldo>;
-        vin-supply = <&cam_oidvin_ldo>;
+        //vin-supply = <&cam_oidvin_ldo>;
 //        pinctrl-names = "vcamaf_off",
 //                "vcamaf_on",
 //                "oisen_off",
@@ -573,7 +564,7 @@
         compatible = "mediatek,mot_tele_dw9784";
         reg = <0x72>;
         vdd-supply = <&cam_oisvdd_ldo>;
-        vin-supply = <&cam_oidvin_ldo>;
+        //vin-supply = <&cam_oidvin_ldo>;
 //        pinctrl-names = "afvdd_off",
 //                "afvdd_on",
 //                "oisen_off",
