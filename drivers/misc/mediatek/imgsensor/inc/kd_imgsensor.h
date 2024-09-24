@@ -637,6 +637,8 @@
 #define SENSOR_DRVNAME_MOT_SCOUT_S5K3K1_MIPI_RAW          "mot_scout_s5k3k1_mipi_raw"
 #define MOT_SCOUT_GC32E1_SENSOR_ID                        0x32e1
 #define SENSOR_DRVNAME_MOT_SCOUT_GC32E1_MIPI_RAW          "mot_scout_gc32e1_mipi_raw"
+#define MOT_SCOUT_S5KJNS_UW_SENSOR_ID                     0x38EF
+#define SENSOR_DRVNAME_MOT_SCOUT_S5KJNS_UW_MIPI_RAW       "mot_scout_s5kjns_uw_mipi_raw"
 
 /*PAS (PixArt Image)*/
 #define SENSOR_DRVNAME_PAS6180_SERIAL_YUV       "pas6180_serial_yuv"
