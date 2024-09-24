@@ -90,7 +90,7 @@
 	//egis spi
 	fingerprint@1 {
 		compatible = "mediatek,fingerprint";
-		reg = <0>;
+		reg = <1>;
 		spi-max-frequency = <8000000>;
 		status = "okay";
 	};
