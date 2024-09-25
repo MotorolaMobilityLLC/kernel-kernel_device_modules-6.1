@@ -14,7 +14,7 @@
 
 
 //#include "mediatek/cust_cybert_camera_v4l2.dtsi"
-//#include "mediatek/cybert-charger.dtsi"
+#include "mediatek/cybert-charger.dtsi"
 #include "mediatek/cybert-fps.dtsi"
 //#include "mediatek/cybert-ntc.dtsi"
 #include "mediatek/cybert-display.dtsi"
@@ -58,6 +58,15 @@
 &therm_intf {
 	/*Vsensor name should be CASE DIFFERENT with the name in config file*/
 	mmi,temperature-names = "BACK_TEMP", "FRONT_TEMP";/*for "back_temp" in config file*/
+};
+
+&i2c5 {
+	hl7603@77 {
+		status = "ok";
+		compatible = "hl7603";
+		reg = <0x77>;
+		/* hl7603_vout_voltage = <0x0B>; //3.4v */
+	};
 };
 
 &i2c0 {
