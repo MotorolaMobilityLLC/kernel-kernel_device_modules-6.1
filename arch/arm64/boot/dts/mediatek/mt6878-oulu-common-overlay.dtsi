@@ -18,6 +18,7 @@
 #include "mediatek/oulu-ntc.dtsi"
 #include "mediatek/oulu-display.dtsi"
 #include "mediatek/oulu-touch.dtsi"
+#include "mediatek/oulu-google-key.dtsi"
 
 &pio {
 	nfc_spi_cs_mode_spi: nfc_spi_cs_mode_spi {

@@ -1,0 +1,27 @@
+/* PINCTRL */
+&key_gpio_default {
+	google-key {
+		pinmux = <PINMUX_GPIO3__FUNC_GPIO3>;
+		input-enable;
+		bias-pull-up;
+	};
+};
+
+/* The element "linux,code" should match ASSIST value in kl file
+   file location:
+       /system/usr/keylayout/Generic.kl
+   key definition:
+       # Linux KEY_ASSISTANT
+       key 583   ASSIST
+
+   So "linux,code" = "583" */
+&gpio_keys {
+	googlekey {
+		label = "google-key";
+		/* Should match the key code of ASSIST in kl file */
+		linux,code = <583>;
+		linux,input-type = <1>;
+		gpios = <&pio 3 1>;
+		debounce-interval = <30>;
+	};
+};
