@@ -1,0 +1,169 @@
+/* Copyright (c) 2023, Motorola Mobility Inc. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
+&mtk_leds {
+	backlight {
+		/delete-property/ max-hw-brightness;
+		/delete-property/ max-brightness;
+		max-brightness = <4080>;
+		max-hw-brightness = <4080>;
+	};
+};
+
+&mipi_tx_config0 {
+	mipi-volt = <11>;
+};
+
+&dsi0 {
+	status = "okay";
+	#address-cells = <1>;
+	#size-cells = <0>;
+	panel1@0 {
+		/delete-property/ compatible;
+		/delete-property/ pm-enable-gpios;
+		/delete-property/ reset-gpios;
+		/delete-property/ gate-ic;
+		/delete-property/ swap-from-dts;
+		/delete-property/ lane-swap-setting;
+		/delete-property/ pn-swap-setting;
+
+                compatible = "mot,dummy,vdo,60hz";
+                reg = <0>;
+                reset-gpios = <&pio 41 0>;
+		pinctrl-names = "default";
+		port {
+			panel_in1: endpoint {
+				remote-endpoint = <&dsi_out>;
+			};
+		};
+	};
+
+	panel2@0 {
+		/delete-property/ compatible;
+		/delete-property/ pm-enable-gpios;
+		/delete-property/ reset-gpios;
+		/delete-property/ gate-ic;
+
+		compatible = "tianma,nt37707,vdo,667";
+		reg = <1>;
+
+                pm-enable-gpios = <&pio 185 0>,
+                          <&pio 186 0>,
+                          <&pio 184 0>;
+                reset-gpios = <&pio 41 0>;
+		pinctrl-names = "default";
+		port {
+			panel_in2: endpoint {
+				remote-endpoint = <&dsi_out2>;
+			};
+		};
+	};
+
+	ports {
+		port {
+			dsi_out: endpoint {
+				remote-endpoint = <&panel_in1>;
+			};
+			dsi_out2: endpoint2 {
+				remote-endpoint = <&panel_in2>;
+			};
+		};
+	};
+};
+
+
+&mtkfb {
+	/delete-property/ pinctrl-names;
+	/delete-property/ pinctrl-0;
+	/delete-property/ pinctrl-1;
+	/delete-property/ pinctrl-2;
+	/delete-property/ pinctrl-3;
+	/delete-property/ pinctrl-4;
+	/delete-property/ pinctrl-5;
+	/delete-property/ pinctrl-6;
+	/delete-property/ pinctrl-7;
+	/delete-property/ pinctrl-8;
+	/delete-property/ pinctrl-9;
+	/delete-property/ pinctrl-10;
+
+	pinctrl-names = "lcm_rst_out0_gpio", "mode_te_te",
+		"oled_vci_en_gpio", "oled_vio_en_gpio",
+		"oled_dvdd_en_gpio";
+
+	pinctrl-0 = <&mtkfb_pins_lcm_rst_out_gpio>;
+	pinctrl-1 = <&mtkfb_pins_lcm_dsi_te>;
+	pinctrl-2 = <&mtkfb_pins_oled_vci_en>;
+	pinctrl-3 = <&mtkfb_pins_oled_vio_en>;
+	pinctrl-4 = <&mtkfb_pins_oled_dvdd_en>;
+
+	status = "okay";
+
+};
+
+
+&pio {
+	mtkfb_pins_oled_vci_en: oled_vci_en_gpio {
+		pins_cmd_dat {
+			pinmux = <PINMUX_GPIO184__FUNC_GPIO184>;
+			slew-rate = <1>;
+			output-low;
+		};
+	};
+
+	mtkfb_pins_oled_vio_en: oled_vio_en_gpio {
+		pins_cmd_dat {
+			pinmux = <PINMUX_GPIO185__FUNC_GPIO185>;
+			slew-rate = <1>;
+			output-low;
+		};
+	};
+
+	mtkfb_pins_oled_dvdd_en: oled_dvdd_en_gpio {
+		pins_cmd_dat {
+			pinmux = <PINMUX_GPIO186__FUNC_GPIO186>;
+			slew-rate = <1>;
+			output-low;
+		};
+	};
+
+	mtkfb_pins_lcm_rst_out_gpio: lcm_rst_out_gpio {
+		pins_cmd_dat {
+			pinmux = <PINMUX_GPIO41__FUNC_GPIO41>;
+			slew-rate = <1>;
+			output-low;
+		};
+	};
+};
+
+&i2c6 {
+	gate_ic: gate-ic@11 {
+		status = "disabled";
+	};
+};
+
+&ps5170 {
+       status = "disabled";
+};
+
+&i2c13 {
+	ps5169: ps5169@30 {
+		compatible = "parade,ps5170";
+		reg = <0x30>;
+		mediatek,vs-voter = <&pmic 0x189a 0x20 1>;
+		pinctrl-names = "enable", "disable";
+		pinctrl-0 = <&ps_enable>;
+		pinctrl-1 = <&ps_disable>;
+
+		status = "okay";
+	};
+};
+

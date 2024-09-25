@@ -1,0 +1,43 @@
+// SPDX-License-Identifier: GPL-2.0
+//
+// Copyright (c) 2023 Motorola Inc.
+
+&pio {
+        uwb_spi_active: uwb_spi_active {
+                pins_cmd_dat {
+                        pinmux = <PINMUX_GPIO46__FUNC_SPI0_CLK>, <PINMUX_GPIO47__FUNC_SPI0_CSB>, <PINMUX_GPIO48__FUNC_SPI0_MI>, <PINMUX_GPIO49__FUNC_SPI0_MO>;
+                        drive-strength = <2>;
+                };
+        };
+
+        uwb_spi_default: uwb_spi_default {
+                pins_cmd_dat {
+                        pinmux = <PINMUX_GPIO46__FUNC_GPIO46>, <PINMUX_GPIO47__FUNC_GPIO47>, <PINMUX_GPIO48__FUNC_GPIO48>, <PINMUX_GPIO49__FUNC_GPIO49>;
+                        slew-rate = <1>;
+                        output-low;
+                };
+        };
+};
+
+&spi0 {
+	status = "okay";
+	qm35@0 {
+		status = "okay";
+		mmi,status = "/chosen", "mmi,uwb", "qorvo";
+		compatible = "qorvo,qm35_spi";
+		reg = <0>;
+		spi-max-frequency = <20000000>;
+		irq-gpios = <&pio 99 IRQ_TYPE_LEVEL_HIGH>;
+		reset-gpios = <&pio 98 1>;
+		pinctrl-names = "spi_active", "spi_default";
+		pinctrl-0 = <&uwb_spi_active>;
+		pinctrl-1 = <&uwb_spi_default>;
+        };
+};
+
+&mt6685_clkbuf {
+        XO-RFCK2B {
+                perms = <0x3ffff>;
+                xo-id = <9>;
+        };
+};
