@@ -5427,6 +5427,10 @@ static int parse_mmi_dt(struct mtk_charger *info, struct device *dev)
 	if(!gpio_is_valid(info->mmi.wls_switch_en))
 		pr_err("mmi wls_switch_en is %d invalid\n", info->mmi.wls_switch_en );
 
+	info->mmi.usb_switch_en = of_get_named_gpio(node, "mmi,mux_usb_switch_en", 0);
+	if(!gpio_is_valid(info->mmi.usb_switch_en))
+		pr_err("mmi usb_switch_en is %d invalid\n", info->mmi.usb_switch_en );
+
 	info->mmi.wls_boost_en = of_get_named_gpio(node, "mmi,mux_wls_boost_en", 0);
 	if(!gpio_is_valid(info->mmi.wls_boost_en))
 		pr_err("mmi wls_boost_en is %d invalid\n", info->mmi.wls_boost_en);
@@ -5897,6 +5901,12 @@ void mmi_init(struct mtk_charger *info)
 				  GPIOF_OUT_INIT_LOW, "mux_wls_switch_en");
 		if (rc  < 0)
 			pr_err(" [%s] Failed to request wls_switch_en gpio, ret:%d", __func__, rc);
+	}
+	if(gpio_is_valid(info->mmi.usb_switch_en)) {
+		rc  = devm_gpio_request_one(&info->pdev->dev, info->mmi.usb_switch_en,
+				  GPIOF_OUT_INIT_LOW, "mux_wls_switch_en");
+		if (rc  < 0)
+			pr_err(" [%s] Failed to request usb_switch_en gpio, ret:%d", __func__, rc);
 	}
 	if(gpio_is_valid(info->mmi.wls_boost_en)) {
 		rc  = devm_gpio_request_one(&info->pdev->dev, info->mmi.wls_boost_en,

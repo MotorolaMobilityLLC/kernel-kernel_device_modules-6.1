@@ -191,6 +191,7 @@ struct pe50_algo_data {
 	int mmi_max_ibat;
 	int mmi_hardreset_cnt;
 	int mmi_hardreset_max_cnt;
+	bool div4_mode;
 };
 
 /* Setting from dtsi */
@@ -300,6 +301,7 @@ extern int pe50_hal_send_ta_hardreset(struct chg_alg_device *alg);
 extern int pe50_hal_init_hardware(struct chg_alg_device *alg,
 				  const char **support_ta, int support_ta_cnt);
 extern int pe50_hal_enable_sw_vbusovp(struct chg_alg_device *alg, bool en);
+extern int pe5_hal_set_operating_mode(struct chg_alg_device *alg, enum chg_idx chgidx, bool en);
 extern int pe50_hal_enable_charging(struct chg_alg_device *alg,
 				    enum chg_idx chgidx, bool en);
 extern int pe50_hal_enable_chip(struct chg_alg_device *alg, enum chg_idx chgidx,
