@@ -876,35 +876,57 @@ static int hvdvchg2_dev_event(struct notifier_block *nb, unsigned long event,
 	return NOTIFY_OK;
 }
 
-#define MMI_MUX(_mos1,  _mos2, _boost, _switch, _chipstate) \
+#define MMI_MUX(_mos1,  _mos2, _boost, _switch, _chipstate,_switch2) \
 { \
 	.typec_mos = _mos1, \
 	.wls_mos = _mos2, \
 	.wls_boost_en = _boost, \
 	.wls_loadswtich_en = _switch, \
 	.wls_chip_en = _chipstate, \
+	.usb_loadswtich_en = _switch2, \
 }
 
 static const struct mmi_mux_configure config_mmi_mux[MMI_MUX_CHANNEL_MAX] = {
-	[MMI_MUX_CHANNEL_NONE] = MMI_MUX(MMI_DVCHG_MUX_CLOSE, MMI_DVCHG_MUX_CLOSE, false, false, true),
-	[MMI_MUX_CHANNEL_TYPEC_CHG] = MMI_MUX(MMI_DVCHG_MUX_CHG_OPEN, MMI_DVCHG_MUX_CLOSE, false, false, false),
-	[MMI_MUX_CHANNEL_TYPEC_OTG] = MMI_MUX(MMI_DVCHG_MUX_OTG_OPEN, MMI_DVCHG_MUX_CLOSE, false, true, false),
-	[MMI_MUX_CHANNEL_WLC_CHG] = MMI_MUX(MMI_DVCHG_MUX_CLOSE, MMI_DVCHG_MUX_CHG_OPEN, false, false, true),
-	[MMI_MUX_CHANNEL_WLC_OTG] = MMI_MUX(MMI_DVCHG_MUX_DISABLE, MMI_DVCHG_MUX_DISABLE, true, false, true),
-	[MMI_MUX_CHANNEL_TYPEC_CHG_WLC_OTG] = MMI_MUX(MMI_DVCHG_MUX_CHG_OPEN, MMI_DVCHG_MUX_CLOSE, true, true, true),
-	[MMI_MUX_CHANNEL_TYPEC_CHG_WLC_CHG] = MMI_MUX(MMI_DVCHG_MUX_CHG_OPEN, MMI_DVCHG_MUX_CLOSE, false, false, false),
-	[MMI_MUX_CHANNEL_TYPEC_OTG_WLC_CHG] = MMI_MUX(MMI_DVCHG_MUX_OTG_OPEN, MMI_DVCHG_MUX_CLOSE, false, true, false),
-	[MMI_MUX_CHANNEL_TYPEC_OTG_WLC_OTG] = MMI_MUX(MMI_DVCHG_MUX_OTG_OPEN, MMI_DVCHG_MUX_CLOSE,  false, false, false),
+	[MMI_MUX_CHANNEL_NONE] = MMI_MUX(MMI_DVCHG_MUX_CLOSE, MMI_DVCHG_MUX_CLOSE, false, false, true, false),
+	[MMI_MUX_CHANNEL_TYPEC_CHG] = MMI_MUX(MMI_DVCHG_MUX_CHG_OPEN, MMI_DVCHG_MUX_CLOSE, false, false, false, false),
+	[MMI_MUX_CHANNEL_TYPEC_OTG] = MMI_MUX(MMI_DVCHG_MUX_OTG_OPEN, MMI_DVCHG_MUX_CLOSE, false, true, false, false),
+	[MMI_MUX_CHANNEL_WLC_CHG] = MMI_MUX(MMI_DVCHG_MUX_CLOSE, MMI_DVCHG_MUX_CHG_OPEN, false, false, true, false),
+	[MMI_MUX_CHANNEL_WLC_OTG] = MMI_MUX(MMI_DVCHG_MUX_DISABLE, MMI_DVCHG_MUX_DISABLE, true, false, true, false),
+	[MMI_MUX_CHANNEL_TYPEC_CHG_WLC_OTG] = MMI_MUX(MMI_DVCHG_MUX_CHG_OPEN, MMI_DVCHG_MUX_CLOSE, true, true, true, false),
+	[MMI_MUX_CHANNEL_TYPEC_CHG_WLC_CHG] = MMI_MUX(MMI_DVCHG_MUX_CHG_OPEN, MMI_DVCHG_MUX_CLOSE, false, false, false, false),
+	[MMI_MUX_CHANNEL_TYPEC_OTG_WLC_CHG] = MMI_MUX(MMI_DVCHG_MUX_OTG_OPEN, MMI_DVCHG_MUX_CLOSE, false, true, false, false),
+	[MMI_MUX_CHANNEL_TYPEC_OTG_WLC_OTG] = MMI_MUX(MMI_DVCHG_MUX_OTG_OPEN, MMI_DVCHG_MUX_CLOSE,  false, false, false, false),
 #ifdef CONFIG_MOTO_CHANNEL_SWITCH
-	[MMI_MUX_CHANNEL_WLC_FW_UPDATE] = MMI_MUX(MMI_DVCHG_MUX_DISABLE, MMI_DVCHG_MUX_CHG_OPEN, false, false, false),
+	[MMI_MUX_CHANNEL_WLC_FW_UPDATE] = MMI_MUX(MMI_DVCHG_MUX_DISABLE, MMI_DVCHG_MUX_CHG_OPEN, false, false, false, false),
 #else
-	[MMI_MUX_CHANNEL_WLC_FW_UPDATE] = MMI_MUX(MMI_DVCHG_MUX_DISABLE, MMI_DVCHG_MUX_DISABLE, false, false, false),
+	[MMI_MUX_CHANNEL_WLC_FW_UPDATE] = MMI_MUX(MMI_DVCHG_MUX_DISABLE, MMI_DVCHG_MUX_DISABLE, false, false, false, false),
 #endif
-	[MMI_MUX_CHANNEL_WLC_FACTORY_TEST] = MMI_MUX(MMI_DVCHG_MUX_CLOSE, MMI_DVCHG_MUX_MANUAL_OPEN, false, false, true),
+	[MMI_MUX_CHANNEL_WLC_FACTORY_TEST] = MMI_MUX(MMI_DVCHG_MUX_CLOSE, MMI_DVCHG_MUX_MANUAL_OPEN, false, false, true, false),
+};
+
+//external otg boost regulator, dual loadswitch solution
+static const struct mmi_mux_configure config_mmi_mux_ext_boost_dual_switch[MMI_MUX_CHANNEL_MAX] = {
+	[MMI_MUX_CHANNEL_NONE] = MMI_MUX(MMI_DVCHG_MUX_CLOSE, MMI_DVCHG_MUX_CLOSE, false, false, true, false),
+	[MMI_MUX_CHANNEL_TYPEC_CHG] = MMI_MUX(MMI_DVCHG_MUX_CHG_OPEN, MMI_DVCHG_MUX_CLOSE, false, false, false, false),
+	[MMI_MUX_CHANNEL_TYPEC_OTG] = MMI_MUX(MMI_DVCHG_MUX_CLOSE, MMI_DVCHG_MUX_CLOSE, true, false, false, true),
+	[MMI_MUX_CHANNEL_WLC_CHG] = MMI_MUX(MMI_DVCHG_MUX_CLOSE, MMI_DVCHG_MUX_CHG_OPEN, false, false, true, false),
+	[MMI_MUX_CHANNEL_WLC_OTG] = MMI_MUX(MMI_DVCHG_MUX_DISABLE, MMI_DVCHG_MUX_DISABLE, true, true, true, false),
+	[MMI_MUX_CHANNEL_TYPEC_CHG_WLC_OTG] = MMI_MUX(MMI_DVCHG_MUX_CHG_OPEN, MMI_DVCHG_MUX_CLOSE, true, true, true, false),
+	[MMI_MUX_CHANNEL_TYPEC_CHG_WLC_CHG] = MMI_MUX(MMI_DVCHG_MUX_CHG_OPEN, MMI_DVCHG_MUX_CLOSE, false, false, false, false),
+	[MMI_MUX_CHANNEL_TYPEC_OTG_WLC_CHG] = MMI_MUX(MMI_DVCHG_MUX_OTG_OPEN, MMI_DVCHG_MUX_CLOSE, false, true, false, false),
+	[MMI_MUX_CHANNEL_TYPEC_OTG_WLC_OTG] = MMI_MUX(MMI_DVCHG_MUX_OTG_OPEN, MMI_DVCHG_MUX_CLOSE,  false, false, false, false),
+#ifdef CONFIG_MOTO_CHANNEL_SWITCH
+	[MMI_MUX_CHANNEL_WLC_FW_UPDATE] = MMI_MUX(MMI_DVCHG_MUX_DISABLE, MMI_DVCHG_MUX_DISABLE, true, true, false, false),//true, true, true, false),
+#else
+	[MMI_MUX_CHANNEL_WLC_FW_UPDATE] = MMI_MUX(MMI_DVCHG_MUX_DISABLE, MMI_DVCHG_MUX_DISABLE, true, true, true, false),
+#endif
+	[MMI_MUX_CHANNEL_WLC_FACTORY_TEST] = MMI_MUX(MMI_DVCHG_MUX_CLOSE, MMI_DVCHG_MUX_MANUAL_OPEN, false, false, true, false),
 };
 
 static int mmi_mux_config(struct mtk_charger *info, enum mmi_mux_channel channel)
 {
+	struct mmi_mux_configure *mmi_mux = (struct mmi_mux_configure *)config_mmi_mux ;
+
 	if (info->dvchg1_dev == NULL) {
 		info->dvchg1_dev = get_charger_by_name("primary_dvchg");
 		if (info->dvchg1_dev)
@@ -914,20 +936,26 @@ static int mmi_mux_config(struct mtk_charger *info, enum mmi_mux_channel channel
 		}
 	}
 
+	if(gpio_is_valid(info->mmi.wls_boost_en) && gpio_is_valid(info->mmi.wls_switch_en) && gpio_is_valid(info->mmi.usb_switch_en)) {
+		mmi_mux = (struct mmi_mux_configure *)config_mmi_mux_ext_boost_dual_switch;
+		pr_info("mmi_mux_config using config_mmi_mux_ext_boost_dual_switch \n");
+	}
+
 	if (!info->mmi.factory_mode) {
 		struct chg_alg_device *alg;
 
 		alg = get_chg_alg_by_name("wlc");
 		if ((NULL != alg) && (alg->alg_id & info->fast_charging_indicator))
-			chg_alg_set_prop(alg, ALG_WLC_STATE, config_mmi_mux[channel].wls_chip_en);
+			chg_alg_set_prop(alg, ALG_WLC_STATE, mmi_mux[channel].wls_chip_en);
 	}
 	charger_dev_config_mux(info->dvchg1_dev,
-		config_mmi_mux[channel].typec_mos, config_mmi_mux[channel].wls_mos);
+		mmi_mux[channel].typec_mos, mmi_mux[channel].wls_mos);
 	if(gpio_is_valid(info->mmi.wls_boost_en))
-		gpio_set_value(info->mmi.wls_boost_en, config_mmi_mux[channel].wls_boost_en);
+		gpio_set_value(info->mmi.wls_boost_en, mmi_mux[channel].wls_boost_en);
 	if(gpio_is_valid(info->mmi.wls_switch_en))
-		gpio_set_value(info->mmi.wls_switch_en, config_mmi_mux[channel].wls_loadswtich_en);
-
+		gpio_set_value(info->mmi.wls_switch_en, mmi_mux[channel].wls_loadswtich_en);
+	if(gpio_is_valid(info->mmi.usb_switch_en))
+		gpio_set_value(info->mmi.usb_switch_en, mmi_mux[channel].usb_loadswtich_en);
 	return 0;
 }
 

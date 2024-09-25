@@ -132,6 +132,7 @@ struct mmi_mux_configure {
 	bool wls_boost_en;
 	bool wls_loadswtich_en;
 	bool wls_chip_en;
+	bool usb_loadswtich_en;
 };
 
 /* for external qc protocol ic such as wt6670f*/
@@ -436,6 +437,7 @@ struct mmi_params {
 	bool			enable_mux;
 	struct			mmi_mux_chan mux_channel;
 	int			wls_switch_en;
+	int			usb_switch_en;
 	int			wls_boost_en;
 	int			switch_enn_en;
 	int			charge_rate;

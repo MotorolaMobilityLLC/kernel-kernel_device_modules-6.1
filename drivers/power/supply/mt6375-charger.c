@@ -25,6 +25,7 @@
 
 #include "charger_class.h"
 #include "mtk_charger.h"
+#include <linux/of_gpio.h>
 
 static bool dbg_log_en;
 module_param(dbg_log_en, bool, 0644);
@@ -294,6 +295,7 @@ struct mt6375_chg_data {
 	struct adapter_device *pd_adapter;
 
 	struct dcp15w dcp15w;
+	int external_otg_boost;
 };
 
 struct mt6375_chg_platform_data {
@@ -827,6 +829,14 @@ static int mt6375_chg_is_otg_enabled(struct mt6375_chg_data *ddata, bool *en)
 {
 	int ret = 0;
 	u32 val = 0;
+
+	if(ddata->external_otg_boost >= 0) {
+		if(gpio_is_valid(ddata->external_otg_boost)) {
+			*en = gpio_get_value(ddata->external_otg_boost);
+			dev_err(ddata->dev, " mt6375_chg_is_otg_enabled  external boost: %d\n",*en);
+		}
+		return 0;
+	}
 
 	ret = mt6375_chg_field_get(ddata, F_OTG_EN, &val);
 	if (ret < 0)
@@ -1903,6 +1913,10 @@ static int otp_mos_reg_parse_dt(struct mt6375_chg_data *ddata)
 	pr_info("%s get otp-mos-regulator-name:%s len:%ld\n", __func__,
 			ddata->otp_mos_reg_name, strlen(ddata->otp_mos_reg_name));
 
+	ddata->external_otg_boost = of_get_named_gpio(np, "mmi,external_otg_boost", 0);
+	if(!gpio_is_valid(ddata->external_otg_boost ))
+		pr_err("mmi external_otg_boost is %d invalid\n", ddata->external_otg_boost  );
+
 	return 0;
 }
 
@@ -2283,6 +2297,11 @@ static int mt6375_config_otg(struct charger_device *chgdev, u32 otg_vol, u32 otg
 		return -EINVAL;
 	}
 
+	if(ddata->external_otg_boost >= 0) {
+		dev_err(ddata->dev, " mt6375_config_otg  no need config external boost\n");
+		return 0;
+	}
+
 	if (IS_ERR_OR_NULL(ddata->otg)) {
 		ddata->otg = devm_regulator_get(ddata->dev, "usb-otg-vbus");
 		if (IS_ERR_OR_NULL(ddata->otg)) {
@@ -2315,6 +2334,14 @@ static int mt6375_enable_otg(struct charger_device *chgdev, bool en)
 {
 	int ret = 0;
 	struct mt6375_chg_data *ddata = charger_get_data(chgdev);
+
+	if(ddata->external_otg_boost >= 0) {
+		if(gpio_is_valid(ddata->external_otg_boost)) {
+			gpio_set_value(ddata->external_otg_boost, en);
+			dev_err(ddata->dev, " mt6375_enable_otg  external boost: %d\n",en);
+		}
+		return 0;
+	}
 
 	if (IS_ERR_OR_NULL(ddata->otg)) {
 		ddata->otg = devm_regulator_get(ddata->dev, "usb-otg-vbus");
@@ -3876,7 +3903,16 @@ static int mt6375_chg_probe(struct platform_device *pdev)
 	}
 
 	ddata->dev = dev;
+	ddata->external_otg_boost = -1;
 	otp_mos_reg_parse_dt(ddata);
+
+	if(gpio_is_valid(ddata->external_otg_boost)) {
+		ret  = devm_gpio_request_one(ddata->dev, ddata->external_otg_boost,
+				  GPIOF_OUT_INIT_LOW, "external_otg_boost");
+		if (ret  < 0)
+			pr_err(" [%s] Failed to request external_otg_boost gpio, ret:%d", __func__, ret);
+	}
+
 	init_completion(&ddata->pe_done);
 	init_completion(&ddata->aicc_done);
 	mutex_init(&ddata->attach_lock);
