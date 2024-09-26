@@ -3402,6 +3402,10 @@ enum tfa_error tfa_dev_start(struct tfa_device *tfa, int next_profile, int vstep
 
 			/* Go to the Operating state */
 			tfa_dev_set_state(tfa, TFA_STATE_OPERATING | TFA_STATE_MUTE, 0);
+			if ((tfa->revid & 0xffff) == 0x3a65 || (tfa->revid & 0xffff) == 0x3a64){
+				tfa_set_bf(tfa, 0xf090, 0);
+				pr_info("Info: 0xf090 = %d line:%d \n", tfa_get_bf(tfa, 0xf090), __LINE__);
+			}
 		}
 	}
 	active_profile = tfa_dev_get_swprof(tfa);

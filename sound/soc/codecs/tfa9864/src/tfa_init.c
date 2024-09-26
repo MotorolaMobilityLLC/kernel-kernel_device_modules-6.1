@@ -1255,8 +1255,6 @@ static enum Tfa98xx_Error tfa986x_specific(struct tfa_device *tfa)
         return rc;
     }
 
-	tfa_set_bf(tfa, 0xf090, 0);
-
 	if (((rev & 0xff) == 0x66) && tfa_get_bf(tfa, 0xf3b1)) {
 		rev = rev - 1;  /* To > 0x65 */
 		/* For N/MN variant, bits from 19..16 are used*/
@@ -1304,6 +1302,10 @@ static enum Tfa98xx_Error tfa986x_specific(struct tfa_device *tfa)
 	xor = value ^ 0x005A;
 	error = tfa_reg_write(tfa, 0xA0, xor);
 	tfa98xx_key2(tfa, 0);
+
+	if ((tfa->revid & 0xffff) == 0x3a65 || (tfa->revid & 0xffff) == 0x3a64){
+		tfa->revid = (1 << 16) | (tfa->revid & 0xffff);
+	}
 
 	switch (tfa->revid) {
 	case 0x1a64:/**TFA9864 N1A1**/
@@ -1608,6 +1610,7 @@ static enum Tfa98xx_Error tfa986x_specific(struct tfa_device *tfa)
 		pr_info("\nWarning: Optimal settings not found for device with revid = 0x%x \n", tfa->revid);
 		break;
 	}
+	pr_info("Info: found  device with revid = 0x%x \n", tfa->revid);
 
 	tfa_set_bf(tfa, TFA986X_BF_PWDN, 1); /* 1 = off */
 	rc = tfa_wait4manstate(tfa, TFA986X_BF_MANSTATE, 0, 50);
