@@ -556,12 +556,16 @@
 &i2c3 {
     #address-cells = <1>;
     #size-cells = <0>;
-    aw36518:aw36518@63 {
-        compatible = "mediatek,aw36518";
+    sgm37864:sgm37864@63 {
+        compatible = "mediatek,sgm37864";
         #address-cells = <1>;
         #size-cells = <0>;
         reg = <0x63>;
         #cooling-cells = <2>;
+        pinctrl-names = "default", "hwen-high", "hwen-low";
+        pinctrl-0 = <&sgm37864_pins_default>;
+        pinctrl-1 = <&sgm37864_pins_hwen_high>;
+        pinctrl-2 = <&sgm37864_pins_hwen_low>;
         status = "okay";
         flash@0{
             reg = <0>;
@@ -577,6 +581,30 @@
     };
 };
 
+
+
+&pio {
+    sgm37864_pins_default: default {
+    };
+
+    sgm37864_pins_hwen_high: hwen-high {
+        pins-cmd-dat {
+            pinmux = <PINMUX_GPIO153__FUNC_GPIO153>;
+            slew-rate = <1>;
+            output-high;
+        };
+    };
+
+    sgm37864_pins_hwen_low: hwen-low {
+        pins-cmd-dat {
+            pinmux = <PINMUX_GPIO153__FUNC_GPIO153>;
+            slew-rate = <1>;
+            output-low;
+        };
+    };
+};
+
+
 &mtk_composite_v4l2_1 {
     #address-cells = <1>;
     #size-cells = <0>;
@@ -587,4 +615,3 @@
         };
     };
 };
-
