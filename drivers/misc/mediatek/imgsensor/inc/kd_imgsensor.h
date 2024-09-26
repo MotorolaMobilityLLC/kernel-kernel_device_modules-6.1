@@ -642,6 +642,8 @@
 
 #define MOT_OULU_S5K3K1_SENSOR_ID                         0x30B3
 #define SENSOR_DRVNAME_MOT_OULU_S5K3K1_MIPI_RAW           "mot_oulu_s5k3k1_mipi_raw"
+#define MOT_OULU_IMX896_SENSOR_ID                         0x0898
+#define SENSOR_DRVNAME_MOT_OULU_IMX896_MIPI_RAW           "mot_oulu_imx896_mipi_raw"
 
 /*PAS (PixArt Image)*/
 #define SENSOR_DRVNAME_PAS6180_SERIAL_YUV       "pas6180_serial_yuv"
