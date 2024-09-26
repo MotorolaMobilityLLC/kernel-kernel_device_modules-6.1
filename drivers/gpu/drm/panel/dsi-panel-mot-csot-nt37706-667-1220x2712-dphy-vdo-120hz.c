@@ -87,7 +87,7 @@ static int nt37706_vdo_range_bpg_ofs[15] = {2, 0, 0, -2, -4, -6, -8, -8, -8, -10
 	lcm_dcs_write(ctx, d, ARRAY_SIZE(d));\
 })
 
-#define APL_THRESHOLD 14056
+#define APL_THRESHOLD 16000
 
 static inline struct lcm *panel_to_lcm(struct drm_panel *panel)
 {
@@ -151,74 +151,97 @@ static void lcm_dcs_write(struct lcm *ctx, const void *data, size_t len)
 
 static void lcm_panel_init(struct lcm *ctx)
 {
-    lcm_dcs_write_seq_static(ctx, 0xF0, 0x55,0xAA,0x52,0x08,0x00);
-    lcm_dcs_write_seq_static(ctx, 0xB5, 0x80);
-    lcm_dcs_write_seq_static(ctx, 0x6F, 0x02);
-    lcm_dcs_write_seq_static(ctx, 0xB5, 0x3D,0xC6);
-    lcm_dcs_write_seq_static(ctx, 0x6F, 0x23);
-    lcm_dcs_write_seq_static(ctx, 0xB5, 0x3D,0x06);
-    lcm_dcs_write_seq_static(ctx, 0x6F, 0x06);
-    lcm_dcs_write_seq_static(ctx, 0xB5, 0x7F,0x48,0x2A,0x4F,0x51,0x00);
-    lcm_dcs_write_seq_static(ctx, 0x6F, 0x0C);
-    lcm_dcs_write_seq_static(ctx, 0xB5, 0x48,0x2C,0x50,0x00,0x00);
-    lcm_dcs_write_seq_static(ctx, 0x6F, 0x11);
-    lcm_dcs_write_seq_static(ctx, 0xB5, 0x2A,0x2A,0x2A,0x2A);
-    lcm_dcs_write_seq_static(ctx, 0x6F, 0x18);
-    lcm_dcs_write_seq_static(ctx, 0xB5, 0x00,0x00,0x00,0x00,0x00);
-    lcm_dcs_write_seq_static(ctx, 0x6F, 0x1D);
-    lcm_dcs_write_seq_static(ctx, 0xB5, 0x00,0x00,0x00,0x00,0x00);
-    lcm_dcs_write_seq_static(ctx, 0x6F, 0x5C);
-    lcm_dcs_write_seq_static(ctx, 0xB5, 0x01);
-    lcm_dcs_write_seq_static(ctx, 0x6F, 0x96);
-    lcm_dcs_write_seq_static(ctx, 0xB5, 0x4F);
-    lcm_dcs_write_seq_static(ctx, 0xFF, 0xAA,0x55,0xA5,0x80);
-    lcm_dcs_write_seq_static(ctx, 0x6F, 0x0B);
-    lcm_dcs_write_seq_static(ctx, 0xF5, 0x02);
-    lcm_dcs_write_seq_static(ctx, 0x6F, 0x46);
-    lcm_dcs_write_seq_static(ctx, 0xF4, 0x07,0x09);
-    lcm_dcs_write_seq_static(ctx, 0x6F, 0x4A);
-    lcm_dcs_write_seq_static(ctx, 0xF4, 0x08,0x0A);
-    lcm_dcs_write_seq_static(ctx, 0x6F, 0x56);
-    lcm_dcs_write_seq_static(ctx, 0xF4, 0x44,0x44);
-    lcm_dcs_write_seq_static(ctx, 0x6F, 0x18);
-    lcm_dcs_write_seq_static(ctx, 0xF4, 0x73);
-    lcm_dcs_write_seq_static(ctx, 0x6F, 0x2A);
-    lcm_dcs_write_seq_static(ctx, 0xF4, 0x08);
-    lcm_dcs_write_seq_static(ctx, 0x6F, 0x32);
-    lcm_dcs_write_seq_static(ctx, 0xF2, 0x00);
-    lcm_dcs_write_seq_static(ctx, 0x6F, 0x32);
-    lcm_dcs_write_seq_static(ctx, 0xF9, 0x20);
-    lcm_dcs_write_seq_static(ctx, 0x17, 0x03);
-    lcm_dcs_write_seq_static(ctx, 0x71, 0x00);
-    lcm_dcs_write_seq_static(ctx, 0x8D, 0x00,0x00,0x04,0xC3,0x00,0x00,0x0A,0x97);
-    lcm_dcs_write_seq_static(ctx, 0x03, 0x00);
-    lcm_dcs_write_seq_static(ctx, 0x88, 0x01,0x02,0x61,0x09,0x87);
-    lcm_dcs_write_seq_static(ctx, 0x2A, 0x00,0x00,0x04,0xC3);
-    lcm_dcs_write_seq_static(ctx, 0x2B, 0x00,0x00,0x0A,0x97);
-    lcm_dcs_write_seq_static(ctx, 0x90, 0x03);
-    lcm_dcs_write_seq_static(ctx, 0x6F, 0x01);
-    lcm_dcs_write_seq_static(ctx, 0x90, 0x43);
-    lcm_dcs_write_seq_static(ctx, 0x91, 0xAB,0x28,0x00,0x0C,0xC2,0x00,0x02,0x32,0x01,0x31,0x00,0x08,0x08,0xBB,0x07,0x7B,0x10,0xF0);
-    lcm_dcs_write_seq_static(ctx, 0x3B, 0x00,0x18,0x00,0x2C,0x00,0x18,0x02,0x58,0x00,0x18,0x06,0xB0,0x00,0x18,0x0F,0x60);
-    lcm_dcs_write_seq_static(ctx, 0x6F, 0x10);
-    lcm_dcs_write_seq_static(ctx, 0x3B, 0x00,0x18,0x02,0x58);
-    lcm_dcs_write_seq_static(ctx, 0xF0, 0x55,0xAA,0x52,0x08,0x01);
-    lcm_dcs_write_seq_static(ctx, 0x6F, 0x03);
-    lcm_dcs_write_seq_static(ctx, 0xC7, 0x47);
-    lcm_dcs_write_seq_static(ctx, 0x5F, 0x80,0x00);
-    lcm_dcs_write_seq_static(ctx, 0xA9, 0x01,0x00,0x2F,0x00,0x00,0x01,0x02,0x00,0xDF,0x38,0x39,0x0C,0xF4,0x02,0x00,0xDF,0x31,0x32,0x01,0x1A);
-    lcm_dcs_write_seq_static(ctx, 0x35, 0x00);
-    lcm_dcs_write_seq_static(ctx, 0x51, 0x00,0x00);
-    lcm_dcs_write_seq_static(ctx, 0x6F, 0x04);
-    lcm_dcs_write_seq_static(ctx, 0x51, 0x00,0x00);
-    lcm_dcs_write_seq_static(ctx, 0x53, 0x20);
-    lcm_dcs_write_seq_static(ctx, 0x81, 0x01,0x19);
-    lcm_dcs_write_seq_static(ctx, 0xF0, 0x55,0xAA,0x52,0x08,0x04);
-    lcm_dcs_write_seq_static(ctx, 0x6F, 0x1F);
-    lcm_dcs_write_seq_static(ctx, 0xCB, 0x80);
+	lcm_dcs_write_seq_static(ctx, 0xFF, 0xAA, 0x55, 0xA5, 0x80);
+	//SD Optimize
+	lcm_dcs_write_seq_static(ctx, 0x6F, 0x46);
+	lcm_dcs_write_seq_static(ctx, 0xF4, 0x07, 0x09);
+	lcm_dcs_write_seq_static(ctx, 0x6F, 0x4A);
+	lcm_dcs_write_seq_static(ctx, 0xF4, 0x08, 0x0A);
+	lcm_dcs_write_seq_static(ctx, 0x6F, 0x56);
+	lcm_dcs_write_seq_static(ctx, 0xF4, 0x44, 0x44);
+
+	//dynamic isop
+	lcm_dcs_write_seq_static(ctx, 0x6F, 0x18);
+	lcm_dcs_write_seq_static(ctx, 0xF4, 0x73);
+
+	//SD timing optimize
+	lcm_dcs_write_seq_static(ctx, 0x6F, 0x2A);
+	lcm_dcs_write_seq_static(ctx, 0xF4, 0x08);
+
+	lcm_dcs_write_seq_static(ctx, 0xFF, 0xAA, 0x55, 0xA5, 0x81);
+	//hs_drop_detect_en = 1, hs_drop_detect_period[2:0] = 4
+	lcm_dcs_write_seq_static(ctx, 0x6F, 0x3C);
+	lcm_dcs_write_seq_static(ctx, 0xF5, 0x84);
+
+	lcm_dcs_write_seq_static(ctx, 0xF0, 0x55, 0xAA, 0x52, 0x08, 0x00);
+	//Source CONTROL in V-Porch HIZ
+	lcm_dcs_write_seq_static(ctx, 0xC5, 0x22, 0x22);
+
+	//FPR_LHBM_RGB
+	lcm_dcs_write_seq_static(ctx, 0X6F, 0X8B);
+	lcm_dcs_write_seq_static(ctx, 0XDF, 0X2F, 0x0C, 0X2F, 0X0C, 0X2F, 0X0C);
+
+	////////////////////////////////////-CMD1//////////////////////////////////-
+	lcm_dcs_write_seq_static(ctx, 0x17, 0x03);
+	//Video mod AOD setting
+	lcm_dcs_write_seq_static(ctx, 0x71, 0x00);
+	lcm_dcs_write_seq_static(ctx, 0x8D, 0x00, 0x00, 0x04, 0xAF, 0x00, 0x00, 0x0A, 0x6D);
+
+	//Data Scaling On
+	//lcm_dcs_write_seq_static(ctx, 0xF0, 0x55, 0xAA, 0x52, 0x08, 0x08);
+	//lcm_dcs_write_seq_static(ctx, 0xC1, 0xAE, 0xFF);
+
+	lcm_dcs_write_seq_static(ctx, 0x2A, 0x00, 0x00, 0x04, 0xC3);
+	lcm_dcs_write_seq_static(ctx, 0x2B, 0x00, 0x00, 0x0A, 0x97);
+
+	//VESA Setting (DSCv1.1, 2DEC, slice height=12
+	lcm_dcs_write_seq_static(ctx, 0x03, 0x00);
+	lcm_dcs_write_seq_static(ctx, 0x90, 0x03);
+	lcm_dcs_write_seq_static(ctx, 0x6F, 0x01);
+	lcm_dcs_write_seq_static(ctx, 0x90, 0x43);
+	lcm_dcs_write_seq_static(ctx, 0x91, 0xAB, 0x28, 0x00, 0x0C, 0xC2, 0x00, 0x02, 0x32, 0x01, 0x31, 0x00, 0x08, 0x08, 0xBB, 0x07, 0x7B, 0x10, 0xF0);
+
+	//DFC_MODE_SEL[2:0]=0,FCON[2:0]=0
+	lcm_dcs_write_seq_static(ctx, 0x2F, 0x00);
+	lcm_dcs_write_seq_static(ctx, 0x26, 0x00);
+
+	lcm_dcs_write_seq_static(ctx, 0x5F, 0x00);
+
+	//BC_CTRL DBV[13:0]is active
+	lcm_dcs_write_seq_static(ctx, 0x53, 0x20);
+
+	//the vertical back porch lines for external video mode input (ref. 120Hz
+	lcm_dcs_write_seq_static(ctx, 0x3B, 0x00, 0x0F, 0x00, 0x39, 0x00, 0x0F, 0x03, 0xD9, 0x00, 0x0F, 0x0B, 0x19, 0x00, 0x0F, 0x10, 0x89);
+
+	//the vertical back porch lines for external video mode input (ref. 144Hz
+	//lcm_dcs_write_seq_static(ctx, 0x3B, 0x00, 0x18, 0x00, 0x35, 0x00, 0x18, 0x02, 0x61, 0x00, 0x18, 0x06, 0xB9, 0x00, 0x18, 0x1A, 0x19);
+
+	//VFP_EXT_IDLE, VBP_EXT_IDLE (ref. 120Hz
+	lcm_dcs_write_seq_static(ctx, 0x6F, 0x10);
+	lcm_dcs_write_seq_static(ctx, 0x3B, 0x00, 0x18, 0x00, 0x30);
+
+	//VFP_EXT_IDLE, VBP_EXT_IDLE (ref. 144Hz
+	//lcm_dcs_write_seq_static(ctx, 0x6F, 0x10);
+	//lcm_dcs_write_seq_static(ctx, 0x3B, 0x00, 0x18, 0x00, 0x35);
+
+	//TE on
+	lcm_dcs_write_seq_static(ctx, 0x35, 0x00);
+
+	//DBV_IDLE
+	lcm_dcs_write_seq_static(ctx, 0x6F, 0x04);
+	lcm_dcs_write_seq_static(ctx, 0x51, 0x3F, 0xFC);
+
+	//3D LUT OFF
+	lcm_dcs_write_seq_static(ctx, 0x57, 0x00);
+
+	//FPR1_CENTER_X[11:0] = 610, FPR1_CENTER_Y[12:0] = 2440
+	lcm_dcs_write_seq_static(ctx, 0x88, 0x01, 0x02, 0x62, 0x09, 0x88);
+
+	// APL VDFOFF
+	lcm_dcs_write_seq_static(ctx, 0x5F, 0x00, 0x04);
 
 	lcm_dcs_write_seq_static(ctx, 0x11);
-	usleep_range(120 * 1000, 121 * 1000);
+	usleep_range(100 * 1000, 101 * 1000);
 	lcm_dcs_write_seq_static(ctx, 0x29);
 
 	atomic_set(&ctx->hbm_mode, 0);
@@ -367,34 +390,55 @@ static int lcm_enable(struct drm_panel *panel)
 }
 
 #define FHDP_FRAME_WIDTH    (1220)
-#define FHDP_HFP            (16)
+#define FHDP_HFP            (102)
 #define FHDP_HSA            (8)
-#define FHDP_HBP            (10)
+#define FHDP_HBP            (8)
 #define FHDP_HTOTAL         (FHDP_FRAME_WIDTH + FHDP_HFP + FHDP_HSA + FHDP_HBP)
 #define FHDP_FRAME_HEIGHT   (2712)
-#define FHDP_VFP_120        (600)
-#define FHDP_VFP_90         (1712)
-#define FHDP_VFP_60         (3936)
+#define FHDP_VFP_120        (57)
+#define FHDP_VFP_90         (985)
+#define FHDP_VFP_60         (2841)
+#define FHDP_VFP_48         (4233)
 #define FHDP_VSA            (2)
-#define FHDP_VBP            (22)
+#define FHDP_VBP            (13)
 #define FHDP_VTOTAL_120     (FHDP_FRAME_HEIGHT + FHDP_VFP_120 + FHDP_VSA + FHDP_VBP)
 #define FHDP_VTOTAL_90      (FHDP_FRAME_HEIGHT + FHDP_VFP_90 + FHDP_VSA + FHDP_VBP)
 #define FHDP_VTOTAL_60      (FHDP_FRAME_HEIGHT + FHDP_VFP_60 + FHDP_VSA + FHDP_VBP)
+#define FHDP_VTOTAL_48      (FHDP_FRAME_HEIGHT + FHDP_VFP_48 + FHDP_VSA + FHDP_VBP)
 #define FHDP_FRAME_TOTAL_120 (FHDP_VTOTAL_120 * FHDP_HTOTAL)
 #define FHDP_FRAME_TOTAL_90  (FHDP_VTOTAL_90 * FHDP_HTOTAL)
 #define FHDP_FRAME_TOTAL_60  (FHDP_VTOTAL_60 * FHDP_HTOTAL)
+#define FHDP_FRAME_TOTAL_48  (FHDP_VTOTAL_48 * FHDP_HTOTAL)
 #define FHDP_VREFRESH_120   (120)
 #define FHDP_VREFRESH_90    (90)
 #define FHDP_VREFRESH_60    (60)
+#define FHDP_VREFRESH_48    (48)
 #define FHDP_CLK_120_X10    ((FHDP_FRAME_TOTAL_120 * FHDP_VREFRESH_120) / 100)
 #define FHDP_CLK_90_X10     ((FHDP_FRAME_TOTAL_90 * FHDP_VREFRESH_90) / 100)
 #define FHDP_CLK_60_X10     ((FHDP_FRAME_TOTAL_60 * FHDP_VREFRESH_60) / 100)
+#define FHDP_CLK_48_X10     ((FHDP_FRAME_TOTAL_48 * FHDP_VREFRESH_48) / 100)
 #define FHDP_CLK_120		   (((FHDP_CLK_120_X10 % 10) != 0) ?             \
 			(FHDP_CLK_120_X10 / 10 + 1) : (FHDP_CLK_120_X10 / 10))
 #define FHDP_CLK_90		   (((FHDP_CLK_90_X10 % 10) != 0) ?             \
 				(FHDP_CLK_90_X10 / 10 + 1) : (FHDP_CLK_90_X10 / 10))
 #define FHDP_CLK_60		   (((FHDP_CLK_60_X10 % 10) != 0) ?             \
 				(FHDP_CLK_60_X10 / 10 + 1) : (FHDP_CLK_60_X10 / 10))
+#define FHDP_CLK_48		   (((FHDP_CLK_48_X10 % 10) != 0) ?             \
+				(FHDP_CLK_48_X10 / 10 + 1) : (FHDP_CLK_48_X10 / 10))
+/*
+static const struct drm_display_mode mode_48hz = {
+	.clock = FHDP_CLK_48,
+	.hdisplay = FHDP_FRAME_WIDTH,
+	.hsync_start = FHDP_FRAME_WIDTH + FHDP_HFP,//HFP
+	.hsync_end = FHDP_FRAME_WIDTH + FHDP_HFP + FHDP_HSA,//HSA
+	.htotal = FHDP_FRAME_WIDTH + FHDP_HFP + FHDP_HSA + FHDP_HBP,//HBP
+	.vdisplay = FHDP_FRAME_HEIGHT,
+	.vsync_start = FHDP_FRAME_HEIGHT + FHDP_VFP_48,//VFP
+	.vsync_end = FHDP_FRAME_HEIGHT + FHDP_VFP_48 + FHDP_VSA,//VSA
+	.vtotal = FHDP_FRAME_HEIGHT + FHDP_VFP_48 + FHDP_VSA + FHDP_VBP,//VBP
+};
+*/
+
 static const struct drm_display_mode mode_60hz = {
 	.clock = FHDP_CLK_60,
 	.hdisplay = FHDP_FRAME_WIDTH,
@@ -432,8 +476,9 @@ static const struct drm_display_mode mode_120hz = {
 };
 
 #if defined(CONFIG_MTK_PANEL_EXT)
-static struct mtk_panel_params ext_params_60hz = {
-	.pll_clk = 551,
+#if 0
+static struct mtk_panel_params ext_params_48hz = {
+	.pll_clk = 615,
 	//.vfp_low_power = 4180,
 	.cust_esd_check = 1,
 	.esd_check_enable = 1,
@@ -442,9 +487,9 @@ static struct mtk_panel_params ext_params_60hz = {
 		.count = 1,
 		.para_list[0] = 0x9C,
 	},
-
-	.physical_width_um = 69000,
-	.physical_height_um = 154000,
+	.lcm_color_mode = MTK_DRM_COLOR_MODE_DISPLAY_P3,
+	.physical_width_um = 69540,
+	.physical_height_um = 154454,
 	.lp_perline_en = 1,
 	.output_mode = MTK_PANEL_DSC_SINGLE_PORT,
 
@@ -453,7 +498,7 @@ static struct mtk_panel_params ext_params_60hz = {
 		.ver = 17,
 		.slice_mode = 1,
 		.rgb_swap = 0,
-		.dsc_cfg = 2088,
+		.dsc_cfg = 34,
 		.rct_on = 1,
 		.bit_per_channel = 10,
 		.dsc_line_buf_depth = 11,
@@ -492,17 +537,10 @@ static struct mtk_panel_params ext_params_60hz = {
 		},
 	},
 
-	.data_rate = 1102,
+	.data_rate = 1230,
 	.lfr_enable = 0,
 	.lfr_minimum_fps = 60,
-	//.change_fps_by_vfp_send_cmd = 1,
-	.dyn_fps = {
-		.switch_en = 0,
-		.vact_timing_fps = 120,
-		.dfps_cmd_table[0] = {0, 21, {0xA9, 0x01, 0x00, 0x2F, 0x00, 0x00, 0x03, 0x02,
-		                              0x00, 0xDF, 0x38, 0x39, 0x19, 0xE4, 0x02, 0x00,
-									  0xDF, 0x31, 0x32, 0x03, 0x1A} },
-	},
+
 	/* following MIPI hopping parameter might cause screen mess */
 /*	.dyn = {
 		.switch_en = 1,
@@ -511,16 +549,17 @@ static struct mtk_panel_params ext_params_60hz = {
 		.hfp = 76,
 		.vfp = 2590,
 	},*/
-	
+
 	.panel_cellid_reg = 0xAC,
 	.panel_cellid_offset_reg = 0x6F,
-	.panel_cellid_offset = 0x00,
+	.panel_cellid_offset = 0x0D,
 	.panel_cellid_len = 23,
 };
+#endif
 
-static struct mtk_panel_params ext_params_90hz = {
-	.pll_clk = 551,
-	//.vfp_low_power = 2578,
+static struct mtk_panel_params ext_params_60hz = {
+	.pll_clk = 615,
+	//.vfp_low_power = 4180,
 	.cust_esd_check = 1,
 	.esd_check_enable = 1,
 	.lcm_esd_check_table[0] = {
@@ -528,18 +567,18 @@ static struct mtk_panel_params ext_params_90hz = {
 		.count = 1,
 		.para_list[0] = 0x9C,
 	},
-
-	.physical_width_um = 69000,
-	.physical_height_um = 154000,
+	.lcm_color_mode = MTK_DRM_COLOR_MODE_DISPLAY_P3,
+	.physical_width_um = 69540,
+	.physical_height_um = 154454,
 	.lp_perline_en = 1,
 	.output_mode = MTK_PANEL_DSC_SINGLE_PORT,
-	.dsc_param_load_mode = 0, //0: default flow; 1: key param only; 2: full control
+
 	.dsc_params = {
 		.enable = 1,
 		.ver = 17,
 		.slice_mode = 1,
 		.rgb_swap = 0,
-		.dsc_cfg = 2088,
+		.dsc_cfg = 34,
 		.rct_on = 1,
 		.bit_per_channel = 10,
 		.dsc_line_buf_depth = 11,
@@ -577,17 +616,89 @@ static struct mtk_panel_params ext_params_90hz = {
 			.range_bpg_ofs = nt37706_vdo_range_bpg_ofs,
 		},
 	},
-	.data_rate = 1102,
+
+	.data_rate = 1230,
 	.lfr_enable = 0,
 	.lfr_minimum_fps = 60,
-	//.change_fps_by_vfp_send_cmd = 1,
-	.dyn_fps = {
-		.switch_en = 0,
-		.vact_timing_fps = 120,
-		.dfps_cmd_table[0] = {0, 21, {0xA9, 0x01, 0x00, 0x2F, 0x00, 0x00, 0x02, 0x02,
-		                              0x00, 0xDF, 0x38, 0x39, 0x11, 0x44, 0x02, 0x00,
-									  0xDF, 0x31, 0x32, 0x02, 0x1A} },
+
+	/* following MIPI hopping parameter might cause screen mess */
+/*	.dyn = {
+		.switch_en = 1,
+		.pll_clk = 556,
+		.vfp_lp_dyn = 4178,
+		.hfp = 76,
+		.vfp = 2590,
+	},*/
+
+	.panel_cellid_reg = 0xAC,
+	.panel_cellid_offset_reg = 0x6F,
+	.panel_cellid_offset = 0x0D,
+	.panel_cellid_len = 23,
+};
+
+static struct mtk_panel_params ext_params_90hz = {
+	.pll_clk = 615,
+	//.vfp_low_power = 2578,
+	.cust_esd_check = 1,
+	.esd_check_enable = 1,
+	.lcm_esd_check_table[0] = {
+		.cmd = 0x0A,
+		.count = 1,
+		.para_list[0] = 0x9C,
 	},
+	.lcm_color_mode = MTK_DRM_COLOR_MODE_DISPLAY_P3,
+	.physical_width_um = 69540,
+	.physical_height_um = 154454,
+	.lp_perline_en = 1,
+	.output_mode = MTK_PANEL_DSC_SINGLE_PORT,
+	.dsc_param_load_mode = 0, //0: default flow; 1: key param only; 2: full control
+	.dsc_params = {
+		.enable = 1,
+		.ver = 17,
+		.slice_mode = 1,
+		.rgb_swap = 0,
+		.dsc_cfg = 34,
+		.rct_on = 1,
+		.bit_per_channel = 10,
+		.dsc_line_buf_depth = 11,
+		.bp_enable = 1,
+		.bit_per_pixel = 128,
+		.pic_height = 2712,
+		.pic_width = 1220,
+		.slice_height = 12,
+		.slice_width = 610,
+		.chunk_size = 610,
+		.xmit_delay = 512,
+		.dec_delay = 562,
+		.scale_value = 32,
+		.increment_interval = 305,
+		.decrement_interval = 8,
+		.line_bpg_offset = 12,
+		.nfl_bpg_offset = 2235,
+		.slice_bpg_offset = 1915,
+		.initial_offset = 6144,
+		.final_offset = 4336,
+		.flatness_minqp = 7,
+		.flatness_maxqp = 16,
+		.rc_model_size = 8192,
+		.rc_edge_factor = 6,
+		.rc_quant_incr_limit0 = 15,
+		.rc_quant_incr_limit1 = 15,
+		.rc_tgt_offset_hi = 3,
+		.rc_tgt_offset_lo = 3,
+
+		.ext_pps_cfg = {
+			.enable = 1,
+			.rc_buf_thresh = nt37706_vdo_buf_thresh,
+			.range_min_qp = nt37706_vdo_range_min_qp,
+			.range_max_qp = nt37706_vdo_range_max_qp,
+			.range_bpg_ofs = nt37706_vdo_range_bpg_ofs,
+		},
+	},
+	.data_rate = 1230,
+	.lfr_enable = 0,
+	.lfr_minimum_fps = 60,
+
 	/* following MIPI hopping parameter might cause screen mess */
 /*	.dyn = {
 		.switch_en = 1,
@@ -596,15 +707,15 @@ static struct mtk_panel_params ext_params_90hz = {
 		.hfp = 76,
 		.vfp = 940,
 	},*/
-	
+
 	.panel_cellid_reg = 0xAC,
 	.panel_cellid_offset_reg = 0x6F,
-	.panel_cellid_offset = 0x00,
+	.panel_cellid_offset = 0x0D,
 	.panel_cellid_len = 23,
 };
 
 static struct mtk_panel_params ext_params_120hz = {
-	.pll_clk = 551,
+	.pll_clk = 615,
 	//.vfp_low_power = 2578,
 	.cust_esd_check = 1,
 	.esd_check_enable = 1,
@@ -613,9 +724,9 @@ static struct mtk_panel_params ext_params_120hz = {
 		.count = 1,
 		.para_list[0] = 0x9C,
 	},
-
-	.physical_width_um = 69000,
-	.physical_height_um = 154000,
+	.lcm_color_mode = MTK_DRM_COLOR_MODE_DISPLAY_P3,
+	.physical_width_um = 69540,
+	.physical_height_um = 154454,
 	.lp_perline_en = 1,
 	.output_mode = MTK_PANEL_DSC_SINGLE_PORT,
 	.dsc_param_load_mode = 0, //0: default flow; 1: key param only; 2: full control
@@ -624,7 +735,7 @@ static struct mtk_panel_params ext_params_120hz = {
 		.ver = 17,
 		.slice_mode = 1,
 		.rgb_swap = 0,
-		.dsc_cfg = 2088,
+		.dsc_cfg = 34,
 		.rct_on = 1,
 		.bit_per_channel = 10,
 		.dsc_line_buf_depth = 11,
@@ -662,17 +773,10 @@ static struct mtk_panel_params ext_params_120hz = {
 			.range_bpg_ofs = nt37706_vdo_range_bpg_ofs,
 		},
 	},
-	.data_rate = 1102,
+	.data_rate = 1230,
 	.lfr_enable = 0,
 	.lfr_minimum_fps = 60,
-	//.change_fps_by_vfp_send_cmd = 1,
-	.dyn_fps = {
-		.switch_en = 0,
-		.vact_timing_fps = 120,
-		.dfps_cmd_table[0] = {0, 21, {0xA9, 0x01, 0x00, 0x2F, 0x00, 0x00, 0x01, 0x02,
-		                              0x00, 0xDF, 0x38, 0x39, 0x0C, 0xF4, 0x02, 0x00,
-									  0xDF, 0x31, 0x32, 0x01, 0x1A} },
-	},
+
 	/* following MIPI hopping parameter might cause screen mess */
 /*	.dyn = {
 		.switch_en = 1,
@@ -681,10 +785,10 @@ static struct mtk_panel_params ext_params_120hz = {
 		.hfp = 76,
 		.vfp = 116,
 	},*/
-	
+
 	.panel_cellid_reg = 0xAC,
 	.panel_cellid_offset_reg = 0x6F,
-	.panel_cellid_offset = 0x00,
+	.panel_cellid_offset = 0x0D,
 	.panel_cellid_len = 23,
 };
 
@@ -776,12 +880,14 @@ static int mtk_panel_ext_param_set(struct drm_panel *panel,
 
 	dst_fps = m ? drm_mode_vrefresh(m) : -EINVAL;
 
+	/*if (dst_fps == 48) {
+		ext->params = &ext_params_48hz;
+	} else*/
 	if (dst_fps == 60) {
-		//ext_params.skip_vblank = 0;
 		ext->params = &ext_params_60hz;
-	} else if (dst_fps == 90)
+	} else if (dst_fps == 90) {
 		ext->params = &ext_params_90hz;
-	else if (dst_fps == 120) {
+	} else if (dst_fps == 120) {
 		ext->params = &ext_params_120hz;
 	} else {
 		pr_err("%s, dst_fps %d\n", __func__, dst_fps);
@@ -808,6 +914,8 @@ static int mtk_panel_ext_param_get(struct drm_panel *panel,
 		*ext_param = &ext_params_90hz;
 	else if (drm_mode_vrefresh(m) == 60)
 		*ext_param = &ext_params_60hz;
+	/*else if (drm_mode_vrefresh(m) == 48)
+		*ext_param = &ext_params_48hz;*/
 	else
 		ret = 1;
 
@@ -824,28 +932,54 @@ int mtk_scaling_mode_mapping(int mode_idx)
 	return (mode_idx % REAL_MODE_NUM);
 }
 
-static void mode_switch_to_120(struct drm_panel *panel)
+/*
+static void mode_switch_to_48(struct drm_panel *panel,
+	enum MTK_PANEL_MODE_SWITCH_STAGE stage)
 {
-//	struct lcm *ctx = panel_to_lcm(panel);
+	if (stage == BEFORE_DSI_POWERDOWN) {
+		struct lcm *ctx = panel_to_lcm(panel);
 
-	pr_info("%s\n", __func__);
-	//cb(dsi, handle, bl_tb0, ARRAY_SIZE(bl_tb0));
+		lcm_dcs_write_seq_static(ctx, 0x2F, 0x03);
 
+		atomic_set(&ctx->current_fps, 48);
+	}
+}
+*/
+
+static void mode_switch_to_60(struct drm_panel *panel,
+	enum MTK_PANEL_MODE_SWITCH_STAGE stage)
+{
+	if (stage == BEFORE_DSI_POWERDOWN) {
+		struct lcm *ctx = panel_to_lcm(panel);
+
+		lcm_dcs_write_seq_static(ctx, 0x2F, 0x02);
+
+		atomic_set(&ctx->current_fps, 60);
+	}
 }
 
-static void mode_switch_to_90(struct drm_panel *panel)
+static void mode_switch_to_90(struct drm_panel *panel,
+	enum MTK_PANEL_MODE_SWITCH_STAGE stage)
 {
-//	struct lcm *ctx = panel_to_lcm(panel);
+	if (stage == BEFORE_DSI_POWERDOWN) {
+		struct lcm *ctx = panel_to_lcm(panel);
 
-	pr_info("%s\n", __func__);
+		lcm_dcs_write_seq_static(ctx, 0x2F, 0x01);
 
+		atomic_set(&ctx->current_fps, 90);
+	}
 }
 
-static void mode_switch_to_60(struct drm_panel *panel)
+static void mode_switch_to_120(struct drm_panel *panel,
+	enum MTK_PANEL_MODE_SWITCH_STAGE stage)
 {
-//	struct lcm *ctx = panel_to_lcm(panel);
+	if (stage == BEFORE_DSI_POWERDOWN) {
+		struct lcm *ctx = panel_to_lcm(panel);
 
-	pr_info("%s\n", __func__);
+		lcm_dcs_write_seq_static(ctx, 0x2F, 0x00);
+
+		atomic_set(&ctx->current_fps, 120);
+	}
 }
 
 static int mode_switch(struct drm_panel *panel,
@@ -860,12 +994,15 @@ static int mode_switch(struct drm_panel *panel,
 
 	dst_fps = m ? drm_mode_vrefresh(m) : -EINVAL;
 
-	if (dst_fps == 60) { /* 60 switch to 120 */
-		mode_switch_to_60(panel);
-	} else if (dst_fps == 90) { /* 1200 switch to 60 */
-		mode_switch_to_90(panel);
-	} else if (dst_fps == 120) { /* 1200 switch to 60 */
-		mode_switch_to_120(panel);
+	/*if (dst_fps == 48) {
+		mode_switch_to_48(panel, stage);
+	} else */
+	if (dst_fps == 60) {
+		mode_switch_to_60(panel, stage);
+	} else if (dst_fps == 90) {
+		mode_switch_to_90(panel, stage);
+	} else if (dst_fps == 120) {
+		mode_switch_to_120(panel, stage);
 	} else {
 		pr_err("%s, dst_fps %d\n", __func__, dst_fps);
 		ret = -EINVAL;
@@ -875,11 +1012,11 @@ static int mode_switch(struct drm_panel *panel,
 }
 
 static struct mtk_panel_para_table panel_lhbm_on[] = {
-	{14, {0xa9,0x01,0x00,0x87,0x00,0x00,0x25,0x01,0x00,0x51,0x09,0x0a,0xbe,0x80}},
+	{15, {0xA9, 0x02, 0x00, 0xB5, 0x2C, 0x2C, 0x00, 0x01, 0x00, 0x87, 0x00, 0x02, 0x25, 0xbe, 0x80}},
 };
 
 static struct mtk_panel_para_table panel_lhbm_off[] = {
-	{14, {0xa9,0x01,0x00,0x87,0x00,0x00,0x20,0x01,0x00,0x51,0x09,0x0a,0x00,0x00}},
+	{13, {0xA9, 0x02, 0x00, 0xB5, 0x2C, 0x2C, 0x03, 0x01, 0x00, 0x87, 0x00, 0x00, 0x20}},
 };
 
 
@@ -925,17 +1062,15 @@ static int panel_hbm_set_cmdq(struct lcm *ctx, void *dsi, dcs_grp_write_gce cb, 
 static struct mtk_panel_para_table panel_dc_off[] = {
 	{2, {0x6f, 0x01}},
 	{2, {0x8b, 0x00}},
-	{6, {0xf0, 0x55, 0xaa, 0x52, 0x08, 0x04}},
-	{2, {0x6f, 0x01}},
-	{2, {0xcc, 0x00}},
+	{6, {0xf0, 0x55, 0xaa, 0x52, 0x08, 0x00}},
+	{27, {0xB3, 0x00, 0x04, 0x04, 0x5C, 0x04, 0x5C, 0x06, 0xCC, 0x06, 0xCC, 0x09, 0xD0, 0x09, 0xD0, 0x0D, 0xC8, 0x0D, 0xC8, 0x10, 0xAF, 0x10, 0xAF, 0x10, 0xB0, 0x10, 0xB0}},
 };
 
 static struct mtk_panel_para_table panel_dc_on[] = {
 	{2, {0x6f, 0x01}},
 	{2, {0x8b, 0x81}},
-	{6, {0xf0, 0x55, 0xaa, 0x52, 0x08, 0x04}},
-	{2, {0x6f, 0x01}},
-	{2, {0xcc, 0x04}},
+	{6, {0xf0, 0x55, 0xaa, 0x52, 0x08, 0x00}},
+	{27, {0xB3, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x10, 0xB0}},
 };
 
 static int pane_dc_set_cmdq(struct lcm *ctx, void *dsi, dcs_grp_write_gce cb, void *handle, uint32_t dc_state)
@@ -1013,7 +1148,6 @@ static int panel_feature_get(struct drm_panel *panel, struct panel_param_info *p
 
 }
 
-
 static int panel_ext_init_power(struct drm_panel *panel)
 {
 	int ret;
@@ -1062,21 +1196,22 @@ static struct mtk_panel_funcs ext_funcs = {
 static int lcm_get_modes(struct drm_panel *panel,
 					struct drm_connector *connector)
 {
-	struct drm_display_mode *mode;
+	struct drm_display_mode *mode1;
 	struct drm_display_mode *mode2;
 	struct drm_display_mode *mode3;
+	//struct drm_display_mode *mode4;
 
-	mode = drm_mode_duplicate(connector->dev, &mode_120hz);
-	if (!mode) {
+	mode1 = drm_mode_duplicate(connector->dev, &mode_120hz);
+	if (!mode1) {
 		dev_info(connector->dev->dev, "failed to add mode %ux%ux@%u\n",
 			 mode_120hz.hdisplay, mode_120hz.vdisplay,
 			 drm_mode_vrefresh(&mode_120hz));
 		return -ENOMEM;
 	}
 
-	drm_mode_set_name(mode);
-	mode->type = DRM_MODE_TYPE_DRIVER | DRM_MODE_TYPE_PREFERRED;
-	drm_mode_probed_add(connector, mode);
+	drm_mode_set_name(mode1);
+	mode1->type = DRM_MODE_TYPE_DRIVER | DRM_MODE_TYPE_PREFERRED;
+	drm_mode_probed_add(connector, mode1);
 
 	mode2 = drm_mode_duplicate(connector->dev, &mode_90hz);
 	if (!mode2) {
@@ -1097,9 +1232,26 @@ static int lcm_get_modes(struct drm_panel *panel,
 			 drm_mode_vrefresh(&mode_60hz));
 		return -ENOMEM;
 	}
+	drm_mode_set_name(mode3);
+	mode3->type = DRM_MODE_TYPE_DRIVER;
+	drm_mode_probed_add(connector, mode3);
+
+	/*
+	mode4 = drm_mode_duplicate(connector->dev, &mode_48hz);
+	if (!mode4) {
+		dev_info(connector->dev->dev, "failed to add mode %ux%ux@%u\n",
+			 mode_48hz.hdisplay, mode_48hz.vdisplay,
+			 drm_mode_vrefresh(&mode_48hz));
+		return -ENOMEM;
+	}
+
+	drm_mode_set_name(mode4);
+	mode4->type = DRM_MODE_TYPE_DRIVER;
+	drm_mode_probed_add(connector, mode4);
+	*/
 
 	connector->display_info.width_mm = 70;
-	connector->display_info.height_mm = 152;
+	connector->display_info.height_mm = 154;
 
 	return 1;
 }
