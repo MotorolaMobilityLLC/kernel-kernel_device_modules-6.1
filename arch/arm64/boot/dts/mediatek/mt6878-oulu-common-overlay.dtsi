@@ -55,23 +55,6 @@
 };
 
 
-&spi5 {
-	st54spi: st54spi@0 {
-		compatible = "st,st54spi";
-		reg = <0>;
-		spi-max-frequency = <1000000>;
-		gpio-power_nreset = <35>;
-		gpio-power_nreset-std = <&pio 35 0x00>;
-		power_mode = "ST54J";
-		bootmode = <&chosen>;
-		pinctrl-names = "pinctrl_state_mode_spi",
-				"pinctrl_state_mode_idle";
-		pinctrl-0 = <&nfc_spi_cs_mode_spi>;
-		pinctrl-1 = <&nfc_spi_cs_mode_idle>;
-		status = "okay";
-	};
-};
-
 &u2port0{
 	mediatek,eye-vrt = <0x64>;
 	mediatek,eye-vrt-host = <0x64>;
@@ -118,9 +101,10 @@
 	regulator-max-microvolt = <2100000>;
 };
 
+
+
 &i2c10 {
 	status = "ok";
-
 	st21nfc: st21nfc@0x08 {
 		compatible = "st,st21nfc";
 		reg = <0x08>;
@@ -130,7 +114,7 @@
 		reset-gpios = <&pio 40 0x00>;
 		irq-gpios = <&pio 2 0x00>;
 		clkreq-gpios = <&pio 151 0x00>;
-		status = "ok";
+		status = "disabled";
 	};
 
 	sx937x: sx937x@2c { /* SAR sensor */
@@ -257,6 +241,16 @@
 		fs3001_reg_inits=< 0xffffff 0xffffff 0xffffff 0xffffff 0xffffff 0xffffff 0xffffff 0xffffff 0xffffff 0xffffff >;
 		fs3001_rtp_id_boundary=< 3 >;
 		fs3001_duration_time=< 34 67 100 >;
+		status = "okay";
+	};
+
+	nfc_pn5xx: nfc_pn5xx@28 {
+		compatible = "qcom,sn-nci";
+		reg = <0x28>;
+		interrupt-parent = <&pio>;
+		interrupts = <2 0>;
+		qcom,sn-irq = <&pio 2 0>;
+		qcom,sn-ven = <&pio 40 0>;
 		status = "okay";
 	};
 };
