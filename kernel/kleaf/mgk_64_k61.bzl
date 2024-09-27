@@ -997,8 +997,7 @@ def get_overlay_modules_list():
         mgk_64_k61_device_modules.append("sound/soc/codecs/aw882xx/snd-soc-aw882xx.ko")
 
     if "oulu" in DEFCONFIG_OVERLAYS:
-        mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/nfc/st54lnfc/st21nfc:st54lnfc")
-        mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/nfc/st54lnfc/st54spi:st54lspi")
+        mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/nfc/nxpI2C:nxp_i2c")
         mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/power/mmi_gauge_class:mmi_gauge_class")
         mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/power/smart_battery:smart_battery")
         mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/sensors:sensors_class")
