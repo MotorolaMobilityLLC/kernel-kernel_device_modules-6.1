@@ -545,6 +545,12 @@
         };
     };
 
+    mtk_camera_eeprom4:camera-eeprom4@50 {
+        compatible = "mediatek,camera_eeprom";
+        reg = <0x50>;
+        status = "okay";
+    };
+
 };
 
 &thermal_zones {
