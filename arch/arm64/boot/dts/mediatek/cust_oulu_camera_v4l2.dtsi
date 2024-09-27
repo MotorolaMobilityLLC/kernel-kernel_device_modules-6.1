@@ -383,6 +383,12 @@
         };
     };
 
+    mtk_camera_eeprom1:camera-eeprom1@50 {
+        compatible = "mediatek,camera_eeprom";
+        reg = <0x50>;
+        status = "okay";
+    };
+
     sensor1: sensor1@10 {
         compatible = "mediatek,imgsensor";
         sensor-names = "mot_oulu_s5kjns_mipi_raw";
