@@ -3808,7 +3808,9 @@ void mmi_charge_rate_check(struct mtk_charger *info)
 	charger_dev_get_protocol(info->chg1_dev, &qc_chg_type);
 	//QC3 and Qc3+ all support max power more than 15w, should show trubo power
 	if ((qc_chg_type == USB_TYPE_QC30) ||
-            (qc_chg_type == USB_TYPE_QC3P_18) || (qc_chg_type == USB_TYPE_QC3P_27)) {
+            (qc_chg_type == USB_TYPE_QC3P_18) ||
+            (qc_chg_type == USB_TYPE_QC3P_27) ||
+            (qc_chg_type == USB_TYPE_QC3P_45)) {
 
 		info->mmi.charge_rate = POWER_SUPPLY_CHARGE_RATE_TURBO;
 		goto end_rate_check;
@@ -4076,7 +4078,7 @@ static int mmi_check_power_watt(struct mtk_charger *info, bool force)
 			|| info->pd_type == MTK_PD_CONNECT_PE_READY_SNK_PD30) {
 		power_watt = mmi_get_pdc_power(info, force) / 1000;
 
-	} else if (qc_chg_type == USB_TYPE_QC3P_27 || qc_chg_type == USB_TYPE_QC3P_18) {
+	} else if (qc_chg_type == USB_TYPE_QC3P_45 || qc_chg_type == USB_TYPE_QC3P_27 || qc_chg_type == USB_TYPE_QC3P_18) {
 		power_watt = MMI_POWER_30W;
 	} else if (qc_chg_type == USB_TYPE_QC30) {
 		power_watt = MMI_POWER_15W;
