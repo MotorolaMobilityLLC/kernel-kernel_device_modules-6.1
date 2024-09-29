@@ -90,3 +90,44 @@ config GTP_SPI_PINCTRL
 	bool "Set SPI mode"
 	help
 		Say Y here if need to adjust SPI mode.
+
+config MTK_PROJECT_NAME
+	string "set project name"
+	help
+		This config is set as project name for touch to select configuration.
+
+config FOCALTECH_TOUCH_IC_NAME
+	string "set focaltech touch IC name"
+	help
+		This config is set as IC name for touch to select configuration.
+
+config FTS_COMPATIBLE_WITH_GKI
+	bool "Driver compatible with GKI"
+	help
+		Say Y here if need to compatible with GKI.
+
+config FTS_VDD_GPIO_CONTROL
+	bool "VDD ~3.3V controlled by gpio"
+	help
+		Say Y here if need to control vdd by gpio.
+
+config FTS_DOUBLE_TAP_CONTROL
+	bool "Support touch wake gesture feature"
+	help
+		Say Y here if support touch wake gesture feature.
+
+config SUPPORT_FTS_HIRES_X
+	string "Set touch resolution multiplier"
+	help
+		This config is set touch resolution multiplier.
+
+config FTS_INPUT_ID
+	bool "Support focaltech input ID"
+	help
+		Say Y here if need to set focaltech input ID.
+
+config FTS_GAME_MODE_EN
+
+	bool "Support game mode feature"
+	help
+		Say Y here if need to support game mode feature.
