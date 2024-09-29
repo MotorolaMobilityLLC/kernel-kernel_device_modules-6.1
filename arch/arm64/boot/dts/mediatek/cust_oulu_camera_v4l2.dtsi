@@ -277,6 +277,14 @@
             enable-active-high;
             gpio = <&pio 20 0x0>;
         };
+        cam_rw_afdd_ldo: gpio22-fixed {
+            compatible = "regulator-fixed";
+            regulator-name = "rw_afdd_gpio_regulator";
+            regulator-min-microvolt = <2800000>;
+            regulator-max-microvolt = <2800000>;
+            enable-active-high;
+            gpio = <&pio 22 0x0>;
+        };
 
 };
 
@@ -293,6 +301,12 @@
         reg = <1>;
         front_af_endpoint: endpoint {
             remote-endpoint = <&front_af>;
+        };
+    };
+    port@2 {
+        reg = <2>;
+        wide_af_endpoint: endpoint {
+            remote-endpoint = <&wide_af>;
         };
     };
 };
@@ -436,6 +450,17 @@
 &i2c2 {
     status = "okay";
     clock-frequency = <1000000>;
+
+    camera-af-wide@b {
+        compatible = "mediatek,main2_vcm";
+        reg = <0x0b>;
+        vin-supply = <&cam_rw_afdd_ldo>;
+        port {
+            wide_af: endpoint {
+                remote-endpoint = <&wide_af_endpoint>;
+            };
+        };
+    };
 
     sensor2: sensor2@10 {
         compatible = "mediatek,imgsensor";
