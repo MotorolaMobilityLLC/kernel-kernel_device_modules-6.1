@@ -8,7 +8,7 @@
 #define LOG_INF(format, args...)
 #endif
 
-#define DW9784_OIS_I2C_SLAVE_ADDR 0x54
+extern u32 DW9784_OIS_I2C_SLAVE_ADDR;
 
 static struct i2c_client *dw9784_i2c_client = NULL;
 
@@ -111,7 +111,7 @@ void i2c_block_write_reg(unsigned short addr,unsigned short *fwContentPtr,int si
 	int IDX = 0;
 	int tosend = 0;
 	u16 data;
-	dw9784_i2c_client->addr = DW9784_OIS_I2C_SLAVE_ADDR >> 1;
+	dw9784_i2c_client->addr = DW9784_OIS_I2C_SLAVE_ADDR;
 	puSendCmd[tosend++] = (char)(addr >> 8);
 	puSendCmd[tosend++] = (char)(addr & 0xff);
 	while(size > IDX) {
@@ -122,7 +122,7 @@ void i2c_block_write_reg(unsigned short addr,unsigned short *fwContentPtr,int si
 		if(IDX == size) {
 			int i4RetValue = 0;
 			struct i2c_msg msgs;
-			msgs.addr  = DW9784_OIS_I2C_SLAVE_ADDR >> 1;
+			msgs.addr  = DW9784_OIS_I2C_SLAVE_ADDR;
 			msgs.flags = 0;
 			msgs.len   = (DATPKT_SIZE * 2 + 2);
 			msgs.buf   = puSendCmd;
@@ -141,13 +141,13 @@ void i2c_block_read_reg(unsigned short addr,unsigned short *temp,int size)
 	int i4RetValue = 0;
 	char puSendCmd[2] = { (char)(addr >> 8), (char)(addr & 0xFF) };
 	struct i2c_msg msgs[2];
-	dw9784_i2c_client->addr = DW9784_OIS_I2C_SLAVE_ADDR >> 1;
-	msgs[0].addr  = DW9784_OIS_I2C_SLAVE_ADDR >> 1;
+	dw9784_i2c_client->addr = DW9784_OIS_I2C_SLAVE_ADDR;
+	msgs[0].addr  = DW9784_OIS_I2C_SLAVE_ADDR;
 	msgs[0].flags = 0;
 	msgs[0].len   = 2;
 	msgs[0].buf   = puSendCmd;
 
-	msgs[1].addr  = DW9784_OIS_I2C_SLAVE_ADDR >> 1;
+	msgs[1].addr  = DW9784_OIS_I2C_SLAVE_ADDR;
 	msgs[1].flags = I2C_M_RD;
 	msgs[1].len   = 2 * size;
 	msgs[1].buf   = (u8*)temp;

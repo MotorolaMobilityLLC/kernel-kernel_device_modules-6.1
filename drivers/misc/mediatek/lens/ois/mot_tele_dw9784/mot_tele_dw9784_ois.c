@@ -66,7 +66,8 @@ static ois_ext_work_struct ois_ext_work;
 static DEFINE_MUTEX(ois_mutex);
 static motOISGOffsetResult dw9784GyroOffsetResult;
 
-#define DW9784_OIS_I2C_SLAVE_ADDR 0x54
+u32 DW9784_OIS_I2C_SLAVE_ADDR = 0;
+
 #define DW9784_REG_CHIP_CTRL              0xD000
 #define DW9784_REG_OIS_DSP_CTRL           0xD001
 #define DW9784_REG_OIS_LOGIC_RESET        0xD002
@@ -77,7 +78,7 @@ static motOISGOffsetResult dw9784GyroOffsetResult;
 #define DW9784_REG_OIS_GYROY              0x7140   // Y_GYRO
 #define DW9784_REG_OIS_TARGETX            0x7106   // X_TARGET
 #define DW9784_REG_OIS_TARGETY            0x7136   // Y_TARGET
-#define DW9784_REG_OIS_LENS_POSX          0x7101  // X_LENS_POS
+#define DW9784_REG_OIS_LENS_POSX          0x7101   // X_LENS_POS
 #define DW9784_REG_OIS_LENS_POSY          0x7131   // Y_LENS_POS
 #define DW9784_REG_OIS_CL_TARGETX         0x7100
 #define DW9784_REG_OIS_CL_TARGETY         0x7130
@@ -94,6 +95,7 @@ static motOISGOffsetResult dw9784GyroOffsetResult;
 static const char * const ldo_names[] = {
 	 "vin",
 	 "vdd",
+	 "rst",
 };
 
 /* power  on stage : idx = 0, 2, 4, ... */
@@ -1288,7 +1290,7 @@ static int dw9784_init(struct dw9784_device *dw9784)
 	m_client = client;
 	dw_ois_mode = OIS_MODEINIT;
 
-	client->addr = DW9784_OIS_I2C_SLAVE_ADDR >> 1;
+	client->addr = DW9784_OIS_I2C_SLAVE_ADDR;
 	// there are at least 10ms from drv_vdd to ois_reset, plus 5ms in power_on.
 	ois_mdelay(5);
 	ois_reset();
@@ -1892,6 +1894,14 @@ static int dw9784_probe(struct i2c_client *client)
 
 	LOG_INF("+\n");
 
+	ret = of_property_read_u32(dev->of_node, "reg",
+				&DW9784_OIS_I2C_SLAVE_ADDR);
+	if(ret) {
+		LOG_INF("fail to get reg:%d\n", ret);
+		return -EINVAL;
+	}
+	LOG_INF("DW9784_OIS_I2C_SLAVE_ADDR get reg:0x%x\n", DW9784_OIS_I2C_SLAVE_ADDR);
+
 	dw9784 = devm_kzalloc(dev, sizeof(*dw9784), GFP_KERNEL);
 	if (!dw9784)
 		return -ENOMEM;
@@ -2012,7 +2022,7 @@ static int dw9784_probe(struct i2c_client *client)
 		return ret;
 	}
 
-	client->addr = (DW9784_OIS_I2C_SLAVE_ADDR) >> 1;
+	client->addr = DW9784_OIS_I2C_SLAVE_ADDR;
 	m_client = client;
 	dw9784_download_fw();
 
@@ -2057,6 +2067,8 @@ static void dw9784_remove(struct i2c_client *client)
 	device_remove_file(&client->dev, &dev_attr_ois_debug);
 	device_destroy(ois_class, ois_devno);
 	class_destroy(ois_class);
+
+	DW9784_OIS_I2C_SLAVE_ADDR = 0;
 
 	LOG_INF("-\n");
 }
