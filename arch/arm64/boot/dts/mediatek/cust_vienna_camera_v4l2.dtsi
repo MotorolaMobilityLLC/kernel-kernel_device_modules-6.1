@@ -569,11 +569,12 @@
         };
     };
 
-    camera-ois-tele@72 {
+    camera-ois-tele@2a {
         compatible = "mediatek,mot_tele_dw9784";
-        reg = <0x72>;
+        reg = <0x2a>;
         vdd-supply = <&cam_oisvdd_ldo>;
         vin-supply = <&cam_oidvin_ldo>;
+        rst-supply = <&camera_common_dovdd>;
 //        pinctrl-names = "afvdd_off",
 //                "afvdd_on",
 //                "oisen_off",
