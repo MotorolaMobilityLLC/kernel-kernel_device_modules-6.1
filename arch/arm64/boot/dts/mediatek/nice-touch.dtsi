@@ -12,7 +12,7 @@
 
 	goodix_ts_spi@0 {
 		status = "okay";
-		compatible = "goodix,gt9916S";
+		compatible = "goodix,gt9916K";
 		reg = <0x0>;
 		pinctrl-names = "pmx_ts_active", "pmx_ts_suspend", "stylus_clk_active", "stylus_clk_suspend","gt9916_spi_mode";
 		pinctrl-0 = <&ctp_gt9896s_int_active>;
@@ -21,13 +21,16 @@
 		pinctrl-3 = <&ctp_gt9896s_reset_suspend>;
 		pinctrl-4 = <&ctp_gt9896s_spi_mode>;
 		spi-max-frequency = <15000000>;  /* 4800000,9600000,15000000,19200000 */
-		mmi,status = "/chosen","mmi,panel_name","contains","csot_vtdr6130","tianma_nt37707";
+		mmi,status = "/chosen","mmi,panel_name","contains","panel_mot_vdo_tm_nt37706_gt9916_667_fhdp_dsc_dphy_120hz","tianma_nt37707";
 		goodix,panel-supplier = "csot","tianma";
 		goodix,reset-gpio = <&pio 152 0x0>;
 		goodix,irq-gpio = <&pio 7 0x2002>;
+		goodix,avdd-name = "vtp";
 		goodix,avdd-gpio = <&pio 189 0x0>;
-		vibr-supply = <&mt6369_vibr>;
-		goodix,iovdd-name = "vibr";
+		vtp-supply = <&mt6369_vtp>;
+		goodix,iovdd-name = "vant18";
+		goodix,iovdd-gpio = <&pio 114 0x0>;
+		vant18-supply = <&mt6369_vant18>;
 		goodix,irq-flags = <0x2002>; /* 1:trigger rising, 2:trigger falling;*/
 		goodix,panel-max-id = <10>;
 		goodix,panel-max-x = <19200>;
@@ -40,8 +43,8 @@
 		goodix,gesture-wait-pm;
 		goodix,stowed-mode-ctrl;
 		goodix,pocket-mode-ctrl;
-		/*goodix,config-name = "goodix_gt9916_cfg_group.bin";
-		goodix,firmware-name = "goodix_gt9916_firmware.bin";*/
+		goodix,config-name = "goodix_gt9916k_cfg_group.bin";
+		goodix,firmware-name = "goodix_gt9916k_firmware.bin";
 		mmi,enable-gestures;
 		mmi,power-off-suspend;
 		mmi,usb-charger-detection;
@@ -49,6 +52,11 @@
 		mmi,resolution_boost = <16>;
 		mtk-charger = <&mt6375_chg>;
 	};
+};
+
+&mt6369_vtp {
+	regulator-min-microvolt = <3300000>;
+	regulator-max-microvolt = <3300000>;
 };
 
 &spi4 {
