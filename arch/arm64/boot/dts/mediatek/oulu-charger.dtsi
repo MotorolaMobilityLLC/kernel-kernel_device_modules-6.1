@@ -265,6 +265,108 @@
 		pinctrl-names = "default";
 		pinctrl-0 = <&nu2115_int_default_slave>;
 	};
+
+	sc8541d-master@61{
+		compatible = "southchip,sc8541d-master";
+		reg = <0x61>;
+		sc8541d,intr_gpio = <&pio 12 IRQ_TYPE_EDGE_FALLING>;
+		charger_name = "primary_dvchg";
+
+		sc,sc8541d,vbat-ovp-dis = <0>;
+		sc,sc8541d,vbat-ovp = <90>; /*3840 + val * 10*/
+		sc,sc8541d,ibat-ocp-dis = <1>;
+		sc,sc8541d,ibat-ocp = <81>; /*val * 100*/
+		sc,sc8541d,vbus-ovp-dis = <0>;
+		sc,sc8541d,vbus-ovp = <3>; /*10500 + val * 500*/
+		sc,sc8541d,vac-ovp-dis = <0>;
+		sc,sc8541d,vac-ovp = <2>; /*0:6.5V 1:11V 2:12V 3:13V 4:14V 5~7:15V*/
+		sc,sc8541d,ibus-ocp-dis = <1>;
+		sc,sc8541d,ibus-ocp = <100>; /*val * 50*/
+		sc,sc8541d,pmid2out-ovp-dis = <0>;
+		sc,sc8541d,pmid2out-ovp = <0>; /*400 + val * 100*/
+		sc,sc8541d,pmid2out-uvp-dis = <0>;
+		sc,sc8541d,pmid2out-uvp = <1>; /*100 + val * 50*/
+		sc,sc8541d,ibatreg = <0>; /*200 + val * 100*/
+		sc,sc8541d,ibusreg = <0>; /*100 + val * 50*/
+		sc,sc8541d,vbatreg = <0>; /*50 + val * 50*/
+		sc,sc8541d,tdiereg = <1>; /*0:90°C 1:100°C 2:110°C 3:120°C*/
+		sc,sc8541d,them-flt = <24>; /*val * 25*/
+		sc,sc8541d,ibat-sns-res = <0>; /*0:2hmo 1:5hmo*/
+		sc,sc8541d,pmid-pd-en = <0>;
+		sc,sc8541d,vbus-pd-en = <0>;
+		sc,sc8541d,work-mode = <0>; /*0: 2:1charge   1: 1:1charge
+		                             2: 1:2converte 3: 1:1converte*/
+		sc,sc8541d,ss-timeout = <7>; /*0:disable 1:10ms 2:20ms 3:400ms
+		                            4:80ms 5:320ms 6:1.28s 7:10.24s*/
+		sc,sc8541d,wd-timeout-dis = <1>;
+		sc,sc8541d,wd-timeout = <0>; /*0:0.5s 1:1s 2:5s 3:30s*/
+		sc,sc8541d,vout-ovp-dis = <0>;
+		sc,sc8541d,vout-ovp = <1>; /*0:4700mv 1:5000mv*/
+		sc,sc8541d,fsw-freq = <7>; /*500 + val * 100*/
+		sc,sc8541d,pin-diag-fall-dis = <0>;
+		sc,sc8541d,them-flt-dis = <1>;
+		sc,sc8541d,tshut-dis = <1>;
+		sc,sc8541d,ibus-ucp-dis = <0>;
+		sc,sc8541d,ibat-reg-dis = <0>;
+		sc,sc8541d,ibus-reg-dis = <0>;
+		sc,sc8541d,vbat-reg-dis = <0>;
+		sc,sc8541d,tdie-reg-dis = <1>;
+		sc,sc8541d,ibat-ocp-dg = <0>; /*0:80us 1:320us 2:640us 3:5ms*/
+		sc,sc8541d,ibus-ucp-fall-dg = <1>; /*0:8us 1:5ms 2:40ms 3:160ms*/
+		sc,sc8541d,ibus-ocp-dg = <0>; /*0:80us 1:320us 2:640us 3:5ms*/
+		sc,sc8541d,vbat-ovp-dg = <0>; /*0:8us 1:640us 2:1.28ms 3:5ms*/
+	};
+
+	sc8541d-slave@63{
+		compatible = "southchip,sc8541d-slave";
+		reg = <0x63>;
+		sc8541d,intr_gpio = <&pio 11 IRQ_TYPE_EDGE_FALLING>;
+		charger_name = "secondary_dvchg";
+
+		sc,sc8541d,vbat-ovp-dis = <0>;
+		sc,sc8541d,vbat-ovp = <90>; /*3840 + val * 10*/
+		sc,sc8541d,ibat-ocp-dis = <1>;
+		sc,sc8541d,ibat-ocp = <81>; /*val * 100*/
+		sc,sc8541d,vbus-ovp-dis = <0>;
+		sc,sc8541d,vbus-ovp = <3>; /*10500 + val * 500*/
+		sc,sc8541d,vac-ovp-dis = <0>;
+		sc,sc8541d,vac-ovp = <2>; /*0:6.5V 1:11V 2:12V 3:13V 4:14V 5~7:15V*/
+		sc,sc8541d,ibus-ocp-dis = <1>;
+		sc,sc8541d,ibus-ocp = <100>; /*val * 50*/
+		sc,sc8541d,pmid2out-ovp-dis = <0>;
+		sc,sc8541d,pmid2out-ovp = <0>; /*400 + val * 100*/
+		sc,sc8541d,pmid2out-uvp-dis = <0>;
+		sc,sc8541d,pmid2out-uvp = <1>; /*100 + val * 50*/
+		sc,sc8541d,ibatreg = <0>; /*200 + val * 100*/
+		sc,sc8541d,ibusreg = <0>; /*100 + val * 50*/
+		sc,sc8541d,vbatreg = <0>; /*50 + val * 50*/
+		sc,sc8541d,tdiereg = <1>; /*0:90°C 1:100°C 2:110°C 3:120°C*/
+		sc,sc8541d,them-flt = <24>; /*val * 25*/
+		sc,sc8541d,ibat-sns-res = <0>; /*0:2hmo 1:5hmo*/
+		sc,sc8541d,pmid-pd-en = <0>;
+		sc,sc8541d,vbus-pd-en = <0>;
+		sc,sc8541d,work-mode = <0>; /*0: 2:1charge   1: 1:1charge
+		                             2: 1:2converte 3: 1:1converte*/
+		sc,sc8541d,ss-timeout = <7>; /*0:disable 1:10ms 2:20ms 3:400ms
+		                            4:80ms 5:320ms 6:1.28s 7:10.24s*/
+		sc,sc8541d,wd-timeout-dis = <1>;
+		sc,sc8541d,wd-timeout = <0>; /*0:0.5s 1:1s 2:5s 3:30s*/
+		sc,sc8541d,vout-ovp-dis = <0>;
+		sc,sc8541d,vout-ovp = <1>; /*0:4700mv 1:5000mv*/
+		sc,sc8541d,fsw-freq = <7>; /*500 + val * 100*/
+		sc,sc8541d,pin-diag-fall-dis = <0>;
+		sc,sc8541d,them-flt-dis = <1>;
+		sc,sc8541d,tshut-dis = <1>;
+		sc,sc8541d,ibus-ucp-dis = <0>;
+		sc,sc8541d,ibat-reg-dis = <0>;
+		sc,sc8541d,ibus-reg-dis = <0>;
+		sc,sc8541d,vbat-reg-dis = <0>;
+		sc,sc8541d,tdie-reg-dis = <1>;
+		sc,sc8541d,ibat-ocp-dg = <0>; /*0:80us 1:320us 2:640us 3:5ms*/
+		sc,sc8541d,ibus-ucp-fall-dg = <1>; /*0:8us 1:5ms 2:40ms 3:160ms*/
+		sc,sc8541d,ibus-ocp-dg = <0>; /*0:80us 1:320us 2:640us 3:5ms*/
+		sc,sc8541d,vbat-ovp-dg = <0>; /*0:8us 1:640us 2:1.28ms 3:5ms*/
+	};
 };
 
 &moto_wlc {
