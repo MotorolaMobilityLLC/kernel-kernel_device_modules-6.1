@@ -307,3 +307,8 @@ config AF_NOISE_ELIMINATION
 	default n
 	help
 	  Enable it only for product that suffering AF resonance noise
+
+config MTK_PROJECT_NAME
+        string "set project name"
+        help
+          This config is set as project name for OIS to select configuration.
