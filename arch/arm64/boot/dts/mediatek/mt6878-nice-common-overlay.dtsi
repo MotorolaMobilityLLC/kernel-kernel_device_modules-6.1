@@ -12,6 +12,7 @@
 
 #include "mediatek/mt6878-moto-common-overlay-single-panel.dtsi"
 
+#include "mediatek/mot-nice-external-camera-pmic.dtsi"
 #include "mediatek/cust_nice_camera_v4l2.dtsi"
 #include "mediatek/nice-charger.dtsi"
 #include "mediatek/nice-fps.dtsi"
