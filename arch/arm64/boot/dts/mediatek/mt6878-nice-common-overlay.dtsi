@@ -18,6 +18,7 @@
 #include "mediatek/nice-ntc.dtsi"
 #include "mediatek/nice-display.dtsi"
 #include "mediatek/nice-touch.dtsi"
+#include <dt-bindings/gpio/gpio.h>
 
 &pio {
 	nfc_spi_cs_mode_spi: nfc_spi_cs_mode_spi {
@@ -279,8 +280,25 @@
 	status = "disabled";
 };
 
+&spmi {
+	second_pmic@5 {
+		regulators {
+			mt6369_vmch_eint_low: vmch-eint-low {
+				regulator-compatible = "VMCH_EINT_LOW";
+				regulator-name = "mt6369_vmch_eint_low";
+				regulator-min-microvolt = <1200000>;
+				regulator-max-microvolt = <3500000>;
+				regulator-enable-ramp-delay = <680>;
+				regulator-allowed-modes = <0 2>;
+			};
+		};
+	};
+};
+
 &mmc1 {
-	status = "disabled";
+	status = "ok";
+        cd-gpios = <&pio 14 GPIO_ACTIVE_HIGH>;
+        vmmc-supply = <&mt6369_vmch_eint_low>;
 };
 
 &i2c6 {
