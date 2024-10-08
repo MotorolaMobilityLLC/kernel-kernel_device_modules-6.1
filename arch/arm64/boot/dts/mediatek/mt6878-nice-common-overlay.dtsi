@@ -305,30 +305,28 @@
  	status = "okay";
 	clock-frequency = <400000>;
 
-	aw882xx_smartpa_rcv: aw882xx@34 {
-		compatible = "awinic,aw882xx_smartpa";
-		#sound-dai-cells = <0>;
+	spk: speaker-amp@5c {
+		compatible = "richtek, rt5512";
+		reg = <0x5c>;
+		status = "disable";
+		sound-name-prefix = "Left";
+	};
+
+	spk_amp1: fs18xx@34 {
+		compatible = "foursemi,fs1815";
 		reg = <0x34>;
-		irq-gpio = <&pio 17 0x0>;
-		/*sync-load = <1>;*/
-		sound-channel = <0>; /*0:pri_l 1:pri_r 2:sec_l 3:sec_r*/
-		aw-re-min = <4000>;
-		aw-re-max= <30000>;
-		/*aw-cali-mode = "none";*/
+		spkr-id = <2>;
+		fwm-name = "frsm-spk2.bin";
 		status = "okay";
 	};
-	aw882xx_smartpa_spk: aw882xx@35 {
-		compatible = "awinic,aw882xx_smartpa";
-		#sound-dai-cells = <0>;
+
+	spk_amp2: fs18xx@35 {
+		compatible = "foursemi,fs1815";
 		reg = <0x35>;
-		irq-gpio = <&pio 10 0x0>;
-		/*sync-load = <1>;*/
-		sound-channel = <1>; /*0:pri_l 1:pri_r 2:sec_l 3:sec_r*/
-		aw-re-min = <4000>;
-		aw-re-max= <30000>;
-		/*aw-cali-mode = "none";*/
-		status = "okay";
-	};
+		spkr-id = <1>;
+		fwm-name = "frsm-spk1.bin";
+ 		status = "okay";
+ 	};
 
 	fsa4480: fsa4480@42 {
 		compatible = "fsa,fsa4480-i2c";
@@ -340,8 +338,26 @@
 &sound {
 	mediatek,spk-i2s = <25 24>;
 	mediatek,speaker-codec {
-		sound-dai = <&aw882xx_smartpa_rcv &aw882xx_smartpa_spk>;
+		sound-dai = <&spk>;
 	};
+};
+
+&frsm_amp {
+	compatible = "foursemi,frsm-amp";
+	frsm,amp-ndev = <2>;
+	frsm,class-enable;
+	status = "okay";
+};
+
+&frsm_amp_mngr {
+	compatible = "audio,spkr-amp-mngr";
+	audio,amp-ndev = <2>;
+	status = "okay";
+};
+
+&snd_audio_dsp {
+	mtk-dsp-call-final = <0x0 0xc 0x11 0x10 0x18000>;
+	swdsp-smartpa-process-enable = <0x0>;
 };
 
 &afe {
