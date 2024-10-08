@@ -29,6 +29,7 @@
 #include "../mediatek/mediatek_v2/mtk_drm_graphics_base.h"
 #endif
 
+#include "include/dsi-panel-mot-csot-nt37706-667-1220x2712-dphy-vdo-120hz-lhbm-alpha.h"
 //#include "../../../misc/mediatek/gate_ic/gate_i2c.h"
 
 /* enable this to check panel self -bist pattern */
@@ -1012,30 +1013,57 @@ static int mode_switch(struct drm_panel *panel,
 }
 
 static struct mtk_panel_para_table panel_lhbm_on[] = {
+	{2, {0x8B, 0x10}},
 	{15, {0xA9, 0x02, 0x00, 0xB5, 0x2C, 0x2C, 0x00, 0x01, 0x00, 0x87, 0x00, 0x02, 0x25, 0xbe, 0x80}},
 };
 
 static struct mtk_panel_para_table panel_lhbm_off[] = {
+	{2, {0x8B, 0x00}},
 	{13, {0xA9, 0x02, 0x00, 0xB5, 0x2C, 0x2C, 0x03, 0x01, 0x00, 0x87, 0x00, 0x00, 0x20}},
 };
 
+
+static void set_lhbm_alpha(unsigned int bl_level)
+{
+	struct mtk_panel_para_table *pTable = &panel_lhbm_on[1];
+
+	unsigned int alpha = 0;
+	unsigned int lhbm_alpha_index = bl_level-1;
+
+	if (bl_level == 0)
+		lhbm_alpha_index = 0;
+	else if (bl_level > 16000)
+		lhbm_alpha_index = 15999;
+
+	alpha = lhbm_alpha[lhbm_alpha_index];
+
+	pTable->para_list[13] = (alpha >> 8) & 0xFF;
+	pTable->para_list[14] = alpha & 0xFF;
+
+	pr_info("%s: backlight %d alpha %d(0x%x, 0x%x)\n", __func__, bl_level, alpha, pTable->para_list[13], pTable->para_list[14]);
+}
 
 static int panel_hbm_set_cmdq(struct lcm *ctx, void *dsi, dcs_grp_write_gce cb, void *handle, uint32_t hbm_state)
 {
 	struct mtk_panel_para_table hbm_on_table = {3, {0x51, 0x0F, 0xFF}};
 	unsigned int para_count = 0;
+	unsigned int level = 0;
+
+	level = atomic_read(&ctx->current_bl);
+
 	if (hbm_state > 2) return -1;
 
 	switch (hbm_state)
 	{
 		case 0:
 			if (ctx->lhbm_en){
-					para_count = sizeof(panel_lhbm_off) / sizeof(struct mtk_panel_para_table);
-					cb(dsi, handle, panel_lhbm_off, para_count);
-				}
+				para_count = sizeof(panel_lhbm_off) / sizeof(struct mtk_panel_para_table);
+				cb(dsi, handle, panel_lhbm_off, para_count);
+			}
 			break;
 		case 1:
 			if (ctx->lhbm_en) {
+				set_lhbm_alpha(level);
 				para_count = sizeof(panel_lhbm_on) / sizeof(struct mtk_panel_para_table);
 				cb(dsi, handle, panel_lhbm_on, para_count);
 
@@ -1045,11 +1073,12 @@ static int panel_hbm_set_cmdq(struct lcm *ctx, void *dsi, dcs_grp_write_gce cb, 
 			break;
 		case 2:
 			if (ctx->lhbm_en){
+				set_lhbm_alpha(level);
 				para_count = sizeof(panel_lhbm_on) / sizeof(struct mtk_panel_para_table);
 				cb(dsi, handle, panel_lhbm_on, para_count);
-			}
-			else
+			} else {
 				cb(dsi, handle, &hbm_on_table, 1);
+			}
 			break;
 		default:
 			break;
