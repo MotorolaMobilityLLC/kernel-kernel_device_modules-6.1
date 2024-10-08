@@ -1033,7 +1033,8 @@ def get_overlay_modules_list():
         #audio
         mgk_64_k61_device_modules.remove("sound/soc/codecs/tfa98xx/snd-soc-tfa98xx.ko")
         mgk_64_k61_device_modules.append("drivers/misc/mediatek/typec/mux/fsa4480-i2c.ko")
-        mgk_64_k61_device_modules.append("sound/soc/codecs/aw882xx/snd-soc-aw882xx.ko")
+        mgk_64_k61_device_modules.append("sound/soc/codecs/fs1815/audio_spkr_amp_mngr.ko")
+        mgk_64_k61_device_modules.append("sound/soc/codecs/fs1815/snd-soc-fs181x.ko")
 
     if "oulu" in DEFCONFIG_OVERLAYS:
         mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/nfc/nxpI2C:nxp_i2c")

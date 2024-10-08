@@ -11470,6 +11470,12 @@ TOP_LDRO7,TOP_LDRO8,TOP_LDRO9,TOP_LDRO10,TOP_LDRO11,TOP_LDRO12,TOP_LDRO13,TOP_LD
 		compatible = "mediatek,goodix-fp";
 	};
 
+	frsm_amp: frsm_amp {
+	};
+
+	frsm_amp_mngr: frsm_amp_mngr {
+	};
+
 	lk_charger: lk-charger {
 		compatible = "mediatek,lk_charger";
 		enable-anime;

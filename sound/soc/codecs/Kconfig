@@ -16,6 +16,7 @@ config DEVICE_MODULES_SND_SOC_ALL_CODECS
 	imply SND_SOC_TFA9874
 	imply SND_SOC_TFA9865
 	imply SND_SOC_TFA9864
+	imply SND_SOC_FS181X
 	help
 	  Normally ASoC codec drivers are only built if a machine driver which
 	  uses them is also built since they are only usable with a machine
@@ -200,6 +201,12 @@ config SND_SOC_FS19XX
 	default n
 	help
 	  Config of FourSemi FS19xx speaker amplifier.
+
+config SND_SOC_FS181X
+	tristate "FourSemi FS181X speaker amplifier"
+	depends on I2C
+	help
+	  FS181X speaker
 
 config SND_SMARTPA_AW882XX
 	tristate "SoC Audio for awinic aw882xxseries"

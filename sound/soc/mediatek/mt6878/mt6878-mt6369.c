@@ -17,6 +17,13 @@
 #include "mt6878-afe-gpio.h"
 #include "../../codecs/mt6369.h"
 #include "../common/mtk-sp-spk-amp.h"
+
+// FourSemi Add V5 Start
+#if IS_ENABLED(CONFIG_SND_SOC_FS181X)
+#include "../../codecs/fs1815/spkr-amp-mngr.h"
+#endif /* CONFIG_SND_SOC_FS181X */
+// FourSemi Add V5 End
+
 /*
  * if need additional control for the ext spk amp that is connected
  * after Lineout Buffer / HP Buffer on the codec, put the control in
@@ -1832,6 +1839,9 @@ static int mt6878_mt6369_dev_probe(struct platform_device *pdev)
 	struct snd_soc_card *card = &mt6878_mt6369_soc_card;
 	struct device_node *platform_node, *spk_node;
 	int ret, i;
+#if IS_ENABLED(CONFIG_SND_SOC_FS181X)
+	int fsm_ret;
+#endif /* CONFIG_SND_SOC_FS181X */
 	struct snd_soc_dai_link *dai_link;
 
 	dev_info(&pdev->dev, "%s() successfully start\n", __func__);
@@ -1897,6 +1907,15 @@ static int mt6878_mt6369_dev_probe(struct platform_device *pdev)
 	else
 		dev_info(&pdev->dev, "%s snd_soc_register_card pss %d\n",
 				__func__, ret);
+
+// FourSemi Add V5 Start
+#if IS_ENABLED(CONFIG_SND_SOC_FS181X)
+	fsm_ret = spkr_amp_dapm_init(card);
+	if (fsm_ret)
+		dev_err(&pdev->dev, "Failed to init spkr amp mngr:%d\n", fsm_ret);
+#endif /* CONFIG_SND_SOC_FS181X */
+// FourSemi Add V5 End
+
 	return ret;
 }
 

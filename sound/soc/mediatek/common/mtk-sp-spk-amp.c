@@ -44,9 +44,12 @@
 
 #ifdef CONFIG_SND_SOC_FS19XX
 static unsigned int mtk_spk_type = 5;
+#elif IS_ENABLED(CONFIG_SND_SOC_FS181X)
+static unsigned int mtk_spk_type = 0;
 #else
 static unsigned int mtk_spk_type;
 #endif
+
 static int mtk_spk_i2s_out = MTK_SPK_I2S_3, mtk_spk_i2s_in = MTK_SPK_I2S_0;
 static struct mtk_spk_i2c_ctrl mtk_spk_list[MTK_SPK_TYPE_NUM] = {
 	[MTK_SPK_NOT_SMARTPA] = {
@@ -176,7 +179,6 @@ int mtk_spk_update_info(struct snd_soc_card *card,
 	if (mtk_spk_type == MTK_SPK_NOT_SMARTPA)
 		goto BYPASS_UPDATE;
 #endif
-
 	/* get hw IPM version */
 	ret = of_property_read_u32(pdev->dev.of_node, "mediatek,ipm", &is_ipm2p0);
 	if (ret) {
