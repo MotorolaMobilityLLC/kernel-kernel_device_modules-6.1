@@ -918,6 +918,9 @@ static int et59041c_i2c_probe(struct i2c_client *i2c,
 	case ET59041C_DEVICE_ID:
 		chip->chip_id = ET59041C;
 		break;
+	case DIO80151C_DEVICE_ID:
+		chip->chip_id = DIO80151C;
+		break;
 	default:
 		dev_err(chip->dev, "Unsupported device id = 0x%x.\n", data);
 		return -ENODEV;

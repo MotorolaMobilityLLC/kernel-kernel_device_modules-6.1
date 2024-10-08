@@ -45,6 +45,7 @@ enum {
 };
 enum et5904_chip_id {
 	ET5904,
+	DIO8015 = 0x4,
 };
 
 struct et5904_pdata {
@@ -107,6 +108,7 @@ struct et5904_regulator {
 
 /* DEVICE IDs */
 #define ET5904_DEVICE_ID	0x00
+#define DIO8015_DEVICE_ID   0x04
 
 #define ET5904_BIT_0		(1 << 0)
 #define ET5904_BIT_1		(1 << 1)
