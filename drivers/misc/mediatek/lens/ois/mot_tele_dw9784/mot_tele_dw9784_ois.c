@@ -1296,6 +1296,45 @@ static int dw9784_init(struct dw9784_device *dw9784)
 	ois_reset();
 	//ret = ois_i2c_wr_u16(m_client, 0x7020, 0x0000);//master
 
+	//set gyro pol and orientation
+	if (0 == strcmp("oulu", CONFIG_MTK_PROJECT_NAME)) {
+		u16 gyro_pol_x = 0;
+		u16 gyro_pol_y = 0;
+		u16 gyro_rot_x1 = 0;
+		u16 gyro_rot_x2 = 0;
+		u16 gyro_rot_y1 = 0;
+		u16 gyro_rot_y2 = 0;
+#if 0
+		ret = ois_i2c_rd_u16(client, 0x7184, &gyro_pol_x);
+		ret = ois_i2c_rd_u16(client, 0x7185, &gyro_pol_y);
+		ret = ois_i2c_rd_u16(client, 0x7186, &gyro_rot_x1);
+		ret = ois_i2c_rd_u16(client, 0x7187, &gyro_rot_x2);
+		ret = ois_i2c_rd_u16(client, 0x7188, &gyro_rot_y1);
+		ret = ois_i2c_rd_u16(client, 0x7189, &gyro_rot_y2);
+		LOG_INF("Check HW gyro pol and orient: 0x%x 0x%x 0x%x 0x%x 0x%x 0x%x\n",
+			gyro_pol_x, gyro_pol_y, gyro_rot_x1,
+			gyro_rot_x2, gyro_rot_y1, gyro_rot_y2);
+#endif
+		ret = ois_i2c_wr_u16(client, 0x7184, 0xFFFF);
+		ret = ois_i2c_wr_u16(client, 0x7185, 0x0001);
+		ret = ois_i2c_wr_u16(client, 0x7186, 0x8000);
+		ret = ois_i2c_wr_u16(client, 0x7187, 0x0000);
+		ret = ois_i2c_wr_u16(client, 0x7188, 0x8000);
+		ret = ois_i2c_wr_u16(client, 0x7189, 0x0000);
+
+		ret = ois_i2c_rd_u16(client, 0x7184, &gyro_pol_x);
+		ret = ois_i2c_rd_u16(client, 0x7185, &gyro_pol_y);
+		ret = ois_i2c_rd_u16(client, 0x7186, &gyro_rot_x1);
+		ret = ois_i2c_rd_u16(client, 0x7187, &gyro_rot_x2);
+		ret = ois_i2c_rd_u16(client, 0x7188, &gyro_rot_y1);
+		ret = ois_i2c_rd_u16(client, 0x7189, &gyro_rot_y2);
+		LOG_INF("Check HW gyro pol and orient: 0x%x 0x%x 0x%x 0x%x 0x%x 0x%x\n",
+			gyro_pol_x, gyro_pol_y, gyro_rot_x1,
+			gyro_rot_x2, gyro_rot_y1, gyro_rot_y2);
+	} else {
+		LOG_INF("not modify gyro pol and orient\n");
+	}
+
 	ret = ois_i2c_rd_u16(client, 0x7011, &lock_ois);
 	LOG_INF("Check HW lock_ois: %x\n", lock_ois);
 	ret = ois_i2c_rd_u16(client, 0x7194, &is_gyro);
