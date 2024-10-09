@@ -77,7 +77,7 @@ obj-$(CONFIG_DRM_PANEL_TM_NT37706_667_1220x2712_DPHY_VDO_120HZ) += dsi-panel-mot
 obj-$(CONFIG_DRM_PANEL_CSOT_NT37706_667_1220x2712_VDO_CYBERT) += dsi-panel-mot-csot-nt37706-667-1220x2712-vdo-cybert.o
 obj-$(CONFIG_DRM_PANEL_MOT_DUMMY_VDO_60HZ) += dsi-panel-mot-dummy-vdo-60hz.o
 obj-$(CONFIG_DRM_PANEL_MOT_DUMMY_CMD_60HZ) += dsi-panel-mot-dummy-cmd-60hz.o
-
+obj-$(CONFIG_DRM_PANEL_TM_NT37706_GT9916_667_120HZ) += dsi-panel-mot-tm-nt37706-gt9916-667-120hz.o
 mediatek-drm-gateic-y := mtk_drm_panel_i2c.o \
 		  mtk_drm_gateic_rt4801h.o \
 		  mtk_drm_gateic_rt4831a.o \
