@@ -19,8 +19,6 @@
 //#include "mediatek/cybert-ntc.dtsi"
 #include "mediatek/cybert-display.dtsi"
 //#include "mediatek/cybert-touch.dtsi"
-#include "mediatek/cybert-connfem.dtsi"
-#include "mediatek/cybert-qorvo-uwb.dtsi"
 #include "mediatek/cybert-audio.dtsi"
 
 &rt5133 {
