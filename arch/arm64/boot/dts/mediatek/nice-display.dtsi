@@ -9,7 +9,6 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  */
-
 &spmi {
 	second_pmic@5 {
 		regulators {
@@ -27,10 +26,9 @@
 
 &mtk_leds {
 	backlight {
-		/delete-property/ max-hw-brightness;
-		/delete-property/ max-brightness;
-		max-brightness = <4080>;
-		max-hw-brightness = <4080>;
+		led-mode = <4>;
+		max-brightness = <16380>;
+		max-hw-brightness = <16380>;
 	};
 };
 
@@ -40,38 +38,10 @@
 
 &dsi0 {
 	status = "okay";
-
+	#address-cells = <1>;
+	#size-cells = <0>;
+	switch-fps = <120>;
 	panel1@0 {
-		/delete-property/ compatible;
-		/delete-property/ pm-enable-gpios;
-		/delete-property/ reset-gpios;
-		/delete-property/ gate-ic;
-
-		compatible = "csot,vtdr6130,cmd,636";
-		reg = <1>;
-		vddi-gpios = <&pio 188 0>;
-		dvdd-gpios = <&pio 28 0>;
-		oled-vci-supply = <&mt6369_vmch>;
-		reset-gpios = <&pio 90 0>;
-		pinctrl-names = "default";
-	};
-
-	panel2@1 {
-		/delete-property/ compatible;
-		/delete-property/ pm-enable-gpios;
-		/delete-property/ reset-gpios;
-		/delete-property/ gate-ic;
-
-		compatible = "tianma,nt37707,cmd,636";
-		reg = <2>;
-		vddi-gpios = <&pio 188 0>;
-		dvdd-gpios = <&pio 28 0>;
-		oled-vci-supply = <&mt6369_vmch>;
-		reset-gpios = <&pio 90 0>;
-		pinctrl-names = "default";
-	};
-
-	panel3@2 {
 		/delete-property/ compatible;
 		/delete-property/ pm-enable-gpios;
 		/delete-property/ reset-gpios;
@@ -80,7 +50,55 @@
 		/delete-property/ lane-swap-setting;
 		/delete-property/ pn-swap-setting;
 
-		compatible = "mot,dummy,vdo,60hz";
+        compatible = "mot,dummy,vdo,60hz";
+        reg = <0>;
+        reset-gpios = <&pio 90 0>;
+		pinctrl-names = "default";
+	};
+	panel2@1 {
+		/delete-property/ compatible;
+		/delete-property/ pm-enable-gpios;
+		/delete-property/ gate-ic;
+
+		compatible = "tianma,nt37706,gt9916,vdo,667";
+		reg = <1>;
+		/*pm-enable-gpios = <&pio 149 0>;*/
+		reset-gpios = <&pio 90 0>;
+		vddi-gpios = <&pio 188 0>;
+		dvdd-supply = <&et59041c_ldo1>;
+		vci-gpios = <&pio 190 0>;
+		res-switch = <2>;
+		rc-enable = <1>;
+		pinctrl-names = "default";
+	};
+
+	panel3@2 {
+		/delete-property/ compatible;
+		/delete-property/ pm-enable-gpios;
+		/delete-property/ reset-gpios;
+		/delete-property/ gate-ic;
+
+		compatible = "tianma,nt37707,vdo,667";
+		reg = <2>;
+
+                pm-enable-gpios = <&pio 188 0>,
+                          <&pio 28 0>,
+                          <&pio 185 0>;
+                reset-gpios = <&pio 90 0>;
+		pinctrl-names = "default";
+		port {
+			panel_in2: endpoint@2 {
+				remote-endpoint = <&dsi_out2>;
+			};
+		};
+	};
+
+	ports {
+		port {
+			dsi_out2: endpoint@2 {
+				remote-endpoint = <&panel_in2>;
+			};
+		};
 	};
 };
 
