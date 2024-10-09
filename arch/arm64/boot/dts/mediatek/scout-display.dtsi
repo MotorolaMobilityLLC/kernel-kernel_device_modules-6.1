@@ -47,24 +47,9 @@
 		/delete-property/ pm-enable-gpios;
 		/delete-property/ reset-gpios;
 		/delete-property/ gate-ic;
-		/delete-property/ swap-from-dts;
-		/delete-property/ lane-swap-setting;
-		/delete-property/ pn-swap-setting;
 
-                compatible = "mot,dummy,vdo,60hz";
-                reg = <1>;
-                reset-gpios = <&pio 90 0>;
-		pinctrl-names = "default";
-	};
-
-	panel3@2 {
-		/delete-property/ compatible;
-		/delete-property/ pm-enable-gpios;
-		/delete-property/ reset-gpios;
-		/delete-property/ gate-ic;
-
-		compatible = "tianma,nt37707,vdo,667";
-		reg = <2>;
+		compatible = "tianma,nt37706,vdo,667";
+		reg = <1>;
 
                 pm-enable-gpios = <&pio 188 0>,
                           <&pio 28 0>,
@@ -76,6 +61,21 @@
 				remote-endpoint = <&dsi_out2>;
 			};
 		};
+	};
+
+	panel3@2 {
+		/delete-property/ compatible;
+		/delete-property/ pm-enable-gpios;
+		/delete-property/ reset-gpios;
+		/delete-property/ gate-ic;
+		/delete-property/ swap-from-dts;
+		/delete-property/ lane-swap-setting;
+		/delete-property/ pn-swap-setting;
+
+                compatible = "mot,dummy,vdo,60hz";
+                reg = <2>;
+                reset-gpios = <&pio 90 0>;
+		pinctrl-names = "default";
 	};
 
 	ports {
