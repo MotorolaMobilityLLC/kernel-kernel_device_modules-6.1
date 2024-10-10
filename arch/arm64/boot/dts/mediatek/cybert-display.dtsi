@@ -47,13 +47,13 @@
 		};
 	};
 
-	panel2@0 {
+	panel2@1 {
 		/delete-property/ compatible;
 		/delete-property/ pm-enable-gpios;
 		/delete-property/ reset-gpios;
 		/delete-property/ gate-ic;
 
-		compatible = "tianma,nt37707,vdo,667";
+		compatible = "csot,nt37706,vdo,667";
 		reg = <1>;
 
                 pm-enable-gpios = <&pio 185 0>,
