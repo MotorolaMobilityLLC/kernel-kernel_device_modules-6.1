@@ -29,7 +29,7 @@
 		bias-pull-up;
 	};
 
-	wls_cps4038_int_default: wls_cps4038_int_default {
+	wls_int_default: wls_int_default {
 		wls_int {
 			pinmux = <PINMUX_GPIO34__FUNC_GPIO34>;
 			input-enable;
@@ -192,29 +192,6 @@
 	mmi,ui_full_soc = <97>;
 };
 
-
-&i2c10 {
-	clock-frequency = <400000>;
-	status = "okay";
-
-	cps_wls_charger@38 {
-		compatible = "cps,wls-charger-cps4038";
-		wireless-fw-name = "cps4038.bin";
-		enable_stop_epp = <1>;
-		enable_rx_offset_detect = <1>;
-		/*stop rx offset detect battery soc*/
-		rod_stop_battery_soc = <90>;
-		bootmode = <&chosen>;
-		reg = <0x38>;
-		cps_wls_int = <&pio 34 0x0>;
-		cps_det_int = <&pio 36 0x0>;
-		wls_mode_select = <&pio 81 0x0>;
-		pinctrl-names = "default";
-		pinctrl-0 = <&wls_cps4038_int_default>;
-		status = "okay";
-	};
-};
-
 &i2c9 {
 	clock-frequency = <400000>;
 	status = "okay";
@@ -367,20 +344,44 @@
 		sc,sc8541d,ibus-ocp-dg = <0>; /*0:80us 1:320us 2:640us 3:5ms*/
 		sc,sc8541d,vbat-ovp-dg = <0>; /*0:8us 1:640us 2:1.28ms 3:5ms*/
 	};
+
+	sc_wls_charger@60 {
+		compatible = "sc9624-wls-chg";
+		reg = <0x60>;
+		wireless-fw-name = "sc9624.bin";
+		wls-int = <&pio 34 0x0>;
+		wls-det-int = <&pio 36 0x0>;
+		wls-mode-select = <&pio 81 0x0>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&wls_int_default>;
+		status = "okay";
+	};
 };
 
 &moto_wlc {
 	compatible = "moto,charger,wlc";
 	gauge = <&smart_battery>;
-	min_charger_voltage = <4600000>;
-	wlc_max_charger_current = <3150000>;
-	wlc_max_input_current = <1150000>;
-	mmi,wls_control_en = <&pio 79 0x0>;
+	bootmode = <&chosen>;
+	min-charger-voltage = <4600000>;
+	wlc-max-charger-current = <3150000>;
+	wlc-max-input-current = <1150000>;
+	enable-stop-epp = <1>;
+	enable-rx-offset-detect = <1>;
+	/*stop rx offset detect battery soc*/
+	rod-stop-battery-soc = <90>;
+	mmi,wls-control-en = <&pio 79 0x0>;
 	pinctrl-names = "default";
 	pinctrl-0 = <&mmi_control_wls_default>;
 	#cooling-cells = <2>;
 	mmi,wlc-rx-mitigation = <(-1) 2500000 2000000 1800000 1200000
 							1000000 800000 500000>;
+	mmi,wlc-thermal-config-com = <400 1>,
+				<420 2>,
+				<425 3>,
+				<430 4>,
+				<435 5>,
+				<455 6>,
+				<470 7>;
 };
 
 &pdc {
