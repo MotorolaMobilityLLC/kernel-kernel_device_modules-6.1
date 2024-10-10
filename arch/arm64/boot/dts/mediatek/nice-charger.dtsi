@@ -14,7 +14,7 @@
 #include <dt-bindings/iio/adc/mediatek,mt6375_adc.h>
 #include <dt-bindings/iio/mt635x-auxadc.h>
 
-&pio {
+/*&pio {
 	bq25960_int_default_master: bq25960_int_default_master {
 		pinmux = <PINMUX_GPIO12__FUNC_GPIO12>;
 		slew-rate= <0>;
@@ -66,11 +66,57 @@
 			output-low;
 		};
 	};
+};*/
+
+&pio {
+	nu2115_int_default_master: nu2115_int_default_master {
+		pinmux = <PINMUX_GPIO12__FUNC_GPIO12>;
+		slew-rate= <0>;
+		input-enable;
+		bias-pull-up;
+	};
+	wt6670_pins_default: wt6670_default_mode {
+		};
+
+	wt6670_pins_scl_low: wt6670_scl_low {
+		pins_cmd_dat {
+			pinmux = <PINMUX_GPIO139__FUNC_GPIO139>;
+			slew-rate = <1>;
+			output-low;
+		};
+	};
+	wt6670_pins_scl_high: wt6670_scl_high {
+		pins_cmd_dat {
+			pinmux = <PINMUX_GPIO139__FUNC_GPIO139>;
+			slew-rate = <1>;
+			output-high;
+		};
+	};
+	wt6670_pins_sda_low: wt6670_sda_low {
+		pins_cmd_dat {
+			pinmux = <PINMUX_GPIO140__FUNC_GPIO140>;
+			slew-rate = <1>;
+			output-low;
+		};
+	};
+	wt6670_pins_sda_high: wt6670_sda_high {
+		pins_cmd_dat {
+			pinmux = <PINMUX_GPIO140__FUNC_GPIO140>;
+			slew-rate = <1>;
+			output-high;
+		};
+	};
+	wt6670_pins_i2c: wt6670_i2c_mode {
+		pins_cmd_dat {
+			pinmux = <PINMUX_GPIO140__FUNC_SDA7>,
+				<PINMUX_GPIO139__FUNC_SCL7>;
+		};
+	};
 };
 
-&mtk_gauge {
+/*&mtk_gauge {
 	status = "disabled";
-};
+};*/
 
 /*
 &mt6375_typec {
@@ -81,6 +127,12 @@
 &mt6375_chg {
 	ircmp-r = <0>;
 	ircmp-v = <0>;
+	dcp15w-support;
+	dcp15w-icl-min = <1000>; //mA
+	dcp15w-icl-max = <3000>; //mA
+	dcp15w-icl-step = <500>; //mA
+	dcp15w-time-step = <300>; //ms
+	dcp15w-time-plug = <800>; //ms
 };
 
 &lk_charger {
@@ -107,7 +159,7 @@
 */
 
 &charger {
-	gauge = <&smart_battery>;
+	gauge = <&mtk_gauge>;
 	battery-cv = <4500000>;
 	max-charger-voltage = <14500000>;
 	ac-charger-current = <3000000>;
@@ -115,17 +167,17 @@
 	ac-charger-input-current = <2000000>;
 	charging-host-charger-current = <1500000>;
 
-	/*pe5 && pdc && pe2 && wlc*/
-	fast_charging_indicator = <0x8014>;
-	/*swchg + 2CP*/
-	charger_configuration= <4>;
+	/*pe5 && pdc && pe2*/
+	fast_charging_indicator = <0x4014>;
+	/*swchg + 1CP*/
+	charger_configuration= <3>;
 
-	wireless_factory_max_current = <3000000>;
-	wireless_factory_max_input_current = <600000>;
+	//wireless_factory_max_current = <3000000>;
+	//wireless_factory_max_input_current = <600000>;
 
 	disable-aicl;
 
-	mmi,enable-mux;
+	//mmi,enable-mux;
 
 	// mmi,mux_wls_switch_en = <&pio 99 0x0>;
 	// mmi,mux_switch_enn_en = <&pio 32 0x0>;
@@ -141,7 +193,7 @@
 	mmi,lower-limit-capacity = <60>;
 	mmi,min-cp-therm-current-ua = <2000000>;
 
-	mmi,pd-pmax-mw = <68000>;
+	mmi,pd-pmax-mw = <30000>;
 	mmi,pd_vbus_low_bound = <5000000>;
 	mmi,pd_vbus_upper_bound = <9000000>;
 
@@ -194,13 +246,13 @@
 };
 
 &smart_battery {
-	status = "okay";
+	status = "disabled";
 	compatible = "mmi,smart-battery";
 	mmi,ui_full_soc = <97>;
 };
 
 
-&i2c10 {
+/*&i2c10 {
 	clock-frequency = <400000>;
 	status = "okay";
 
@@ -209,7 +261,7 @@
 		wireless-fw-name = "cps4038.bin";
 		enable_stop_epp = <1>;
 		enable_rx_offset_detect = <1>;
-		/*stop rx offset detect battery soc*/
+		//stop rx offset detect battery soc
 		rod_stop_battery_soc = <90>;
 		bootmode = <&chosen>;
 		reg = <0x38>;
@@ -220,8 +272,8 @@
 		pinctrl-0 = <&wls_cps4038_int_default>;
 		status = "okay";
 	};
-};
-
+};*/
+/*
 &i2c3 {
 	clock-frequency = <400000>;
 	status = "okay";
@@ -234,7 +286,7 @@
 		              <&mt6375_auxadc MT6375_AUXADC_VREF>;
 		io-channel-names = "bat_temp", "vref";
 
-		uirbat_pull_up_r_full = <100000>;/*100k*/
+		uirbat_pull_up_r_full = <100000>;
 
 		latest_fw_version = [01 02 08 52 32];
 		//batt_serialnums = "SB18D74000";
@@ -305,7 +357,136 @@
 		pinctrl-0 = <&nu2115_int_default_slave>;
 	};
 };
+*/
+&i2c3 {
+	clock-frequency = <400000>;
+	status = "okay";
+	nu2115_master:nu2115-master@6d {
+		status = "okay";
+		compatible = "ti,nu2115-master";
+		reg = <0x6d>;
 
+		nu2115-addr = <0x6d>;
+		nu2115-name = "nu2115-master";
+
+		interrupt-parent = <&pio>;
+		interrupts = <12 IRQ_TYPE_EDGE_FALLING 12 0>;
+		interrupt-names = "nu2115_irq_master";
+
+		pinctrl-names = "default";
+		pinctrl-0 = <&nu2115_int_default_master>;
+	};
+
+};
+
+&i2c7 {
+	status = "okay";
+	wt6670f@35 {
+		status = "okay";
+		compatible = "mediatek,wt6670f_qc3p";
+		reg = <0x35>;
+		wt6670f-reset-gpio = <&pio 25 0x0>;
+		wt6670f-int-gpio = <&pio 10 0x0>;
+		wt6670f-i2c-scl-pin = <&pio 139 0x0>;
+		wt6670f-i2c-sda-pin = <&pio 140 0x0>;
+
+		pinctrl-names = "default",
+						"wt6670_i2c_scl_low", "wt6670_i2c_scl_high",
+						"wt6670_i2c_sda_low", "wt6670_i2c_sda_high",
+						"wt6670_i2c";
+		pinctrl-0 = <&wt6670_pins_default>;
+		pinctrl-1 = <&wt6670_pins_scl_low>;
+		pinctrl-2 = <&wt6670_pins_scl_high>;
+		pinctrl-3 = <&wt6670_pins_sda_low>;
+		pinctrl-4 = <&wt6670_pins_sda_high>;
+		pinctrl-5 = <&wt6670_pins_i2c>;
+	};
+};
+
+&mtk_gauge {
+
+	DIFFERENCE_FULLOCV_ITH = <80>;  /*gauge cut-off current, should overtop ieoc 50ma*/
+	EMBEDDED_SEL = <(1)>;  /*embedded battery,don't remove the battery for user*/
+	VIR_OLDOCV_DIFF_EMB = <3000>; /*0.1mv*/
+	VIR_OLDOCV_DIFF_EMB_LT = <3000>; /*0.1mv*/
+        CURR_MEASURE_20A = <(0)>;
+        UNIT_MULTIPLE = <(1)>;
+
+	/* battery prop */
+	g_temperature = <(50) (25) (10) (0) (-10) (-25) (-30) (-35) (-40) (-45)>;
+	g_FG_PSEUDO100 = <96 96 100 100
+		96 96 100 100
+		96 96 100 100
+		96 96 100 100
+		96 96 100 100
+		100 100 100 100
+		100 100 100 100
+		100 100 100 100
+		100 100 100 100
+		100 100 100 100>;
+
+	g_Q_MAX = <4997 4970 2490 1965
+		5000 5043 2468 1984
+		5046 5025 2310 1946
+		4992 4803 1858 1873
+		4929 4620 1843 1851
+		2211 1652 1533 1541
+		2201 1642 1523 1531
+		2191 1632 1513 1521
+		2181 1622 1503 1511
+		2171 1612 1493 1501>;
+
+	g_Q_MAX_H_CURRENT = <4945 4782 2190 1665
+		4995 4873 2168 1684
+		4998 4870 2010 1646
+		4927 4882 1558 1573
+		4835 4883 1543 1551
+		2210 1650 1533 1541
+		2200 1640 1523 1531
+		2190 1630 1513 1521
+		2180 1620 1503 1511
+		2170 1610 1493 1501>;
+
+	/*vboot voltage for gauge 0%*/
+	g_PMIC_MIN_VOL_row = <4>;
+	g_PMIC_MIN_VOL_col = <10>;
+	g_PMIC_MIN_VOL = <32000  32000  33500  33500
+		32000  32000  33000  33000
+		33000  33500  33000  33000
+		32200  33600  32200  32200
+		31360  33500  31360  31360
+		31000  31000  31000  31000
+		31000  31000  31000  31000
+		31000  31000  31000  31000
+		31000  31000  31000  31000
+		31000  31000  31000  31200>;
+
+	/*Pseudo1 hide percentage*/
+	g_QMAX_SYS_VOL_row = <4>;
+	g_QMAX_SYS_VOL_col = <10>;
+	g_QMAX_SYS_VOL = <32500  32500  34950  34950
+		32500  32500  34950  34950
+		34250  33500  34250  34250
+		34250  33600  34250  34250
+		34250  33500  34250  34250
+		34250  34250  34250  34250
+		32800  32800  32800  32800
+		32800  32800  32800  32800
+		32800  32800  32800  32800
+		32800  32800  32800  32800>;
+
+	SHUTDOWN_1_TIME = <(30)>;
+	ACTIVE_TABLE = <(5)>;
+	r-fg-value = <(2)>;
+	R_FG_VALUE = <(2)>;
+	NO_BAT_TEMP_COMPENSATE = <(1)>;
+
+	df-serialnum = "SB18D94521";
+	#include "bat_setting/mt6878_battery_table_5000mah.dtsi"
+       // #include "bat_setting/mt6855_battery_table_QA50_ATL_WT_5000mah.dtsi"
+};
+
+/*
 &moto_wlc {
 	compatible = "moto,charger,wlc";
 	gauge = <&smart_battery>;
@@ -319,10 +500,10 @@
 	mmi,wlc-rx-mitigation = <(-1) 2500000 2000000 1800000 1200000
 							1000000 800000 500000>;
 };
-
+*/
 &pdc {
 	compatible = "mediatek,charger,pd";
-	gauge = <&smart_battery>;
+	gauge = <&mtk_gauge>;
 
 	min-charger-voltage = <4600000>;
 	pd-vbus-low-bound = <5000000>;
@@ -348,24 +529,29 @@
 };
 
 &pe {
-	gauge = <&smart_battery>;
+	status = "disabled";
+	gauge = <&mtk_gauge>;
 };
 
 &pe45 {
-	gauge = <&smart_battery>;
+	status = "disabled";
+	gauge = <&mtk_gauge>;
 };
 
 &pe5p {
-	gauge = <&smart_battery>;
+	status = "disabled";
+	gauge = <&mtk_gauge>;
 };
 
 &hvbp {
-	gauge = <&smart_battery>;
+	status = "disabled";
+	gauge = <&mtk_gauge>;
 };
 
 &pe2 {
+	status = "disabled";
 	compatible = "mediatek,charger,pe2";
-	gauge = <&smart_battery>;
+	gauge = <&mtk_gauge>;
 
 	/* PE 2.0 */
 	pe20-ichg-level-threshold = <1000000>; /* uA */
@@ -393,7 +579,7 @@
 
 &pe5 {
 	compatible = "mediatek,charger,pe5";
-	gauge = <&smart_battery>;
+	gauge = <&mtk_gauge>;
 	polling-interval = <10000>;
 	vbat-cv = <4530>;
 	start-soc-min = <0>;
@@ -447,6 +633,45 @@
 	mmi_therm_step = <3>;
 	mmi_max_ibat = <12200>;
 	mmi_max_hrst_cnt = <1>;
+};
+&mmi_pehv {
+	compatible = "mmi,pehv";
+	gauge = <&mtk_gauge>;
+	polling-interval = <10000>;
+	vbat-cv = <4550>;
+	start-soc-min = <0>;
+	start-soc-max = <90>;
+	idvchg-cc = <3000>;
+	idvchg-term = <500>;
+	idvchg-step = <50>;
+	idvchg-ss-init = <1000>;
+	idvchg-ss-step = <250>;
+	idvchg-ss-step1 = <100>;
+	idvchg-ss-step2 = <50>;
+	idvchg-ss-step1-vbat = <4000>;
+	idvchg-ss-step2-vbat = <4200>;
+	ta-blanking = <400>;
+	swchg-aicr = <0>;
+	swchg-ichg = <1200>;
+	swchg-aicr-ss-init = <400>;
+	swchg-aicr-ss-step = <200>;
+	swchg-off-vbat = <4250>;
+	force-ta-cv-vbat = <4250>;
+	chg-time-max = <10800>;
+	ifod-threshold = <200>;
+	rsw-min = <20>;
+	ircmp-rbat = <40>;
+	ircmp-vclamp = <0>;
+	vta-cap-min = <6800>;
+	vta-cap-max = <11000>;
+	vta-step = <20>;
+	ita-cap-min = <1000>;
+	vbat-threshold = <4150>;
+	min-charger-voltage = <4600000>;
+	mmi_therm_cur_thres = <500>;
+	mmi_therm_vol_thres = <80>;
+	mmi_therm_step = <3>;
+	mmi_max_ibat = <6000>;
 };
 
 &mt6375_typec {
