@@ -682,6 +682,18 @@ config DRM_PANEL_TIANMA_NT37707_636_FHDP_DPHY_CMD_120HZ
 	  resolution and uses 24-bits RGB per pixel. It provides a
 	  MIPI DSI interface to host.
 
+ config DRM_PANEL_CSOT_NT37706_667_1220x2712_VDO_CYBERT
+	tristate "CSOT NT37706 amoled dphy VIDEO mode panel for cybert	"
+	depends on OF
+	depends on DRM_MIPI_DSI
+	depends on BACKLIGHT_CLASS_DEVICE
+	default n
+	help
+	  Say Y here if you want to enable support for CSOT NT37706
+	  DPHY video mode Full HD+ panel. The panel has a 1220x2712
+	  resolution and uses 24-bits RGB per pixel. It provides a
+	  MIPI DSI interface to host.
+
 config DRM_PANEL_MOT_DUMMY_VDO_60HZ
 	tristate "DRM_PANEL_MOT_DUMMY_VDO_60HZ"
 	depends on OF
