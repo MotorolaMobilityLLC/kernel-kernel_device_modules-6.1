@@ -131,3 +131,9 @@ config FTS_GAME_MODE_EN
 	bool "Support game mode feature"
 	help
 		Say Y here if need to support game mode feature.
+
+config INPUT_FOCALTECH_V3_MMI_ENABLE_DOUBLE_TAP
+
+	bool "Support tap sensor"
+	help
+		Say Y here if need to enable tap sensor.
