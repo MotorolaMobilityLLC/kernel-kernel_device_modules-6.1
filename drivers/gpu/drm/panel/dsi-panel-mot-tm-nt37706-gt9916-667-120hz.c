@@ -67,8 +67,7 @@ enum panel_version{
 
 static enum RES_SWITCH_TYPE res_switch_type = RES_SWITCH_NO_USE;
 static int current_fps = 60;
-static atomic_t current_backlight;
-//?
+
 unsigned int nt37801_wqhs_dsi_cmd_120hz_dphy_buf_thresh[14] = {
 	896, 1792, 2688, 3584, 4480, 5376, 6272, 6720, 7168, 7616, 7744, 7872, 8000, 8064};
 unsigned int nt37801_wqhs_dsi_cmd_120hz_dphy_range_min_qp[15] = {
@@ -181,8 +180,6 @@ static int lcm_panel_get_ab_data(struct drm_panel *panel)
 
 static void lcm_panel_init(struct lcm *ctx)
 {
-	char bl_tb[] = {0x51, 0x0f, 0xff};
-	unsigned int level = 0;
 	printk("%s enter  \n",__func__);
 	udelay(2000);
 	gpiod_set_value(ctx->reset_gpio, 0);
@@ -251,12 +248,7 @@ static void lcm_panel_init(struct lcm *ctx)
 		pr_info("%s current_fps mismatch:%d\n", __func__, current_fps);
 		break;
 	}
-	//lcm_dcs_write_seq_static(ctx, 0x26, 0x00);
-	//backlight
-	level = atomic_read(&current_backlight);
-	bl_tb[1] = (level >> 8) & 0x3f;
-	bl_tb[2] = level & 0xFF;
-	lcm_dcs_write(ctx, bl_tb, ARRAY_SIZE(bl_tb));
+
 	lcm_dcs_write_seq_static(ctx, 0x11);
 	msleep(120);
 	lcm_dcs_write_seq_static(ctx, 0x29);
@@ -515,7 +507,6 @@ static int lcm_setbacklight_cmdq(void *dsi, dcs_write_gce cb,
 	if (!cb)
 		return -1;
 	cb(dsi, handle, bl_tb, ARRAY_SIZE(bl_tb));
-	atomic_set(&current_backlight, level);
 	/*if (!level)
 		atomic_set(&ctx->hbm_mode, 0);*/
 	return 0;
@@ -1163,7 +1154,6 @@ static int lcm_probe(struct mipi_dsi_device *dsi)
 	devm_gpiod_put(dev, ctx->vci_gpio);
 	ctx->prepared = true;
 	ctx->enabled = true;
-	atomic_set(&current_backlight, 2047);
 	drm_panel_init(&ctx->panel, dev, &lcm_drm_funcs, DRM_MODE_CONNECTOR_DSI);
 	drm_panel_add(&ctx->panel);
 	ret = mipi_dsi_attach(dsi);
