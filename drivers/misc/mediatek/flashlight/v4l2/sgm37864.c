@@ -58,11 +58,11 @@
 #define SGM37864_TORCH_RAMP_TIME   		(0x10)
 
 /*  FLASH Brightness
- *	min 3910uA, step 7830uA, max 2000000uA
+ *	min 28340uA, step 7510uA, max 1943000uA
  */
-#define SGM37864_FLASH_BRT_MIN 3910
-#define SGM37864_FLASH_BRT_STEP 7830
-#define SGM37864_FLASH_BRT_MAX 2000000
+#define SGM37864_FLASH_BRT_MIN 28340
+#define SGM37864_FLASH_BRT_STEP 7510
+#define SGM37864_FLASH_BRT_MAX 1943000
 #define SGM37864_FLASH_BRT_uA_TO_REG(a)	\
 	((a) < SGM37864_FLASH_BRT_MIN ? 0 :	\
 	 (((a) - SGM37864_FLASH_BRT_MIN) / SGM37864_FLASH_BRT_STEP))
@@ -74,14 +74,14 @@
  */
 #define SGM37864_FLASH_TOUT_MIN 40
 #define SGM37864_FLASH_TOUT_STEP 40
-#define SGM37864_FLASH_TOUT_MAX 280
+#define SGM37864_FLASH_TOUT_MAX 400
 
 /*  TORCH BRT
- *	min 980uA, step 1960uA, max 500000uA
+ *	min 7330uA, step 1970uA, max 510000uA
  */
-#define SGM37864_TORCH_BRT_MIN 980
-#define SGM37864_TORCH_BRT_STEP 1960
-#define SGM37864_TORCH_BRT_MAX 500000
+#define SGM37864_TORCH_BRT_MIN 7330
+#define SGM37864_TORCH_BRT_STEP 1970
+#define SGM37864_TORCH_BRT_MAX 510000
 #define SGM37864_TORCH_BRT_uA_TO_REG(a)	\
 	((a) < SGM37864_TORCH_BRT_MIN ? 0 :	\
 	 (((a) - SGM37864_TORCH_BRT_MIN) / SGM37864_TORCH_BRT_STEP))
@@ -383,7 +383,7 @@ static int sgm37864_flash_tout_ctrl(struct sgm37864_flash *flash,
 	}
 	else
 	{
-		tout_bits = 0x06;  //The register value represents 280ms
+		tout_bits = 0x09;  //The register value represents 400ms
 	}
 	rval = regmap_update_bits(flash->regmap,
 				  REG_FLASH_TOUT, 0x0f, tout_bits);
