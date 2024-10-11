@@ -18,7 +18,7 @@
 #include "mediatek/cybert-fps.dtsi"
 //#include "mediatek/cybert-ntc.dtsi"
 #include "mediatek/cybert-display.dtsi"
-//#include "mediatek/cybert-touch.dtsi"
+#include "mediatek/cybert-touch.dtsi"
 #include "mediatek/cybert-audio.dtsi"
 
 &rt5133 {
