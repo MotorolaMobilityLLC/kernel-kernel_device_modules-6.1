@@ -152,6 +152,8 @@
 
 	mmi,enable-mux;
 
+	mmi,enable-ifc;
+
 	/*mmi config*/
 	mmi,typec-rp-max-current = <2000000>;
 

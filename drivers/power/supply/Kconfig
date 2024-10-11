@@ -252,6 +252,12 @@ config MOTO_1200_CYCLE
         help
           This is to enable MOTO supports of 1200 cycle feature.
 
+config MOTO_1800_CYCLE
+        bool "1800 cycle support"
+        default n
+        help
+          This is to enable MOTO supports of 1800 cycle feature.
+
 config MOTO_FACTORY_LPD
         bool "factory lpd support"
         default n

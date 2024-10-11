@@ -330,6 +330,19 @@ struct mmi_cycle_cv_steps {
 };
 #endif
 
+enum mmi_ifc_zones {
+	IFC_ZONE_FIRST = 0,
+	/* states 0-9 are reserved for zones */
+	IFC_ZONE_NONE = 0xFF,
+};
+
+enum mmi_ifc_step {
+	IFC_STEP_MAX,
+	IFC_STEP_FULL,
+	IFC_STEP_STOP,
+	IFC_STEP_NONE = 0xFF,
+};
+
 struct mmi_thermal_config {
 	int		temp_c;
 	int		level;
@@ -359,6 +372,7 @@ enum mmi_chrg_step {
 	STEP_FLOAT,
 	STEP_DEMO,
 	STEP_STOP,
+	STEP_IFC,
 	STEP_NONE = 0xFF,
 };
 
@@ -422,6 +436,16 @@ struct mmi_params {
 	struct mmi_sm_params	sm_param[3];
 	int			temp_state;
 	int			back_chrg_iterm;
+
+	bool			enable_ifc;
+	struct ifc_ops		*ifc_ops;
+	int			num_ifc_zones;
+	int			pres_num_ifc_zones;
+	struct mmi_ifc_zone	*ifc_zones;
+	enum mmi_ifc_zones	pres_ifc_zone;
+	enum mmi_ifc_step	pres_ifc_step;
+	bool			ifc_is_working;
+	int			ifc_taper_cnt;
 
 	bool			enable_charging_limit;
 	bool			is_factory_image;

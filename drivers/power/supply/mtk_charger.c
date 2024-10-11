@@ -3350,6 +3350,7 @@ static char *stepchg_str[] = {
 	[STEP_FLOAT]	= "FLOAT",
 	[STEP_DEMO]		= "DEMO",
 	[STEP_STOP]		= "STOP",
+	[STEP_IFC]		= "IFC",
 	[STEP_NONE]		= "NONE",
 };
 
@@ -4231,6 +4232,223 @@ int mmi_get_batt_cv_delata_by_cycle(int batt_cycle)
 }
 #endif
 
+static int mmi_get_ifc_init_step_zone(struct mtk_charger *info, int vbat)
+{
+	int i;
+	struct mmi_ifc_zone *ifc_zone;
+	int target_zone;
+
+	ifc_zone = info->mmi.ifc_zones;
+	for (i = 0; i < info->mmi.num_ifc_zones; i++) {
+		if (vbat <= ifc_zone[i].norm_mv)
+			break;
+	}
+
+	if (i < info->mmi.num_ifc_zones)
+		target_zone = i;
+	else {
+		pr_info("IFC:[%s]: vbat %d, use max voltage zone\n",__func__, vbat);
+		for (i = 0; i < info->mmi.num_ifc_zones - 1; i++) {
+			if (ifc_zone[i].norm_mv > ifc_zone[i + 1].norm_mv)
+				break;
+		}
+		target_zone= i;
+	}
+
+	pr_info("IFC:[%s] vbat = %d,"
+			"Init Zone %d, "
+			"CV Volt %d mV, MAX Current %d mA, "
+			"Taper Current %d mA\n", __func__, vbat, target_zone,
+			info->mmi.ifc_zones[target_zone].norm_mv,
+			info->mmi.ifc_zones[target_zone].fcc_max_ma,
+			info->mmi.ifc_zones[target_zone].fcc_norm_ma);
+
+	return target_zone;
+}
+
+static void mmi_reset_ifc_zone(struct mtk_charger *info)
+{
+	if (info->mmi.ifc_zones) {
+		kfree(info->mmi.ifc_zones);
+		info->mmi.ifc_zones = NULL;
+	}
+
+	info->mmi.num_ifc_zones = 0;
+}
+static int mmi_get_ifc_step_arrary_from_fg(struct mtk_charger *info)
+{
+	int rc = 0;
+	int num, i;
+
+	mmi_reset_ifc_zone(info);
+
+	rc = info->mmi.ifc_ops->ifc_get_step_num(&num);
+	if (rc < 0) {
+		pr_err("IFC:[%s]Couldn't ifc_get_step_mum rc = %d\n", __func__, rc);
+		return rc;
+	}
+
+	info->mmi.ifc_zones = (struct mmi_ifc_zone *)kzalloc(num * sizeof(struct mmi_ifc_zone), GFP_KERNEL);
+	if (info->mmi.ifc_zones == NULL)
+		return -ENOMEM;
+	info->mmi.num_ifc_zones = num;
+
+	rc = info->mmi.ifc_ops->ifc_get_step(info->mmi.ifc_zones, num);
+	if (rc < 0) {
+		mmi_reset_ifc_zone(info);
+		pr_err("IFC:[%s]Couldn't read ifc  zones rc = %d\n", __func__, rc);
+		return rc;
+	}
+
+	pr_info("IFC:[%s]"
+		"ifc zones: Num: %d\n", __func__, info->mmi.num_ifc_zones);
+	for (i = 0; i < info->mmi.num_ifc_zones; i++) {
+		pr_info("IFC:[%s]"
+			" Zone %d, "
+			"CV Volt %d mV, MAX Current %d mA, "
+			"Taper Current %d mA\n", __func__, i,
+			info->mmi.ifc_zones[i].norm_mv,
+			info->mmi.ifc_zones[i].fcc_max_ma,
+			info->mmi.ifc_zones[i].fcc_norm_ma);
+	}
+
+	return 0;
+}
+
+static void mmi_ifc_stop(struct mtk_charger *info)
+{
+	if (info->mmi.sm_param[BASE_BATT].pres_chrg_step  == STEP_IFC)
+		info->mmi.sm_param[BASE_BATT].pres_chrg_step  = STEP_NONE;
+
+	if (info->mmi.ifc_ops
+		&& info->mmi.pres_ifc_step != IFC_STEP_STOP) {
+		info->mmi.ifc_ops->ifc_enable(false);
+		info->mmi.pres_ifc_step  = IFC_STEP_STOP;
+	}
+}
+
+#define IFC_MAX_TMP 45
+#define IFC_MIN_TMP 15
+static bool mmi_ifc_start(struct mtk_charger *info, int batt_temp,
+	int batt_mv, int charger_present)
+{
+	bool enable = false;
+	bool changed = false;
+	bool plugin = false;
+
+	if (!info->mmi.ifc_ops) {
+		pr_err( "IFC:*** Error : can't find ifc_chg_ops ***\n");
+		return false;
+	}
+
+	plugin = charger_present && info->mmi.pres_ifc_step == IFC_STEP_NONE;
+	if (info->mmi.demo_mode
+		||info->mmi.factory_mode
+		||info->mmi.is_factory_image
+		||info->mmi.adaptive_charging_disable_ichg
+		||(batt_temp > IFC_MAX_TMP)
+		||(batt_temp < IFC_MIN_TMP))
+		goto end;
+
+	if (info->mmi.ifc_ops->ifc_enable( true) < 0)
+		goto end;
+	if (info->mmi.ifc_ops->ifc_set_temp(batt_temp * 10) < 0)
+		goto end;
+
+	if (info->mmi.ifc_ops->ifc_is_on(&enable)  < 0 ||!enable)
+		goto end;
+
+	if (info->mmi.ifc_ops->ifc_is_change(&changed)  < 0)
+		goto end;
+
+	if (changed || plugin) {
+		/*wait 1s to fg ifc ready*/
+		msleep(1000);
+		if (mmi_get_ifc_step_arrary_from_fg(info) < 0)
+			goto end;
+		if (info->mmi.ifc_ops->ifc_change_clr()  < 0)
+			goto end;
+
+		info->mmi.pres_ifc_zone = mmi_get_ifc_init_step_zone(info, batt_mv);
+		info->mmi.pres_num_ifc_zones = info->mmi.num_ifc_zones;
+	}
+
+	if (!info->mmi.ifc_zones || info->mmi.pres_ifc_zone >= info->mmi.num_ifc_zones) {
+		pr_err( "IFC:*** ifc zone is not ready***\n");
+		goto end;
+	} else
+		return true;
+end:
+	pr_err( "IFC:*** Stop ifc ***\n");
+	mmi_ifc_stop(info);
+
+	return false;
+}
+
+#define IFC_HYST_STEP_MV 50
+static void mmi_ifc_heart_work(struct mtk_charger *info, int batt_mv, int batt_ma, int batt_soc)
+{
+	int max_fv_mv;
+	struct mmi_params *mmi = &info->mmi;
+	struct mmi_ifc_zone *ifc_zone;
+
+	ifc_zone = &mmi->ifc_zones[mmi->pres_ifc_zone];
+	max_fv_mv = mmi->ifc_zones[mmi->num_ifc_zones-1].norm_mv;
+	pr_info("IFC:[%s]"
+			" pre ifc zone %d, pre ifc step %d, "
+			"Battery Volt %d mV, Battery Current %d mA\n",
+			 __func__,  mmi->pres_ifc_zone,
+			 mmi->pres_ifc_step, batt_mv, batt_ma);
+
+	if (mmi->pres_ifc_step == IFC_STEP_NONE) {
+		mmi->pres_ifc_step = IFC_STEP_MAX;
+	} else if (mmi->pres_ifc_step == IFC_STEP_STOP) {
+		info->mmi.pres_ifc_zone = mmi_get_ifc_init_step_zone(info, batt_mv);
+		mmi->pres_ifc_step = IFC_STEP_MAX;
+	} else if (mmi->pres_ifc_step == IFC_STEP_MAX) {
+		if ((batt_mv + IFC_HYST_STEP_MV) < ifc_zone->norm_mv) {
+			mmi->ifc_taper_cnt = 0;
+			mmi->pres_ifc_step = IFC_STEP_MAX;
+		} else if (mmi_has_current_tapered(info, &mmi->sm_param[BASE_BATT], batt_ma,
+						 ifc_zone->fcc_norm_ma)) {
+			mmi->ifc_taper_cnt = 0;
+			if (mmi->pres_ifc_zone >= info->mmi.num_ifc_zones - 1) {
+				mmi->pres_ifc_zone = info->mmi.num_ifc_zones - 1;
+				mmi->pres_ifc_step = IFC_STEP_FULL;
+			} else {
+				mmi->pres_ifc_zone++;
+				mmi->pres_ifc_step = IFC_STEP_MAX;
+			}
+		}
+	} else if (mmi->pres_ifc_step == IFC_STEP_FULL) {
+		if (batt_soc <= 95) {
+			mmi->ifc_taper_cnt = 0;
+			mmi->pres_ifc_step = IFC_STEP_MAX;
+		}
+	}
+
+	pr_info("IFC:[%s]"
+			" Now ifc zone is %d, step is %d, "
+			"CV Volt %d mV, MAX Current %d mA, "
+			"Taper Current %d mA\n", __func__, mmi->pres_ifc_zone, mmi->pres_ifc_step,
+			info->mmi.ifc_zones[mmi->pres_ifc_zone].norm_mv,
+			info->mmi.ifc_zones[mmi->pres_ifc_zone].fcc_max_ma,
+			info->mmi.ifc_zones[mmi->pres_ifc_zone].fcc_norm_ma);
+}
+
+int mmi_ifc_ops_register(struct ifc_ops *ops)
+{
+	if (!ops ||!mmi_info) {
+		pr_err("IFC:%s invalide chg ops(null)\n", __func__);
+		return -EINVAL;
+	}
+
+	mmi_info->mmi.ifc_ops = ops;
+
+	return 0;
+}
+EXPORT_SYMBOL(mmi_ifc_ops_register);
+
 #define WARM_TEMP 45
 #define COOL_TEMP 0
 #define HYST_STEP_MV 50
@@ -4255,6 +4473,8 @@ static void mmi_basic_charge_sm(struct mtk_charger *info,
 	int batt_cv_delata = 0;
 #endif
 	union power_supply_propval val;
+	struct mmi_ifc_zone *ifc_zone;
+	int ifc_max_fv_mv = -EINVAL;
 
 	if (!prm->temp_zones) {
 		pr_err("[%s]temp_zones is NULL\n", __func__);
@@ -4289,11 +4509,19 @@ static void mmi_basic_charge_sm(struct mtk_charger *info,
 
 		val.intval = true;
 		mmi_set_prop_to_battery(info, POWER_SUPPLY_PROP_TYPE, &val);
+
+		if (mmi->enable_ifc)
+			mmi->ifc_is_working = mmi_ifc_start(info, state->batt_temp, state->batt_mv, state->charger_present);
 	} else {
 		max_fv_mv = mmi_get_zone_fv(prm, prm->normal_zones, prm->num_normal_zones, state->batt_temp);
 
 		val.intval = false;
 		mmi_set_prop_to_battery(info, POWER_SUPPLY_PROP_TYPE, &val);
+		if (mmi->ifc_is_working) {
+			pr_info("IFC:[%s] Stop IFC duet to not at FFC\n", __func__);
+			mmi->ifc_is_working = false;
+			mmi_ifc_stop(info);
+		}
 	}
 
 #ifdef CONFIG_MOTO_1200_CYCLE
@@ -4322,6 +4550,7 @@ static void mmi_basic_charge_sm(struct mtk_charger *info,
 
 	if (!state->charger_present) {
 		prm->pres_chrg_step = STEP_NONE;
+		mmi->pres_ifc_step= IFC_STEP_NONE;
 	} else if ((prm->pres_temp_zone == ZONE_HOT) ||
 		   (prm->pres_temp_zone == ZONE_COLD) ||
 		   (prm->charging_limit_modes == CHARGING_LIMIT_RUN)) {
@@ -4358,7 +4587,10 @@ static void mmi_basic_charge_sm(struct mtk_charger *info,
 
 		pr_info("Charge Demo Mode:us = %d, vf = %d, dfs = %d,bs = %d\n",
 				usb_suspend, voltage_full, demo_full_soc, state->batt_soc);
-	} else if (prm->pres_chrg_step == STEP_NONE) {
+	}   else if (mmi->ifc_is_working) {
+		prm->pres_chrg_step = STEP_IFC;
+		mmi_ifc_heart_work(info, state->batt_mv, state->batt_ma, state->batt_soc);
+	}  else if (prm->pres_chrg_step == STEP_NONE) {
 		if (zone->norm_mv && ((state->batt_mv + 2 * HYST_STEP_MV) >= zone->norm_mv)) {
 			if (zone->fcc_norm_ma)
 				prm->pres_chrg_step = STEP_NORM;
@@ -4454,6 +4686,30 @@ static void mmi_basic_charge_sm(struct mtk_charger *info,
 	case STEP_DEMO:
 		target_fv = DEMO_MODE_VOLTAGE;
 		target_fcc = zone->fcc_max_ma;
+		break;
+	case STEP_IFC:
+		ifc_zone = &mmi->ifc_zones[mmi->pres_ifc_zone];
+		ifc_max_fv_mv = mmi->ifc_zones[mmi->num_ifc_zones-1].norm_mv;
+		switch (mmi->pres_ifc_step) {
+		case IFC_STEP_MAX:
+			target_fv = ifc_zone->norm_mv;
+			target_fcc = ifc_zone->fcc_max_ma;
+			break;
+		case IFC_STEP_FULL:
+			target_fv = ifc_max_fv_mv;
+			target_fcc = -EINVAL;
+			break;
+		case IFC_STEP_STOP:
+			target_fv = ifc_max_fv_mv;
+			target_fcc = -EINVAL;
+			break;
+		case IFC_STEP_NONE:
+			target_fv = ifc_max_fv_mv;
+			target_fcc = ifc_zone->fcc_norm_ma;
+			break;
+		default:
+			break;
+		}
 		break;
 	default:
 		break;
@@ -5429,6 +5685,9 @@ static int parse_mmi_dt(struct mtk_charger *info, struct device *dev)
 		pr_err("[%s]mmi cycle cv steps is not set\n", __func__);
 	}
 #endif
+
+	info->mmi.enable_ifc =
+		of_property_read_bool(node, "mmi,enable-ifc");
 
 	info->mmi.enable_mux =
 		of_property_read_bool(node, "mmi,enable-mux");
