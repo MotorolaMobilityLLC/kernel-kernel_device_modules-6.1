@@ -56,7 +56,7 @@ static const struct svdm_svid_ops svdm_svid_ops[] = {
 		.svid = USB_VID_MMI_ADAPTER,
 		.notify_pe_startup = mmi_dfp_notify_pe_startup,
 		.dfp_inform_svids = mmi_dfp_u_notify_discover_svid,
-		.dfp_notify_uvdm = mmi_dfp_notify_uvdm,
+		.dfp_notify_cvdm = mmi_dfp_notify_uvdm,
 		.notify_pe_ready = mmi_notify_pe_ready,
 	},
 #endif /* CONFIG_SUPPORT_MMI_ADAPTER */
@@ -98,7 +98,7 @@ static void pd_dpm_update_pdos_flags(struct pd_port *pd_port, uint32_t pdo,
 	pd_port->pe_data.dpm_flags = dpm_flags;
 #ifdef CONFIG_SUPPORT_MMI_ADAPTER
 	DPM_INFO("pd_dpm_update_pdos_flags,flag:%d,dpm_flag:%d,dpm_caps:%d\n",dynamic_dpm_caps,pd_port->pe_data.dpm_flags,pd_port->dpm_caps);
-	if(dynamic_dpm_caps && ((pdo & PDO_FIXED_COMM_CAP) || !pd_is_source_support_apdo(pd_port))) {
+	if(dynamic_dpm_caps && ((pdo & PDO_FIXED_USB_COMM) || !pd_is_source_support_apdo(pd_port))) {
 		pd_port->dpm_caps &= ~DPM_CAP_DR_CHECK_PROP(2);
 		DPM_INFO("pd_dpm_update_pdos_flags, dpm_caps:%d\n",pd_port->dpm_caps);
 	}
