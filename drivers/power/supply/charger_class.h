@@ -85,6 +85,23 @@ union charger_propval {
 	const char *strval;
 };
 
+struct mmi_ifc_zone {
+	int		fcc_max_ma;
+	int		norm_mv;
+	int		fcc_norm_ma;
+};
+struct ifc_ops {
+	int *data;
+	int (*ifc_enable)(bool enable);
+	int (*ifc_set_temp)(int temp);
+	int (*ifc_is_on)(bool *en);
+	int (*ifc_is_change)(bool *en);
+	int (*ifc_change_clr)(void);
+	int (*ifc_get_step)(struct mmi_ifc_zone *out, int zone_num);
+	int (*ifc_get_step_num)(int *out);
+};
+extern int mmi_ifc_ops_register(struct ifc_ops *ops);
+
 struct charger_ops {
 	int (*suspend)(struct charger_device *dev, pm_message_t state);
 	int (*resume)(struct charger_device *dev);
