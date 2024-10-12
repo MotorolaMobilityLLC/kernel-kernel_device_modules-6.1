@@ -724,7 +724,7 @@ config DRM_PANEL_MOT_DUMMY_CMD_60HZ
 	  Say Y here if you want to enable support for DRM_PANEL_MOT_DUMMY_CMD_60HZ
 	  panel. It provides a MIPI DSI interface to host.
 
-config DRM_PANEL_TM_NT37706_GT9916_667_120HZ
+config DRM_PANEL_TM_NT37706_667_1220x2712_VDO_NICE
 	tristate "NT37706 fhd plus vdo panel"
 	depends on OF
 	depends on DRM_MIPI_DSI
