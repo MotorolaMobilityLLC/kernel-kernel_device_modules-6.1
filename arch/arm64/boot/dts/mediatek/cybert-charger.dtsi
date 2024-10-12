@@ -70,10 +70,10 @@
                 };
         };
 
-	external_otg_boost: external_boost_otg {
+	/*external_otg_boost: external_boost_otg {
                 pinmux = <PINMUX_GPIO25__FUNC_GPIO25>;
                 output-low;
-        };
+        };*/
 };
 
 &mtk_gauge {
@@ -89,7 +89,7 @@
 &mt6375_chg {
 	ircmp-r = <0>;
 	ircmp-v = <0>;
-	mmi,external_otg_boost = <&pio 25 0x0>;
+//	mmi,external_otg_boost = <&pio 25 0x0>;
 };
 
 &lk_charger {
@@ -137,9 +137,9 @@
 	mmi,enable-mux;
 
 	// mmi,mux_switch_enn_en = <&pio 32 0x0>;
-	mmi,mux_wls_switch_en = <&pio 122 0x0>;
+	/*mmi,mux_wls_switch_en = <&pio 122 0x0>;
 	mmi,mux_usb_switch_en = <&pio 33 0x0>;
-	mmi,mux_wls_boost_en = <&pio 25 0x0>;
+	mmi,mux_wls_boost_en = <&pio 25 0x0>;*/
 	/* dynamic mivr */
 	enable-dynamic-mivr;
 
@@ -248,7 +248,7 @@
         sc,sc858x,mode = <1>; /*0:4->1 1:2->1 2:1->1 4:1<-4 5:1<-2 6:1<-1*/
         sc,sc858x,tshut-dis = <1>;
     };
-
+/*
     cps_wls_charger:cps_wls_charger@30 {
         compatible = "cps,wls-charger-cps4059";
         wireless-fw-name = "cps4059.bin";
@@ -260,7 +260,7 @@
         config-otg-support;
         enable_wls_auto_stop = <1>;
         backpower-mode-support;
-        /*stop rx offset detect battery soc*/
+        //stop rx offset detect battery soc
         rod_stop_battery_soc = <90>;
         bootmode = <&chosen>;
         reg = <0x30>;
@@ -279,7 +279,7 @@
 	wireless-tx-support;
         config-otg-vout = <5500000>;
         config-otg-iout = <1800000>;
-     };
+     };*/
 
 	cps_wls_charger@38 {
                 compatible = "cps,wls-charger-cps4038";
@@ -296,10 +296,10 @@
                 pinctrl-names = "default";
                 pinctrl-0 = <&wls_cps4041_int_default>;
                 status = "okay";
-		wls_ext_boost_en =<&pio 25 0x0>;
+		/*wls_ext_boost_en =<&pio 25 0x0>;
         	wls_ext_boost_7v_en = <&pio 187 0x0>;
         	usb_ld_sw_en = <&pio 33 0x0>;
-        	wls_ld_sw_en = <&pio 122 0x0>;
+        	wls_ld_sw_en = <&pio 122 0x0>;*/
         };
 };
 
@@ -524,11 +524,11 @@
 				12000000 10000000 9000000 6000000 5000000
 				4000000 3000000 2000000 1500000 1000000>;
 };
-/*
+
 &extcon_usb {
 	vbus-current = <1300000>;
 };
-*/
+
 &mt6363_dynamic_loading_throttling {
 	status = "okay";
 	bob-check-flag = <0>;
