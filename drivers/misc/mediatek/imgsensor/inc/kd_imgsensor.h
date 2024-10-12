@@ -651,6 +651,8 @@
 
 #define MOT_NICE_IMX882_SENSOR_ID                         0x8202
 #define SENSOR_DRVNAME_MOT_NICE_IMX882_MIPI_RAW           "mot_nice_imx882_mipi_raw"
+#define MOT_NICE_GC32E1_SENSOR_ID                         0x32e2
+#define SENSOR_DRVNAME_MOT_NICE_GC32E1_MIPI_RAW           "mot_nice_gc32e1_mipi_raw"
 
 /*PAS (PixArt Image)*/
 #define SENSOR_DRVNAME_PAS6180_SERIAL_YUV       "pas6180_serial_yuv"
