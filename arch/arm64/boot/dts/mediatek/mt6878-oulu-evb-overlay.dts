@@ -26,21 +26,5 @@
 	};
 };
 
-&st21nfc {
-	/*clkreq-gpios = <&pio 152 0x0>;*/
-};
-
-&spi3 {
-	goodix_ts_spi@0 {
-		/*goodix,iovdd-gpio = <&pio 151 0x0>;*/
-	};
-};
-
-&mt6375_typec {
-	mmi,support_CID;
-        tcpc,en_wd;
-	mmi_cid_int = <&pio 37 0x0>;
-};
-
 #include <oulu_evb/cust.dtsi>
 /*End of this file, DO NOT ADD ANYTHING HERE*/
