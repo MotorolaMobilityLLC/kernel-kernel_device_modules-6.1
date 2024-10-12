@@ -207,6 +207,12 @@
             remote-endpoint = <&main_af>;
         };
     };
+    port@2 {
+        reg = <2>;
+        main_af_cam2_endpoint: endpoint {
+            remote-endpoint = <&main_af_cam2>;
+        };
+    };
 };
 
 &i2c8 {
@@ -321,6 +327,17 @@
 &i2c2 {
     status = "okay";
     clock-frequency = <1000000>;
+
+    camera-af-main-two@C {
+        compatible = "mediatek,main2_vcm";
+        reg = <0xC>;
+        vin-supply = <&et59041c_ldo4>;
+        port {
+            main_af_cam2: endpoint {
+                remote-endpoint = <&main_af_cam2_endpoint>;
+            };
+        };
+    };
 
     sensor2: sensor2@10 {
         compatible = "mediatek,imgsensor";
