@@ -1178,6 +1178,7 @@ def get_overlay_modules_list():
         mgk_64_k61_device_modules.append("drivers/regulator/et59041c.ko")
 
     if "cybert" in DEFCONFIG_OVERLAYS:
+        mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/misc/awinic/aw86927:aw86927")
         mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/input/misc/fpc_fps_mmi:fpc_mtk_tee")
         mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/nfc/st54lnfc/st21nfc:st54lnfc")
         mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/nfc/st54lnfc/st54spi:st54lspi")
