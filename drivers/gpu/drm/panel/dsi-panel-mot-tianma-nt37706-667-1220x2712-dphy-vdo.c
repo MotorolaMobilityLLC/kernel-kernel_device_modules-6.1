@@ -987,14 +987,20 @@ static int mode_switch(struct drm_panel *panel,
 	return ret;
 }
 
-static struct mtk_panel_para_table panel_lhbm_on[] = {
-	{2, {0x8B, 0x10}},
-	{15, {0xA9, 0x02, 0x00, 0xB5, 0x2C, 0x2C, 0x00, 0x01, 0x00, 0x87, 0x00, 0x02, 0x25, 0xbe, 0x80}},
+static struct mtk_panel_para_table panel_lhbm_on_120hz[] = {
+	{28, {0xA9, 0x01, 0x00, 0x87, 0x00, 0x00, 0x25, 0x02, 0x00, 0xDF, 0x31, 0x32, 0x00, 0x1A, 0x02, 0x00, 0xDF, 0x38, 0x39, 0x0A, 0xCE, 0x01, 0x00, 0x51, 0x09, 0x0A, 0xBE, 0x80}},
+};
+
+static struct mtk_panel_para_table panel_lhbm_on_90hz[] = {
+	{28, {0xA9, 0x01, 0x00, 0x87, 0x00, 0x00, 0x25, 0x02, 0x00, 0xDF, 0x31, 0x32, 0x01, 0x1A, 0x02, 0x00, 0xDF, 0x38, 0x39, 0x0E, 0x68, 0x01, 0x00, 0x51, 0x09, 0x0A, 0xBE, 0x80}},
+};
+
+static struct mtk_panel_para_table panel_lhbm_on_60hz[] = {
+	{28, {0xA9, 0x01, 0x00, 0x87, 0x00, 0x00, 0x25, 0x02, 0x00, 0xDF, 0x31, 0x32, 0x02, 0x1A, 0x02, 0x00, 0xDF, 0x38, 0x39, 0x15, 0x9C, 0x01, 0x00, 0x51, 0x09, 0x0A, 0xBE, 0x80}},
 };
 
 static struct mtk_panel_para_table panel_lhbm_off[] = {
-	{2, {0x8B, 0x00}},
-	{13, {0xA9, 0x02, 0x00, 0xB5, 0x2C, 0x2C, 0x03, 0x01, 0x00, 0x87, 0x00, 0x00, 0x20}},
+	{14, {0xA9, 0x01, 0x00, 0x87, 0x00, 0x00, 0x20, 0x01, 0x00, 0x51, 0x09, 0x0A, 0x00, 0x00}},
 };
 
 /*
@@ -1022,12 +1028,29 @@ static void set_lhbm_alpha(unsigned int bl_level)
 static int panel_hbm_set_cmdq(struct lcm *ctx, void *dsi, dcs_grp_write_gce cb, void *handle, uint32_t hbm_state)
 {
 	struct mtk_panel_para_table hbm_on_table = {3, {0x51, 0x0F, 0xFF}};
+	struct mtk_panel_para_table *panel_lhbm_on = NULL;
 	unsigned int para_count = 0;
 	//unsigned int level = 0;
 
 	//level = atomic_read(&ctx->current_bl);
 
 	if (hbm_state > 2) return -1;
+
+	switch (atomic_read(&ctx->current_fps))
+	{
+		case 60:
+			panel_lhbm_on = panel_lhbm_on_60hz;
+			break;
+		case 90:
+			panel_lhbm_on = panel_lhbm_on_90hz;
+			break;
+		case 120:
+		default:
+			panel_lhbm_on = panel_lhbm_on_120hz;
+			break;
+	}
+
+	pr_info("%s current_fps = %d hbm_state %d", __func__, atomic_read(&ctx->current_fps), hbm_state);
 
 	switch (hbm_state)
 	{
@@ -1040,9 +1063,7 @@ static int panel_hbm_set_cmdq(struct lcm *ctx, void *dsi, dcs_grp_write_gce cb, 
 		case 1:
 			if (ctx->lhbm_en) {
 				//set_lhbm_alpha(level);
-				para_count = sizeof(panel_lhbm_on) / sizeof(struct mtk_panel_para_table);
-				cb(dsi, handle, panel_lhbm_on, para_count);
-
+				cb(dsi, handle, panel_lhbm_on, 1);
 			} else {
 				cb(dsi, handle, &hbm_on_table, 1);
 			}
@@ -1050,8 +1071,7 @@ static int panel_hbm_set_cmdq(struct lcm *ctx, void *dsi, dcs_grp_write_gce cb, 
 		case 2:
 			if (ctx->lhbm_en){
 				//set_lhbm_alpha(level);
-				para_count = sizeof(panel_lhbm_on) / sizeof(struct mtk_panel_para_table);
-				cb(dsi, handle, panel_lhbm_on, para_count);
+				cb(dsi, handle, panel_lhbm_on, 1);
 			} else {
 				cb(dsi, handle, &hbm_on_table, 1);
 			}
