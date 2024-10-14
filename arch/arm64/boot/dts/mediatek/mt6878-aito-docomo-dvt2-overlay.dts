@@ -54,6 +54,9 @@
 	mmi,typecotp-charger;
 	mmi,wls-boost-using-otg;
 
+	/*pe5 && pdc && wlc*/
+	fast_charging_indicator = <0x8014>;
+
 	mmi,mmi-normal-zones = <0 4200 141>,
 			<10 4530 141>,
 			<15 4530 141>,
@@ -116,6 +119,16 @@
 			<35 4550 190>,
 			<45 4550 470>,
 			<60 4200 53>;
+};
+
+&i2c0 {
+	wt6670f@35 {
+		not-register-qc-dev;
+	};
+};
+
+&mmi_pehv {
+	status = "disabled";
 };
 
 &spmi {
