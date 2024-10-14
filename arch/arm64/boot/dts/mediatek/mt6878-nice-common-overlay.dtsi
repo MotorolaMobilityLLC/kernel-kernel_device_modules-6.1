@@ -273,12 +273,12 @@
 		fs3001_reg_inits=< 0xffffff 0xffffff 0xffffff 0xffffff 0xffffff 0xffffff 0xffffff 0xffffff 0xffffff 0xffffff >;
 		fs3001_rtp_id_boundary=< 3 >;
 		fs3001_duration_time=< 34 67 100 >;
-		status = "okay";
+		status = "disabled";
 	};
 };
 
 &regulator_vibrator {
-	status = "disabled";
+	status = "okay";
 };
 
 &spmi {
