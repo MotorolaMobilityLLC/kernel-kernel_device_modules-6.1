@@ -56,7 +56,8 @@
 		compatible = "csot,nt37706,vdo,667";
 		reg = <1>;
 
-                pm-enable-gpios = <&pio 185 0>,
+                pm-enable-gpios = <&pio 62 0>,
+                          <&pio 185 0>,
                           <&pio 186 0>,
                           <&pio 184 0>;
                 reset-gpios = <&pio 41 0>;
@@ -97,13 +98,14 @@
 
 	pinctrl-names = "lcm_rst_out0_gpio", "mode_te_te",
 		"oled_vci_en_gpio", "oled_vio_en_gpio",
-		"oled_dvdd_en_gpio";
+		"oled_dvdd_en_gpio","oled_dvdd_in_en_gpio";
 
 	pinctrl-0 = <&mtkfb_pins_lcm_rst_out_gpio>;
 	pinctrl-1 = <&mtkfb_pins_lcm_dsi_te>;
 	pinctrl-2 = <&mtkfb_pins_oled_vci_en>;
 	pinctrl-3 = <&mtkfb_pins_oled_vio_en>;
 	pinctrl-4 = <&mtkfb_pins_oled_dvdd_en>;
+	pinctrl-5 = <&mtkfb_pins_oled_dvdd_in_en>;
 
 	status = "okay";
 
@@ -130,6 +132,14 @@
 	mtkfb_pins_oled_dvdd_en: oled_dvdd_en_gpio {
 		pins_cmd_dat {
 			pinmux = <PINMUX_GPIO186__FUNC_GPIO186>;
+			slew-rate = <1>;
+			output-low;
+		};
+	};
+
+	mtkfb_pins_oled_dvdd_in_en: oled_dvdd_in_en_gpio {
+		pins_cmd_dat {
+			pinmux = <PINMUX_GPIO62__FUNC_GPIO62>;
 			slew-rate = <1>;
 			output-low;
 		};
