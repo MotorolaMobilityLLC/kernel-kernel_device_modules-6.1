@@ -34,6 +34,9 @@
 	swtp_4: swtp_4 {
 		compatible = "mediatek, swtp4-eint";
 	};
+	irq_nfc: irq_nfc {
+		compatible = "mediatek,irq_nfc-eint";
+	};
 };
 
 &mt6375_typec {
