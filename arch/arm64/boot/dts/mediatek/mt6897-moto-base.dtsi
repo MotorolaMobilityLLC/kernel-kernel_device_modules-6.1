@@ -11,12 +11,15 @@
 	smart_battery: smart_battery { };
 	moto_wlc: moto_wlc { };
 	mmi_pehv: mmi_pehv{};
+	mt6363_thermistor1: mt6363_thermistor1 { };
 	mt6363_thermistor2: mt6363_thermistor2 { };
 	mt6363_thermistor3: mt6363_thermistor3 { };
 	mt6363_thermistor4: mt6363_thermistor4 { };
 	mt6363_thermistor5: mt6363_thermistor5 { };
 	mt6363_thermistor6: mt6363_thermistor6 { };
 	mt6363_thermistor7: mt6363_thermistor7 { };
+	mt6368_thermistor1: mt6368_thermistor1 { };
+	mt6368_thermistor2: mt6368_thermistor2 { };
 	mt6369_thermistor2: mt6369_thermistor2 { };
 	mt6375_thermistor: mt6375_thermistor { };
 	swtp: swtp {
@@ -36,6 +39,9 @@
 	};
 	irq_nfc: irq_nfc {
 		compatible = "mediatek,irq_nfc-eint";
+	};
+	gpio_keys: gpio-keys {
+		compatible = "gpio-keys";
 	};
 };
 

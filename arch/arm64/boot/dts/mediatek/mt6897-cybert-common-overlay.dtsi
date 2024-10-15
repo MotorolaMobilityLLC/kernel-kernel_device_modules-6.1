@@ -16,7 +16,7 @@
 //#include "mediatek/cust_cybert_camera_v4l2.dtsi"
 #include "mediatek/cybert-charger.dtsi"
 #include "mediatek/cybert-fps.dtsi"
-//#include "mediatek/cybert-ntc.dtsi"
+#include "mediatek/cybert-ntc.dtsi"
 #include "mediatek/cybert-display.dtsi"
 #include "mediatek/cybert-touch.dtsi"
 #include "mediatek/cybert-audio.dtsi"
@@ -271,4 +271,37 @@
 		/* aw8692x_is_enabled_one_wire; */
 	};
 
+};
+
+
+/*vol+/- keys swap*/
+&mt6363keys {
+	home {
+		linux,keycodes = <114>;
+	};
+};
+
+/* KEY GPIO standardization start */
+&pio{
+	aikey_gpio_default:key-default {
+		ai_key_int {
+			pinmux = <PINMUX_GPIO101__FUNC_GPIO101>;
+			input-enable;
+			bias-pull-up;
+		};
+	};
+};
+/* KEY GPIO standardization end */
+&gpio_keys {
+	status = "okay";
+	pinctrl-names = "default";
+	pinctrl-0 = <&aikey_gpio_default>;
+	aikey {
+		label = "AI_key";
+		linux,code = <217>;
+		linux,input-type = <1>;
+		gpios = <&pio 101 1>;
+		wakeup-source;
+		debounce-interval = <30>;
+	};
 };
