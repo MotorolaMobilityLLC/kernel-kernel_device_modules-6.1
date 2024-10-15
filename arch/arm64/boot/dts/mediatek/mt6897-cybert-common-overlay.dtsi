@@ -34,6 +34,56 @@
 };
 
 &pio {
+	nfc_spi_cs_mode_spi: nfc_spi_cs_mode_spi {
+		pins_cmd_dat {
+			pinmux = <PINMUX_GPIO28__FUNC_SPI3_CSB>;
+			bias-disable;
+		};
+	};
+
+	nfc_spi_cs_mode_idle: nfc_spi_cs_mode_idle {
+		pins_cmd_dat {
+			pinmux = <PINMUX_GPIO28__FUNC_GPIO28>;
+			bias-disable;
+		};
+	};
+};
+
+
+&spi3 {
+	st54spi: st54spi@0 {
+		compatible = "st,st54spi";
+		reg = <0>;
+		spi-max-frequency = <1000000>;
+		gpio-power_nreset = <36>;
+		gpio-power_nreset-std = <&pio 36 0x00>;
+		power_mode = "ST54J";
+		bootmode = <&chosen>;
+		pinctrl-names = "pinctrl_state_mode_spi",
+				"pinctrl_state_mode_idle";
+		pinctrl-0 = <&nfc_spi_cs_mode_spi>;
+		pinctrl-1 = <&nfc_spi_cs_mode_idle>;
+		status = "okay";
+	};
+};
+
+&i2c3 {
+	status = "ok";
+
+	st21nfc: st21nfc@0x08 {
+		compatible = "st,st21nfc";
+		reg = <0x08>;
+		interrupt-parent = <&pio>;
+		interrupts = <37 0>;
+		bootmode = <&chosen>;
+		reset-gpios = <&pio 38 0x00>;
+		irq-gpios = <&pio 37 0x00>;
+		clkreq-gpios = <&pio 84 0x00>;
+		status = "ok";
+	};
+};
+
+&pio {
 	sar_int_default: sar_int_default {
 		pins_cmd_dat {
 			pinmux = <PINMUX_GPIO39__FUNC_GPIO39>;
