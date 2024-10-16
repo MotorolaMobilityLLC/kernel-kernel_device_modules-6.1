@@ -917,6 +917,7 @@ static void mtk_atomic_doze_update_dsi_state(struct drm_device *dev,
 {
 	struct mtk_crtc_state *mtk_state;
 	struct mtk_drm_private *priv = dev->dev_private;
+	struct mtk_drm_crtc *mtk_crtc = to_mtk_crtc(crtc);
 
 	mtk_state = to_mtk_crtc_state(crtc->state);
 	DDPINFO("%s doze_changed:%d, needs_modeset:%d, doze_active:%llu\n",
@@ -928,7 +929,11 @@ static void mtk_atomic_doze_update_dsi_state(struct drm_device *dev,
 
 	if (mtk_state->doze_changed && priv->data->doze_ctrl_pmic) {
 		if (mtk_state->prop_val[CRTC_PROP_DOZE_ACTIVE] && prepare) {
-			DDPDBG("enter AOD, disable PMIC LPMODE\n");
+			DDPMSG("enter AOD, disable PMIC LPMODE\n");
+			if (mtk_crtc) {
+				atomic_set(&mtk_crtc->force_high_step, 1);
+				DDPMSG("%s set force_high_step 1\n", __func__);
+			}
 			//pmic_ldo_vio18_lp(SRCLKEN0, 0, 1, HW_LP);
 			//pmic_ldo_vio18_lp(SRCLKEN2, 0, 1, HW_LP);
 			/* DWFS, drivers/misc/mediatek/clkbuf/v1/src/mtk_clkbuf_ctl.c */
