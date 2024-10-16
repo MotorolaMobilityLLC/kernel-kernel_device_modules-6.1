@@ -444,6 +444,7 @@ struct mmi_params {
 	int			min_therm_current_limit;
 	bool			enable_mux;
 	struct			mmi_mux_chan mux_channel;
+	bool			typec_mos_only; //only have typec_mos but don't have wls_mos
 	int			wls_switch_en;
 	int			usb_switch_en;
 	int			wls_boost_en;

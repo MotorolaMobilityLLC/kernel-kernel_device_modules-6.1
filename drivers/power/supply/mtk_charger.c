@@ -5425,6 +5425,9 @@ static int parse_mmi_dt(struct mtk_charger *info, struct device *dev)
 	info->mmi.enable_mux =
 		of_property_read_bool(node, "mmi,enable-mux");
 
+	info->mmi.typec_mos_only =
+		of_property_read_bool(node, "mmi,typec-mos-only");
+
 	info->mmi.wls_switch_en = of_get_named_gpio(node, "mmi,mux_wls_switch_en", 0);
 	if(!gpio_is_valid(info->mmi.wls_switch_en))
 		pr_err("mmi wls_switch_en is %d invalid\n", info->mmi.wls_switch_en );
