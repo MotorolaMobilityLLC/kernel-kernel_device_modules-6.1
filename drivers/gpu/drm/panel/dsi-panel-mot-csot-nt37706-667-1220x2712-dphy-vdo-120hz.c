@@ -64,6 +64,7 @@ struct lcm {
 	atomic_t current_bl;
 	atomic_t current_fps;
 	atomic_t pcd_mode;
+	atomic_t doze_enable;
 	enum panel_version version;
 };
 
@@ -182,11 +183,30 @@ static void lcm_panel_init(struct lcm *ctx)
 	lcm_dcs_write_seq_static(ctx, 0X6F, 0X8B);
 	lcm_dcs_write_seq_static(ctx, 0XDF, 0X2F, 0x0C, 0X2F, 0X0C, 0X2F, 0X0C);
 
-	////////////////////////////////////-CMD1//////////////////////////////////-
+#if 1
+	lcm_dcs_write_seq_static(ctx, 0xF0, 0x55, 0xAA, 0x52, 0x08, 0x00);
+	lcm_dcs_write_seq_static(ctx, 0xC0, 0x50, 0x01);
+	lcm_dcs_write_seq_static(ctx, 0x8D, 0x00, 0x00, 0x04, 0xC3, 0x00, 0x18, 0x05, 0x9F);
+	lcm_dcs_write_seq_static(ctx, 0x17, 0x21);
+	lcm_dcs_write_seq_static(ctx, 0x71, 0x11);
+	lcm_dcs_write_seq_static(ctx, 0xF0, 0x55, 0xAA, 0x52, 0x08, 0x04);
+	lcm_dcs_write_seq_static(ctx, 0xC0, 0x50, 0x01);
+	lcm_dcs_write_seq_static(ctx, 0x6F, 0x08);
+	lcm_dcs_write_seq_static(ctx, 0xB5, 0x04);
+	lcm_dcs_write_seq_static(ctx, 0xF0, 0x55, 0xAA, 0x52, 0x08, 0x01);
+	lcm_dcs_write_seq_static(ctx, 0x6F, 0x0B);
+	lcm_dcs_write_seq_static(ctx, 0xD2, 0x03);
+#else
+	lcm_dcs_write_seq_static(ctx, 0xF0, 0x55, 0xAA, 0x52, 0x08, 0x00);
+	lcm_dcs_write_seq_static(ctx, 0xC0, 0x00, 0x00);
+	lcm_dcs_write_seq_static(ctx, 0x8D, 0x00, 0x00, 0x04, 0xC3, 0x00, 0x00, 0x05, 0x9F);
 	lcm_dcs_write_seq_static(ctx, 0x17, 0x03);
-	//Video mod AOD setting
 	lcm_dcs_write_seq_static(ctx, 0x71, 0x00);
-	lcm_dcs_write_seq_static(ctx, 0x8D, 0x00, 0x00, 0x04, 0xAF, 0x00, 0x00, 0x0A, 0x6D);
+#endif
+
+	lcm_dcs_write_seq_static(ctx, 0xF0, 0x55, 0xAA, 0x52, 0x08, 0x00);
+	lcm_dcs_write_seq_static(ctx, 0x6F, 0x1A);
+	lcm_dcs_write_seq_static(ctx, 0xC2, 0x24);
 
 	//Data Scaling On
 	//lcm_dcs_write_seq_static(ctx, 0xF0, 0x55, 0xAA, 0x52, 0x08, 0x08);
@@ -365,6 +385,7 @@ static int lcm_prepare(struct drm_panel *panel)
 	atomic_set(&ctx->current_bl, 0);
 	atomic_set(&ctx->current_fps, 120);
 	atomic_set(&ctx->pcd_mode, 0);
+	atomic_set(&ctx->doze_enable, 0);
 
 	pr_info("%s-\n", __func__);
 	return ret;
@@ -1231,6 +1252,67 @@ static int panel_ext_powerdown(struct drm_panel *panel)
 	return 0;
 }
 
+static int panel_doze_enable(struct drm_panel *panel, void *dsi, dcs_write_gce cb,
+	void *handle)
+{
+	struct lcm *ctx = panel_to_lcm(panel);
+	static char aod_en[] = { 0x39};
+
+	pr_info("%s: %d -> %d\n", __func__, atomic_read(&ctx->doze_enable), 1);
+
+	if (!cb)
+		return -1;
+
+	//if (atomic_read(&ctx->doze_enable)) return 0;
+
+	cb(dsi, handle, aod_en, ARRAY_SIZE(aod_en));
+
+	atomic_set(&ctx->doze_enable, 1);
+
+	return 0;
+}
+
+static int panel_doze_disable(struct drm_panel *panel, void *dsi, dcs_write_gce cb,
+	void *handle)
+{
+	struct lcm *ctx = panel_to_lcm(panel);
+	static char aod_disable[] = { 0x38};
+
+	pr_info("%s: %d -> %d\n", __func__, atomic_read(&ctx->doze_enable), 0);
+
+	if (!cb)
+		return -1;
+
+	//if (!atomic_read(&ctx->doze_enable)) return 0;
+
+	cb(dsi, handle, aod_disable, ARRAY_SIZE(aod_disable));
+
+	atomic_set(&ctx->doze_enable, 0);
+
+	return 0;
+}
+
+#if 1
+static unsigned long panel_doze_get_mode_flags(struct drm_panel *panel,
+	int doze_en)
+{
+	unsigned long mode_flags;
+
+	if (doze_en) {
+		mode_flags = MIPI_DSI_MODE_LPM
+		       | MIPI_DSI_MODE_NO_EOT_PACKET
+		       | MIPI_DSI_CLOCK_NON_CONTINUOUS;
+	} else {
+		mode_flags = MIPI_DSI_MODE_VIDEO
+		       | MIPI_DSI_MODE_VIDEO_SYNC_PULSE
+		       | MIPI_DSI_MODE_LPM | MIPI_DSI_MODE_NO_EOT_PACKET
+		       | MIPI_DSI_CLOCK_NON_CONTINUOUS;
+	}
+	pr_info("%s: mode_flags %ld\n", __func__, mode_flags);
+	return mode_flags;
+}
+#endif
+
 static struct mtk_panel_funcs ext_funcs = {
 	.reset = panel_ext_reset,
 	.set_backlight_cmdq = lcm_setbacklight_cmdq,
@@ -1243,6 +1325,9 @@ static struct mtk_panel_funcs ext_funcs = {
 	.panel_feature_set = panel_feature_set,
 	.panel_feature_get = panel_feature_get,
 	.scaling_mode_mapping = mtk_scaling_mode_mapping,
+	.doze_get_mode_flags = panel_doze_get_mode_flags,
+	.doze_disable = panel_doze_disable,
+	.doze_enable = panel_doze_enable,
 };
 #endif
 
