@@ -555,6 +555,12 @@ static struct mtk_panel_params ext_params_48hz = {
 	.panel_cellid_offset_reg = 0x6F,
 	.panel_cellid_offset = 0x0D,
 	.panel_cellid_len = 23,
+
+	.panel_ver = 1,
+	.panel_name = "csot_nt37706_667_1220_2712",
+	.panel_supplier = "csot-nt37706",
+
+	.check_panel_feature = 1,
 };
 #endif
 
@@ -635,6 +641,12 @@ static struct mtk_panel_params ext_params_60hz = {
 	.panel_cellid_offset_reg = 0x6F,
 	.panel_cellid_offset = 0x0D,
 	.panel_cellid_len = 23,
+
+	.panel_ver = 1,
+	.panel_name = "csot_nt37706_667_1220_2712",
+	.panel_supplier = "csot-nt37706",
+
+	.check_panel_feature = 1,
 };
 
 static struct mtk_panel_params ext_params_90hz = {
@@ -713,6 +725,12 @@ static struct mtk_panel_params ext_params_90hz = {
 	.panel_cellid_offset_reg = 0x6F,
 	.panel_cellid_offset = 0x0D,
 	.panel_cellid_len = 23,
+
+	.panel_ver = 1,
+	.panel_name = "csot_nt37706_667_1220_2712",
+	.panel_supplier = "csot-nt37706",
+
+	.check_panel_feature = 1,
 };
 
 static struct mtk_panel_params ext_params_120hz = {
@@ -791,6 +809,12 @@ static struct mtk_panel_params ext_params_120hz = {
 	.panel_cellid_offset_reg = 0x6F,
 	.panel_cellid_offset = 0x0D,
 	.panel_cellid_len = 23,
+
+	.panel_ver = 1,
+	.panel_name = "csot_nt37706_667_1220_2712",
+	.panel_supplier = "csot-nt37706",
+
+	.check_panel_feature = 1,
 };
 
 static int panel_ata_check(struct drm_panel *panel)
