@@ -230,7 +230,7 @@
 		aw8623x_vib_trig_config = < 0 0 0 1 0 2 0
 					    0 0 0 1 0 2 0
 					    0 0 0 1 0 2 0 >;
-		aw8623x_vib_duration_time = < 20 30 60 >;
+		aw8623x_vib_duration_time = < 34 67 100 >;
 		aw8623x_vib_is_enabled_track_en;
 		/* aw8623x_vib_is_enabled_auto_brk; */
 		status = "okay";
