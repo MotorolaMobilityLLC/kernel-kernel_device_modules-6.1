@@ -75,6 +75,12 @@
 		input-enable;
 		bias-pull-up;
 	};
+	sgm41606s_int_default_master: sgm41606s_int_default_master {
+		pinmux = <PINMUX_GPIO12__FUNC_GPIO12>;
+		slew-rate= <0>;
+		input-enable;
+		bias-pull-up;
+	};
 	wt6670_pins_default: wt6670_default_mode {
 		};
 
@@ -375,6 +381,22 @@
 
 		pinctrl-names = "default";
 		pinctrl-0 = <&nu2115_int_default_master>;
+	};
+
+	bq25960_master:bq25960-master@65 {
+		status = "okay";
+		compatible = "ti,bq25960-master";
+		reg = <0x65>;
+
+		sc8541-addr = <0x65>;
+		sgm41606s-name = "sgm41606s-master";
+
+		interrupt-parent = <&pio>;
+		interrupts = <12 IRQ_TYPE_EDGE_FALLING 12 0>;
+		interrupt-names = "bq25960_irq_master";
+
+		pinctrl-names = "default";
+		pinctrl-0 = <&sgm41606s_int_default_master>;
 	};
 
 };
