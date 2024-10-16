@@ -943,7 +943,7 @@ static int mmi_mux_config(struct mtk_charger *info, enum mmi_mux_channel channel
 		pr_info("mmi_mux_config using config_mmi_mux_ext_boost_dual_switch \n");
 	}
 
-	if (!info->mmi.factory_mode) {
+	if (!info->mmi.factory_mode || info->mmi.typec_mos_only) {
 		struct chg_alg_device *alg;
 
 		alg = get_chg_alg_by_name("wlc");
