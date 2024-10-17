@@ -900,6 +900,9 @@ static int et5904_i2c_probe(struct i2c_client *i2c,
 	case DIO8015_DEVICE_ID:
 		chip->chip_id = DIO8015;
 		break;
+	case CPS5054A_DEVICE_ID:
+	    chip->chip_id = CPS5054A;
+		break;
 	default:
 		dev_err(chip->dev, "Unsupported device id = 0x%x.\n", data);
 		return -ENODEV;
@@ -927,6 +930,11 @@ static int et5904_i2c_probe(struct i2c_client *i2c,
 	if (ret < 0) {
 		dev_err(chip->dev, "Failed to initialize regulator: %d\n", ret);
 		goto error;
+	}
+
+	if (chip->chip_id == DIO8015 || chip->chip_id == CPS5054A)
+	{
+		ret = regmap_write(chip->regmap, ET5904_REG_RDIS, 0x0f);
 	}
 
 	dev_info(chip->dev, "initialize regulator success");
