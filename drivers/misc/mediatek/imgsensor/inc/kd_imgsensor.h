@@ -659,6 +659,8 @@
 
 #define MOT_CYBERT_IMX896_SENSOR_ID                       0x0896
 #define SENSOR_DRVNAME_MOT_CYBERT_IMX896_MIPI_RAW         "mot_cybert_imx896_mipi_raw"
+#define MOT_CYBERT_S5KJNS_SENSOR_ID                       0x38F2
+#define SENSOR_DRVNAME_MOT_CYBERT_S5KJNS_MIPI_RAW         "mot_cybert_s5kjns_mipi_raw"
 /*PAS (PixArt Image)*/
 #define SENSOR_DRVNAME_PAS6180_SERIAL_YUV       "pas6180_serial_yuv"
 /*Panasoic*/
