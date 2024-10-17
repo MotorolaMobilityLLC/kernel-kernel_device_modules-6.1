@@ -273,7 +273,7 @@
 		irq-gpio = <&pio 17 0x0>;
 		/*sync-load = <1>;*/
 		sound-channel = <0>; /*0:pri_l 1:pri_r 2:sec_l 3:sec_r*/
-		aw-cali-check = <1>;
+		/*aw-cali-check = <1>;*/
 		aw-re-min = <4000>;
 		aw-re-max= <30000>;
 		/*aw-cali-mode = "none";*/
@@ -286,7 +286,7 @@
 		irq-gpio = <&pio 10 0x0>;
 		/*sync-load = <1>;*/
 		sound-channel = <1>; /*0:pri_l 1:pri_r 2:sec_l 3:sec_r*/
-		aw-cali-check = <1>;
+		/*aw-cali-check = <1>;*/
 		aw-re-min = <4000>;
 		aw-re-max= <30000>;
 		/*aw-cali-mode = "none";*/
