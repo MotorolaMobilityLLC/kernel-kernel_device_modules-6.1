@@ -656,6 +656,9 @@
 #define MOT_NICE_OV08D_SENSOR_ID                          0x0847
 #define SENSOR_DRVNAME_MOT_NICE_OV08D_MIPI_RAW            "mot_nice_ov08d_mipi_raw"
 
+
+#define MOT_CYBERT_IMX896_SENSOR_ID                       0x0896
+#define SENSOR_DRVNAME_MOT_CYBERT_IMX896_MIPI_RAW         "mot_cybert_imx896_mipi_raw"
 /*PAS (PixArt Image)*/
 #define SENSOR_DRVNAME_PAS6180_SERIAL_YUV       "pas6180_serial_yuv"
 /*Panasoic*/
