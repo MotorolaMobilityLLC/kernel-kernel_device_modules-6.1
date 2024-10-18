@@ -23,6 +23,8 @@
 #include <linux/of_graph.h>
 #include <linux/platform_device.h>
 
+#define DIC_COMMAND_MODE_AOD
+
 #define CONFIG_MTK_PANEL_EXT
 #if defined(CONFIG_MTK_PANEL_EXT)
 #include "../mediatek/mediatek_v2/mtk_panel_ext.h"
@@ -183,14 +185,13 @@ static void lcm_panel_init(struct lcm *ctx)
 	lcm_dcs_write_seq_static(ctx, 0X6F, 0X8B);
 	lcm_dcs_write_seq_static(ctx, 0XDF, 0X2F, 0x0C, 0X2F, 0X0C, 0X2F, 0X0C);
 
-#if 1
+#if defined(DIC_COMMAND_MODE_AOD)
 	lcm_dcs_write_seq_static(ctx, 0xF0, 0x55, 0xAA, 0x52, 0x08, 0x00);
 	lcm_dcs_write_seq_static(ctx, 0xC0, 0x50, 0x01);
 	lcm_dcs_write_seq_static(ctx, 0x8D, 0x00, 0x00, 0x04, 0xC3, 0x00, 0x18, 0x05, 0x9F);
 	lcm_dcs_write_seq_static(ctx, 0x17, 0x21);
 	lcm_dcs_write_seq_static(ctx, 0x71, 0x11);
 	lcm_dcs_write_seq_static(ctx, 0xF0, 0x55, 0xAA, 0x52, 0x08, 0x04);
-	lcm_dcs_write_seq_static(ctx, 0xC0, 0x50, 0x01);
 	lcm_dcs_write_seq_static(ctx, 0x6F, 0x08);
 	lcm_dcs_write_seq_static(ctx, 0xB5, 0x04);
 	lcm_dcs_write_seq_static(ctx, 0xF0, 0x55, 0xAA, 0x52, 0x08, 0x01);
@@ -202,6 +203,12 @@ static void lcm_panel_init(struct lcm *ctx)
 	lcm_dcs_write_seq_static(ctx, 0x8D, 0x00, 0x00, 0x04, 0xC3, 0x00, 0x00, 0x05, 0x9F);
 	lcm_dcs_write_seq_static(ctx, 0x17, 0x03);
 	lcm_dcs_write_seq_static(ctx, 0x71, 0x00);
+	lcm_dcs_write_seq_static(ctx, 0xF0, 0x55, 0xAA, 0x52, 0x08, 0x04);
+	lcm_dcs_write_seq_static(ctx, 0x6F, 0x08);
+	lcm_dcs_write_seq_static(ctx, 0xB5, 0x00);
+	lcm_dcs_write_seq_static(ctx, 0xF0, 0x55, 0xAA, 0x52, 0x08, 0x01);
+	lcm_dcs_write_seq_static(ctx, 0x6F, 0x0B);
+	lcm_dcs_write_seq_static(ctx, 0xD2, 0x00);
 #endif
 
 	lcm_dcs_write_seq_static(ctx, 0xF0, 0x55, 0xAA, 0x52, 0x08, 0x00);
@@ -1292,7 +1299,7 @@ static int panel_doze_disable(struct drm_panel *panel, void *dsi, dcs_write_gce 
 	return 0;
 }
 
-#if 1
+#if defined(DIC_COMMAND_MODE_AOD)
 static unsigned long panel_doze_get_mode_flags(struct drm_panel *panel,
 	int doze_en)
 {
@@ -1325,7 +1332,9 @@ static struct mtk_panel_funcs ext_funcs = {
 	.panel_feature_set = panel_feature_set,
 	.panel_feature_get = panel_feature_get,
 	.scaling_mode_mapping = mtk_scaling_mode_mapping,
+#if defined(DIC_COMMAND_MODE_AOD)
 	.doze_get_mode_flags = panel_doze_get_mode_flags,
+#endif
 	.doze_disable = panel_doze_disable,
 	.doze_enable = panel_doze_enable,
 };
