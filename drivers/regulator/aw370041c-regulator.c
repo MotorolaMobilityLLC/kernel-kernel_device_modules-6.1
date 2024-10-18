@@ -51,7 +51,6 @@
 
 #define  AW37004_ID                             0x00
 #define  AW37004_ID2                            0x04
-#define  WL28661D_CHIP_ID                       0x33
 
 static int ldo_chipid = -1;
 
@@ -383,30 +382,19 @@ static int aw37004_i2c_probe(struct i2c_client *client,
 	}
 
 	ret = regmap_read(chip->regmap, AW37004_CHIP_REV, &ldo_chipid);
-	if (ret < 0){
-    		dev_err(dev, "Failed to read CHIP ID:0x%x, ret:%d\n", ldo_chipid,ret);
-    		ret = -ENODEV;
+	if (ret < 0 || ldo_chipid != AW37004_ID) {
+		dev_err(dev, "Failed to read CHIP ID:0x%x, ret:%d\n", ldo_chipid,ret);
+		ret = -ENODEV;
 		return ret;
-  	} else{
-    		switch(ldo_chipid){
-      			case AW37004_ID:
-          			dev_info(chip->dev, "AW370041C CHIP ID matched!\n");
-          			break;
-      			case WL28661D_CHIP_ID:
-          			dev_info(chip->dev, "WL28661D1C CHIP ID matched!\n");
-          			break;
-      			default:
-          			dev_err(dev, "CHIP ID not mactched:0x%x, maybe other ic, ret:%d\n", ldo_chipid,ret);
-          			ret = -ENODEV;
-          			return ret;
-    		}
-  	}
+	} else {
+		dev_info(chip->dev, "AW37004 CHIP ID matched!\n");
+	}
 
 	ret = regmap_read(chip->regmap, AW37004_CHIP_REV2, &ldo_chipid);
 	if (ret < 0 || ldo_chipid != AW37004_ID2) {
-		dev_err(dev, "CHIP ID2 not mactched:0x%x, maybe other ic, ret:%d\n", ldo_chipid,ret);
+		dev_err(dev, "ET5904 matched, read CHIP ID2:0x%x, ret:%d\n", ldo_chipid,ret);
 	} else {
-		dev_info(chip->dev, "AW370041C CHIP ID2 matched!\n");
+		dev_info(chip->dev, "AW37004 CHIP ID2 matched!\n");
 	}
 
 	for (i = 0; i < 5; i++) {
