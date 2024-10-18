@@ -49,5 +49,9 @@
 	mmi,otp-mos-regulator-name = "mt6369_mos_con1";
 };
 
+&stk501xx {
+	status = "okay";
+};
+
 #include <scout_evb/cust.dtsi>
 /*End of this file, DO NOT ADD ANYTHING HERE*/
