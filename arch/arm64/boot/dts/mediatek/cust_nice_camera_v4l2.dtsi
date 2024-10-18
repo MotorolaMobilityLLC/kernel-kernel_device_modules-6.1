@@ -338,7 +338,7 @@
 
 &i2c2 {
     status = "okay";
-    clock-frequency = <1000000>;
+    clock-frequency = <400000>;
 
     mtk_camera_eeprom2:camera-eeprom2@12 {
         compatible = "mediatek,camera_eeprom";
