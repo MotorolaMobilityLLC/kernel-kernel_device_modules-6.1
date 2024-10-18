@@ -934,6 +934,7 @@ def get_overlay_modules_list():
         mgk_64_k61_device_modules.append("drivers/gpu/drm/panel/dsi-panel-mot-dummy-cmd-60hz.ko")
         mgk_64_k61_device_modules.append("drivers/misc/mediatek/lens/ois/mot_dw9784/mot_dw9784.ko")
         mgk_64_k61_device_modules.append("drivers/power/supply/moto_chg_tcmd.ko")
+        mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/bk_log:bk_log")
 
         #new product
         mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/misc/awinic/aw862xx:aw862xx")
