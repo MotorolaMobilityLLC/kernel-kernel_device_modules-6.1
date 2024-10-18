@@ -340,6 +340,12 @@
     status = "okay";
     clock-frequency = <1000000>;
 
+    mtk_camera_eeprom2:camera-eeprom2@12 {
+        compatible = "mediatek,camera_eeprom";
+        reg = <0x12>;
+        status = "okay";
+    };
+
     camera-af-main-two@C {
         compatible = "mediatek,main2_vcm";
         reg = <0xC>;
