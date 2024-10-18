@@ -45,6 +45,18 @@ config AW96XX_MTK_KERNEL5XX_CHARGER_TYPE
     help
       Use mtk charge type for kernel5xx
 
+config STK501xx_USB_CAL
+    tristate "Moto stk501xx usb cal"
+    default n
+    help
+      This feature will enable usb cal in stk501xx
+
+config STK501xx_POWER_SUPPLY_ONLINE
+    tristate "stk501xx power supply online"
+    default n
+    help
+      Use online node
+
 config UWB_USES_MTK_RESERVED_CLOCK
     tristate "Force enabling the reserved clock for Qorvo UWB"
     default n
