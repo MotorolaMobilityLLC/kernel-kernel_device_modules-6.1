@@ -346,6 +346,13 @@
         };
     };
 
+    port@3 {
+        reg = <3>;
+        tele_ois_endpoint: endpoint {
+            remote-endpoint = <&tele_ois>;
+        };
+    };
+
     port@4 {
         reg = <4>;
         tele_af_endpoint: endpoint {
@@ -549,6 +556,21 @@
         port {
             tele_af: endpoint {
                 remote-endpoint = <&tele_af_endpoint>;
+            };
+        };
+    };
+
+    camera-ois-tele@2a {
+        compatible = "mediatek,mot_tele_dw9784";
+        reg = <0x2a>;
+        vdd-supply = <&cam_rt_afvdd_ldo>;
+        vin-supply = <&cam_rt_oisvdd_ldo>;
+        rst-supply = <&cam_iovdd_ldo>;
+
+        status = "okay";
+        port {
+            tele_ois: endpoint {
+                remote-endpoint = <&tele_ois_endpoint>;
             };
         };
     };
