@@ -474,6 +474,12 @@
         };
     };
 
+    mtk_camera_eeprom2:camera-eeprom2@52 {
+        compatible = "mediatek,camera_eeprom";
+        reg = <0x52>;
+        status = "okay";
+    };
+
     sensor2: sensor2@39 {
         compatible = "mediatek,imgsensor";
         sensor-names = "mot_cybert_gc13a2_mipi_raw";
