@@ -30,7 +30,7 @@
 #define FRAME_WIDTH				(1220)
 #define FRAME_HEIGHT			(2712)
 #define PLL_CLOCK				(505)
-#define REAL_MODE_NUM           (6)//?
+#define REAL_MODE_NUM           (6)
 #define FHD_FRAME_WIDTH    (1220)
 #define FHD_HFP            (8)
 #define FHD_HSA            (8)
@@ -83,7 +83,7 @@ struct lcm {
 	struct gpio_desc *reset_gpio;
 	//struct gpio_desc *bias_pos, *bias_neg;
 	struct gpio_desc *vddi_gpio;
-	struct regulator *dvdd_supply;
+	struct regulator *oled_dvdd;
 	//struct regulator *oled_vci;
 	struct gpio_desc *vci_gpio;
 	bool prepared;
@@ -269,23 +269,24 @@ static int lcm_disable(struct drm_panel *panel)
 	printk("%s exit  \n",__func__);
 	return 0;
 }
+
 static int lcm_unprepare(struct drm_panel *panel)
 {
 	struct lcm *ctx = panel_to_lcm(panel);
-	int ret = 0;
+	int ret;
 
 	if (!ctx->prepared)
 		return 0;
 	printk("%s enter  \n",__func__);
 	lcm_dcs_write_seq_static(ctx, 0x28);
-	msleep(100);
+	msleep(50);
 	lcm_dcs_write_seq_static(ctx, 0x10);
-	msleep(150);
+	msleep(240);
 	ctx->error = 0;
 	ctx->prepared = false;
 
 	ctx->reset_gpio =
-		devm_gpiod_get(ctx->dev, "reset", GPIOD_OUT_LOW);
+	devm_gpiod_get(ctx->dev, "reset", GPIOD_OUT_LOW);
 	if (IS_ERR(ctx->reset_gpio)) {
 		dev_err(ctx->dev, "%s: cannot get reset_gpio %ld\n",
 			__func__, PTR_ERR(ctx->reset_gpio));
@@ -307,10 +308,13 @@ static int lcm_unprepare(struct drm_panel *panel)
 	udelay(2000);
 
 	/* disable regulator */
-	ret = regulator_disable(ctx->dvdd_supply);
+	ret = regulator_disable(ctx->oled_dvdd);
 	if (ret < 0)
-		pr_err("enable regulator ctx->dvdd_supply fail, ret = %d\n", ret);
-	udelay(2000);
+		pr_err("enable regulator ctx->oled_dvdd fail, ret = %d\n", ret);
+	devm_regulator_put(ctx->oled_dvdd);
+	/*devm_regulator_put(ctx->oled_dvdd);*/
+
+	udelay(4000);
 	ctx->vddi_gpio =
 		devm_gpiod_get(ctx->dev, "vddi", GPIOD_OUT_HIGH);
 	if (IS_ERR(ctx->vddi_gpio)) {
@@ -333,8 +337,6 @@ static int lcm_prepare(struct drm_panel *panel)
 	printk("%s enter  \n",__func__);
 	if (ctx->prepared)
 		return 0;
-	//_gate_ic_Power_on();
-
 	ctx->vddi_gpio =
 		devm_gpiod_get(ctx->dev, "vddi", GPIOD_OUT_HIGH);
 	if (IS_ERR(ctx->vddi_gpio)) {
@@ -344,6 +346,23 @@ static int lcm_prepare(struct drm_panel *panel)
 	}
 	gpiod_set_value(ctx->vddi_gpio, 1);
 	devm_gpiod_put(ctx->dev, ctx->vddi_gpio);
+	udelay(2000);
+
+	ctx->oled_dvdd = devm_regulator_get_optional(ctx->dev, "oled-dvdd");
+	if (IS_ERR(ctx->oled_dvdd)) { /* handle return value */
+		ret = PTR_ERR(ctx->oled_dvdd);
+		pr_err("get dvdd fail, error: %d\n", ret);
+		return ret;
+	}
+	/* set voltage with min & max*/
+	ret = regulator_set_voltage(ctx->oled_dvdd, 1254000, 1254000);
+	if (ret < 0)
+		pr_err("set voltage ctx->oled_dvdd fail, ret = %d\n", ret);
+		/* enable regulator */
+	ret = regulator_enable(ctx->oled_dvdd);
+	if (ret < 0)
+		pr_err("enable regulator ctx->oled_dvdd fail, ret = %d\n", ret);
+
 	udelay(2000);
 
 	ctx->vci_gpio =
@@ -356,10 +375,6 @@ static int lcm_prepare(struct drm_panel *panel)
 	gpiod_set_value(ctx->vci_gpio, 1);
 	devm_gpiod_put(ctx->dev, ctx->vci_gpio);
 	udelay(2000);
-	/* set voltage with min & max*/
-	ret = regulator_set_voltage(ctx->dvdd_supply, 1254000, 1254000);
-	if (ret < 0)
-		pr_err("set voltage ctx->dvdd_supply fail, ret = %d\n", ret);
 
 	lcm_panel_init(ctx);
 	ret = ctx->error;
@@ -470,6 +485,7 @@ static int panel_ext_reset(struct drm_panel *panel, int on)
 	}
 	gpiod_set_value(ctx->reset_gpio, on);
 	devm_gpiod_put(ctx->dev, ctx->reset_gpio);
+
 	printk("%s exit  \n",__func__);
 	return 0;
 }
@@ -513,13 +529,11 @@ static int lcm_setbacklight_cmdq(void *dsi, dcs_write_gce cb,
 }
 static struct mtk_panel_params ext_params = {
 	.cust_esd_check = 1,
-	.esd_check_enable = 0,
+	.esd_check_enable = 1,
 	.lcm_esd_check_table[0] = {
-		.cmd = 0x66,
-		.count = 3,
-		.para_list[0] = 0x00,
-		.para_list[1] = 0x00,
-		.para_list[2] = 0x00,
+		.cmd = 0x0A,
+		.count = 1,
+		.para_list[0] = 0x9C,
 	},
 	//.is_support_od = true,
 	//.is_support_dmr = true,
@@ -531,7 +545,7 @@ static struct mtk_panel_params ext_params = {
 	//.lcm_color_mode = MTK_DRM_COLOR_MODE_DISPLAY_P3,
 	.dsc_params = {
 		.enable = 1,
-		.ver = 1,
+		.ver = 17,
 		.slice_mode = 1,
 		.rgb_swap = 0,
 		.dsc_cfg = 40,
@@ -595,13 +609,11 @@ static struct mtk_panel_params ext_params = {
 };
 static struct mtk_panel_params ext_params_90hz = {
 	.cust_esd_check = 1,
-	.esd_check_enable = 0,
+	.esd_check_enable = 1,
 	.lcm_esd_check_table[0] = {
-		.cmd = 0x66,
-		.count = 3,
-		.para_list[0] = 0x00,
-		.para_list[1] = 0x00,
-		.para_list[2] = 0x00,
+		.cmd = 0x0A,
+		.count = 1,
+		.para_list[0] = 0x9C,
 	},
 	//.is_support_od = true,
 	//.is_support_dmr = true,
@@ -613,7 +625,7 @@ static struct mtk_panel_params ext_params_90hz = {
 	//.lcm_color_mode = MTK_DRM_COLOR_MODE_DISPLAY_P3,
 	.dsc_params = {
 		.enable = 1,
-		.ver = 1,
+		.ver = 17,
 		.slice_mode = 1,
 		.rgb_swap = 0,
 		.dsc_cfg = 40,
@@ -677,13 +689,11 @@ static struct mtk_panel_params ext_params_90hz = {
 };
 static struct mtk_panel_params ext_params_60hz = {
 	.cust_esd_check = 1,
-	.esd_check_enable = 0,
+	.esd_check_enable = 1,
 	.lcm_esd_check_table[0] = {
-		.cmd = 0x66,
-		.count = 3,
-		.para_list[0] = 0x00,
-		.para_list[1] = 0x00,
-		.para_list[2] = 0x00,
+		.cmd = 0x0A,
+		.count = 1,
+		.para_list[0] = 0x9C,
 	},
 	//.is_support_od = true,
 	//.is_support_dmr = true,
@@ -695,7 +705,7 @@ static struct mtk_panel_params ext_params_60hz = {
 	//.lcm_color_mode = MTK_DRM_COLOR_MODE_DISPLAY_P3,
 	.dsc_params = {
 		.enable = 1,
-		.ver = 1,
+		.ver = 17,
 		.slice_mode = 1,
 		.rgb_swap = 0,
 		.dsc_cfg = 40,
@@ -786,18 +796,49 @@ static int mtk_panel_ext_param_set(struct drm_panel *panel,
 	struct mtk_panel_ext *ext = find_panel_ext(panel);
 	int ret = 0;
 	struct drm_display_mode *m = get_mode_by_id(connector, mode);
-	printk("%s enter  \n",__func__);
+	struct lcm *ctx = panel_to_lcm(panel);
+
+	/*if (dst_fps == 48) {
+		ext->params = &ext_params_48hz;
+	} else*/
 	if (drm_mode_vrefresh(m) == 120) {
 		ext->params = &ext_params;
 	} else if (drm_mode_vrefresh(m) == 90) {
 		ext->params = &ext_params_90hz;
 	} else if (drm_mode_vrefresh(m) == 60) {
 		ext->params = &ext_params_60hz;
-	} else
+	} else {
+		pr_err("%s, errer\n", __func__);
+		ret = -EINVAL;
+	}
+
+	printk("%s exit current_fps = %d \n",__func__,atomic_read(&ctx->current_fps));
+	return ret;
+}
+
+static int mtk_panel_ext_param_get(struct drm_panel *panel,
+	struct drm_connector *connector,
+	struct mtk_panel_params **ext_param,
+	unsigned int mode)
+{
+	int ret = 0;
+	struct drm_display_mode *m = get_mode_by_id(connector, mode);
+	struct lcm *ctx = panel_to_lcm(panel);
+
+	if (drm_mode_vrefresh(m) == 120)
+		*ext_param = &ext_params;
+	else if (drm_mode_vrefresh(m) == 90)
+		*ext_param = &ext_params_90hz;
+	else if (drm_mode_vrefresh(m) == 60)
+		*ext_param = &ext_params_60hz;
+	/*else if (drm_mode_vrefresh(m) == 48)
+		*ext_param = &ext_params_48hz;*/
+	else
 		ret = 1;
+
 	if (!ret)
-		current_fps = drm_mode_vrefresh(m);
-	printk("%s exit current_fps = %d \n",__func__,current_fps);
+		atomic_set(&ctx->current_fps, drm_mode_vrefresh(m));
+
 	return ret;
 }
 
@@ -997,7 +1038,7 @@ static struct mtk_panel_funcs ext_funcs = {
 	.reset = panel_ext_reset,
 	.set_backlight_cmdq = lcm_setbacklight_cmdq,
 	.ext_param_set = mtk_panel_ext_param_set,
-	//.ext_param_get = mtk_panel_ext_param_get,
+	.ext_param_get = mtk_panel_ext_param_get,
 	.mode_switch = mode_switch,
 	//.set_bl_elvss_cmdq = lcm_set_bl_elvss_cmdq,
 	/* Not real backlight cmd in AOD, just for QC purpose */
@@ -1135,15 +1176,21 @@ static int lcm_probe(struct mipi_dsi_device *dsi)
 		return PTR_ERR(ctx->vddi_gpio);
 	}
 	devm_gpiod_put(dev, ctx->vddi_gpio);
-	ctx->dvdd_supply = devm_regulator_get_optional(dev, "dvdd");
-	if (IS_ERR(ctx->dvdd_supply)) { /* handle return value */
-		ret = PTR_ERR(ctx->dvdd_supply);
+
+	ctx->oled_dvdd = devm_regulator_get_optional(dev, "oled-dvdd");
+	if (IS_ERR(ctx->oled_dvdd)) { /* handle return value */
+		ret = PTR_ERR(ctx->oled_dvdd);
 		pr_err("get dvdd fail, error: %d\n", ret);
 		return ret;
 	}
-	ret = regulator_enable(ctx->dvdd_supply);
+	/* set voltage with min & max*/
+	ret = regulator_set_voltage(ctx->oled_dvdd, 1254000, 1254000);
 	if (ret < 0)
-		pr_err("enable regulator ctx->oled_vci fail, ret = %d\n", ret);
+		pr_err("set voltage ctx->oled_dvdd fail, ret = %d\n", ret);
+		/* enable regulator */
+	ret = regulator_enable(ctx->oled_dvdd);
+	if (ret < 0)
+		pr_err(" probeenable regulator ctx->oled_dvdd fail, ret = %d\n", ret);
 
 	ctx->vci_gpio = devm_gpiod_get(dev, "vci", GPIOD_OUT_HIGH);
 	if (IS_ERR(ctx->vci_gpio)) {
