@@ -79,7 +79,7 @@
 	regulators {
 			et59041c_ldo1: et59041c_ldo1 {
 				regulator-name = "et59041c_ldo1";
-				regulator-min-microvolt = <1100000>;
+				regulator-min-microvolt = <1254000>;
 				regulator-max-microvolt = <1300000>;
 				regulator-boot-on;
 			};

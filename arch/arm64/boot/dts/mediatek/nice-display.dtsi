@@ -51,7 +51,7 @@
 		/*pm-enable-gpios = <&pio 149 0>;*/
 		reset-gpios = <&pio 90 0>;
 		vddi-gpios = <&pio 188 0>;
-		dvdd-supply = <&et59041c_ldo1>;
+		oled-dvdd-supply = <&et59041c_ldo1>;
 		vci-gpios = <&pio 190 0>;
 		res-switch = <2>;
 		rc-enable = <1>;
@@ -121,7 +121,7 @@
 &pio {
 	mtkfb_pins_oled_vci_en: oled_vci_en_gpio {
 		pins_cmd_dat {
-			pinmux = <PINMUX_GPIO153__FUNC_GPIO153>;
+			pinmux = <PINMUX_GPIO190__FUNC_GPIO190>;
 			slew-rate = <1>;
 			output-low;
 		};
@@ -137,7 +137,7 @@
 
 	mtkfb_pins_oled_avdd_en0: oled_dvdd_en_gpio {
 		pins_cmd_dat {
-			pinmux = <PINMUX_GPIO28__FUNC_GPIO28>;
+			pinmux = <PINMUX_GPIO192__FUNC_GPIO192>;
 			slew-rate = <1>;
 			output-low;
 		};
