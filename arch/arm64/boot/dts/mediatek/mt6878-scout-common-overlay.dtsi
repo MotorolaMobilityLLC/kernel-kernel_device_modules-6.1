@@ -440,6 +440,12 @@
 	vmmc-supply = <&mt6369_vmch_eint_low>;
 };
 
+&i2c5 {
+	rt6160@75 {
+		status = "disabled";
+	};
+};
+
 &i2c6 {
  	status = "okay";
 	clock-frequency = <400000>;
@@ -476,6 +482,10 @@
 		reg = <0x42>;
 		status = "okay";
     };
+
+	rt6160@75 {
+		status = "disabled";
+	};
  };
 
 &sound {
