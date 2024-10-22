@@ -2,48 +2,55 @@
 
 menu "MOTO Kconfig support"
 
+config AITO_DTB
+	default n
+	bool "Aito DTBs"
+	help
+	  Only include aito specific DTBs to limit the number that
+	  get built during kernel compilation.
+
 config SCHED_MOTO_UNFAIR
-    tristate "Moto sched support for mtk vip task"
-    default n
-    help
-      This feature will allow the scheduler to maintain more detailed
-      mvp scheduling.
+	tristate "Moto sched support for mtk vip task"
+	default n
+	help
+	  This feature will allow the scheduler to maintain more detailed
+	  mvp scheduling.
 
 config MOTO_USBNET_DEBUG
-    tristate "Moto usbnet debug"
-    default n
-    help
-      Debug moto usbnet issue
+	tristate "Moto usbnet debug"
+	default n
+	help
+	  Debug moto usbnet issue
 
 config SX937X_USB_CAL
-    tristate "Moto sx937x usb cal"
-    default n
-    help
-      This feature will enable usb cal in sx937x
+	tristate "Moto sx937x usb cal"
+	default n
+	help
+	  This feature will enable usb cal in sx937x
 
 config SX937X_POWER_SUPPLY_ONLINE
-    tristate "SX937X power supply online"
-    default n
-    help
-      Use online node
+	tristate "SX937X power supply online"
+	default n
+	help
+	  Use online node
 
 config SX937X_MTK_KERNEL5XX_CHARGER_TYPE
-    tristate "SX937X mtk kernel5xx charger type"
-    default n
-    help
-      Use mtk charge type for kernel5xx
+	tristate "SX937X mtk kernel5xx charger type"
+	default n
+	help
+	  Use mtk charge type for kernel5xx
 
 config AW96XX_POWER_SUPPLY_ONLINE
-    tristate "AW96XX power supply online"
-    default n
-    help
-      Use online node
+	tristate "AW96XX power supply online"
+	default n
+	help
+	  Use online node
 
 config AW96XX_MTK_KERNEL5XX_CHARGER_TYPE
-    tristate "AW96XX mtk kernel5xx charger type"
-    default n
-    help
-      Use mtk charge type for kernel5xx
+	tristate "AW96XX mtk kernel5xx charger type"
+	default n
+	help
+	  Use mtk charge type for kernel5xx
 
 config STK501xx_USB_CAL
     tristate "Moto stk501xx usb cal"
@@ -58,8 +65,8 @@ config STK501xx_POWER_SUPPLY_ONLINE
       Use online node
 
 config UWB_USES_MTK_RESERVED_CLOCK
-    tristate "Force enabling the reserved clock for Qorvo UWB"
-    default n
-    help
-      Use mtk reserved clock PMIC_RFCK_BUF2B for qorvo uwb
+	tristate "Force enabling the reserved clock for Qorvo UWB"
+	default n
+	help
+	  Use mtk reserved clock PMIC_RFCK_BUF2B for qorvo uwb
 endmenu
