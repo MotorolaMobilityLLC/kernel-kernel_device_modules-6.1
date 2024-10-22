@@ -23,13 +23,15 @@
 #include <linux/of_graph.h>
 #include <linux/platform_device.h>
 
+#define DIC_COMMAND_MODE_AOD
+
 #define CONFIG_MTK_PANEL_EXT
 #if defined(CONFIG_MTK_PANEL_EXT)
 #include "../mediatek/mediatek_v2/mtk_panel_ext.h"
 #include "../mediatek/mediatek_v2/mtk_drm_graphics_base.h"
 #endif
 
-//#include "include/dsi-panel-mot-csot-nt37706-667-1220x2712-dphy-vdo-120hz-lhbm-alpha.h"
+#include "include/dsi-panel-mot-tianma-nt37706-667-1220x2712-dphy-vdo-120hz-lhbm-alpha.h"
 //#include "../../../misc/mediatek/gate_ic/gate_i2c.h"
 
 /* enable this to check panel self -bist pattern */
@@ -174,16 +176,34 @@ static void lcm_panel_init(struct lcm *ctx)
 	//VGH_CLAMP_ON=0
 	lcm_dcs_write_seq_static(ctx, 0x6F, 0x32);
 	lcm_dcs_write_seq_static(ctx, 0xF2, 0x00);
-	lcm_dcs_write_seq_static(ctx, 0xFF, 0xAA, 0x55, 0xA5, 0x81);
 	//-----------------------------------CMD1-----------------------------------
+	lcm_dcs_write_seq_static(ctx, 0x2A, 0x00, 0x00, 0x04, 0xC3);	//1219
+	lcm_dcs_write_seq_static(ctx, 0x2B, 0x00, 0x00, 0x0A, 0x97);	//2711
+#if defined(DIC_COMMAND_MODE_AOD)
+	lcm_dcs_write_seq_static(ctx, 0xF0, 0x55, 0xAA, 0x52, 0x08, 0x00);
+	lcm_dcs_write_seq_static(ctx, 0xC0, 0x50, 0x01);
+	lcm_dcs_write_seq_static(ctx, 0x8D, 0x00, 0x00, 0x04, 0xC3, 0x00, 0x18, 0x05, 0x9F);
+	lcm_dcs_write_seq_static(ctx, 0x17, 0x21);
+	lcm_dcs_write_seq_static(ctx, 0x71, 0x11);
+	lcm_dcs_write_seq_static(ctx, 0xF0, 0x55, 0xAA, 0x52, 0x08, 0x04);
+	lcm_dcs_write_seq_static(ctx, 0x6F, 0x08);
+	lcm_dcs_write_seq_static(ctx, 0xB5, 0x04);
+	lcm_dcs_write_seq_static(ctx, 0xF0, 0x55, 0xAA, 0x52, 0x08, 0x01);
+	lcm_dcs_write_seq_static(ctx, 0x6F, 0x0B);
+	lcm_dcs_write_seq_static(ctx, 0xD2, 0x03);
+#else
 	//VideomodeAODsetting
 	lcm_dcs_write_seq_static(ctx, 0x17, 0x03);
 	lcm_dcs_write_seq_static(ctx, 0x71, 0x00);
-	lcm_dcs_write_seq_static(ctx, 0x8D, 0x00, 0x00, 0x04, 0xC3, 0x00, 0x00, 0x0A, 0x97);
-	lcm_dcs_write_seq_static(ctx, 0x2A, 0x00, 0x00, 0x04, 0xC3);	//1219
-	lcm_dcs_write_seq_static(ctx, 0x2B, 0x00, 0x00, 0x0A, 0x97);	//2711
+	lcm_dcs_write_seq_static(ctx, 0x8D, 0x00, 0x00, 0x04, 0xC3, 0x00, 0x18, 0x05, 0x9F);
+#endif
+	lcm_dcs_write_seq_static(ctx, 0xF0, 0x55, 0xAA, 0x52, 0x08, 0x00);
+	lcm_dcs_write_seq_static(ctx, 0x6F, 0x1A);
+	lcm_dcs_write_seq_static(ctx, 0xC2, 0x24);
+
 	//Video_H_Dummy[1:0]=3 for 408x2712
 	lcm_dcs_write_seq_static(ctx, 0x03, 0x00);
+
 	//VeSASetting(DSCv1.1,2DeC,BPC(in)=10,BPP(out)=8,sliceheight=12,HxV=1220x2712
 	lcm_dcs_write_seq_static(ctx, 0x90, 0x03);
 	lcm_dcs_write_seq_static(ctx, 0x6F, 0x01);
@@ -208,12 +228,16 @@ static void lcm_panel_init(struct lcm *ctx)
 	//##CMD1,DPCTemperature
 	lcm_dcs_write_seq_static(ctx, 0x81, 0x01, 0x19);
 	//DBV
-	lcm_dcs_write_seq_static(ctx, 0x51, 0x36, 0xE8);
 	lcm_dcs_write_seq_static(ctx, 0x6F, 0x04);
 	lcm_dcs_write_seq_static(ctx, 0x51, 0x3F, 0xFC);
 
 	//LHBM loaction
 	lcm_dcs_write_seq_static(ctx, 0x88, 0x01, 0x02, 0x62, 0x09, 0x88, 0x00, 0x00, 0x00, 0x00);
+
+	//OTP ALPHA OFF
+	lcm_dcs_write_seq_static(ctx, 0xF0, 0x55, 0xAA, 0x52, 0x08, 0x00);
+	lcm_dcs_write_seq_static(ctx, 0x6F, 0x01);
+	lcm_dcs_write_seq_static(ctx, 0xDF, 0x40);
 
 	lcm_dcs_write_seq_static(ctx, 0x11);
 	usleep_range(100 * 1000, 101 * 1000);
@@ -457,7 +481,7 @@ static struct mtk_panel_params ext_params_48hz = {
 	.pll_clk = 615,
 	//.vfp_low_power = 4180,
 	.cust_esd_check = 1,
-	.esd_check_enable = 1,
+	.esd_check_enable = 0,
 	.lcm_esd_check_table[0] = {
 		.cmd = 0x0A,
 		.count = 1,
@@ -466,7 +490,6 @@ static struct mtk_panel_params ext_params_48hz = {
 	.lcm_color_mode = MTK_DRM_COLOR_MODE_DISPLAY_P3,
 	.physical_width_um = 69540,
 	.physical_height_um = 154454,
-	.lp_perline_en = 1,
 	.output_mode = MTK_PANEL_DSC_SINGLE_PORT,
 
 	.dsc_params = {
@@ -528,8 +551,14 @@ static struct mtk_panel_params ext_params_48hz = {
 
 	.panel_cellid_reg = 0xAC,
 	.panel_cellid_offset_reg = 0x6F,
-	.panel_cellid_offset = 0x0D,
+	.panel_cellid_offset = 0x0C,
 	.panel_cellid_len = 23,
+
+	.panel_ver = 1,
+	.panel_name = "tianma_nt37706_667_1220_2712",
+	.panel_supplier = "tianma-nt37706",
+
+	.check_panel_feature = 1,
 };
 #endif
 
@@ -546,7 +575,6 @@ static struct mtk_panel_params ext_params_60hz = {
 	.lcm_color_mode = MTK_DRM_COLOR_MODE_DISPLAY_P3,
 	.physical_width_um = 69540,
 	.physical_height_um = 154454,
-	.lp_perline_en = 1,
 	.output_mode = MTK_PANEL_DSC_SINGLE_PORT,
 
 	.dsc_params = {
@@ -554,7 +582,7 @@ static struct mtk_panel_params ext_params_60hz = {
 		.ver = 17,
 		.slice_mode = 1,
 		.rgb_swap = 0,
-		.dsc_cfg = 34,
+		.dsc_cfg = 2088,
 		.rct_on = 1,
 		.bit_per_channel = 10,
 		.dsc_line_buf_depth = 11,
@@ -610,6 +638,12 @@ static struct mtk_panel_params ext_params_60hz = {
 	.panel_cellid_offset_reg = 0x6F,
 	.panel_cellid_offset = 0x0C,
 	.panel_cellid_len = 23,
+
+	.panel_ver = 1,
+	.panel_name = "tianma_nt37706_667_1220_2712",
+	.panel_supplier = "tianma-nt37706",
+
+	.check_panel_feature = 1,
 };
 
 static struct mtk_panel_params ext_params_90hz = {
@@ -625,7 +659,6 @@ static struct mtk_panel_params ext_params_90hz = {
 	.lcm_color_mode = MTK_DRM_COLOR_MODE_DISPLAY_P3,
 	.physical_width_um = 69540,
 	.physical_height_um = 154454,
-	.lp_perline_en = 1,
 	.output_mode = MTK_PANEL_DSC_SINGLE_PORT,
 	.dsc_param_load_mode = 0, //0: default flow; 1: key param only; 2: full control
 	.dsc_params = {
@@ -633,7 +666,7 @@ static struct mtk_panel_params ext_params_90hz = {
 		.ver = 17,
 		.slice_mode = 1,
 		.rgb_swap = 0,
-		.dsc_cfg = 34,
+		.dsc_cfg = 2088,
 		.rct_on = 1,
 		.bit_per_channel = 10,
 		.dsc_line_buf_depth = 11,
@@ -686,8 +719,14 @@ static struct mtk_panel_params ext_params_90hz = {
 
 	.panel_cellid_reg = 0xAC,
 	.panel_cellid_offset_reg = 0x6F,
-	.panel_cellid_offset = 0x0D,
+	.panel_cellid_offset = 0x0C,
 	.panel_cellid_len = 23,
+
+	.panel_ver = 1,
+	.panel_name = "tianma_nt37706_667_1220_2712",
+	.panel_supplier = "tianma-nt37706",
+
+	.check_panel_feature = 1,
 };
 
 static struct mtk_panel_params ext_params_120hz = {
@@ -703,7 +742,6 @@ static struct mtk_panel_params ext_params_120hz = {
 	.lcm_color_mode = MTK_DRM_COLOR_MODE_DISPLAY_P3,
 	.physical_width_um = 69540,
 	.physical_height_um = 154454,
-	.lp_perline_en = 1,
 	.output_mode = MTK_PANEL_DSC_SINGLE_PORT,
 	.dsc_param_load_mode = 0, //0: default flow; 1: key param only; 2: full control
 	.dsc_params = {
@@ -711,7 +749,7 @@ static struct mtk_panel_params ext_params_120hz = {
 		.ver = 17,
 		.slice_mode = 1,
 		.rgb_swap = 0,
-		.dsc_cfg = 34,
+		.dsc_cfg = 2088,
 		.rct_on = 1,
 		.bit_per_channel = 10,
 		.dsc_line_buf_depth = 11,
@@ -764,8 +802,14 @@ static struct mtk_panel_params ext_params_120hz = {
 
 	.panel_cellid_reg = 0xAC,
 	.panel_cellid_offset_reg = 0x6F,
-	.panel_cellid_offset = 0x0D,
+	.panel_cellid_offset = 0x0C,
 	.panel_cellid_len = 23,
+
+	.panel_ver = 1,
+	.panel_name = "tianma_nt37706_667_1220_2712",
+	.panel_supplier = "tianma-nt37706",
+
+	.check_panel_feature = 1,
 };
 
 static int panel_ata_check(struct drm_panel *panel)
@@ -779,18 +823,17 @@ static int lcm_setbacklight_cmdq(void *dsi, dcs_write_gce cb, void *handle,
 {
 	struct lcm *ctx = g_ctx;
 	char bl_tb[] = {0x51, 0x3F, 0xff};
-//	char apl_off[] = {0x5F, 0x01, 0x00};
-//	char apl_on[] = {0x5F, 0x01, 0x01};
-//	unsigned int current_backlight;
+	char apl_off[] = {0xA9, 0x02, 0x08, 0xC1, 0x00, 0x01, 0x8E, 0xFF};
+	char apl_on[] = {0xA9, 0x02, 0x08, 0xC1, 0x00, 0x01, 0x0E, 0xFF};
+	unsigned int current_backlight;
 
-	/*if (atomic_read(&ctx->hbm_mode) && level) {
+	if (atomic_read(&ctx->hbm_mode) && level) {
 		pr_info("hbm_mode = %d, skip backlight(%d)\n", atomic_read(&ctx->hbm_mode), level);
-		atomic_set(&ctx->current_backlight, level);
+		atomic_set(&ctx->current_bl, level);
 		return 0;
-	}*/
+	}
 
-#if 0
-	current_backlight = atomic_read(&ctx->current_backlight);
+	current_backlight = atomic_read(&ctx->current_bl);
 	if (atomic_read(&ctx->apl_mode) && (level <= APL_THRESHOLD)) {
 		pr_info("%s: disable DIC APL (BL: %d -> %d)\n", __func__, current_backlight, level);
 		cb(dsi, handle, apl_off, ARRAY_SIZE(apl_off));
@@ -800,14 +843,13 @@ static int lcm_setbacklight_cmdq(void *dsi, dcs_write_gce cb, void *handle,
 		cb(dsi, handle, apl_on, ARRAY_SIZE(apl_on));
 		atomic_set(&ctx->apl_mode, 1);
 	}
-	if (!(atomic_read(&ctx->current_backlight) && level))
-		pr_info("backlight changed from %u to %u\n", atomic_read(&ctx->current_backlight),level);
+	if (!(atomic_read(&ctx->current_bl) && level))
+		pr_info("backlight changed from %u to %u\n", atomic_read(&ctx->current_bl),level);
 	else
-		pr_debug("backlight changed from %u to %u\n", atomic_read(&ctx->current_backlight), level);
-#endif
+		pr_debug("backlight changed from %u to %u\n", atomic_read(&ctx->current_bl), level);
 
-	printk("%s enter  \n",__func__);
-	printk("%s backlight level = %d  \n",__func__,level);
+	//printk("%s enter  \n",__func__);
+	//printk("%s backlight level = %d  \n",__func__,level);
 	bl_tb[1] = (level >> 8) & 0x3F;
 	bl_tb[2] = level & 0xFF;
 	if (!cb)
@@ -988,25 +1030,26 @@ static int mode_switch(struct drm_panel *panel,
 }
 
 static struct mtk_panel_para_table panel_lhbm_on_120hz[] = {
-	{28, {0xA9, 0x01, 0x00, 0x87, 0x00, 0x00, 0x25, 0x02, 0x00, 0xDF, 0x31, 0x32, 0x00, 0x1A, 0x02, 0x00, 0xDF, 0x38, 0x39, 0x0A, 0xCE, 0x01, 0x00, 0x51, 0x09, 0x0A, 0xBE, 0x80}},
+	{36, {0xA9, 0x01, 0x00, 0x87, 0x00, 0x02, 0x25, 0x39, 0xb9, 0x02, 0x00, 0xDF, 0x31, 0x32, 0x00, 0x1A, 0x02, 0x00, 0xDF, 0x37, 0x37, 0x00, 0x02, 0x00, 0xDF, 0x38, 0x39, 0x0A, 0xCE, 0x01, 0x00, 0x51, 0x09, 0x0A, 0xBE, 0x80}},
 };
 
 static struct mtk_panel_para_table panel_lhbm_on_90hz[] = {
-	{28, {0xA9, 0x01, 0x00, 0x87, 0x00, 0x00, 0x25, 0x02, 0x00, 0xDF, 0x31, 0x32, 0x01, 0x1A, 0x02, 0x00, 0xDF, 0x38, 0x39, 0x0E, 0x68, 0x01, 0x00, 0x51, 0x09, 0x0A, 0xBE, 0x80}},
+	{36, {0xA9, 0x01, 0x00, 0x87, 0x00, 0x02, 0x25, 0x39, 0xb9, 0x02, 0x00, 0xDF, 0x31, 0x32, 0x01, 0x1A, 0x02, 0x00, 0xDF, 0x37, 0x37, 0x00, 0x02, 0x00, 0xDF, 0x38, 0x39, 0x0E, 0x68, 0x01, 0x00, 0x51, 0x09, 0x0A, 0xBE, 0x80}},
 };
 
 static struct mtk_panel_para_table panel_lhbm_on_60hz[] = {
-	{28, {0xA9, 0x01, 0x00, 0x87, 0x00, 0x00, 0x25, 0x02, 0x00, 0xDF, 0x31, 0x32, 0x02, 0x1A, 0x02, 0x00, 0xDF, 0x38, 0x39, 0x15, 0x9C, 0x01, 0x00, 0x51, 0x09, 0x0A, 0xBE, 0x80}},
+	{36, {0xA9, 0x01, 0x00, 0x87, 0x00, 0x02, 0x25, 0x39, 0xb9, 0x02, 0x00, 0xDF, 0x31, 0x32, 0x02, 0x1A, 0x02, 0x00, 0xDF, 0x37, 0x37, 0x00, 0x02, 0x00, 0xDF, 0x38, 0x39, 0x15, 0x9C, 0x01, 0x00, 0x51, 0x09, 0x0A, 0xBE, 0x80}},
 };
 
 static struct mtk_panel_para_table panel_lhbm_off[] = {
+	{3, {0x51, 0x3E, 0x80}},
 	{14, {0xA9, 0x01, 0x00, 0x87, 0x00, 0x00, 0x20, 0x01, 0x00, 0x51, 0x09, 0x0A, 0x00, 0x00}},
 };
 
-/*
-static void set_lhbm_alpha(unsigned int bl_level)
+
+static void set_lhbm_alpha(unsigned int bl_level, struct mtk_panel_para_table *panel_lhbm_on)
 {
-	struct mtk_panel_para_table *pTable = &panel_lhbm_on[1];
+	struct mtk_panel_para_table *pTable = panel_lhbm_on;
 
 	unsigned int alpha = 0;
 	unsigned int lhbm_alpha_index = bl_level-1;
@@ -1018,37 +1061,67 @@ static void set_lhbm_alpha(unsigned int bl_level)
 
 	alpha = lhbm_alpha[lhbm_alpha_index];
 
-	pTable->para_list[13] = (alpha >> 8) & 0xFF;
-	pTable->para_list[14] = alpha & 0xFF;
+	pTable->para_list[7] = (alpha >> 8) & 0xFF;
+	pTable->para_list[8] = alpha & 0xFF;
 
-	pr_info("%s: backlight %d alpha %d(0x%x, 0x%x)\n", __func__, bl_level, alpha, pTable->para_list[13], pTable->para_list[14]);
+	pr_info("%s: backlight %d alpha %d(0x%x, 0x%x)\n", __func__, bl_level, alpha, pTable->para_list[7], pTable->para_list[8]);
 }
-*/
+
+static int panel_lhbm_set_cmdq(void *dsi, dcs_grp_write_gce cb, void *handle, uint32_t on, uint32_t bl_level, uint32_t fps)
+{
+	struct mtk_panel_para_table *pTable = NULL;
+	unsigned int para_count = 0;
+
+	if (on)
+	{
+		switch (fps)
+		{
+		case 60:
+			para_count = sizeof(panel_lhbm_on_60hz) / sizeof(struct mtk_panel_para_table);
+			pTable = panel_lhbm_on_60hz;
+			break;
+		case 90:
+			para_count = sizeof(panel_lhbm_on_90hz) / sizeof(struct mtk_panel_para_table);
+			pTable = panel_lhbm_on_90hz;
+			break;
+		case 120:
+		default:
+			para_count = sizeof(panel_lhbm_on_120hz) / sizeof(struct mtk_panel_para_table);
+			pTable = panel_lhbm_on_120hz;
+			break;
+		}
+		set_lhbm_alpha(bl_level, pTable);
+	}
+	else
+	{
+		para_count = sizeof(panel_lhbm_off) / sizeof(struct mtk_panel_para_table);
+		pTable = panel_lhbm_off;
+		if (bl_level > APL_THRESHOLD)
+		{
+			pTable->para_list[1] = (APL_THRESHOLD >> 8) & 0xFF;
+			pTable->para_list[2] = APL_THRESHOLD & 0xFF;
+		}
+		else
+		{
+			pTable->para_list[1] = (bl_level >> 8) & 0xFF;
+			pTable->para_list[2] = bl_level & 0xFF;
+		}
+		pr_info("%s restore bl to %u ", __func__, bl_level);
+	}
+	cb(dsi, handle, pTable, para_count);
+	return 0;
+}
+
 
 static int panel_hbm_set_cmdq(struct lcm *ctx, void *dsi, dcs_grp_write_gce cb, void *handle, uint32_t hbm_state)
 {
 	struct mtk_panel_para_table hbm_on_table = {3, {0x51, 0x0F, 0xFF}};
-	struct mtk_panel_para_table *panel_lhbm_on = NULL;
-	unsigned int para_count = 0;
-	//unsigned int level = 0;
-
-	//level = atomic_read(&ctx->current_bl);
+	unsigned int level = 0;
+	unsigned int fps = 120;
+	fps = atomic_read(&ctx->current_fps);
+	level = atomic_read(&ctx->current_bl);
 
 	if (hbm_state > 2) return -1;
-
-	switch (atomic_read(&ctx->current_fps))
-	{
-		case 60:
-			panel_lhbm_on = panel_lhbm_on_60hz;
-			break;
-		case 90:
-			panel_lhbm_on = panel_lhbm_on_90hz;
-			break;
-		case 120:
-		default:
-			panel_lhbm_on = panel_lhbm_on_120hz;
-			break;
-	}
 
 	pr_info("%s current_fps = %d hbm_state %d", __func__, atomic_read(&ctx->current_fps), hbm_state);
 
@@ -1056,22 +1129,19 @@ static int panel_hbm_set_cmdq(struct lcm *ctx, void *dsi, dcs_grp_write_gce cb, 
 	{
 		case 0:
 			if (ctx->lhbm_en){
-				para_count = sizeof(panel_lhbm_off) / sizeof(struct mtk_panel_para_table);
-				cb(dsi, handle, panel_lhbm_off, para_count);
+				panel_lhbm_set_cmdq(dsi, cb, handle, 0, level, fps);
 			}
 			break;
 		case 1:
 			if (ctx->lhbm_en) {
-				//set_lhbm_alpha(level);
-				cb(dsi, handle, panel_lhbm_on, 1);
+				panel_lhbm_set_cmdq(dsi, cb, handle, 0, level, fps);
 			} else {
 				cb(dsi, handle, &hbm_on_table, 1);
 			}
 			break;
 		case 2:
 			if (ctx->lhbm_en){
-				//set_lhbm_alpha(level);
-				cb(dsi, handle, panel_lhbm_on, 1);
+				panel_lhbm_set_cmdq(dsi, cb, handle, 1, level, fps);
 			} else {
 				cb(dsi, handle, &hbm_on_table, 1);
 			}
@@ -1201,7 +1271,7 @@ static int panel_doze_enable(struct drm_panel *panel, void *dsi, dcs_write_gce c
 	void *handle)
 {
 	struct lcm *ctx = panel_to_lcm(panel);
-	static char aod_en[] = {0x39, 0x00};
+	static char aod_en[] = { 0x39};
 
 	pr_info("%s: %d -> %d\n", __func__, atomic_read(&ctx->doze_enable), 1);
 
@@ -1237,6 +1307,7 @@ static int panel_doze_disable(struct drm_panel *panel, void *dsi, dcs_write_gce 
 	return 0;
 }
 
+#if defined(DIC_COMMAND_MODE_AOD)
 static unsigned long panel_doze_get_mode_flags(struct drm_panel *panel,
 	int doze_en)
 {
@@ -1255,6 +1326,7 @@ static unsigned long panel_doze_get_mode_flags(struct drm_panel *panel,
 	pr_info("%s: mode_flags %ld\n", __func__, mode_flags);
 	return mode_flags;
 }
+#endif
 
 static struct mtk_panel_funcs ext_funcs = {
 	.reset = panel_ext_reset,
@@ -1268,7 +1340,9 @@ static struct mtk_panel_funcs ext_funcs = {
 	.panel_feature_set = panel_feature_set,
 	.panel_feature_get = panel_feature_get,
 	.scaling_mode_mapping = mtk_scaling_mode_mapping,
+#if defined(DIC_COMMAND_MODE_AOD)
 	.doze_get_mode_flags = panel_doze_get_mode_flags,
+#endif
 	.doze_disable = panel_doze_disable,
 	.doze_enable = panel_doze_enable,
 };
