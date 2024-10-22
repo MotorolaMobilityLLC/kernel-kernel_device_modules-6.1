@@ -17,44 +17,11 @@
 #include <linux/regulator/driver.h>
 #include <linux/regulator/machine.h>
 #include <linux/regulator/of_regulator.h>
-
-/* Registers */
-#define AW37004_REG_NUM (AW37004_CHIP_REV2-AW37004_CHIP_REV+1)
-
-#define AW37004_CHIP_REV 0x00
-#define AW37004_CURRENT_LIMITSEL 0x01
-#define AW37004_DISCHARGE_RESISTORS 0x02
-#define AW37004_LDO1_VOUT 0x03
-#define AW37004_LDO2_VOUT 0x04
-#define AW37004_LDO3_VOUT 0x05
-#define AW37004_LDO4_VOUT 0x06
-#define AW37004_LDO1_LDO2_SEQ 0x0a
-#define AW37004_LDO3_LDO4_SEQ 0x0b
-#define AW37004_LDO_EN 0x0e
-#define AW37004_SEQ_STATUS 0x0f
-#define AW37004_CHIP_REV2 0x19
-
-
-/* AW37004_LDO1_VSEL ~ AW37004_LDO4_VSEL =
- * 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09
- */
-#define  AW37004_LDO1_VSEL                      AW37004_LDO1_VOUT
-#define  AW37004_LDO2_VSEL                      AW37004_LDO2_VOUT
-#define  AW37004_LDO3_VSEL                      AW37004_LDO3_VOUT
-#define  AW37004_LDO4_VSEL                      AW37004_LDO4_VOUT
-
-
-#define  AW37004_VSEL_SHIFT                     0
-#define  AW37004_VSEL_MASK                      (0xff << 0)
-
-#define  AW37004_N_VOLTAGES                     256
-
-#define  AW37004_ID                             0x00
-#define  AW37004_ID2                            0x04
+#include "aw37004-regulator.h"
 
 static int ldo_chipid = -1;
 
-enum slg51000_regulators {
+enum aw37004_regulators {
 	AW37004_REGULATOR_LDO1 = 0,
 	AW37004_REGULATOR_LDO2,
 	AW37004_REGULATOR_LDO3,
@@ -303,6 +270,7 @@ static int aw37004_i2c_probe(struct i2c_client *client,
 	struct device *dev = &client->dev;
 	struct aw37004 *chip;
 	int error, cs_gpio, vin1_gpio, ret, i, value;
+	bool is_aw37004 = TRUE;
 
 	/* Set all register to initial value when probe driver to avoid register value was modified.
 	*/
@@ -382,19 +350,39 @@ static int aw37004_i2c_probe(struct i2c_client *client,
 	}
 
 	ret = regmap_read(chip->regmap, AW37004_CHIP_REV, &ldo_chipid);
-	if (ret < 0 || ldo_chipid != AW37004_ID) {
-		dev_err(dev, "Failed to read CHIP ID:0x%x, ret:%d\n", ldo_chipid,ret);
+	if (ret < 0) {
+		dev_err(dev, "Failed to read CHIP ID:0x%x, ret:%d\n",
+			ldo_chipid, ret);
 		ret = -ENODEV;
 		return ret;
 	} else {
-		dev_info(chip->dev, "AW37004 CHIP ID matched!\n");
-	}
-
-	ret = regmap_read(chip->regmap, AW37004_CHIP_REV2, &ldo_chipid);
-	if (ret < 0 || ldo_chipid != AW37004_ID2) {
-		dev_err(dev, "ET5904 matched, read CHIP ID2:0x%x, ret:%d\n", ldo_chipid,ret);
-	} else {
-		dev_info(chip->dev, "AW37004 CHIP ID2 matched!\n");
+		switch (ldo_chipid) {
+		case COMMON_ID:
+			dev_info(chip->dev, "COMMON CHIP ID matched!\n");
+			break;
+		case WL28661D_CHIP_ID:
+			dev_info(chip->dev, "WL28661D CHIP ID matched!\n");
+			is_aw37004 = FALSE;
+			break;
+		default:
+			dev_err(dev,
+				"CHIP ID not mactched:0x%x, maybe other ic, ret:%d\n",
+				ldo_chipid, ret);
+			ret = -ENODEV;
+			return ret;
+		}
+		if (is_aw37004) {
+			ret = regmap_read(chip->regmap, AW37004_CHIP_REV2,
+					  &ldo_chipid);
+			if (ret < 0 || ldo_chipid != AW37004_ID2) {
+				dev_err(dev,
+					"CHIP ID2 not mactched:0x%x, maybe other ic, ret:%d\n",
+					ldo_chipid, ret);
+			} else {
+				dev_info(chip->dev,
+					 "AW37004 CHIP ID2 matched!\n");
+			}
+		}
 	}
 
 	for (i = 0; i < 5; i++) {

@@ -1,33 +1,34 @@
-&i2c3{
-    aw37004: aw37004@28 {
+&i2c6{
+    aw37004_2nd: aw37004-2nd@28 {
         status = "okay";
-        compatible = "aw37004";
+        compatible = "aw37004-2nd";
         reg = <0x28>;
-        cs-gpios = <&pio 115 0>;
+        vin1-supply = <&cam_ext_1v35>;
+        vin2-supply = <&vbb_cam>;
         init-value = <0x00>;
         regulators{
-            cam_rw_dvdd_ldo: ldo1 {
-                regulator-name = "aw37004_ldo1";
+            cam_rm_dvdd_ldo: ldo1 {
+                regulator-name = "aw37004_2nd_ldo1";
                 regulator-min-microvolt = <600000>;
                 regulator-max-microvolt = <2130000>;
             };
 
-            cam_f_dvdd_ldo: ldo2 {
-                regulator-name = "aw37004_ldo2";
+            cam_rt_dvdd_ldo: ldo2 {
+                regulator-name = "aw37004_2nd_ldo2";
                 regulator-min-microvolt = <600000>;
                 regulator-max-microvolt = <2130000>;
 
             };
 
-            cam_rw_avdd_ldo: ldo3 {
-                regulator-name = "aw37004_ldo3";
+            cam_rt_oisvdd_ldo: ldo3 {
+                regulator-name = "aw37004_2nd_ldo3";
                 regulator-min-microvolt = <1200000>;
                 regulator-max-microvolt = <4387500>;
 
             };
 
-            cam_rw_afdd_ldo: ldo4 {
-                regulator-name = "aw37004_ldo4";
+            cam_rt_afvdd_ldo: ldo4 {
+                regulator-name = "aw37004_2nd_ldo4";
                 regulator-min-microvolt = <1200000>;
                 regulator-max-microvolt = <4387500>;
 
