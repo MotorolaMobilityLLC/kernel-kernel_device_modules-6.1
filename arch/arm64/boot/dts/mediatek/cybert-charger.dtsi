@@ -61,7 +61,19 @@
                         pinmux = <PINMUX_GPIO61__FUNC_GPIO61>;
                         output-low;
                 };
-        };
+		wls_hall_int1 {
+                        pinmux = <PINMUX_GPIO1__FUNC_GPIO1>;
+                        input-enable;
+                        bias-disable;
+                        //bias-disable;
+                };
+		wls_hall_int2 {
+                        pinmux = <PINMUX_GPIO26__FUNC_GPIO26>;
+                        input-enable;
+                        bias-disable;
+                        //bias-disable;
+                };
+       };
 
         mmi_control_wls_default: mmi_control_wls_default {
                 wls_control {
@@ -79,7 +91,6 @@
 &mtk_gauge {
 	status = "disabled";
 };
-
 
 &mt6375_typec {
        tcpc,en_wd;
@@ -301,6 +312,8 @@
         	wls_ext_boost_7v_en = <&pio 187 0x0>;
         	usb_ld_sw_en = <&pio 33 0x0>;
         	wls_ld_sw_en = <&pio 122 0x0>;*/
+		//wls_hal_int1 = <&pio 1 0x0>;
+		//wls_hal_int2 = <&pio 26 0x0>;
         };
 };
 
