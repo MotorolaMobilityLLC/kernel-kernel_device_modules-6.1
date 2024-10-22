@@ -103,6 +103,7 @@
 };
 
 &i2c10 {
+	clock-frequency = <400000>;
 	status = "ok";
 
 	st21nfc: st21nfc@0x08 {
