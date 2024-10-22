@@ -946,7 +946,7 @@ def get_overlay_modules_list():
         mgk_64_k61_device_modules.append("drivers/misc/mediatek/flashlight/v4l2/sgm37864.ko")
         mgk_64_k61_device_modules.append("drivers/misc/mediatek/lens/ois/mot_tele_dw9784/mot_tele_dw9784.ko")
         mgk_64_k61_device_modules.append("drivers/regulator/aw37004-regulator.ko")
-        mgk_64_k61_device_modules.append("drivers/regulator/aw370041c-regulator.ko")
+        mgk_64_k61_device_modules.append("drivers/regulator/aw37004-2nd-regulator.ko")
         #audio
         mgk_64_k61_device_modules.remove("sound/soc/codecs/tfa98xx/snd-soc-tfa98xx.ko")
         mgk_64_k61_device_modules.append("drivers/misc/mediatek/typec/mux/fsa4480-i2c.ko")
@@ -1076,7 +1076,7 @@ def get_overlay_modules_list():
         mgk_64_k61_device_modules.append("drivers/misc/mediatek/flashlight/v4l2/sgm37864.ko")
         mgk_64_k61_device_modules.append("drivers/misc/mediatek/lens/ois/mot_tele_dw9784/mot_tele_dw9784.ko")
         mgk_64_k61_device_modules.append("drivers/regulator/aw37004-regulator.ko")
-        mgk_64_k61_device_modules.append("drivers/regulator/aw370041c-regulator.ko")
+        mgk_64_k61_device_modules.append("drivers/regulator/aw37004-2nd-regulator.ko")
         #audio
         mgk_64_k61_device_modules.remove("sound/soc/codecs/tfa98xx/snd-soc-tfa98xx.ko")
         mgk_64_k61_device_modules.append("drivers/misc/mediatek/typec/mux/fsa4480-i2c.ko")
@@ -1216,7 +1216,7 @@ def get_overlay_modules_list():
         mgk_64_k61_device_modules.append("drivers/misc/mediatek/typec/mux/fsa4480-i2c.ko")
         mgk_64_k61_device_modules.append("sound/soc/codecs/tfa9864/snd-soc-tfa9864.ko")
         mgk_64_k61_device_modules.append("drivers/regulator/aw37004-regulator.ko")
-        mgk_64_k61_device_modules.append("drivers/regulator/aw370041c-regulator.ko")
+        mgk_64_k61_device_modules.append("drivers/regulator/aw37004-2nd-regulator.ko")
 
     if "fpga.config" in DEFCONFIG_OVERLAYS:
         mgk_64_k61_kleaf_modules.remove("//vendor/mediatek/kernel_modules/fpsgo_cus:fpsgo_cus")

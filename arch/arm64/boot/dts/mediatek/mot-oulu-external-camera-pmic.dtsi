@@ -13,81 +13,81 @@
 
 &i2c3{
     aw37004: aw37004@28 {
-	status = "okay";
-	compatible = "aw37004";
-	reg = <0x28>;
-	cs-gpios = <&pio 77 0>;
-	vin1-supply = <&cam_ext_1v35>;
-	// vin2-supply = <&vBB>;
-	init-value = <0x00>;
-    	regulators{
-		cam_rm_dvdd_ldo: ldo1 {
-			regulator-name = "aw37004_ldo1";
-			regulator-min-microvolt = <600000>;
-			regulator-max-microvolt = <2130000>;
-		};
+        status = "okay";
+        compatible = "aw37004";
+        reg = <0x28>;
+        cs-gpios = <&pio 77 0>;
+        vin1-supply = <&cam_ext_1v35>;
+        // vin2-supply = <&vBB>;
+        init-value = <0x00>;
+        regulators{
+            cam_rm_dvdd_ldo: ldo1 {
+                regulator-name = "aw37004_ldo1";
+                regulator-min-microvolt = <600000>;
+                regulator-max-microvolt = <2130000>;
+            };
 
-		cam_rw_dvdd_ldo: ldo2 {
-			regulator-name = "aw37004_ldo2";
-			regulator-min-microvolt = <600000>;
-			regulator-max-microvolt = <2130000>;
+            cam_rw_dvdd_ldo: ldo2 {
+                regulator-name = "aw37004_ldo2";
+                regulator-min-microvolt = <600000>;
+                regulator-max-microvolt = <2130000>;
 
-		};
+            };
 
-		cam_rw_avdd_ldo: ldo3 {
-			regulator-name = "aw37004_ldo3";
-			regulator-min-microvolt = <1200000>;
-			regulator-max-microvolt = <4387500>;
+            cam_rw_avdd_ldo: ldo3 {
+                regulator-name = "aw37004_ldo3";
+                regulator-min-microvolt = <1200000>;
+                regulator-max-microvolt = <4387500>;
 
-		};
+            };
 
-		cam_rm_avdd2_ldo: ldo4 {
-			regulator-name = "aw37004_ldo4";
-			regulator-min-microvolt = <1200000>;
-			regulator-max-microvolt = <4387500>;
+            cam_rm_avdd2_ldo: ldo4 {
+                regulator-name = "aw37004_ldo4";
+                regulator-min-microvolt = <1200000>;
+                regulator-max-microvolt = <4387500>;
 
-		};
-	};
-};
+            };
+        };
+    };
 };
 
 &i2c10{
-    aw370041c: aw370041c@28 {
-	status = "okay";
-	compatible = "aw370041c";
-	reg = <0x28>;
-	cs-gpios = <&pio 57 0>;
-	vin1-supply = <&cam_ext_1v35>;
-	// vin2-supply = <&vBB>;
-	init-value = <0x00>;
-    	regulators{
-		cam_f_dvdd_ldo: ldo1 {
-			regulator-name = "aw370041c_ldo1";
-			regulator-min-microvolt = <600000>;
-			regulator-max-microvolt = <2130000>;
-		};
+    aw37004_2nd: aw37004-2nd@28 {
+        status = "okay";
+        compatible = "aw37004-2nd";
+        reg = <0x28>;
+        cs-gpios = <&pio 57 0>;
+        vin1-supply = <&cam_ext_1v35>;
+        // vin2-supply = <&vBB>;
+        init-value = <0x00>;
+        regulators{
+            cam_f_dvdd_ldo: ldo1 {
+                regulator-name = "aw37004_2nd_ldo1";
+                regulator-min-microvolt = <600000>;
+                regulator-max-microvolt = <2130000>;
+            };
 
-		cam_rt_dvdd_ldo: ldo2 {
-			regulator-name = "aw370041c_ldo2";
-			regulator-min-microvolt = <600000>;
-			regulator-max-microvolt = <2130000>;
+            cam_rt_dvdd_ldo: ldo2 {
+                regulator-name = "aw37004_2nd_ldo2";
+                regulator-min-microvolt = <600000>;
+                regulator-max-microvolt = <2130000>;
 
-		};
+            };
 
-		cam_f_avdd_ldo: ldo3 {
-			regulator-name = "aw370041c_ldo3";
-			regulator-min-microvolt = <1200000>;
-			regulator-max-microvolt = <4387500>;
+            cam_f_avdd_ldo: ldo3 {
+                regulator-name = "aw37004_2nd_ldo3";
+                regulator-min-microvolt = <1200000>;
+                regulator-max-microvolt = <4387500>;
 
-		};
+            };
 
-		cam_rt_avdd_ldo: ldo4 {
-			regulator-name = "aw370041c_ldo4";
-			regulator-min-microvolt = <1200000>;
-			regulator-max-microvolt = <4387500>;
+            cam_rt_avdd_ldo: ldo4 {
+                regulator-name = "aw37004_2nd_ldo4";
+                regulator-min-microvolt = <1200000>;
+                regulator-max-microvolt = <4387500>;
 
-		};
-	};
-};
+            };
+        };
+    };
 };
 

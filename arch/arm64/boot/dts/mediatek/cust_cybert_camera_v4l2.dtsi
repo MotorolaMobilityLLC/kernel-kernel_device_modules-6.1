@@ -2,7 +2,7 @@
 /* Copyright (c) 2020 MediaTek Inc. */
 #include <dt-bindings/clock/mt6897-clk.h>
 #include <mediatek/cybert_aw37004.dtsi>
-#include <mediatek/cybert_aw370041c.dtsi>
+#include <mediatek/cybert_aw37004_2nd.dtsi>
 
 &seninf_top {
     seninf_csi_port_1: seninf-csi-port-1 {

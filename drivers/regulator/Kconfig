@@ -260,10 +260,10 @@ config MOTO_AW37004
 	    This option enables support for the aw37004 power connected
 	    through I2C. Say Y to enable support for the aw37004 .
 
-config MOTO_AW370041C
-	tristate "AW370041c regulator driver"
+config MOTO_AW37004_2ND
+	tristate "AW37004_2ND regulator driver"
 	help
-	    This option enables support for the aw370041c power connected
-	    through I2C. Say Y to enable support for the aw370041c .
+	    This option enables support for the aw37004_2nd power connected
+	    through I2C. Say Y to enable support for the aw37004_2nd .
 endif
 

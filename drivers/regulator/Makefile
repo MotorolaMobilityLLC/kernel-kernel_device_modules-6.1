@@ -31,6 +31,6 @@ obj-$(CONFIG_MOTO_HL7603)   += hl7603-regulator.o
 obj-$(CONFIG_MOTO_ET5904)   += et5904.o
 obj-$(CONFIG_MOTO_ET59041C) += et59041c.o
 obj-$(CONFIG_MOTO_AW37004)  += aw37004-regulator.o
-obj-$(CONFIG_MOTO_AW370041C) += aw370041c-regulator.o
+obj-$(CONFIG_MOTO_AW37004_2ND) += aw37004-2nd-regulator.o
 
 ccflags-$(CONFIG_REGULATOR_DEBUG) += -DDEBUG
