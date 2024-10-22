@@ -240,6 +240,12 @@ config MOTO_WLS_OTG_SWITCH
         help
           This is to enable MOTO supports of wls otg switch.
 
+config MOTO_WLS_CP_OTG_REVERSE_SWITCH
+        bool "WIRELESS CP OTG CHANNEL REVERSE SWITCH  control support"
+        default n
+        help
+          This is to enable MOTO supports of wls CP otg reverse switch.
+
 config MOTO_1200_CYCLE
         bool "1200 cycle support"
         default n
