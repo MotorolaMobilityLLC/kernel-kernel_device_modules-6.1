@@ -76,10 +76,11 @@
 		pinctrl-0 = <&ctp_gt9896s_int_active &ctp_gt9896s_reset_active>;
 		pinctrl-1 = <&ctp_gt9896s_int_suspend &ctp_gt9896s_reset_suspend>;
 		//panel = <&mot_tm_icna3508_ft3683g_667_1080x2400_dsc_vid &mot_boe_vtdr6130a_ft3683g_667_1080x2400_dsc_cmd>;
-		//mmi,usb-charger-detection;
+		mmi,usb-charger-detection;
 		mmi,enable-gestures;
 		mmi,supported_gesture_type = <0x07>;
 		focaltech,stowed-mode-ctrl;
+		mtk-charger = <&mt6375_chg>;
 	};
 };
 
