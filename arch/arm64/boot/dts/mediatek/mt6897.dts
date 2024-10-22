@@ -166,7 +166,7 @@
 
 	/* chosen */
 	chosen: chosen {
-		bootargs = "console=tty0 root=/dev/ram \
+		bootargs = "root=/dev/ram \
 			    nosoftlockup transparent_hugepage=never \
 			    kasan.page_alloc.sample=1 \
 			    allow_mismatched_32bit_el0 \
