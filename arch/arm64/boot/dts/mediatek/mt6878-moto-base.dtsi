@@ -3,6 +3,7 @@
  * 	Add nodes or properties to root node
  * 	Delete nodes or properties
 */
+#include "../../../../../../kernel-6.1/include/generated/autoconf.h"
 
 / {
 	utags: utags { };
@@ -62,3 +63,7 @@
 	/* Remove mtk typec otp */
 	/delete-property/ tcpc,en-typec-otp;
 };
+
+#ifdef CONFIG_AITO_DTB
+#include "mediatek/mt6878-moto-aito-base.dtsi"
+#endif
