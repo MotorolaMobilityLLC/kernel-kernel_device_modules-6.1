@@ -434,16 +434,26 @@ static int lcm_unprepare(struct drm_panel *panel)
 	if (!ctx->prepared)
 		return 0;
 	printk("%s enter  \n",__func__);
+	lcm_dcs_write_seq_static(ctx, 0x6c,0x02);
+	lcm_dcs_write_seq_static(ctx, 0x71,0x00);
+	msleep(10);
+	lcm_dcs_write_seq_static(ctx, 0x75,0x00);
+	lcm_dcs_write_seq_static(ctx, 0xF0,0xAA,0x1B);
+	lcm_dcs_write_seq_static(ctx, 0xD0,0x00);
+	lcm_dcs_write_seq_static(ctx, 0xF0,0xAA,0x10);
+	lcm_dcs_write_seq_static(ctx, 0xCF,0x09);
+	msleep(10);
 	lcm_dcs_write_seq_static(ctx, 0x28);
-	msleep(50);
+	msleep(10);
+	lcm_dcs_write_seq_static(ctx, 0xF0,0xAA,0x10);
+	lcm_dcs_write_seq_static(ctx, 0x65,0x05);
+	lcm_dcs_write_seq_static(ctx, 0xD0,0x0BE);
+	msleep(11);
 	lcm_dcs_write_seq_static(ctx, 0x10);
 	msleep(150);
 
 	ctx->error = 0;
 	ctx->prepared = false;
-
-
-
 
 	printk("%s exit  \n",__func__);
 	return 0;
