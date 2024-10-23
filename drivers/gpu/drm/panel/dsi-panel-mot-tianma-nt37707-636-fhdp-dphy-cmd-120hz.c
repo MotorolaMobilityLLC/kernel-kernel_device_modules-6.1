@@ -306,6 +306,14 @@ static void lcm_panel_init(struct lcm *ctx)
 	lcm_dcs_write_seq_static(ctx, 0x6F,0x02);
 	lcm_dcs_write_seq_static(ctx, 0xC7,0x03,0x47);
 	lcm_dcs_write_seq_static(ctx, 0x26,0x00);
+	lcm_dcs_write_seq_static(ctx, 0xF0,0x55,0xAA,0x52,0x08,0x00);
+	//EN_SLPIN_IN_SWIRE=1, SWIRE_SLPIN_SUBFRA[5:0]=48
+	lcm_dcs_write_seq_static(ctx, 0x6F,0x5D);
+	lcm_dcs_write_seq_static(ctx, 0xB5,0x11,0x30);
+
+	//swire_slpin_set1[7:0]=-2.2V, =>this's example, please check end customer pulse num to modify
+	lcm_dcs_write_seq_static(ctx, 0x6F,0x96);
+	lcm_dcs_write_seq_static(ctx, 0xB5,0x3E);
 if(ctx->version < 4){
 	lcm_dcs_write_seq_static(ctx, 0xF0,0x55,0xAA,0x52,0x08,0x00);
 	lcm_dcs_write_seq_static(ctx, 0x6F,0x8B);
@@ -322,7 +330,6 @@ if(ctx->version < 4){
 }else{
 	lcm_dcs_write_seq_static(ctx, 0x5F,0x01,0x00);
 }
-
 
 	//backlight
 	level = atomic_read(&ctx->current_backlight);
