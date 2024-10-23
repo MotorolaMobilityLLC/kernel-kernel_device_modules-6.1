@@ -27,4 +27,5 @@
 };
 
 #include <cybert_evb/cust.dtsi>
+#include "mediatek/cust_cybert_camera_v4l2.dtsi"
 /*End of this file, DO NOT ADD ANYTHING HERE*/
