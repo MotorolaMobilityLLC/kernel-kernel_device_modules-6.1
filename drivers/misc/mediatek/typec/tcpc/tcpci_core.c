@@ -59,6 +59,7 @@ static struct device_attribute tcpc_device_attributes[] = {
 	TCPC_DEVICE_ATTR(pe_ready, 0444),
 #endif /* CONFIG_USB_POWER_DELIVERY */
 	TCPC_DEVICE_ATTR(cc_orientation, S_IRUGO | S_IWUSR | S_IWGRP),
+	TCPC_DEVICE_ATTR(cid_state, 0444),
 };
 
 enum {
@@ -73,6 +74,7 @@ enum {
 	TCPC_DESC_PE_READY,
 #endif /* CONFIG_USB_POWER_DELIVERY */
 	TCPC_DESC_CC_POLA,
+	TCPC_DESC_CID_STATE,
 };
 
 static struct attribute *__tcpc_attrs[ARRAY_SIZE(tcpc_device_attributes) + 1];
@@ -211,6 +213,12 @@ static ssize_t tcpc_show_property(struct device *dev,
 		       snprintf(buf, 256, "%s\n", "CC2");
 		else
 		       snprintf(buf, 256, "%s\n", "CC1");
+		break;
+	case TCPC_DESC_CID_STATE:
+		if (tcpc->ops->is_support_cid)
+			snprintf(buf, 256, "%d\n", tcpc->ops->is_cid_plug(tcpc));
+		else
+			snprintf(buf, 256, "-1\n");
 		break;
 
 	default:
