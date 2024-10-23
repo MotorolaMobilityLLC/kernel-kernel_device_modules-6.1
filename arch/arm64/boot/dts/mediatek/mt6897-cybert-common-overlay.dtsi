@@ -69,7 +69,7 @@
 
 &i2c3 {
 	status = "ok";
-
+	clock-frequency = <400000>;
 	st21nfc: st21nfc@0x08 {
 		compatible = "st,st21nfc";
 		reg = <0x08>;
