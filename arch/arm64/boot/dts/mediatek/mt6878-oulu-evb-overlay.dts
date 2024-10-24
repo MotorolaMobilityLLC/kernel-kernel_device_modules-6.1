@@ -26,5 +26,9 @@
 	};
 };
 
+&mt6375_typec {
+	mmi_cid_int = <&pio 78 0x0>;
+};
+
 #include <oulu_evb/cust.dtsi>
 /*End of this file, DO NOT ADD ANYTHING HERE*/
