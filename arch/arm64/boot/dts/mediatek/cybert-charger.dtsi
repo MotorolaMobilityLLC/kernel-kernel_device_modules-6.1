@@ -260,6 +260,7 @@
         sc,sc858x,mode = <1>; /*0:4->1 1:2->1 2:1->1 4:1<-4 5:1<-2 6:1<-1*/
         sc,sc858x,tshut-dis = <1>;
     };
+
 /*
     cps_wls_charger:cps_wls_charger@30 {
         compatible = "cps,wls-charger-cps4059";
@@ -312,6 +313,7 @@
         	wls_ext_boost_7v_en = <&pio 187 0x0>;
         	usb_ld_sw_en = <&pio 33 0x0>;
         	wls_ld_sw_en = <&pio 122 0x0>;*/
+		//enable_wlc_hall = <1>;//wlc hall sensor feature flag.
 		//wls_hal_int1 = <&pio 1 0x0>;
 		//wls_hal_int2 = <&pio 26 0x0>;
         };
