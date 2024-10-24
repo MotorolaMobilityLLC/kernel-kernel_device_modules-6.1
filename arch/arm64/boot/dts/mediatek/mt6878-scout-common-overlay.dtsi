@@ -109,9 +109,9 @@
 		clkreq-gpios = <&pio 151 0x00>;
 		status = "disabled";
 	};
-	nfc_pn5xx: nfc_pn5xx@28 {
+	nfc_pn5xx: nfc_pn5xx@29 {
 		compatible = "qcom,sn-nci";
-		reg = <0x28>;
+		reg = <0x29>;
 		interrupt-parent = <&pio>;
 		interrupts = <2 0>;
 		qcom,sn-irq = <&pio 2 0>;

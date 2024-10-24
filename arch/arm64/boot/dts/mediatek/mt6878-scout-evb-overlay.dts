@@ -52,6 +52,10 @@
 	};
 };
 
+&nfc_pn5xx {
+	reg = <0x28>;
+};
+
 &mt6375_chg {
 	mmi,otp-mos-regulator-name = "mt6369_mos_con1";
 };
