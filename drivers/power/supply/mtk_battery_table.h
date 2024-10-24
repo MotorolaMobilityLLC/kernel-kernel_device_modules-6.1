@@ -552,7 +552,7 @@ struct fg_temp fg_temp_table[21] = {
 #endif
 
 #if (BAT_NTC_100 == 1)
-struct fg_temp fg_temp_table[21] = {
+struct fg_temp fg_temp_table[23] = {
                 {-40,4397119},
                 {-35,3088598},
                 {-30,2197225},
@@ -573,7 +573,9 @@ struct fg_temp fg_temp_table[21] = {
                 {45,40903},
                 {50,33194},
                 {55,27090},
-                {60,22224}
+                {60,22224},
+		{65,18305},
+		{70,15162}
 };
 #endif
 
