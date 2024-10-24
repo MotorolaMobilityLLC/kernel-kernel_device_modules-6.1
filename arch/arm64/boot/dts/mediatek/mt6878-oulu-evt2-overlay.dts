@@ -21,14 +21,10 @@
 		target-path = "/";
 		__overlay__ {
 			mot,model = "oulu";
-			mot,board-id = <0x47 0xA200>;
+			mot,board-id = <0x47 0xA300>;
 		};
 	};
 };
 
-&mt6375_typec {
-	mmi_cid_int = <&pio 78 0x0>;
-};
-
-#include <oulu_evb/cust.dtsi>
+#include <oulu_evt2/cust.dtsi>
 /*End of this file, DO NOT ADD ANYTHING HERE*/
