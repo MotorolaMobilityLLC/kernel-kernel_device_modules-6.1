@@ -442,7 +442,7 @@
 
     sensor1: sensor1@10 {
         compatible = "mediatek,imgsensor";
-        sensor-names = "mot_cybert_s5kjns_mipi_raw", "mot_cybert_gc32e1_mipi_raw";
+        sensor-names = "mot_cybert_s5kjns_mipi_raw";
         reg = <0x10>;
 
         #thermal-sensor-cells = <0>;
