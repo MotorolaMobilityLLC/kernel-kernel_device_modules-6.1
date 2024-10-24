@@ -134,12 +134,6 @@
 &mt6375_chg {
 	ircmp-r = <0>;
 	ircmp-v = <0>;
-	dcp15w-support;
-	dcp15w-icl-min = <1000>; //mA
-	dcp15w-icl-max = <3000>; //mA
-	dcp15w-icl-step = <500>; //mA
-	dcp15w-time-step = <300>; //ms
-	dcp15w-time-plug = <800>; //ms
 };
 
 &lk_charger {
@@ -184,7 +178,7 @@
 
 	disable-aicl;
 
-	//mmi,enable-mux;
+	mmi,enable-mux;
 
 	// mmi,mux_wls_switch_en = <&pio 99 0x0>;
 	// mmi,mux_switch_enn_en = <&pio 32 0x0>;
