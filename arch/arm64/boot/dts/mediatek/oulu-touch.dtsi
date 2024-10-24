@@ -26,8 +26,8 @@
 		pinctrl-0 = <&ctp_gt9896s_int_active &ctp_gt9896s_reset_active>;
 		pinctrl-1 = <&ctp_gt9896s_int_suspend &ctp_gt9896s_reset_suspend>;
 		spi-max-frequency = <15000000>;  /* 4800000,9600000,15000000,19200000 */
-		mmi,status = "/chosen","mmi,panel_name","contains","tm_nt37706","csot_nt37706";
-		goodix,panel-supplier = "tm", "csot";
+		mmi,status = "/chosen","mmi,panel_name","contains","tianma_nt37706","csot_nt37706";
+		goodix,panel-supplier = "tianma", "csot";
 		goodix,reset-gpio = <&pio 152 0x0>;
 		goodix,irq-gpio = <&pio 7 0x2002>;
 		goodix,avdd-gpio = <&pio 184 0x0>;
