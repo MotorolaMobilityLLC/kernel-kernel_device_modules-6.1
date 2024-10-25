@@ -517,13 +517,6 @@
 	debounce = <512>;
 	status = "okay";
 };
-&swtp_4 {
-        interrupt-parent = <&pio>;
-        interrupts = <29 IRQ_TYPE_LEVEL_HIGH 29 0>;
-        deb-gpios = <&pio 29 0>;
-        debounce = <512>;
-        status = "okay";
-};
 
 &therm_intf {
 	/*Vsensor name should be CASE DIFFERENT with the name in config file*/
