@@ -137,3 +137,8 @@ config INPUT_FOCALTECH_V3_MMI_ENABLE_DOUBLE_TAP
 	bool "Support tap sensor"
 	help
 		Say Y here if need to enable tap sensor.
+
+config TOUCHSCREEN_GOODIX_TIMING
+	bool "TP timing repair"
+	help
+		Say Y here  is TP timing repair.
