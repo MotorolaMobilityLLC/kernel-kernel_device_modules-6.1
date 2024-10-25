@@ -113,12 +113,20 @@
 	mmi,temperature-names = "BACK_TEMP", "FRONT_TEMP";/*for "back_temp" in config file*/
 };
 
+&rt6160_bus5{
+	status = "disabled";
+};
 &i2c5 {
 	hl7603@77 {
 		status = "ok";
 		compatible = "hl7603";
 		reg = <0x77>;
 		/* hl7603_vout_voltage = <0x0B>; //3.4v */
+	};
+	sgm6211@75 {
+		status = "ok";
+		compatible = "sgm62110";
+		reg = <0x75>;
 	};
 };
 
