@@ -10,16 +10,6 @@
         gpio = <&pio 62 0x0>;
     };
 
-    vbb_cam: gpio100-fixed {
-        compatible = "regulator-fixed";
-        regulator-name = "vbb_cam_en_regulator";
-        regulator-min-microvolt = <1350000>;
-        regulator-max-microvolt = <1350000>;
-        enable-active-high;
-        regulator-always-on;
-        regulator-boot-on;
-        gpio = <&pio 100 0x0>;
-    };
 };
 
 &i2c12{
@@ -28,7 +18,6 @@
         compatible = "aw37004";
         reg = <0x28>;
         vin1-supply = <&cam_ext_1v35>;
-        vin2-supply = <&vbb_cam>;
         init-value = <0x00>;
         regulators{
             cam_rw_dvdd_ldo: ldo1 {

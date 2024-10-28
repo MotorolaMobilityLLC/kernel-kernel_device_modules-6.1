@@ -4,7 +4,6 @@
         compatible = "aw37004-2nd";
         reg = <0x28>;
         vin1-supply = <&cam_ext_1v35>;
-        vin2-supply = <&vbb_cam>;
         init-value = <0x00>;
         regulators{
             cam_rm_dvdd_ldo: ldo1 {
