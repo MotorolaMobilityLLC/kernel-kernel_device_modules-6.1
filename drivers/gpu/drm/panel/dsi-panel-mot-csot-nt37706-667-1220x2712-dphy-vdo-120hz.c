@@ -856,18 +856,17 @@ static int lcm_setbacklight_cmdq(void *dsi, dcs_write_gce cb, void *handle,
 {
 	struct lcm *ctx = g_ctx;
 	char bl_tb[] = {0x51, 0x3F, 0xff};
-//	char apl_off[] = {0x5F, 0x01, 0x00};
-//	char apl_on[] = {0x5F, 0x01, 0x01};
-//	unsigned int current_backlight;
+	//char apl_off[] = {0xA9, 0x02, 0x08, 0xC1, 0x00, 0x01, 0x8E, 0xFF};
+	//char apl_on[] = {0xA9, 0x02, 0x08, 0xC1, 0x00, 0x01, 0x0E, 0xFF};
+	//unsigned int current_backlight;
 
-	/*if (atomic_read(&ctx->hbm_mode) && level) {
+	if (atomic_read(&ctx->hbm_mode) && level) {
 		pr_info("hbm_mode = %d, skip backlight(%d)\n", atomic_read(&ctx->hbm_mode), level);
-		atomic_set(&ctx->current_backlight, level);
+		atomic_set(&ctx->current_bl, level);
 		return 0;
-	}*/
-
+	}
 #if 0
-	current_backlight = atomic_read(&ctx->current_backlight);
+	current_backlight = atomic_read(&ctx->current_bl);
 	if (atomic_read(&ctx->apl_mode) && (level <= APL_THRESHOLD)) {
 		pr_info("%s: disable DIC APL (BL: %d -> %d)\n", __func__, current_backlight, level);
 		cb(dsi, handle, apl_off, ARRAY_SIZE(apl_off));
@@ -877,14 +876,14 @@ static int lcm_setbacklight_cmdq(void *dsi, dcs_write_gce cb, void *handle,
 		cb(dsi, handle, apl_on, ARRAY_SIZE(apl_on));
 		atomic_set(&ctx->apl_mode, 1);
 	}
-	if (!(atomic_read(&ctx->current_backlight) && level))
-		pr_info("backlight changed from %u to %u\n", atomic_read(&ctx->current_backlight),level);
-	else
-		pr_debug("backlight changed from %u to %u\n", atomic_read(&ctx->current_backlight), level);
 #endif
+	if (!(atomic_read(&ctx->current_bl) && level))
+		pr_info("backlight changed from %u to %u\n", atomic_read(&ctx->current_bl),level);
+	else
+		pr_debug("backlight changed from %u to %u\n", atomic_read(&ctx->current_bl), level);
 
-	printk("%s enter  \n",__func__);
-	printk("%s backlight level = %d  \n",__func__,level);
+	//printk("%s enter  \n",__func__);
+	//printk("%s backlight level = %d  \n",__func__,level);
 	bl_tb[1] = (level >> 8) & 0x3F;
 	bl_tb[2] = level & 0xFF;
 	if (!cb)
@@ -1070,6 +1069,7 @@ static struct mtk_panel_para_table panel_lhbm_on[] = {
 };
 
 static struct mtk_panel_para_table panel_lhbm_off[] = {
+	{3, {0x51, 0x3E, 0x80}},
 	{2, {0x8B, 0x00}},
 	{13, {0xA9, 0x02, 0x00, 0xB5, 0x2C, 0x2C, 0x03, 0x01, 0x00, 0x87, 0x00, 0x00, 0x20}},
 };
@@ -1095,39 +1095,67 @@ static void set_lhbm_alpha(unsigned int bl_level)
 	pr_info("%s: backlight %d alpha %d(0x%x, 0x%x)\n", __func__, bl_level, alpha, pTable->para_list[13], pTable->para_list[14]);
 }
 
+static int panel_lhbm_set_cmdq(void *dsi, dcs_grp_write_gce cb, void *handle, uint32_t on, uint32_t bl_level, uint32_t fps)
+{
+	struct mtk_panel_para_table *pTable = NULL;
+	unsigned int para_count = 0;
+
+	if (on)
+	{
+		para_count = sizeof(panel_lhbm_on) / sizeof(struct mtk_panel_para_table);
+		pTable = panel_lhbm_on;
+		set_lhbm_alpha(bl_level);
+	}
+	else
+	{
+		para_count = sizeof(panel_lhbm_off) / sizeof(struct mtk_panel_para_table);
+		pTable = panel_lhbm_off;
+		if (bl_level > APL_THRESHOLD)
+		{
+			pTable->para_list[1] = (APL_THRESHOLD >> 8) & 0xFF;
+			pTable->para_list[2] = APL_THRESHOLD & 0xFF;
+		}
+		else
+		{
+			pTable->para_list[1] = (bl_level >> 8) & 0xFF;
+			pTable->para_list[2] = bl_level & 0xFF;
+		}
+		pr_info("%s restore bl to %u ", __func__, bl_level);
+	}
+	cb(dsi, handle, pTable, para_count);
+	return 0;
+}
+
+
 static int panel_hbm_set_cmdq(struct lcm *ctx, void *dsi, dcs_grp_write_gce cb, void *handle, uint32_t hbm_state)
 {
 	struct mtk_panel_para_table hbm_on_table = {3, {0x51, 0x0F, 0xFF}};
-	unsigned int para_count = 0;
 	unsigned int level = 0;
-
+	unsigned int fps = 120;
+	fps = atomic_read(&ctx->current_fps);
 	level = atomic_read(&ctx->current_bl);
 
 	if (hbm_state > 2) return -1;
+
+	pr_info("%s current_fps = %d hbm_state %d", __func__, atomic_read(&ctx->current_fps), hbm_state);
 
 	switch (hbm_state)
 	{
 		case 0:
 			if (ctx->lhbm_en){
-				para_count = sizeof(panel_lhbm_off) / sizeof(struct mtk_panel_para_table);
-				cb(dsi, handle, panel_lhbm_off, para_count);
+				panel_lhbm_set_cmdq(dsi, cb, handle, 0, level, fps);
 			}
 			break;
 		case 1:
 			if (ctx->lhbm_en) {
-				set_lhbm_alpha(level);
-				para_count = sizeof(panel_lhbm_on) / sizeof(struct mtk_panel_para_table);
-				cb(dsi, handle, panel_lhbm_on, para_count);
-
+				panel_lhbm_set_cmdq(dsi, cb, handle, 0, level, fps);
 			} else {
 				cb(dsi, handle, &hbm_on_table, 1);
 			}
 			break;
 		case 2:
 			if (ctx->lhbm_en){
-				set_lhbm_alpha(level);
-				para_count = sizeof(panel_lhbm_on) / sizeof(struct mtk_panel_para_table);
-				cb(dsi, handle, panel_lhbm_on, para_count);
+				panel_lhbm_set_cmdq(dsi, cb, handle, 1, level, fps);
 			} else {
 				cb(dsi, handle, &hbm_on_table, 1);
 			}
