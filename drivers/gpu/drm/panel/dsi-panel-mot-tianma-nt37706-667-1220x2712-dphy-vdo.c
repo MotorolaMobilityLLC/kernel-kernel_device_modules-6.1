@@ -540,14 +540,12 @@ static struct mtk_panel_params ext_params_48hz = {
 	.lfr_enable = 0,
 	.lfr_minimum_fps = 60,
 
-	/* following MIPI hopping parameter might cause screen mess */
-/*	.dyn = {
-		.switch_en = 1,
-		.pll_clk = 556,
-		.vfp_lp_dyn = 4178,
-		.hfp = 76,
-		.vfp = 2590,
-	},*/
+	.change_fps_by_vfp_send_cmd = 1,
+	.dyn_fps = {
+		.switch_en = 0,
+		.vact_timing_fps = 120,
+		.dfps_cmd_table[0] = {0, 2, {0x2F, 0x03} },
+	},
 
 	.panel_cellid_reg = 0xAC,
 	.panel_cellid_offset_reg = 0x6F,
@@ -625,14 +623,12 @@ static struct mtk_panel_params ext_params_60hz = {
 	.lfr_enable = 0,
 	.lfr_minimum_fps = 60,
 
-	/* following MIPI hopping parameter might cause screen mess */
-/*	.dyn = {
-		.switch_en = 1,
-		.pll_clk = 556,
-		.vfp_lp_dyn = 4178,
-		.hfp = 76,
-		.vfp = 2590,
-	},*/
+	.change_fps_by_vfp_send_cmd = 1,
+	.dyn_fps = {
+		.switch_en = 0,
+		.vact_timing_fps = 120,
+		.dfps_cmd_table[0] = {0, 2, {0x2F, 0x02} },
+	},
 
 	.panel_cellid_reg = 0xAC,
 	.panel_cellid_offset_reg = 0x6F,
@@ -708,14 +704,12 @@ static struct mtk_panel_params ext_params_90hz = {
 	.lfr_enable = 0,
 	.lfr_minimum_fps = 60,
 
-	/* following MIPI hopping parameter might cause screen mess */
-/*	.dyn = {
-		.switch_en = 1,
-		.pll_clk = 556,
-		.vfp_lp_dyn = 2578,
-		.hfp = 76,
-		.vfp = 940,
-	},*/
+	.change_fps_by_vfp_send_cmd = 1,
+	.dyn_fps = {
+		.switch_en = 0,
+		.vact_timing_fps = 120,
+		.dfps_cmd_table[0] = {0, 2, {0x2F, 0x01} },
+	},
 
 	.panel_cellid_reg = 0xAC,
 	.panel_cellid_offset_reg = 0x6F,
@@ -791,14 +785,12 @@ static struct mtk_panel_params ext_params_120hz = {
 	.lfr_enable = 0,
 	.lfr_minimum_fps = 60,
 
-	/* following MIPI hopping parameter might cause screen mess */
-/*	.dyn = {
-		.switch_en = 1,
-		.pll_clk = 556,
-		.vfp_lp_dyn = 2578,
-		.hfp = 76,
-		.vfp = 116,
-	},*/
+	.change_fps_by_vfp_send_cmd = 1,
+	.dyn_fps = {
+		.switch_en = 0,
+		.vact_timing_fps = 120,
+		.dfps_cmd_table[0] = {0, 2, {0x2F, 0x00} },
+	},
 
 	.panel_cellid_reg = 0xAC,
 	.panel_cellid_offset_reg = 0x6F,
@@ -950,6 +942,7 @@ int mtk_scaling_mode_mapping(int mode_idx)
 	return (mode_idx % REAL_MODE_NUM);
 }
 
+#if 0
 /*
 static void mode_switch_to_48(struct drm_panel *panel,
 	enum MTK_PANEL_MODE_SWITCH_STAGE stage)
@@ -1008,7 +1001,7 @@ static int mode_switch(struct drm_panel *panel,
 	int dst_fps = 0;
 	struct drm_display_mode *m = get_mode_by_id(connector, dst_mode);
 
-	pr_info("%s cur_mode = %d dst_mode %d\n", __func__, cur_mode, dst_mode);
+	pr_info("%s cur_mode = %d dst_mode %d stage %d\n", __func__, cur_mode, dst_mode, stage);
 
 	dst_fps = m ? drm_mode_vrefresh(m) : -EINVAL;
 
@@ -1028,6 +1021,7 @@ static int mode_switch(struct drm_panel *panel,
 
 	return ret;
 }
+#endif
 
 static struct mtk_panel_para_table panel_lhbm_on_120hz[] = {
 	{36, {0xA9, 0x01, 0x00, 0x87, 0x00, 0x02, 0x25, 0x39, 0xb9, 0x02, 0x00, 0xDF, 0x31, 0x32, 0x00, 0x1A, 0x02, 0x00, 0xDF, 0x37, 0x37, 0x00, 0x02, 0x00, 0xDF, 0x38, 0x39, 0x0A, 0xCE, 0x01, 0x00, 0x51, 0x09, 0x0A, 0xBE, 0x80}},
@@ -1336,7 +1330,7 @@ static struct mtk_panel_funcs ext_funcs = {
 	.ata_check = panel_ata_check,
 	.ext_param_set = mtk_panel_ext_param_set,
 	.ext_param_get = mtk_panel_ext_param_get,
-	.mode_switch = mode_switch,
+	//.mode_switch = mode_switch,
 	.panel_feature_set = panel_feature_set,
 	.panel_feature_get = panel_feature_get,
 	.scaling_mode_mapping = mtk_scaling_mode_mapping,
