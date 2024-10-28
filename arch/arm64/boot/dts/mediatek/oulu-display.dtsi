@@ -10,15 +10,6 @@
  * GNU General Public License for more details.
  */
 
-&mtk_leds {
-	backlight {
-		/delete-property/ max-hw-brightness;
-		/delete-property/ max-brightness;
-		max-brightness = <4080>;
-		max-hw-brightness = <4080>;
-	};
-};
-
 &mipi_tx_config0 {
 	mipi-volt = <11>;
 };
