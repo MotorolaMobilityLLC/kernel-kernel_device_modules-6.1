@@ -402,6 +402,8 @@ struct dynamic_fps_params {
 	unsigned int data_rate;
 	unsigned int data_rate_khz;
 	struct dfps_switch_cmd dfps_cmd_table[MAX_DYN_CMD_NUM];
+	struct mtk_panel_para_table dfps_cmd_grp_table[MAX_DYN_CMD_NUM];
+	unsigned int dfps_cmd_grp_size;
 };
 
 struct mtk_bl_ext_config {
@@ -511,6 +513,7 @@ enum panel_hbm_type {
 
 
 struct mtk_panel_params {
+	unsigned int change_fps_by_vfp_send_cmd;
 	unsigned int pll_clk;
 	unsigned int data_rate;
 	unsigned int data_rate_khz;
