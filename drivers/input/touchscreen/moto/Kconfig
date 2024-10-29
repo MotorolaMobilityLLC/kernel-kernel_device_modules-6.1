@@ -132,6 +132,12 @@ config FTS_GAME_MODE_EN
 	help
 		Say Y here if need to support game mode feature.
 
+config ENABLE_FTS_PALM_CANCEL
+
+	bool "Support touch palm cancel feature"
+	help
+		Say Y here if support touch palm cancel feature.
+
 config INPUT_FOCALTECH_V3_MMI_ENABLE_DOUBLE_TAP
 
 	bool "Support tap sensor"
