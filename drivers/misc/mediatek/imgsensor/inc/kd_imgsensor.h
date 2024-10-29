@@ -171,6 +171,7 @@
 #define IMX596_SENSOR_ID                        0x0596
 #define IMX6632X_SENSOR_ID                      0x0663
 #define MOT_AITO_IMX258_SENSOR_ID               0x0258
+#define MOT_AITO_IMX258_VCM_BLAD_SENSOR_ID      0x0259
 
 /*OV*/
 #define OV23850_SENSOR_ID                       0x023850
@@ -456,6 +457,9 @@
 #define SENSOR_DRVNAME_IMX073_MIPI_RAW          "imx073_mipi_raw"
 #define SENSOR_DRVNAME_IMX582_MIPI_RAW          "imx582_mipi_raw"
 #define SENSOR_DRVNAME_IMX596_MIPI_RAW          "imx596_mipi_raw"
+#define SENSOR_DRVNAME_MOT_AITO_IMX258_MIPI_RAW  "mot_aito_imx258_mipi_raw"
+#define SENSOR_DRVNAME_MOT_AITO_IMX258_VCM_BLAD  "mot_aito_imx258_vcm_blad"
+
 /*OV*/
 #define SENSOR_DRVNAME_OV23850_MIPI_RAW         "ov23850_mipi_raw"
 #define SENSOR_DRVNAME_OV16880_MIPI_RAW         "ov16880_mipi_raw"
