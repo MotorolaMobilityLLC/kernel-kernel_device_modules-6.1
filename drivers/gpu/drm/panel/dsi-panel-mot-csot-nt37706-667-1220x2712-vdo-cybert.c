@@ -578,13 +578,12 @@ static struct mtk_panel_params ext_params_60hz = {
 	.data_rate = 1230,
 	.lfr_enable = 0,
 	.lfr_minimum_fps = 60,
-	//.change_fps_by_vfp_send_cmd = 1,
+	.change_fps_by_vfp_send_cmd = 1,
 	.dyn_fps = {
 		.switch_en = 0,
 		.vact_timing_fps = 120,
-		.dfps_cmd_table[0] = {0, 21, {0xA9, 0x01, 0x00, 0x2F, 0x00, 0x00, 0x03, 0x02,
-		                              0x00, 0xDF, 0x38, 0x39, 0x19, 0xE4, 0x02, 0x00,
-									  0xDF, 0x31, 0x32, 0x03, 0x1A} },
+		.dfps_cmd_grp_table[0] = {2, {0x2f, 0x02} },
+		.dfps_cmd_grp_size = 1,
 	},
 	/* following MIPI hopping parameter might cause screen mess */
 /*	.dyn = {
@@ -666,13 +665,12 @@ static struct mtk_panel_params ext_params_90hz = {
 	.data_rate = 1230,
 	.lfr_enable = 0,
 	.lfr_minimum_fps = 60,
-	//.change_fps_by_vfp_send_cmd = 1,
+	.change_fps_by_vfp_send_cmd = 1,
 	.dyn_fps = {
 		.switch_en = 0,
 		.vact_timing_fps = 120,
-		.dfps_cmd_table[0] = {0, 21, {0xA9, 0x01, 0x00, 0x2F, 0x00, 0x00, 0x02, 0x02,
-		                              0x00, 0xDF, 0x38, 0x39, 0x11, 0x44, 0x02, 0x00,
-									  0xDF, 0x31, 0x32, 0x02, 0x1A} },
+		.dfps_cmd_grp_table[0] = {2, {0x2f, 0x01} },
+		.dfps_cmd_grp_size = 1,
 	},
 	/* following MIPI hopping parameter might cause screen mess */
 /*	.dyn = {
@@ -754,13 +752,12 @@ static struct mtk_panel_params ext_params_120hz = {
 	.data_rate = 1230,
 	.lfr_enable = 0,
 	.lfr_minimum_fps = 60,
-	//.change_fps_by_vfp_send_cmd = 1,
+	.change_fps_by_vfp_send_cmd = 1,
 	.dyn_fps = {
 		.switch_en = 0,
 		.vact_timing_fps = 120,
-		.dfps_cmd_table[0] = {0, 21, {0xA9, 0x01, 0x00, 0x2F, 0x00, 0x00, 0x01, 0x02,
-		                              0x00, 0xDF, 0x38, 0x39, 0x0C, 0xF4, 0x02, 0x00,
-									  0xDF, 0x31, 0x32, 0x01, 0x1A} },
+		.dfps_cmd_grp_table[0] = {2, {0x2f, 0x00} },
+		.dfps_cmd_grp_size = 1,
 	},
 	/* following MIPI hopping parameter might cause screen mess */
 /*	.dyn = {
