@@ -410,7 +410,7 @@
 
 	sensor2: sensor2@20 {
 		compatible = "mediatek,imgsensor";
-		sensor-names = "mot_aito_imx258_mipi_raw","mot_aito_hi1336_mipi_raw";
+		sensor-names = "mot_aito_imx258_mipi_raw","mot_aito_hi1336_mipi_raw","mot_aito_imx258_vcm_blad";
 		reg = <0x20>;
 		#thermal-sensor-cells = <0>;
 
