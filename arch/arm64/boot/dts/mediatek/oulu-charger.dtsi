@@ -185,6 +185,8 @@
 	mmi,adc-channel-pa = <1>;
 	mmi,adc-channel-batid = <3>;
 	mmi,adc-channel-vbat = <100>;
+
+	mmi,batt-ids-map = "1", "ATLRM52NVT", "2", "COSRM52COS";
 };
 
 &smart_battery {
