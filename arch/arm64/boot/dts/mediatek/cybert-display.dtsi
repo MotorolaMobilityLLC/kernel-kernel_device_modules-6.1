@@ -68,6 +68,26 @@
 		};
 	};
 
+	panel3@2 {
+		/delete-property/ compatible;
+		/delete-property/ pm-enable-gpios;
+		/delete-property/ reset-gpios;
+		/delete-property/ gate-ic;
+
+		compatible = "tm,vtd6126a,vdo,667";
+		reg = <2>;
+
+                pm-enable-gpios = <&pio 185 0>,
+                          <&pio 186 0>,
+                          <&pio 184 0>;
+                reset-gpios = <&pio 41 0>;
+		pinctrl-names = "default";
+		port {
+			panel_in3: endpoint {
+				remote-endpoint = <&dsi_out3>;
+			};
+		};
+	};
 	ports {
 		port {
 			dsi_out: endpoint {
@@ -75,6 +95,9 @@
 			};
 			dsi_out2: endpoint2 {
 				remote-endpoint = <&panel_in2>;
+			};
+			dsi_out3: endpoint3 {
+				remote-endpoint = <&panel_in3>;
 			};
 		};
 	};
