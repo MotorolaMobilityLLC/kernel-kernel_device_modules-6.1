@@ -250,16 +250,15 @@
 
 &mtk_gauge {
 
-	DIFFERENCE_FULLOCV_ITH = <80>;  /*gauge cut-off current, should overtop ieoc 50ma*/
-	EMBEDDED_SEL = <(1)>;  /*embedded battery,don't remove the battery for user*/
-	VIR_OLDOCV_DIFF_EMB = <3000>; /*0.1mv*/
-	VIR_OLDOCV_DIFF_EMB_LT = <3000>; /*0.1mv*/
-        CURR_MEASURE_20A = <(0)>;
-        UNIT_MULTIPLE = <(1)>;
+	difference-fullocv-ith = <80>;  /*gauge cut-off current, should overtop ieoc 50ma*/
+	embedded-sel = <(1)>;  /*embedded battery,don't remove the battery for user*/
+	vir-oldocv-diff-emb = <3000>; /*0.1mv*/
+	vir-oldocv-diff-emb-lt = <3000>; /*0.1mv*/
+	curr-measure-20a = <(0)>;
+	unit-multiple = <(1)>;
 
 	/* battery prop */
-	g_temperature = <(50) (25) (10) (0) (-10) (-25) (-30) (-35) (-40) (-45)>;
-	g_FG_PSEUDO100 = <96 96 100 100
+	g-fg-pseudo100 = <96 96 100 100
 		96 96 100 100
 		96 96 100 100
 		96 96 100 100
@@ -270,7 +269,7 @@
 		100 100 100 100
 		100 100 100 100>;
 
-	g_Q_MAX = <4997 4970 2490 1965
+	g-q-max = <4997 4970 2490 1965
 		5000 5043 2468 1984
 		5046 5025 2310 1946
 		4992 4803 1858 1873
@@ -281,7 +280,7 @@
 		2181 1622 1503 1511
 		2171 1612 1493 1501>;
 
-	g_Q_MAX_H_CURRENT = <4945 4782 2190 1665
+	g-q-max-h-current = <4945 4782 2190 1665
 		4995 4873 2168 1684
 		4998 4870 2010 1646
 		4927 4882 1558 1573
@@ -293,9 +292,9 @@
 		2170 1610 1493 1501>;
 
 	/*vboot voltage for gauge 0%*/
-	g_PMIC_MIN_VOL_row = <4>;
-	g_PMIC_MIN_VOL_col = <10>;
-	g_PMIC_MIN_VOL = <32000  32000  33500  33500
+	g-pmic-min-vol-row = <4>;
+	g-pmic-min-vol-col = <10>;
+	g-pmic-min-vol = <32000  32000  33500  33500
 		32000  32000  33000  33000
 		33000  33500  33000  33000
 		32200  33600  32200  32200
@@ -307,9 +306,9 @@
 		31000  31000  31000  31200>;
 
 	/*Pseudo1 hide percentage*/
-	g_QMAX_SYS_VOL_row = <4>;
-	g_QMAX_SYS_VOL_col = <10>;
-	g_QMAX_SYS_VOL = <32500  32500  34950  34950
+	g-qmax-sys-vol-row = <4>;
+	g-qmax-sys-vol-col = <10>;
+	g-qmax-sys-vol = <32500  32500  34950  34950
 		32500  32500  34950  34950
 		34250  33500  34250  34250
 		34250  33600  34250  34250
@@ -320,11 +319,10 @@
 		32800  32800  32800  32800
 		32800  32800  32800  32800>;
 
-	SHUTDOWN_1_TIME = <(30)>;
-	ACTIVE_TABLE = <(5)>;
+	shutdown-1-time = <(30)>;
+	active-table = <(5)>;
 	r-fg-value = <(2)>;
-	R_FG_VALUE = <(2)>;
-	NO_BAT_TEMP_COMPENSATE = <(1)>;
+	no-bat-temp-compensate = <(1)>;
 
 	df-serialnum = "ATLRA52NVT";
 	#include "bat_setting/mt6878_battery_table_nice_nvt_5200mah.dtsi"
@@ -461,14 +459,14 @@
 	mmi_therm_cur_thres = <500>;
 	mmi_therm_vol_thres = <80>;
 	mmi_therm_step = <3>;
-	mmi_max_ibat = <12200>;
+	mmi_max_ibat = <6000>;
 	mmi_max_hrst_cnt = <1>;
 };
 &mmi_pehv {
 	compatible = "mmi,pehv";
 	gauge = <&mtk_gauge>;
 	polling-interval = <10000>;
-	vbat-cv = <4550>;
+	vbat-cv = <4530>;
 	start-soc-min = <0>;
 	start-soc-max = <90>;
 	idvchg-cc = <3000>;
@@ -517,9 +515,8 @@
 
 
 &charger_cooler {
-	mmi,thermal-mitigation = <(-1) 12000000 11000000 9000000 8000000
-				7000000 6000000 5000000 4000000 3500000
-				3000000 2500000 2000000 1500000 1000000>;
+	mmi,thermal-mitigation = <(-1) 5500000 5000000 4500000 4200000 4000000 3500000 3000000
+	2500000 2000000 1500000 1000000 500000 300000 100000>;
 };
 
 &extcon_usb {
