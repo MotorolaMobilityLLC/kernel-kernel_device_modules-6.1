@@ -550,6 +550,6 @@
 &mt6363_dynamic_loading_throttling {
 	status = "okay";
 	bob-check-flag = <0>;
-	uvlo-level = <2600>;
-	vbb-uvlo-level = <2600>;
+	uvlo-level = <2400>;
+	vbb-uvlo-level = <2400>;
 };
