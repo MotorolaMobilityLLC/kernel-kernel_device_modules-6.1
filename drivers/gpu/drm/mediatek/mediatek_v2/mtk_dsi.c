@@ -3733,6 +3733,12 @@ static void mtk_output_dsi_enable(struct mtk_dsi *dsi,
 				ext->funcs->doze_area(dsi->panel, dsi,
 					mipi_dsi_dcs_write_gce2, NULL);
 		}
+		if (new_doze_state && dsi->doze_enabled) {
+			if (ext && ext->funcs
+				&& ext->funcs->doze_area)
+				ext->funcs->doze_area(dsi->panel, dsi,
+					mipi_dsi_dcs_write_gce2, NULL);
+		}
 		if (!new_doze_state && dsi->doze_enabled) {
 			if (ext && ext->funcs
 				&& ext->funcs->doze_disable)
