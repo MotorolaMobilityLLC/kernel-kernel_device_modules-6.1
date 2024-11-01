@@ -14502,7 +14502,7 @@
 		small-core = <1250000>;
 	};
 
-	low-battery-throttling {
+	low_battery_throttling: low-battery-throttling {
 		compatible = "mediatek,low_battery_throttling";
 		lvsys-thd-enable = <1>;
 		vbat-thd-enable = <1>;
