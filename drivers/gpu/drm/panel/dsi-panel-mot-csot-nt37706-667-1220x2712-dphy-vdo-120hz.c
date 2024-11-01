@@ -849,40 +849,42 @@ static int lcm_setbacklight_cmdq(void *dsi, dcs_write_gce cb, void *handle,
 				 unsigned int level)
 {
 	struct lcm *ctx = g_ctx;
-	char bl_tb[] = {0x51, 0x3F, 0xff};
-	//char apl_off[] = {0xA9, 0x02, 0x08, 0xC1, 0x00, 0x01, 0x8E, 0xFF};
-	//char apl_on[] = {0xA9, 0x02, 0x08, 0xC1, 0x00, 0x01, 0x0E, 0xFF};
-	//unsigned int current_backlight;
+	char bl_tb_aod[] = {0x51, 0x3F, 0xff, 0x00, 0x00, 0x3F, 0xFC};
+	char aod_mode[3][2] = {
+		{0x05, 0x54},
+		{0x14, 0xAC},
+		{0x3F, 0xFC},
+	};
+
+	unsigned int aod_light_mode = 0;
 
 	if (atomic_read(&ctx->hbm_mode) && level) {
 		pr_info("hbm_mode = %d, skip backlight(%d)\n", atomic_read(&ctx->hbm_mode), level);
 		atomic_set(&ctx->current_bl, level);
 		return 0;
 	}
-#if 0
-	current_backlight = atomic_read(&ctx->current_bl);
-	if (atomic_read(&ctx->apl_mode) && (level <= APL_THRESHOLD)) {
-		pr_info("%s: disable DIC APL (BL: %d -> %d)\n", __func__, current_backlight, level);
-		cb(dsi, handle, apl_off, ARRAY_SIZE(apl_off));
-		atomic_set(&ctx->apl_mode, 0);
-	} else if(!(atomic_read(&ctx->apl_mode))  && (level > APL_THRESHOLD)) {
-		pr_info("%s: enable DIC APL (BL: %d -> %d)\n", __func__, current_backlight, level);
-		cb(dsi, handle, apl_on, ARRAY_SIZE(apl_on));
-		atomic_set(&ctx->apl_mode, 1);
-	}
-#endif
+
+	if (!cb)
+		return -1;
+
+	if (level > 7300) aod_light_mode = 2;
+	else if (level > 4400) aod_light_mode =1;
+	else aod_light_mode = 0;
+
+	bl_tb_aod[1] = (level >> 8) & 0x3F;
+	bl_tb_aod[2] = level & 0xFF;
+	bl_tb_aod[5] = aod_mode[aod_light_mode][0];
+	bl_tb_aod[6] = aod_mode[aod_light_mode][1];
+
+	cb(dsi, handle, bl_tb_aod, ARRAY_SIZE(bl_tb_aod));
+	if (atomic_read(&ctx->doze_enable))
+		pr_info("%s: backlight_level %d aod_light_mode %d\n", __func__, level, aod_light_mode);
+
 	if (!(atomic_read(&ctx->current_bl) && level))
 		pr_info("backlight changed from %u to %u\n", atomic_read(&ctx->current_bl),level);
 	else
 		pr_debug("backlight changed from %u to %u\n", atomic_read(&ctx->current_bl), level);
 
-	//printk("%s enter  \n",__func__);
-	//printk("%s backlight level = %d  \n",__func__,level);
-	bl_tb[1] = (level >> 8) & 0x3F;
-	bl_tb[2] = level & 0xFF;
-	if (!cb)
-		return -1;
-	cb(dsi, handle, bl_tb, ARRAY_SIZE(bl_tb));
 	atomic_set(&ctx->current_bl, level);
 	if (!level)
 		atomic_set(&ctx->hbm_mode, 0);
