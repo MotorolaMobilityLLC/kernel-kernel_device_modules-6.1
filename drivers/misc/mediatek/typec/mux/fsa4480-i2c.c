@@ -95,6 +95,9 @@ static void fsa4480_usbc_update_settings(struct fsa4480_priv *fsa_priv,
 	/* FSA4480 chip hardware requirement */
 	usleep_range(50, 55);
 	regmap_write(fsa_priv->regmap, FSA4480_SWITCH_SETTINGS, switch_enable);
+#ifdef CONFIG_FSA4480_SENS_TO_GND
+	usleep_range(1000000, 1000005);
+#endif
 }
 
 /*
