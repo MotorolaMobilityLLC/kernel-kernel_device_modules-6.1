@@ -8,21 +8,27 @@
 	status = "okay";
 	#address-cells = <1>;
 	#size-cells = <0>;
-
+	mediatek,pad-select = <0>, <1>;
+	pinctrl-names = "default", "gt9896s_int_active",
+		"gt9896s_reset_active", "gt9896s_int_suspend",
+		"gt9896s_reset_suspend", "gt9896s_spi_mode";
+	pinctrl-0 = <&ctp_gt9896s_pins_default>;
+	pinctrl-1 = <&ctp_gt9896s_int_active>;
+	pinctrl-2 = <&ctp_gt9896s_reset_active>;
+	pinctrl-3 = <&ctp_gt9896s_int_suspend>;
+	pinctrl-4 = <&ctp_gt9896s_reset_suspend>;
+	pinctrl-5 = <&ctp_gt9896s_spi_mode>;
 
 	goodix_ts_spi@0 {
 		status = "okay";
 		compatible = "goodix,gt9916S";
 		reg = <0x0>;
-		pinctrl-names = "pmx_ts_active", "pmx_ts_suspend", "stylus_clk_active", "stylus_clk_suspend","gt9916_spi_mode";
-		pinctrl-0 = <&ctp_gt9896s_int_active>;
-		pinctrl-1 = <&ctp_gt9896s_int_suspend>;
-		pinctrl-2 = <&ctp_gt9896s_reset_active>;
-		pinctrl-3 = <&ctp_gt9896s_reset_suspend>;
-		pinctrl-4 = <&ctp_gt9896s_spi_mode>;
+		pinctrl-names = "pmx_ts_active", "pmx_ts_suspend";
+		pinctrl-0 = <&ctp_gt9896s_int_active &ctp_gt9896s_reset_active>;
+		pinctrl-1 = <&ctp_gt9896s_int_suspend &ctp_gt9896s_reset_suspend>;
 		spi-max-frequency = <15000000>;  /* 4800000,9600000,15000000,19200000 */
-		mmi,status = "/chosen","mmi,panel_name","contains","csot","tianma";
-		goodix,panel-supplier = "csot","tianma";
+		mmi,status = "/chosen","mmi,panel_name","contains","csot";
+		goodix,panel-supplier = "csot";
 		goodix,reset-gpio = <&pio 60 0x0>;
 		goodix,irq-gpio = <&pio 9 0x2002>;
 		goodix,avdd-gpio = <&pio 183 0x0>;
@@ -48,6 +54,33 @@
 		mmi,supported_gesture_type = <0x07>;
 		mmi,resolution_boost = <16>;
 		mtk-charger = <&mt6375_chg>;
+	};
+	focaltech@1{
+		status = "okay";
+		compatible = "focaltech,fts";
+		reg = <0x1>;
+		mmi,status = "/chosen","mmi,panel_name","contains","tm","tianma";
+		focaltech,panel-supplier = "tm","tianma";
+		spi-max-frequency = <9600000>;
+		focaltech,vdd-gpio = <&pio 183 0x0>;
+		focaltech,reset-gpio = <&pio 60 0x0>;
+		focaltech,irq-gpio = <&pio 9 0x2008>;
+		vcc_i2c-supply = <&mt6368_vtp>;
+		//vcc_i2c-supply = <&L13A>;
+		focaltech,max-touch-number = <10>;
+		focaltech,display-coords =  <0 0 19520 43392>;
+		focaltech,edge-ctrl;
+		focaltech,interpolation-ctrl;
+		focaltech,sample-ctrl;
+		fts,pocket-mode-ctrl;
+		pinctrl-names = "pmx_ts_active", "pmx_ts_suspend", "pmx_ts_release";
+		pinctrl-0 = <&ctp_gt9896s_int_active &ctp_gt9896s_reset_active>;
+		pinctrl-1 = <&ctp_gt9896s_int_suspend &ctp_gt9896s_reset_suspend>;
+		//panel = <&mot_tm_icna3508_ft3683g_667_1080x2400_dsc_vid &mot_boe_vtdr6130a_ft3683g_667_1080x2400_dsc_cmd>;
+		//mmi,usb-charger-detection;
+		mmi,enable-gestures;
+		mmi,supported_gesture_type = <0x07>;
+		focaltech,stowed-mode-ctrl;
 	};
 };
 
