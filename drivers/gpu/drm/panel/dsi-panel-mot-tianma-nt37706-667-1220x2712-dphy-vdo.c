@@ -25,6 +25,11 @@
 
 #define DIC_COMMAND_MODE_AOD
 
+#define AOD_AREA_IZE 1092
+#define AOD_Y_START_MIN 324
+#define AOD_Y_START_MAX 1416
+#define AOD_Y_START_STEP_MIN 12
+
 #define CONFIG_MTK_PANEL_EXT
 #if defined(CONFIG_MTK_PANEL_EXT)
 #include "../mediatek/mediatek_v2/mtk_panel_ext.h"
@@ -67,6 +72,7 @@ struct lcm {
 	atomic_t current_fps;
 	atomic_t pcd_mode;
 	atomic_t doze_enable;
+	atomic_t current_aod_y_start;
 	enum panel_version version;
 };
 
@@ -182,7 +188,7 @@ static void lcm_panel_init(struct lcm *ctx)
 #if defined(DIC_COMMAND_MODE_AOD)
 	lcm_dcs_write_seq_static(ctx, 0xF0, 0x55, 0xAA, 0x52, 0x08, 0x00);
 	lcm_dcs_write_seq_static(ctx, 0xC0, 0x50, 0x01);
-	lcm_dcs_write_seq_static(ctx, 0x8D, 0x00, 0x00, 0x04, 0xC3, 0x00, 0x18, 0x05, 0x9F);
+	lcm_dcs_write_seq_static(ctx, 0x8D, 0x00, 0x00, 0x04, 0xC3, 0x01, 0x44, 0x05, 0x87);
 	lcm_dcs_write_seq_static(ctx, 0x17, 0x21);
 	lcm_dcs_write_seq_static(ctx, 0x71, 0x11);
 	lcm_dcs_write_seq_static(ctx, 0xF0, 0x55, 0xAA, 0x52, 0x08, 0x04);
@@ -195,7 +201,7 @@ static void lcm_panel_init(struct lcm *ctx)
 	//VideomodeAODsetting
 	lcm_dcs_write_seq_static(ctx, 0x17, 0x03);
 	lcm_dcs_write_seq_static(ctx, 0x71, 0x00);
-	lcm_dcs_write_seq_static(ctx, 0x8D, 0x00, 0x00, 0x04, 0xC3, 0x00, 0x18, 0x05, 0x9F);
+	lcm_dcs_write_seq_static(ctx, 0x8D, 0x00, 0x00, 0x04, 0xC3, 0x01, 0x44, 0x05, 0x87);
 #endif
 	lcm_dcs_write_seq_static(ctx, 0xF0, 0x55, 0xAA, 0x52, 0x08, 0x00);
 	lcm_dcs_write_seq_static(ctx, 0x6F, 0x1A);
@@ -249,6 +255,7 @@ static void lcm_panel_init(struct lcm *ctx)
 	atomic_set(&ctx->apl_mode, 0);
 	atomic_set(&ctx->current_bl, 0);
 	atomic_set(&ctx->current_fps, 120);
+	atomic_set(&ctx->current_aod_y_start, AOD_Y_START_MIN);
 
 	pr_info("%s-\n", __func__);
 }
@@ -365,6 +372,7 @@ static int lcm_prepare(struct drm_panel *panel)
 	atomic_set(&ctx->current_fps, 120);
 	atomic_set(&ctx->pcd_mode, 0);
 	atomic_set(&ctx->doze_enable, 0);
+	atomic_set(&ctx->current_aod_y_start, AOD_Y_START_MIN);
 
 	pr_info("%s-\n", __func__);
 	return ret;
@@ -1188,31 +1196,76 @@ static int panel_ext_powerdown(struct drm_panel *panel)
 	return 0;
 }
 
+static char aod_area_cmd[] ={0xA9, 0x01, 0x00, 0x8D, 0x00, 0x07, 0x00, 0x00, 0x04, 0xC3, 0x01, 0x44, 0x05, 0x7b,
+		0x01, 0x00, 0x2B, 0x00, 0x03, 0x00, 0x00, 0x0A, 0x97};
+
+static int panel_doze_area(struct drm_panel *panel,
+	void *dsi, dcs_write_gce cb, void *handle)
+{
+	struct lcm *ctx = panel_to_lcm(panel);
+	unsigned int current_y_start = AOD_Y_START_MIN;
+	unsigned int mini_step = AOD_Y_START_STEP_MIN;
+	unsigned int max_y_start = AOD_Y_START_MAX;
+
+	if (atomic_read(&ctx->doze_enable)) {
+		current_y_start = atomic_read(&ctx->current_aod_y_start);
+		if (current_y_start < max_y_start) current_y_start += mini_step;
+		else current_y_start = AOD_Y_START_MIN;
+
+		aod_area_cmd[10] = (current_y_start >> 8) & 0xFF;
+		aod_area_cmd[11] = current_y_start& 0xFF;
+		aod_area_cmd[12] = ((current_y_start + AOD_AREA_IZE - 1) >> 8) & 0xFF;
+		aod_area_cmd[13] = (current_y_start + AOD_AREA_IZE - 1) & 0xFF;
+
+		aod_area_cmd[19] = ((current_y_start - AOD_Y_START_MIN) >> 8) & 0xFF;
+		aod_area_cmd[20] = (current_y_start - AOD_Y_START_MIN) & 0xFF;
+		aod_area_cmd[21] = ((current_y_start - AOD_Y_START_MIN + FHDP_FRAME_HEIGHT - 1) >> 8) & 0xFF;
+		aod_area_cmd[22] = (current_y_start - AOD_Y_START_MIN + FHDP_FRAME_HEIGHT - 1) & 0xFF;
+
+		pr_info("%s: doze_enable %d current_y_start %d\n", __func__, atomic_read(&ctx->doze_enable), current_y_start);
+		pr_info("%s-2B: %d -> %d\n", __func__, (aod_area_cmd[19]*256 + aod_area_cmd[20]),
+				(aod_area_cmd[21]*256 + aod_area_cmd[22]));
+
+		pr_info("%s-area: %d -> %d\n", __func__, (aod_area_cmd[10]*256 + aod_area_cmd[11]),
+				(aod_area_cmd[12]*256 + aod_area_cmd[13]));
+
+		cb(dsi, handle, aod_area_cmd, ARRAY_SIZE(aod_area_cmd));
+
+		atomic_set(&ctx->current_aod_y_start, current_y_start);
+	} else {
+		pr_info("%s: skip update doze area because of  doze_enable = %d\n", __func__, atomic_read(&ctx->doze_enable));
+	}
+
+	atomic_set(&ctx->doze_enable, 1);
+	return 0;
+}
+
+
 static int panel_doze_enable(struct drm_panel *panel, void *dsi, dcs_write_gce cb,
 	void *handle)
 {
 	struct lcm *ctx = panel_to_lcm(panel);
-	static char aod_en[] = { 0x39};
-
-	pr_info("%s: %d -> %d\n", __func__, atomic_read(&ctx->doze_enable), 1);
+	char aod_en_cmd[] = {0x39};
 
 	if (!cb)
 		return -1;
 
 	//if (atomic_read(&ctx->doze_enable)) return 0;
-
-	cb(dsi, handle, aod_en, ARRAY_SIZE(aod_en));
-
-	atomic_set(&ctx->doze_enable, 1);
+	cb(dsi, handle, aod_en_cmd, ARRAY_SIZE(aod_en_cmd));
+	pr_info("%s: %d -> %d\n", __func__, atomic_read(&ctx->doze_enable), 1);
 
 	return 0;
 }
+
+static char aod_disable_cmd[] ={0xA9, 0x01, 0x00, 0x8D, 0x00, 0x07, 0x00, 0x00, 0x04, 0xC3, 0x01, 0x44, 0x05, 0x7b,
+		0x01, 0x00, 0x2B, 0x00, 0x03, 0x00, 0x00, 0x0A, 0x97,
+		0x01, 0x00, 0x38, 0x00, 0x00, 0x00};
 
 static int panel_doze_disable(struct drm_panel *panel, void *dsi, dcs_write_gce cb,
 	void *handle)
 {
 	struct lcm *ctx = panel_to_lcm(panel);
-	static char aod_disable[] = { 0x38};
+	//char aod_disable[] = {0x38};
 
 	pr_info("%s: %d -> %d\n", __func__, atomic_read(&ctx->doze_enable), 0);
 
@@ -1221,9 +1274,10 @@ static int panel_doze_disable(struct drm_panel *panel, void *dsi, dcs_write_gce 
 
 	//if (!atomic_read(&ctx->doze_enable)) return 0;
 
-	cb(dsi, handle, aod_disable, ARRAY_SIZE(aod_disable));
+	cb(dsi, handle, aod_disable_cmd, ARRAY_SIZE(aod_disable_cmd));
 
 	atomic_set(&ctx->doze_enable, 0);
+	atomic_set(&ctx->current_aod_y_start, AOD_Y_START_MIN);
 
 	return 0;
 }
@@ -1266,6 +1320,7 @@ static struct mtk_panel_funcs ext_funcs = {
 #endif
 	.doze_disable = panel_doze_disable,
 	.doze_enable = panel_doze_enable,
+	.doze_area = panel_doze_area,
 };
 #endif
 
