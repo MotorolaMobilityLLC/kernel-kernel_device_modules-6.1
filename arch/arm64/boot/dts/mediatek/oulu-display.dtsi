@@ -22,6 +22,9 @@
 		/delete-property/ pm-enable-gpios;
 		/delete-property/ reset-gpios;
 		/delete-property/ gate-ic;
+		/delete-property/ swap-from-dts;
+		/delete-property/ lane-swap-setting;
+		/delete-property/ pn-swap-setting;
 
 		compatible = "csot,nt37706,vdo,667";
 		reg = <0>;
@@ -38,6 +41,9 @@
 		/delete-property/ pm-enable-gpios;
 		/delete-property/ reset-gpios;
 		/delete-property/ gate-ic;
+		/delete-property/ swap-from-dts;
+		/delete-property/ lane-swap-setting;
+		/delete-property/ pn-swap-setting;
 
 		compatible = "tianma,nt37706,vdo,667";
 		reg = <1>;
@@ -62,6 +68,11 @@
                 reg = <2>;
                 reset-gpios = <&pio 90 0>;
 		pinctrl-names = "default";
+		port {
+			panel_in2: endpoint {
+				remote-endpoint = <&dsi_out2>;
+			};
+		};
 	};
 
 	panel4@3 {
@@ -69,6 +80,9 @@
 		/delete-property/ pm-enable-gpios;
 		/delete-property/ reset-gpios;
 		/delete-property/ gate-ic;
+		/delete-property/ swap-from-dts;
+		/delete-property/ lane-swap-setting;
+		/delete-property/ pn-swap-setting;
 
 		compatible = "tianma,nt37707,vdo,667";
 		reg = <3>;
@@ -79,16 +93,19 @@
                 reset-gpios = <&pio 90 0>;
 		pinctrl-names = "default";
 		port {
-			panel_in4: endpoint {
-				remote-endpoint = <&dsi_out4>;
+			panel_in3: endpoint {
+				remote-endpoint = <&dsi_out3>;
 			};
 		};
 	};
 
 	ports {
 		port {
-			dsi_out4: endpoint4 {
-				remote-endpoint = <&panel_in4>;
+			dsi_out2: endpoint2 {
+				remote-endpoint = <&panel_in2>;
+			};
+			dsi_out3: endpoint3 {
+				remote-endpoint = <&panel_in3>;
 			};
 		};
 	};
