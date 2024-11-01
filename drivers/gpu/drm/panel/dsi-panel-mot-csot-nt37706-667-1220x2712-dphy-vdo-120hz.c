@@ -255,6 +255,8 @@ static void lcm_panel_init(struct lcm *ctx)
 	//TE on
 	lcm_dcs_write_seq_static(ctx, 0x35, 0x00);
 
+	//DBV
+	lcm_dcs_write_seq_static(ctx, 0x51, 0x00, 0x00);
 	//DBV_IDLE
 	lcm_dcs_write_seq_static(ctx, 0x6F, 0x04);
 	lcm_dcs_write_seq_static(ctx, 0x51, 0x3F, 0xFC);
@@ -975,87 +977,6 @@ int mtk_scaling_mode_mapping(int mode_idx)
 {
 	return (mode_idx % REAL_MODE_NUM);
 }
-
-#if 0
-/*
-static void mode_switch_to_48(struct drm_panel *panel,
-	enum MTK_PANEL_MODE_SWITCH_STAGE stage)
-{
-	if (stage == BEFORE_DSI_POWERDOWN) {
-		struct lcm *ctx = panel_to_lcm(panel);
-
-		lcm_dcs_write_seq_static(ctx, 0x2F, 0x03);
-
-		atomic_set(&ctx->current_fps, 48);
-	}
-}
-*/
-
-static void mode_switch_to_60(struct drm_panel *panel,
-	enum MTK_PANEL_MODE_SWITCH_STAGE stage)
-{
-	if (stage == BEFORE_DSI_POWERDOWN) {
-		struct lcm *ctx = panel_to_lcm(panel);
-
-		lcm_dcs_write_seq_static(ctx, 0x2F, 0x02);
-
-		atomic_set(&ctx->current_fps, 60);
-	}
-}
-
-static void mode_switch_to_90(struct drm_panel *panel,
-	enum MTK_PANEL_MODE_SWITCH_STAGE stage)
-{
-	if (stage == BEFORE_DSI_POWERDOWN) {
-		struct lcm *ctx = panel_to_lcm(panel);
-
-		lcm_dcs_write_seq_static(ctx, 0x2F, 0x01);
-
-		atomic_set(&ctx->current_fps, 90);
-	}
-}
-
-static void mode_switch_to_120(struct drm_panel *panel,
-	enum MTK_PANEL_MODE_SWITCH_STAGE stage)
-{
-	if (stage == BEFORE_DSI_POWERDOWN) {
-		struct lcm *ctx = panel_to_lcm(panel);
-
-		lcm_dcs_write_seq_static(ctx, 0x2F, 0x00);
-
-		atomic_set(&ctx->current_fps, 120);
-	}
-}
-
-static int mode_switch(struct drm_panel *panel,
-		struct drm_connector *connector, unsigned int cur_mode,
-		unsigned int dst_mode, enum MTK_PANEL_MODE_SWITCH_STAGE stage)
-{
-	int ret = 0;
-	int dst_fps = 0;
-	struct drm_display_mode *m = get_mode_by_id(connector, dst_mode);
-
-	pr_info("%s cur_mode = %d dst_mode %d\n", __func__, cur_mode, dst_mode);
-
-	dst_fps = m ? drm_mode_vrefresh(m) : -EINVAL;
-
-	/*if (dst_fps == 48) {
-		mode_switch_to_48(panel, stage);
-	} else */
-	if (dst_fps == 60) {
-		mode_switch_to_60(panel, stage);
-	} else if (dst_fps == 90) {
-		mode_switch_to_90(panel, stage);
-	} else if (dst_fps == 120) {
-		mode_switch_to_120(panel, stage);
-	} else {
-		pr_err("%s, dst_fps %d\n", __func__, dst_fps);
-		ret = -EINVAL;
-	}
-
-	return ret;
-}
-#endif
 
 static struct mtk_panel_para_table panel_lhbm_on[] = {
 	{2, {0x8B, 0x10}},
