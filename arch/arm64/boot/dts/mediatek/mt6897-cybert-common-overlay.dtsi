@@ -311,3 +311,39 @@
 		debounce-interval = <30>;
 	};
 };
+
+&low_battery_throttling {
+        thd-volts-l = <
+                3340 3240 3012
+                3926 3526 3374
+                4324 3822 3631>;
+        thd-volts-h = <
+                3440 3340 3240
+                4026 3926 3526
+                4424 4324 3822>;
+        lvsys-thd-volt-l = <3012>;
+        lvsys-thd-volt-h = <3240>;
+};
+
+&bp_thl {
+        soc-limit-threshold = <5>;
+};
+
+&mt6375_batoc_throttle {
+        status = "disabled";
+};
+
+&md_power_throttling {
+        lbat-max-level = <3>;
+        lbat-reduce-tx-lv1 = <0>;
+        lbat-reduce-tx-lv2 = <0>;
+        lbat-reduce-tx-lv3 = <0>;
+
+        oc-max-level = <2>;
+        oc-reduce-tx-lv1 = <0>;
+        oc-reduce-tx-lv2 = <0>;
+
+        soc-max-level = <1>;
+        soc-reduce-tx-lv1 = <6>;
+};
+
