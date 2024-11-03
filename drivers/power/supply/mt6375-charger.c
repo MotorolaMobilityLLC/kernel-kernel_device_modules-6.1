@@ -1409,9 +1409,9 @@ static void mt6375_chg_bc12_work_func(struct work_struct *work)
 		if (ddata->qc_dev && !ddata->dcp15w.is_detecting)
 			schedule_delayed_work(&ddata->detect_qc_dwork, msecs_to_jiffies(DELAY_TIME)); //for wait PD detected complete
 		else if (ddata->mmi_hvdcp_support && !ddata->dcp15w.is_detecting) {
-			schedule_delayed_work(&ddata->mmi_hvdcp_detect_dwork, msecs_to_jiffies(DELAY_TIME));
+			schedule_delayed_work(&ddata->mmi_hvdcp_detect_dwork, msecs_to_jiffies(DELAY_TIME + 500));
 		} else if (ddata->dcp15w.support && !ddata->dcp15w.is_detecting) {
-			schedule_delayed_work(&ddata->dcp15w.detect_dwork, msecs_to_jiffies(DELAY_TIME));
+			schedule_delayed_work(&ddata->dcp15w.detect_dwork, msecs_to_jiffies(DELAY_TIME + 500));
 		}
 
 		break;
@@ -1424,9 +1424,9 @@ static void mt6375_chg_bc12_work_func(struct work_struct *work)
 		if (ddata->qc_dev && !ddata->dcp15w.is_detecting)
 			schedule_delayed_work(&ddata->detect_qc_dwork, msecs_to_jiffies(DELAY_TIME)); //for wait PD detected complete
 		else if (ddata->mmi_hvdcp_support && !ddata->dcp15w.is_detecting) {
-			schedule_delayed_work(&ddata->mmi_hvdcp_detect_dwork, msecs_to_jiffies(DELAY_TIME));
+			schedule_delayed_work(&ddata->mmi_hvdcp_detect_dwork, msecs_to_jiffies(DELAY_TIME + 500));
 		}else if (ddata->dcp15w.support && !ddata->dcp15w.is_detecting) {
-			schedule_delayed_work(&ddata->dcp15w.detect_dwork, msecs_to_jiffies(DELAY_TIME));
+			schedule_delayed_work(&ddata->dcp15w.detect_dwork, msecs_to_jiffies(DELAY_TIME + 500));
 		}
 
 		break;
@@ -2683,6 +2683,11 @@ void mmi_start_hvdcp_detect_work(struct work_struct *work)
 		return;
 	}
 
+	if (vbus_uv < 4000000) {
+		pr_err("HVDCP: vbus_uv < 4V, exit qc detected\n");
+		return;
+	}
+
 	pr_info("HVDCP: mmi start hvdcp detect\n");
 	ddata->mmi_hvdcp_trig_flag = true;
 	wake_up_interruptible(&ddata->mmi_hvdcp_wait_que);
@@ -2700,8 +2705,8 @@ static int mmi_dpdm_manual_mode_enable(struct mt6375_chg_data *ddata, bool enabl
 		{ F_MANUAL_MODE, 1 },
 		{ F_DPDM_SW_VCP_EN, 1 },
 		{ F_DM_LDO_VSEL, 600 },
-		{ F_DM_LDO_EN, 1 },
-		{ F_DP_LDO_VSEL, 600 },
+		{ F_DM_LDO_EN, 0 },
+		{ F_DP_LDO_VSEL, 3300 },
 		{ F_DP_LDO_EN, 1 },
 		{ F_DP_PULL_ISEL, 1 },
 		{ F_DP_PULL_IEN, 1 },
@@ -2720,6 +2725,9 @@ static int mmi_dpdm_manual_mode_enable(struct mt6375_chg_data *ddata, bool enabl
 				return ret;
 			}
 		}
+
+		msleep(100);//need tunning
+
 	} else {
 		for (i = 0; i < ARRAY_SIZE(settings); i++) {
 			ret = mt6375_chg_field_set(ddata, settings[i].fd, 0);
@@ -2757,17 +2765,17 @@ static int mmi_detected_qc20_hvdcp(struct mt6375_chg_data * ddata, int *charger_
 	if (ret)
 	    return ret;
 
-	ret = mt6375_chg_field_set(ddata, F_DM_LDO_VSEL, 600); //dm 0.6V
-	if (ret)
-		return ret;
+	//ret = mt6375_chg_field_set(ddata, F_DM_LDO_VSEL, 600); //dm 0.6V
+	//if (ret)
+	//	return ret;
 
 	msleep(1300);
 
-	ret = mt6375_chg_field_set(ddata, F_DM_LDO_EN, 0); //dm 0V ldo disable
-	if (ret)
-		return ret;
+	//ret = mt6375_chg_field_set(ddata, F_DM_LDO_EN, 0); //dm 0V ldo disable
+	//if (ret)
+	//	return ret;
 
-	mdelay(500);
+	//mdelay(500);
 
 	/* dp 3.3v and dm 0.6v out 9V */
 	ret = mt6375_chg_field_set(ddata, F_DP_LDO_VSEL, 3300); //dp 3.3v
@@ -2782,7 +2790,7 @@ static int mmi_detected_qc20_hvdcp(struct mt6375_chg_data * ddata, int *charger_
 	if (ret)
 		return ret;
 
-	msleep(200);//need tunning
+	msleep(150);//need tunning
 
 	mt6375_get_vbus(ddata->chgdev, &vbus_voltage);
 	pr_info("HVDCP: vbus voltage now = %d\n", vbus_voltage);
@@ -2799,7 +2807,7 @@ static int mmi_detected_qc20_hvdcp(struct mt6375_chg_data * ddata, int *charger_
 		pr_err("HVDCP: Cann't adjust qc20 hvdcp 5V\n");
 	}
 
-	msleep(300);//need tunning
+	msleep(150);//need tunning
 
 	mt6375_get_vbus(ddata->chgdev, &vbus_voltage);
 	pr_info("HVDCP: vbus voltage now = %d after qc20 detected\n", vbus_voltage);
@@ -2976,6 +2984,7 @@ static int mmi_hvdcp_detect_kthread(void *param)
 	int ret;
 	int charger_type = USB_TYPE_UNKNOWN;
 	union power_supply_propval val;
+	int vbus_uv = 0;
 
 	do {
 
@@ -2984,13 +2993,32 @@ static int mmi_hvdcp_detect_kthread(void *param)
 			break;
 
 		down(&ddata->sem_dpdm);
-		pr_info("HVDCP: mmi_hvdcp_detect_kthread begin\n");
 		ddata->mmi_hvdcp_trig_flag = false;
+
+rerun:
+		if (!IS_ERR_OR_NULL(ddata->chgdev)) {
+			ret = mt6375_get_vbus(ddata->chgdev, &vbus_uv);
+			if (ret != 0) {
+				pr_err("HVDCP: get vbus failed ret=%d\n", ret);
+				goto end;
+			}
+		}
+		pr_info("HVDCP: get vbus %d uv\n", vbus_uv);
+		if (is_pd_rdy(ddata) || vbus_uv > 8000000) {
+			pr_err("HVDCP: pd adaptor ready, exit HVDCP detected\n");
+			goto end;
+		}
+
+		if (vbus_uv < 4000000) {
+			pr_err("HVDCP: vbus_uv < 4V, exit HVDCP detected\n");
+			goto end;
+		}
+
+		pr_info("HVDCP: mmi_hvdcp_detect_kthread begin\n");
 		ddata->qc_is_detect = true;
 		mt6375_chg_field_set(ddata, F_IAICR, 500);
 		mt6375_chg_set_usbsw(ddata, USBSW_CHG);
 
-rerun:
 		//enable dpdm manual mode
 		ret = mmi_dpdm_manual_mode_enable(ddata, true);
 		if (ret < 0) {
@@ -3045,13 +3073,13 @@ rerun:
 			/* dp 3.3v and dm 0.6v out 9V */
 			ret = mt6375_chg_field_set(ddata, F_DP_LDO_VSEL, 3300); //dp 3.3v
 			if (ret)
-				return ret;
+				goto out;
 
 			ret = mt6375_chg_field_set(ddata, F_DM_LDO_VSEL, 600); //dm 0.6v
 			if (ret)
-				return ret;
+				goto out;
 
-			pr_err("Force set qc2 9V");
+			pr_err("HVDCP: Force set qc2 9V");
 		}
 
 		//notify charging policy to update charger type
@@ -3075,6 +3103,7 @@ out:
 			}
 		}
 
+end:
 		ddata->qc_is_detect = false;
 		up(&ddata->sem_dpdm);
 		pr_info("HVDCP: mmi_hvdcp_detect_kthread end\n");
