@@ -32,9 +32,9 @@
 #define PLL_CLOCK				(534)
 #define REAL_MODE_NUM           (6)
 #define FHD_FRAME_WIDTH    (1220)
-#define FHD_HFP            (18)
+#define FHD_HFP            (54)
 #define FHD_HSA            (8)
-#define FHD_HBP            (8)
+#define FHD_HBP            (40)
 #define FHD_HTOTAL         (FHD_FRAME_WIDTH + FHD_HFP + FHD_HSA + FHD_HBP)
 #define FHD_FRAME_HEIGHT   (2712)
 #define FHD_VFP            (56)
@@ -42,9 +42,9 @@
 #define FHD_VBP            (14)
 #define FHD_VTOTAL         (FHD_FRAME_HEIGHT + FHD_VFP + FHD_VSA + FHD_VBP)
 #define MODE_SWITCH_CMDQ_ENABLE 1
-#define FHD_HFP_90            (8)
+#define FHD_HFP_90            (54)
 #define FHD_HSA_90            (8)
-#define FHD_HBP_90            (8)
+#define FHD_HBP_90            (40)
 #define FHD_VFP_90            (984)
 #define FHD_VSA_90            (2)
 #define FHD_VBP_90            (14)
@@ -408,7 +408,7 @@ static int lcm_enable(struct drm_panel *panel)
 	return 0;
 }
 static const struct drm_display_mode default_mode = {
-	.clock = 511609,
+	.clock = 441653,
 	.hdisplay = FRAME_WIDTH,//1200
 	.hsync_start = FRAME_WIDTH + FHD_HFP,//1215
 	.hsync_end = FRAME_WIDTH + FHD_HFP + FHD_HSA,//1230
@@ -419,7 +419,7 @@ static const struct drm_display_mode default_mode = {
 	.vtotal = FRAME_HEIGHT + FHD_VFP + FHD_VSA + FHD_VBP,//2752
 };
 static const struct drm_display_mode mode_90 = {
-	.clock = 511609,
+	.clock = 441653,
 	.hdisplay = FRAME_WIDTH,
 	.hsync_start = FRAME_WIDTH + FHD_HFP_90,
 	.hsync_end = FRAME_WIDTH + FHD_HFP_90 + FHD_HSA_90,
@@ -430,7 +430,7 @@ static const struct drm_display_mode mode_90 = {
 	.vtotal = FRAME_HEIGHT + FHD_VFP_90 + FHD_VSA_90 + FHD_VBP_90,//3696
 };
 static const struct drm_display_mode mode_60 = {
-	.clock = 255805,
+	.clock = 441653,
 	.hdisplay = FRAME_WIDTH,//1200
 	.hsync_start = FRAME_WIDTH + FHD_HFP,//1215
 	.hsync_end = FRAME_WIDTH + FHD_HFP + FHD_HSA,//1230
@@ -597,7 +597,7 @@ static struct mtk_panel_params ext_params = {
 	.dyn_fps = {
 		.switch_en = 1,
 		.vact_timing_fps = 120,
-		.data_rate = 1130,
+		.data_rate = 1080,
 	},
 	//.mode_switch_cmdq = MODE_SWITCH_CMDQ_ENABLE,
 	//.real_te_duration = 8333,
@@ -668,7 +668,7 @@ static struct mtk_panel_params ext_params_90hz = {
 			.range_bpg_ofs = nt37801_wqhs_dsi_cmd_120hz_dphy_range_bpg_ofs,
 			},
 		},
-	.data_rate = 1010,
+	.data_rate = 1080,
 	/* following MIPI hopping parameter might cause screen mess */
 /* 	.dyn = {
 		.switch_en = 1,
@@ -677,7 +677,7 @@ static struct mtk_panel_params ext_params_90hz = {
 	.dyn_fps = {
 		.switch_en = 1,
 		.vact_timing_fps = 90,
-		.data_rate = 1010,
+		.data_rate = 1080,
 	},
 	//.mode_switch_cmdq = MODE_SWITCH_CMDQ_ENABLE,
 	//.real_te_duration = 8333,
@@ -748,7 +748,7 @@ static struct mtk_panel_params ext_params_60hz = {
 			.range_bpg_ofs = nt37801_wqhs_dsi_cmd_120hz_dphy_range_bpg_ofs,
 			},
 		},
-	.data_rate = 1130,
+	.data_rate = 1080,
 	/* following MIPI hopping parameter might cause screen mess */
 /* 	.dyn = {
 		.switch_en = 1,
@@ -757,7 +757,7 @@ static struct mtk_panel_params ext_params_60hz = {
 	.dyn_fps = {
 		.switch_en = 1,
 		.vact_timing_fps = 60,
-		.data_rate = 984,
+		.data_rate = 1080,
 	},
 	//.mode_switch_cmdq = MODE_SWITCH_CMDQ_ENABLE,
 	//.real_te_duration = 8333,
