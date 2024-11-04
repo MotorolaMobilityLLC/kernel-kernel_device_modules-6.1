@@ -326,9 +326,9 @@
 	R_FG_VALUE = <(2)>;
 	NO_BAT_TEMP_COMPENSATE = <(1)>;
 
-	df-serialnum = "SB18D94521";
-	#include "bat_setting/mt6878_battery_table_5000mah.dtsi"
-       // #include "bat_setting/mt6855_battery_table_QA50_ATL_WT_5000mah.dtsi"
+	df-serialnum = "ATLRA52NVT";
+	#include "bat_setting/mt6878_battery_table_nice_nvt_5200mah.dtsi"
+	#include "bat_setting/mt6878_battery_table_nice_xwd_5200mah.dtsi"
 };
 
 &pdc {
