@@ -68,6 +68,7 @@ enum panel_version{
 
 static enum RES_SWITCH_TYPE res_switch_type = RES_SWITCH_NO_USE;
 static int current_fps = 60;
+static struct lcm *g_ctx = NULL;
 
 unsigned int nt37801_wqhs_dsi_cmd_120hz_dphy_buf_thresh[14] = {
 	896, 1792, 2688, 3584, 4480, 5376, 6272, 6720, 7168, 7616, 7744, 7872, 8000, 8064};
@@ -233,7 +234,6 @@ static void lcm_panel_init(struct lcm *ctx)
 	lcm_dcs_write_seq_static(ctx, 0x57,0x00);
 	lcm_dcs_write_seq_static(ctx, 0x88,0x01,0x02,0x62,0x09,0x84);
 	lcm_dcs_write_seq_static(ctx, 0x5F,0x00,0x04);
-
 	pr_info("%s current_fps:%d\n", __func__, current_fps);
 	current_fps = 120;
 	switch (current_fps) {
@@ -517,6 +517,7 @@ static int panel_ata_check(struct drm_panel *panel)
 static int lcm_setbacklight_cmdq(void *dsi, dcs_write_gce cb,
 	void *handle, unsigned int level)
 {
+	struct lcm *ctx = g_ctx;
 	char bl_tb[] = {0x51, 0x3F, 0xff};
 
 	printk("%s backlight level = %d  \n",__func__,level);
@@ -525,8 +526,9 @@ static int lcm_setbacklight_cmdq(void *dsi, dcs_write_gce cb,
 	if (!cb)
 		return -1;
 	cb(dsi, handle, bl_tb, ARRAY_SIZE(bl_tb));
-	/*if (!level)
-		atomic_set(&ctx->hbm_mode, 0);*/
+	atomic_set(&ctx->current_bl, level);
+	if (!level)
+		atomic_set(&ctx->hbm_mode, 0);
 	return 0;
 }
 static struct mtk_panel_params ext_params = {
@@ -914,11 +916,11 @@ static int mode_switch(struct drm_panel *panel,
 	return ret;
 }
 static struct mtk_panel_para_table panel_lhbm_on[] = {
-	{14, {0xA9, 0x02, 0x00, 0xB5, 0x2C, 0x2C, 0x00, 0x01, 0x00, 0x87, 0x00, 0x02, 0x25, 0xbe, 0x80}},
+	{15, {0xA9, 0x02, 0x00, 0xB5, 0x2C, 0x2C, 0x00, 0x01, 0x00, 0x87, 0x00, 0x02, 0x25, 0x3C,0x06}},
 };
 
 static struct mtk_panel_para_table panel_lhbm_off[] = {
-	{14, {0xA9, 0x02, 0x00, 0xB5, 0x2C, 0x2C, 0x03, 0x01, 0x00, 0x87, 0x00, 0x00, 0x20}},
+	{13, {0xA9, 0x02, 0x00, 0xB5, 0x2C, 0x2C, 0x03, 0x01, 0x00, 0x87, 0x00, 0x00, 0x20}},
 };
 
 static void set_lhbm_alpha(unsigned int bl_level)
@@ -929,7 +931,6 @@ static void set_lhbm_alpha(unsigned int bl_level)
 
 	if (bl_level == 0)
 		lhbm_alpha_index = 0;
-
 	alpha = lhbm_alpha[lhbm_alpha_index];
 
 	pTable->para_list[13] = (alpha >> 8) & 0xFF;
@@ -960,7 +961,6 @@ static int panel_hbm_set_cmdq(struct lcm *ctx, void *dsi, dcs_grp_write_gce cb, 
 	struct mtk_panel_para_table hbm_on_table = {3, {0x51, 0x0F, 0xFF}};
 	unsigned int level = atomic_read(&ctx->current_bl);
 	unsigned int fps = atomic_read(&ctx->current_fps);
-
 	if (hbm_state > 2) return -1;
 
 	switch (hbm_state)
@@ -1189,6 +1189,7 @@ static int lcm_probe(struct mipi_dsi_device *dsi)
 	if (!ctx)
 		return -ENOMEM;
 	mipi_dsi_set_drvdata(dsi, ctx);
+	g_ctx = ctx;
 	ctx->dev = dev;
 	dsi->lanes = 4;
 	dsi->format = MIPI_DSI_FMT_RGB888;
