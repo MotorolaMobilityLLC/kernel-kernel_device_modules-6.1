@@ -26,10 +26,10 @@
 		goodix,reset-gpio = <&pio 152 0x0>;
 		goodix,irq-gpio = <&pio 7 0x2002>;
 		goodix,avdd-name = "vtp";
-		goodix,avdd-gpio = <&pio 189 0x0>;
+//		goodix,avdd-gpio = <&pio 189 0x0>;
 		vtp-supply = <&mt6369_vtp>;
 		goodix,iovdd-name = "vant18";
-		goodix,iovdd-gpio = <&pio 114 0x0>;
+//		goodix,iovdd-gpio = <&pio 114 0x0>;
 		vant18-supply = <&mt6369_vant18>;
 		goodix,irq-flags = <0x2002>; /* 1:trigger rising, 2:trigger falling;*/
 		goodix,panel-max-id = <10>;
