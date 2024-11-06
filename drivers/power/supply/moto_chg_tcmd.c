@@ -827,42 +827,6 @@ static ssize_t chg_watt_store(struct device *dev, struct device_attribute *attr,
 static DEVICE_ATTR(chg_watt, S_IWUSR | S_IRUGO,
 	chg_watt_show, chg_watt_store);
 
-static ssize_t bat_id_show(struct device *dev, struct device_attribute *attr, char *buf)
-{
-	struct platform_device *pdev = to_platform_device(dev);
-	struct moto_chg_tcmd_data *data = platform_get_drvdata(pdev);
-	int val;
-	int ret;
-
-	if (!bat_client) {
-		pr_err("%s bat client  is null\n", __func__);
-		goto end;
-	}
-
-	ret = bat_client->get_bat_id(bat_client->data,
-					&val);
-	if (ret) {
-		pr_err("%s get bat vol fail %d\n", __func__, ret);
-		val = ret;
-		goto end;
-	}
-
-	ret = (val * 1000 / (data->batid_v_ref- val) ) * data->batid_r_pull/ 1000;
-	data->bat_id = ret;
-
-end:
-	return snprintf(buf, PAGE_SIZE, "%d\n", data->bat_id);
-}
-
-static ssize_t bat_id_store(struct device *dev, struct device_attribute *attr,
-									const char *buf, size_t count)
-{
-	pr_info("%s un-supported\n", __func__);
-	return count;
-}
-static DEVICE_ATTR(bat_id, S_IWUSR | S_IRUGO,
-	bat_id_show, bat_id_store);
-
 static ssize_t factory_kill_disable_show(struct device *dev, struct device_attribute *attr, char *buf)
 {
 	int ret = 0;
@@ -1165,12 +1129,13 @@ static ssize_t wireless_chip_id_show(struct device *dev,
 static DEVICE_ATTR(wireless_chip_id, S_IRUGO|S_IWUSR,
 				wireless_chip_id_show, NULL);
 
-#define CHG_SHOW_MAX_SIZE 50
+#define CHG_SHOW_MAX_SIZE 82
 static ssize_t batt_id_show(struct device *dev,
 		struct device_attribute *attr, char *buf)
 {
 	int battsn_nums = 0, count = 0, i = 0;
 	int rc;
+	char battids[CHG_SHOW_MAX_SIZE] = {0};
 
 	struct platform_device *pdev = to_platform_device(dev);
 	struct moto_chg_tcmd_data *data = platform_get_drvdata(pdev);
@@ -1182,35 +1147,49 @@ static ssize_t batt_id_show(struct device *dev,
 	} *map_table;
 
 	battsn_nums = of_property_count_strings(node, "mmi,batt-ids-map");
-	if (battsn_nums <= 0 || (battsn_nums % 2)) {
-		pr_err("%s Invalid profile-ids-map in DT, rc=%d\n", __func__, battsn_nums);
-		return -EINVAL;
+	if (battsn_nums > 0) {
+		if (battsn_nums % 2) {
+			pr_err("%s Invalid profile-ids-map in DT, rc=%d\n", __func__, battsn_nums);
+			return -EINVAL;
+		}
+
+		map_table = devm_kmalloc_array(dev, battsn_nums / 2,
+						sizeof(struct profile_sn_map),
+						GFP_KERNEL);
+		if (!map_table)
+			return -ENOMEM;
+
+		rc = of_property_read_string_array(node, "mmi,batt-ids-map",
+						(const char **)map_table,
+						battsn_nums);
+		if (rc < 0) {
+			pr_err("%s Failed to get batt-ids-list, rc=%d\n", __func__, rc);
+			goto free_map;
+		}
+
+		count += scnprintf(buf+count, CHG_SHOW_MAX_SIZE, "%d", battsn_nums / 2);
+
+		for (i = 0; i < battsn_nums / 2 && map_table[i].sn; i++) {
+			count += scnprintf(buf+count, CHG_SHOW_MAX_SIZE,
+					"%s", map_table[i].sn);
+		}
+		count += scnprintf(buf+count, CHG_SHOW_MAX_SIZE, "\n");
+
+	free_map:
+		devm_kfree(dev, map_table);
+	} else {
+		if (IS_ERR_OR_NULL(bat_client) || IS_ERR_OR_NULL(bat_client->get_bat_id)) {
+			pr_err("%s bat client or get_bat_id func is null\n", __func__);
+			return count;
+		}
+
+		rc = bat_client->get_bat_id(bat_client->data, (int *)battids);
+		if (rc < 0) {
+			pr_err("%s get batt_id fail %d\n", __func__, rc);
+		}
+
+		count += snprintf(buf, PAGE_SIZE, "%s\n", battids);
 	}
-
-	map_table = devm_kmalloc_array(dev, battsn_nums / 2,
-					sizeof(struct profile_sn_map),
-					GFP_KERNEL);
-	if (!map_table)
-		return -ENOMEM;
-
-	rc = of_property_read_string_array(node, "mmi,batt-ids-map",
-					(const char **)map_table,
-					battsn_nums);
-	if (rc < 0) {
-		pr_err("%s Failed to get batt-ids-list, rc=%d\n", __func__, rc);
-		goto free_map;
-	}
-
-	count += scnprintf(buf+count, CHG_SHOW_MAX_SIZE, "%d", battsn_nums / 2);
-
-	for (i = 0; i < battsn_nums / 2 && map_table[i].sn; i++) {
-		count += scnprintf(buf+count, CHG_SHOW_MAX_SIZE,
-				"%s", map_table[i].sn);
-	}
-	count += scnprintf(buf+count, CHG_SHOW_MAX_SIZE, "\n");
-
-free_map:
-	devm_kfree(dev, map_table);
 
 	return count;
 }
@@ -1229,7 +1208,6 @@ static struct attribute *moto_chg_tcmd_attrs[] = {
 	&dev_attr_bat_temp.attr,
 	&dev_attr_bat_voltage.attr,
 	&dev_attr_bat_ocv.attr,
-	&dev_attr_bat_id.attr,
 	&dev_attr_bat_cycle.attr,
 	&dev_attr_factory_kill_disable.attr,
 	&dev_attr_chg_type.attr,
