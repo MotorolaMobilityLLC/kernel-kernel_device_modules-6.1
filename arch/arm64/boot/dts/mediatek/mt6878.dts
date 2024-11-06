@@ -6522,7 +6522,6 @@
 			clock-div = <1>;
 			scl-gpio-id = <135>;
 			sda-gpio-id = <136>;
-			mediatek,fifo-use-polling;
 		};
 
 		i2c6: i2c@11e01000 {
