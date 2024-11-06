@@ -1473,6 +1473,8 @@ static int lcm_probe(struct mipi_dsi_device *dsi)
 	atomic_set(&ctx->dc_mode, 0);
 	atomic_set(&ctx->apl_mode, 0);
 	atomic_set(&ctx->current_fps, 120);
+	atomic_set(&ctx->doze_enable, 0);
+	atomic_set(&ctx->current_aod_y_start, AOD_Y_START_MIN);
 
 	ctx->lhbm_en = 1;
 	pr_info("%s- lcm,tianma,nt37706,vdo,667\n", __func__);
