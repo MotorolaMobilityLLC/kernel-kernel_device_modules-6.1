@@ -25,6 +25,11 @@
 
 #define DIC_COMMAND_MODE_AOD
 
+#define AOD_AREA_IZE 1416
+#define AOD_Y_START_MIN 0
+#define AOD_Y_START_MAX 1416
+#define AOD_Y_START_STEP_MIN 12
+
 #define CONFIG_MTK_PANEL_EXT
 #if defined(CONFIG_MTK_PANEL_EXT)
 #include "../mediatek/mediatek_v2/mtk_panel_ext.h"
@@ -67,6 +72,7 @@ struct lcm {
 	atomic_t current_fps;
 	atomic_t pcd_mode;
 	atomic_t doze_enable;
+	atomic_t current_aod_y_start;
 	enum panel_version version;
 };
 
@@ -184,6 +190,8 @@ static void lcm_panel_init(struct lcm *ctx)
 //LV ON
 	lcm_dcs_write_seq_static(ctx, 0xf0, 0xaa, 0x12);
 	lcm_dcs_write_seq_static(ctx, 0xC7, 0x5F, 0x78, 0x43, 0x5A, 0x33, 0x33);
+	lcm_dcs_write_seq_static(ctx, 0xd1, 0x06, 0x01, 0x00);
+	lcm_dcs_write_seq_static(ctx, 0xd6, 0x04);
 
 	lcm_dcs_write_seq_static(ctx, 0xF0, 0xaa, 0x10);
 	lcm_dcs_write_seq_static(ctx, 0xB0, 0x05, 0x4C, 0x01, 0x31, 0x00, 0x04, 0xC4, 0x05, 0x4C);
@@ -211,6 +219,9 @@ static void lcm_panel_init(struct lcm *ctx)
 
 	lcm_dcs_write_seq_static(ctx, 0xf0, 0xaa, 0x00);
 	lcm_dcs_write_seq_static(ctx, 0xff, 0x5a, 0x00);
+
+	lcm_dcs_write_seq_static(ctx, 0x2A, 0x00, 0x00, 0x04, 0xC3);
+	lcm_dcs_write_seq_static(ctx, 0x2B, 0x00, 0x00, 0x05, 0x7b);
 
 	lcm_dcs_write_seq_static(ctx, 0x11);
 	usleep_range(100 * 1000, 101 * 1000);
@@ -1161,42 +1172,134 @@ static int panel_ext_powerdown(struct drm_panel *panel)
 	return 0;
 }
 
+static char aod_area_cmd[] ={0x2B, 0x00, 0x00, 0x05, 0x7B};
+
+static int panel_doze_area(struct drm_panel *panel,
+	void *dsi, dcs_write_gce cb, void *handle)
+{
+	struct lcm *ctx = panel_to_lcm(panel);
+	unsigned int current_y_start = AOD_Y_START_MIN;
+	unsigned int mini_step = AOD_Y_START_STEP_MIN;
+	unsigned int max_y_start = AOD_Y_START_MAX;
+
+	if (atomic_read(&ctx->doze_enable)) {
+		current_y_start = atomic_read(&ctx->current_aod_y_start);
+		if (current_y_start < max_y_start) current_y_start += mini_step;
+		else current_y_start = AOD_Y_START_MIN;
+
+		aod_area_cmd[1] = (current_y_start >> 8) & 0xFF;
+		aod_area_cmd[2] = current_y_start& 0xFF;
+		aod_area_cmd[3] = ((current_y_start + AOD_AREA_IZE - 1) >> 8) & 0xFF;
+		aod_area_cmd[4] = (current_y_start + AOD_AREA_IZE - 1) & 0xFF;
+
+		pr_info("%s: doze_enable %d current_y_start %d\n", __func__, atomic_read(&ctx->doze_enable), current_y_start);
+		pr_info("%s-2B: %d -> %d\n", __func__, (aod_area_cmd[1]*256 + aod_area_cmd[2]),
+				(aod_area_cmd[3]*256 + aod_area_cmd[4]));
+
+		cb(dsi, handle, aod_area_cmd, ARRAY_SIZE(aod_area_cmd));
+
+		atomic_set(&ctx->current_aod_y_start, current_y_start);
+	} else {
+		pr_info("%s: skip update doze area because of  doze_enable = %d\n", __func__, atomic_read(&ctx->doze_enable));
+	}
+
+	atomic_set(&ctx->doze_enable, 1);
+	return 0;
+}
+
+static struct mtk_panel_para_table aod_en_start_cmd[] = {
+		{1, {0x28}},
+		{2, {0x6F, 0x02}},
+		{1, {0x39}},
+	};
+
+static int panel_doze_enable_start(struct drm_panel *panel, void *dsi, dcs_write_gce cb,
+	void *handle)
+{
+	unsigned int para_count = 0;
+	struct mtk_panel_para_table *pTable;
+	unsigned int i = 0;
+
+	if (!cb)
+		return -1;
+
+	para_count = sizeof(aod_en_start_cmd) / sizeof(struct mtk_panel_para_table);
+	pr_info("%s: para_count %d\n", __func__, para_count);
+
+	for(i = 0; i < para_count; i++) {
+		pTable = &aod_en_start_cmd[i];
+		pr_info("%s: para: 0x%x , count %d\n", __func__, pTable->para_list[0], pTable->count);
+		cb(dsi, handle, pTable->para_list, pTable->count);
+	}
+
+	return 0;
+}
+
+static struct mtk_panel_para_table aod_en_cmd[] = {
+		{1, {0x29}},
+	};
+
 static int panel_doze_enable(struct drm_panel *panel, void *dsi, dcs_write_gce cb,
 	void *handle)
 {
 	struct lcm *ctx = panel_to_lcm(panel);
-	static char aod_en[] = { 0x39};
+	unsigned int para_count = 0;
+	struct mtk_panel_para_table *pTable;
+	unsigned int i = 0;
 
 	pr_info("%s: %d -> %d\n", __func__, atomic_read(&ctx->doze_enable), 1);
 
 	if (!cb)
 		return -1;
 
-	//if (atomic_read(&ctx->doze_enable)) return 0;
+	para_count = sizeof(aod_en_cmd) / sizeof(struct mtk_panel_para_table);
 
-	cb(dsi, handle, aod_en, ARRAY_SIZE(aod_en));
+	pr_info("%s: para_count %d\n", __func__, para_count);
+
+	for(i = 0; i < para_count; i++) {
+		pTable = &aod_en_cmd[i];
+		pr_info("%s: para: 0x%x , count %d\n", __func__, pTable->para_list[0], pTable->count);
+		cb(dsi, handle, pTable->para_list, pTable->count);
+	}
 
 	atomic_set(&ctx->doze_enable, 1);
 
 	return 0;
 }
 
+static struct mtk_panel_para_table aod_disable_cmd[] = {
+		{1, {0x38}},
+		{2, {0x6f, 0x01}},
+		{5, {0x2B, 0x00, 0x00, 0x05, 0x7B}},
+	};
+
 static int panel_doze_disable(struct drm_panel *panel, void *dsi, dcs_write_gce cb,
 	void *handle)
 {
 	struct lcm *ctx = panel_to_lcm(panel);
-	static char aod_disable[] = { 0x38};
+	unsigned int para_count = 0;
+	struct mtk_panel_para_table *pTable;
+	unsigned int i = 0;
 
 	pr_info("%s: %d -> %d\n", __func__, atomic_read(&ctx->doze_enable), 0);
 
 	if (!cb)
 		return -1;
 
-	//if (!atomic_read(&ctx->doze_enable)) return 0;
+	para_count = sizeof(aod_disable_cmd) / sizeof(struct mtk_panel_para_table);
 
-	cb(dsi, handle, aod_disable, ARRAY_SIZE(aod_disable));
+	pr_info("%s: para_count %d\n", __func__, para_count);
+
+	for(i = 0; i < para_count; i++) {
+		pTable = &aod_disable_cmd[i];
+		pr_info("%s: para: 0x%x , count %d\n", __func__, pTable->para_list[0], pTable->count);
+		cb(dsi, handle, pTable->para_list, pTable->count);
+	}
 
 	atomic_set(&ctx->doze_enable, 0);
+	atomic_set(&ctx->current_aod_y_start, AOD_Y_START_MIN);
+
+	usleep_range(90 * 1000, 91 * 1000);
 
 	return 0;
 }
@@ -1237,8 +1340,10 @@ static struct mtk_panel_funcs ext_funcs = {
 #if defined(DIC_COMMAND_MODE_AOD)
 	.doze_get_mode_flags = panel_doze_get_mode_flags,
 #endif
+	.doze_enable_start = panel_doze_enable_start,
 	.doze_disable = panel_doze_disable,
 	.doze_enable = panel_doze_enable,
+	.doze_area = panel_doze_area,
 };
 #endif
 
