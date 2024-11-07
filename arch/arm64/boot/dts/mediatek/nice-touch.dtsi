@@ -33,8 +33,8 @@
 		vant18-supply = <&mt6369_vant18>;
 		goodix,irq-flags = <0x2002>; /* 1:trigger rising, 2:trigger falling;*/
 		goodix,panel-max-id = <10>;
-		goodix,panel-max-x = <19200>;
-		goodix,panel-max-y = <42720>;
+		goodix,panel-max-x = <19520>;
+		goodix,panel-max-y = <43392>;
 		goodix,panel-max-w = <256>;
 		goodix,panel-max-p = <256>;
 		goodix,edge-ctrl;
@@ -57,6 +57,13 @@
 &mt6369_vtp {
 	regulator-min-microvolt = <3300000>;
 	regulator-max-microvolt = <3300000>;
+};
+
+&odm {
+	mmi_stow: mmi_stow {
+		compatible = "moto,mmi_stow";
+		mmi,stow-gpio = <&pio 3 0x0>;
+	};
 };
 
 &spi4 {
