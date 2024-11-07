@@ -1299,6 +1299,8 @@ static int panel_doze_disable(struct drm_panel *panel, void *dsi, dcs_write_gce 
 	atomic_set(&ctx->doze_enable, 0);
 	atomic_set(&ctx->current_aod_y_start, AOD_Y_START_MIN);
 
+	usleep_range(120* 1000, 121 * 1000);
+
 	return 0;
 }
 
