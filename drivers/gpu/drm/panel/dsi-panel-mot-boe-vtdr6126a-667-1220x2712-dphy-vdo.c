@@ -1429,7 +1429,7 @@ static struct mipi_dsi_driver lcm_driver = {
 	.probe = lcm_probe,
 	.remove = lcm_remove,
 	.driver = {
-		.name = "boe_vtdr6126a_667_1220x2712",
+		.name = "boe_vtdr6126a_667_1220_2712",
 		.owner = THIS_MODULE,
 		.of_match_table = lcm_of_match,
 	},
