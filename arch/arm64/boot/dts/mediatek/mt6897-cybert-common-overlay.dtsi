@@ -312,7 +312,7 @@
 	pinctrl-0 = <&aikey_gpio_default>;
 	aikey {
 		label = "AI_key";
-		linux,code = <217>;
+		linux,code = <583>;
 		linux,input-type = <1>;
 		gpios = <&pio 101 1>;
 		wakeup-source;
