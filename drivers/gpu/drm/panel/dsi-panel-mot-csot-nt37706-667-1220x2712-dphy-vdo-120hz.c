@@ -183,26 +183,28 @@ static void lcm_panel_init(struct lcm *ctx)
 	lcm_dcs_write_seq_static(ctx, 0x6F, 0x3C);
 	lcm_dcs_write_seq_static(ctx, 0xF5, 0x84);
 
-	lcm_dcs_write_seq_static(ctx, 0xF0, 0x55, 0xAA, 0x52, 0x08, 0x00);
-	//Source CONTROL in V-Porch HIZ
-	lcm_dcs_write_seq_static(ctx, 0xC5, 0x22, 0x22);
+	if (ctx->version == 1) {
+		lcm_dcs_write_seq_static(ctx, 0xF0, 0x55, 0xAA, 0x52, 0x08, 0x00);
+		//Source CONTROL in V-Porch HIZ
+		lcm_dcs_write_seq_static(ctx, 0xC5, 0x22, 0x22);
 
-	//FPR_LHBM_RGB
-	lcm_dcs_write_seq_static(ctx, 0X6F, 0X8B);
-	lcm_dcs_write_seq_static(ctx, 0XDF, 0X2F, 0x0C, 0X2F, 0X0C, 0X2F, 0X0C);
+		//FPR_LHBM_RGB
+		lcm_dcs_write_seq_static(ctx, 0X6F, 0X8B);
+		lcm_dcs_write_seq_static(ctx, 0XDF, 0X2F, 0x0C, 0X2F, 0X0C, 0X2F, 0X0C);
+	}
 
 #if defined(DIC_COMMAND_MODE_AOD)
 	lcm_dcs_write_seq_static(ctx, 0xF0, 0x55, 0xAA, 0x52, 0x08, 0x00);
 	lcm_dcs_write_seq_static(ctx, 0xC0, 0x50, 0x01);
-	lcm_dcs_write_seq_static(ctx, 0x8D, 0x00, 0x00, 0x04, 0xC3, 0x01, 0x44, 0x05, 0x87);
 	lcm_dcs_write_seq_static(ctx, 0x17, 0x21);
 	lcm_dcs_write_seq_static(ctx, 0x71, 0x11);
-	lcm_dcs_write_seq_static(ctx, 0xF0, 0x55, 0xAA, 0x52, 0x08, 0x04);
-	lcm_dcs_write_seq_static(ctx, 0x6F, 0x08);
-	lcm_dcs_write_seq_static(ctx, 0xB5, 0x04);
+	lcm_dcs_write_seq_static(ctx, 0x8D, 0x00, 0x00, 0x04, 0xC3, 0x01, 0x44, 0x05, 0x87);
 	lcm_dcs_write_seq_static(ctx, 0xF0, 0x55, 0xAA, 0x52, 0x08, 0x01);
 	lcm_dcs_write_seq_static(ctx, 0x6F, 0x0B);
 	lcm_dcs_write_seq_static(ctx, 0xD2, 0x03);
+	lcm_dcs_write_seq_static(ctx, 0xF0, 0x55, 0xAA, 0x52, 0x08, 0x04);
+	lcm_dcs_write_seq_static(ctx, 0x6F, 0x08);
+	lcm_dcs_write_seq_static(ctx, 0xB5, 0x04);
 #else
 	lcm_dcs_write_seq_static(ctx, 0xF0, 0x55, 0xAA, 0x52, 0x08, 0x00);
 	lcm_dcs_write_seq_static(ctx, 0xC0, 0x00, 0x00);
@@ -993,20 +995,18 @@ int mtk_scaling_mode_mapping(int mode_idx)
 }
 
 static struct mtk_panel_para_table panel_lhbm_on[] = {
-	{2, {0x8B, 0x10}},
 	{15, {0xA9, 0x02, 0x00, 0xB5, 0x2C, 0x2C, 0x00, 0x01, 0x00, 0x87, 0x00, 0x02, 0x25, 0xbe, 0x80}},
 };
 
 static struct mtk_panel_para_table panel_lhbm_off[] = {
 	{3, {0x51, 0x3E, 0x80}},
-	{2, {0x8B, 0x00}},
 	{13, {0xA9, 0x02, 0x00, 0xB5, 0x2C, 0x2C, 0x03, 0x01, 0x00, 0x87, 0x00, 0x00, 0x20}},
 };
 
 
 static void set_lhbm_alpha(unsigned int bl_level)
 {
-	struct mtk_panel_para_table *pTable = &panel_lhbm_on[1];
+	struct mtk_panel_para_table *pTable = &panel_lhbm_on[0];
 
 	unsigned int alpha = 0;
 	unsigned int lhbm_alpha_index = bl_level-1;
@@ -1425,6 +1425,7 @@ static int lcm_probe(struct mipi_dsi_device *dsi)
 	struct device_node *backlight;
 //	unsigned int value;
 	int ret;
+	const u32 *val;
 
 	pr_info("%s+ lcm,csot,nt37706,vdo,667\n", __func__);
 
@@ -1480,6 +1481,11 @@ static int lcm_probe(struct mipi_dsi_device *dsi)
 	drm_panel_init(&ctx->panel, dev, &lcm_drm_funcs, DRM_MODE_CONNECTOR_DSI);
 
 	drm_panel_add(&ctx->panel);
+
+	val = of_get_property(dev->of_node, "panel-version", NULL);
+	ctx->version = val ? be32_to_cpup(val) : 3;
+
+	pr_info("%s: panel version 0x%x\n", __func__, ctx->version);
 
 	ret = mipi_dsi_attach(dsi);
 	if (ret < 0)
