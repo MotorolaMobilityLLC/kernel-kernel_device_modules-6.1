@@ -199,3 +199,7 @@
 	};
 };
 
+&dp_tx {
+	status = "disabled";
+};
+
