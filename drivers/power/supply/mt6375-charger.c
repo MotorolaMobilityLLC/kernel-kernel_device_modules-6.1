@@ -1379,7 +1379,8 @@ static void mt6375_chg_bc12_work_func(struct work_struct *work)
 		break;
 	}
 
-	if ((val == PORT_STAT_SDP
+	if ((attach < ATTACH_TYPE_PD) &&
+		(val == PORT_STAT_SDP
 		|| val == PORT_STAT_CDP
 		|| val == PORT_STAT_UNKNOWN_TA)
 		&& (!ddata->mmi_bc12_rerun_done)) {
