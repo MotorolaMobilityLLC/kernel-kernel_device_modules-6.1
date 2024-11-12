@@ -1596,8 +1596,8 @@ static int mt6375_tcpc_init(struct tcpc_device *tcpc, bool sw_reset)
 	/* Transition window time = 43.29us */
 	mt6375_write8(ddata, MT6375_REG_PHYCTRL3, 0x82);
 
-	/* BMC decoder idle time = 17.982us */
-	mt6375_write8(ddata, MT6375_REG_PHYCTRL7, 0x36);
+	/* BMC decoder idle time = 9.9us */
+	mt6375_write8(ddata, MT6375_REG_PHYCTRL7, 0x1E);
 
 	/* Retry period = 26.208us */
 	mt6375_write8(ddata, MT6375_REG_PHYCTRL9, 0x3C);

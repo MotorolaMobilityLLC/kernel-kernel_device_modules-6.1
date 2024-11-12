@@ -851,10 +851,8 @@ bool pd_put_pd_msg_event(struct tcpc_device *tcpc, struct pd_msg *pd_msg)
 	mutex_unlock(&tcpc->access_lock);
 
 #if CONFIG_USB_PD_RETRY_CRC_DISCARD
-	if (discard_pending) {
+	if (discard_pending)
 		tcpc_disable_timer(tcpc, PD_TIMER_DISCARD);
-		pd_put_hw_event(tcpc, PD_HW_TX_DISCARD);
-	}
 #endif	/* CONFIG_USB_PD_RETRY_CRC_DISCARD */
 
 	if (cnt != 0 && cmd == PD_DATA_VENDOR_DEF && extend == 0)

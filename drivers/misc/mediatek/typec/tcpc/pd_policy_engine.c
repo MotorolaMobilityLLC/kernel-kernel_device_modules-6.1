@@ -1241,7 +1241,9 @@ static inline uint8_t pd_try_get_active_event(
 	uint8_t ret;
 	uint8_t from_pe = PD_TCP_FROM_PE;
 	struct pd_port *pd_port = &tcpc->pd_port;
+#if CONFIG_USB_PD_DISCARD_AND_UNEXPECT_MSG || DPM_DBG_ENABLE
 	struct pe_data *pe_data = &pd_port->pe_data;
+#endif	/* CONFIG_USB_PD_DISCARD_AND_UNEXPECT_MSG || DPM_DBG_ENABLE */
 
 	if (!pd_check_tx_ready(pd_port))
 		return PE_NEW_EVT_NULL;
