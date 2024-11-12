@@ -553,3 +553,11 @@
 	soc-max-level = <1>;
 	soc-reduce-tx-lv1 = <6>;
 };
+
+&bp_thl {
+	soc-limit-threshold = <3>;
+};
+
+&mt6375_batoc_throttle {
+	status = "disabled";
+};
