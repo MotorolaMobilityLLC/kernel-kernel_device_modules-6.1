@@ -95,7 +95,6 @@
 &mt6375_typec {
        tcpc,en_wd;
        mmi_cid_int = <&pio 4 0x0>;
-       mmi,support_CID;
 };
 
 &mt6375_chg {
