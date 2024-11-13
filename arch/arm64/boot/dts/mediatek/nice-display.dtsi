@@ -73,16 +73,33 @@
 		res-switch = <2>;
 		rc-enable = <1>;
 		pinctrl-names = "default";
+		};
+	panel4@3 {
+		/delete-property/ compatible;
+		/delete-property/ pm-enable-gpios;
+		/delete-property/ reset-gpios;
+		/delete-property/ gate-ic;
+
+		compatible = "csot,vtdr6126,gt9916,vdo,667";
+		reg = <3>;
+		/*pm-enable-gpios = <&pio 149 0>;*/
+		reset-gpios = <&pio 90 0>;
+		vddi-gpios = <&pio 188 0>;
+		oled-dvdd-supply = <&et59041c_ldo1>;
+		vci-gpios = <&pio 190 0>;
+		res-switch = <2>;
+		rc-enable = <1>;
+		pinctrl-names = "default";
 		port {
-			panel_in3: endpoint {
-				remote-endpoint = <&dsi_out3>;
+			panel_in4: endpoint {
+				remote-endpoint = <&dsi_out4>;
 			};
 		};
 	};
 	ports {
 		port {
-			dsi_out3: endpoint3 {
-				remote-endpoint = <&panel_in3>;
+			dsi_out4: endpoint4 {
+				remote-endpoint = <&panel_in4>;
 			};
 		};
 	};
