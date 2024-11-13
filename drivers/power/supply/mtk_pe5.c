@@ -1709,9 +1709,9 @@ static int pe50_algo_init_with_ta_cv(struct pe50_algo_info *info)
 		goto err;
 	}
 
-	PE50_INFO("get div4 mode before:%d, adpt_mv:%d, adpt_ia:%d\n", data->div4_mode, auth_data->vta_max, auth_data->ita_max);
+	PE50_INFO("get div4 mode before:%d, adpt_mv:%d, adpt_ia:%d, cp_support_mode:%d\n", data->div4_mode, auth_data->vta_max, auth_data->ita_max, desc->charge_pump_op_mode);
 	data->div4_mode = false;
-	if(auth_data->vta_max >= VADPT_PPS_D4CP_MAX_VOLTAGE &&
+	if(desc->charge_pump_op_mode == CP_4_1_MODE && auth_data->vta_max >= VADPT_PPS_D4CP_MAX_VOLTAGE &&
 		auth_data->ita_max >= VADPT_PPS_D4CP_THRE_CURRENT ) {
 		data->div4_mode = true;
 	}else if(auth_data->vta_max >= VADPT_PPS_MAX_VOLTAGE ) {
@@ -4374,6 +4374,11 @@ static int pe50_parse_dt(struct pe50_algo_info *info)
 			MMI_MAX_HRST_CNT);
 		data->mmi_hardreset_max_cnt = MMI_MAX_HRST_CNT;
 	}
+
+	if (of_property_read_u32(np, "charge_pump_op_mode", &val) >= 0)
+		desc->charge_pump_op_mode = val;
+	else
+		desc->charge_pump_op_mode = CP_2_1_MODE;
 
 	return 0;
 }

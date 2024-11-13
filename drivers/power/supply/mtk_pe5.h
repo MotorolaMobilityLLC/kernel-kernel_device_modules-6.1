@@ -90,6 +90,12 @@ enum pe50_dvchg_role {
 	PE50_DVCHG_MAX,
 };
 
+enum pe50_cp_op_mode {
+	CP_2_1_MODE = 0,
+	CP_3_1_MODE,
+	CP_4_1_MODE,
+};
+
 struct pe50_ta_status {
 	int temperature;
 	bool ocp;
@@ -244,6 +250,7 @@ struct pe50_algo_desc {
 	const char **support_ta;	/* supported ta name */
 	u32 support_ta_cnt;		/* supported ta count */
 	bool allow_not_check_ta_status;	/* allow not to check ta status */
+	u32 charge_pump_op_mode;	/* define if cp op mode*/
 };
 
 struct pe50_algo_info {
