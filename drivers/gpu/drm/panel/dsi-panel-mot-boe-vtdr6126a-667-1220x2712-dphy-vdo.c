@@ -522,9 +522,8 @@ static struct mtk_panel_params ext_params_48hz = {
 		.dfps_cmd_table[0] = {0, 2, {0x6C, 0x03} },
 	},
 
-	.panel_cellid_reg = 0xAC,
-	.panel_cellid_offset_reg = 0x6F,
-	.panel_cellid_offset = 0x0D,
+	.panel_cellid_reg = 0x5a,
+	.panel_cellid_offset_reg = 0x65,
 	.panel_cellid_len = 23,
 
 	.panel_ver = 1,
@@ -607,9 +606,8 @@ static struct mtk_panel_params ext_params_60hz = {
 		.dfps_cmd_table[0] = {0, 2, {0x6C, 0x02} },
 	},
 
-	.panel_cellid_reg = 0xAC,
-	.panel_cellid_offset_reg = 0x6F,
-	.panel_cellid_offset = 0x0D,
+	.panel_cellid_reg = 0x5a,
+	.panel_cellid_offset_reg = 0x65,
 	.panel_cellid_len = 23,
 
 	.panel_ver = 1,
@@ -690,8 +688,8 @@ static struct mtk_panel_params ext_params_90hz = {
 		.dfps_cmd_table[0] = {0, 2, {0x6C, 0x01} },
 	},
 
-	.panel_cellid_reg = 0xAC,
-	.panel_cellid_offset_reg = 0x6F,
+	.panel_cellid_reg = 0x5a,
+	.panel_cellid_offset_reg = 0x65,
 	.panel_cellid_offset = 0x0D,
 	.panel_cellid_len = 23,
 
@@ -773,8 +771,8 @@ static struct mtk_panel_params ext_params_120hz = {
 		.dfps_cmd_table[0] = {0, 2, {0x6C, 0x00} },
 	},
 
-	.panel_cellid_reg = 0xAC,
-	.panel_cellid_offset_reg = 0x6F,
+	.panel_cellid_reg = 0x5a,
+	.panel_cellid_offset_reg = 0x65,
 	.panel_cellid_offset = 0x0D,
 	.panel_cellid_len = 23,
 
