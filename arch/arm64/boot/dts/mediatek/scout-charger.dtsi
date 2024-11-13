@@ -496,6 +496,7 @@
 	mmi_therm_vol_thres = <80>;
 	mmi_therm_step = <3>;
 	mmi_max_ibat = <6000>;
+	startup-convert-ratio = <210>;
 };
 
 &mt6375_typec {
