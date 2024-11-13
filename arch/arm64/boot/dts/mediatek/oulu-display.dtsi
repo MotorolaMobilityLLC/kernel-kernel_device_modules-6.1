@@ -75,37 +75,10 @@
 		};
 	};
 
-	panel4@3 {
-		/delete-property/ compatible;
-		/delete-property/ pm-enable-gpios;
-		/delete-property/ reset-gpios;
-		/delete-property/ gate-ic;
-		/delete-property/ swap-from-dts;
-		/delete-property/ lane-swap-setting;
-		/delete-property/ pn-swap-setting;
-
-		compatible = "tianma,nt37707,vdo,667";
-		reg = <3>;
-
-                pm-enable-gpios = <&pio 188 0>,
-                          <&pio 28 0>,
-                          <&pio 185 0>;
-                reset-gpios = <&pio 90 0>;
-		pinctrl-names = "default";
-		port {
-			panel_in3: endpoint {
-				remote-endpoint = <&dsi_out3>;
-			};
-		};
-	};
-
 	ports {
 		port {
 			dsi_out2: endpoint2 {
 				remote-endpoint = <&panel_in2>;
-			};
-			dsi_out3: endpoint3 {
-				remote-endpoint = <&panel_in3>;
 			};
 		};
 	};
