@@ -926,6 +926,7 @@ def get_overlay_modules_list():
         mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/input/touchscreen/goodix_berlin_u_mmi:goodix_brl_u_mmi")
         mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/input/touchscreen/touchscreen_u_mmi:touchscreen_u_mmi")
         mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/input/touchscreen/focaltech_touch_v3_u_mmi:focaltech_touch_v3_u_mmi")
+        mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/input/touchscreen/eswin_riv_u_mmi:eswin_riv_u_mmi")
         mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/input/misc/anc_fps_mmi:anc_fps_mmi")
         mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/moto_netopt/skb_latency:skb_latency")
 

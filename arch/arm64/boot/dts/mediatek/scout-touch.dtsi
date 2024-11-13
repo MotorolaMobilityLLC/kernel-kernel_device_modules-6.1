@@ -8,7 +8,7 @@
 	status = "okay";
 	#address-cells = <1>;
 	#size-cells = <0>;
-	mediatek,pad-select = <0>, <1>;
+	mediatek,pad-select = <0>, <1>, <2>;
 	pinctrl-names = "default", "gt9896s_int_active",
 		"gt9896s_reset_active", "gt9896s_int_suspend",
 		"gt9896s_reset_suspend", "gt9896s_spi_mode";
@@ -80,6 +80,47 @@
 		mmi,supported_gesture_type = <0x07>;
 		mmi,resolution_boost = <16>;
 		focaltech,stowed-mode-ctrl;
+		mtk-charger = <&mt6375_chg>;
+	};
+
+	eswin_eph861x@2 {
+		status = "okay";
+		compatible = "eswin,eph861x";
+		reg = <0x2>;
+		mmi,status = "/chosen","mmi,panel_name","contains","boe_vtdr6126a";
+		eswin,panel-supplier = "boe";
+		pinctrl-names = "pmx_ts_active", "pmx_ts_suspend";
+		pinctrl-0 = <&ctp_gt9896s_int_active &ctp_gt9896s_reset_active>;
+		pinctrl-1 = <&ctp_gt9896s_int_suspend &ctp_gt9896s_reset_suspend>;
+		interrupt-parent = <&pio>;
+		interrupts = <4 2>; // high-to-low edge triggered
+		spi-max-frequency = <9600000>;  /* 4800000,9600000,15000000,19200000 */
+		spi-cpol;
+		spi-cpha;
+		eswin,spi-mode = <3>;
+		eswin,spi-byte-delay-us = <10>;
+		eswin,spi-block-delay-us = <10>;
+		eswin,avdd-gpio = <&pio 184 0x0>;
+		vdd-supply = <&mt6369_vtp>;
+		eswin,regulator_dvdd = "vdd";
+		eswin,power-delay-ms = <200>;
+		eswin,irq-gpio = <&pio 7 0x6002>; // Pin7 on GPIO header
+		eswin,irq-on-state = <0>;
+		eswin,reset-gpio = <&pio 152 0>; // Pin152 on GPIO header
+		eswin,reset-on-state = <0>;
+		eswin,reset-active-ms = <20>;
+		eswin,reset-delat-ms = <200>;
+		eswin,suspend-mode = <0x02>;
+		eswin,panel-invert-x = <0>;
+		eswin,panel-invert-y = <0>;
+		eswin,panel-max-x = <19520>;
+		eswin,panel-max-y = <43392>;
+		eswin,fw_name = "EPH86XX_fw.bin";
+		eswin,device_settings_name = "EPH86XX_device_settings.bin";
+		eswin,input_name = "ESWIN EPH861X Touchscreen";
+		mmi,usb-charger-detection;
+		mmi,enable-gestures;
+		mmi,supported_gesture_type = <0x07>;
 		mtk-charger = <&mt6375_chg>;
 	};
 };
