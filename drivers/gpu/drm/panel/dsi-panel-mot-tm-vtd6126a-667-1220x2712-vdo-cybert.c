@@ -163,7 +163,7 @@ static void lcm_panel_init(struct lcm *ctx)
 	lcm_dcs_write_seq_static(ctx, 0x51, 0x00, 0x00);
 	lcm_dcs_write_seq_static(ctx, 0x53, 0x20);
 	//59h=09 demura on   59h=00 demura off
-	lcm_dcs_write_seq_static(ctx, 0x59, 0x00);
+	lcm_dcs_write_seq_static(ctx, 0x59, 0x09);
 	//5Eh 0x00 BC mode 0x01 DC mode
 	lcm_dcs_write_seq_static(ctx, 0x5e, 0x00);
 	//120hz 6c=00 ,90hz 6c=01 ,60hz 6c=02 ,48hz 6c=03
