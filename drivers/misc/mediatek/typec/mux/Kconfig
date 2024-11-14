@@ -70,12 +70,3 @@ config FSA4480_I2C
 	  multimedia switch. The FSA4480 supports USB2.0
 	  signal, analog audio, sideband use wires and analog
 	  microphone signal.
-
-config FSA4480_SENS_TO_GND
-	tristate "analog audio switch sens gnd"
-	depends on I2C
-	help
-	  The FSA4480 is a high-performance USB Type-C port
-	  multimedia switch. The FSA4480 supports USB2.0
-	  signal, analog audio, sideband use wires and analog
-	  microphone signal.
