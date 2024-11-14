@@ -351,7 +351,6 @@
 };
 
 &snd_audio_dsp {
-	mtk-dsp-call-final = <0x0 0xc 0x11 0x10 0x18000>;
 	swdsp-smartpa-process-enable = <0x0>;
 };
 
