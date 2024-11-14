@@ -3181,7 +3181,7 @@ enum Tfa98xx_Error tfa98xx_adsp_send_calib_values_from_hal(void)
 
 static int tfa98xx_send_volume(uint8_t volume, int only_left)
 {
-	uint8_t cmd[9] = {0x00, 0x81, 0x04, 0x00, 0x00, 0xff, 0x00, 0x00, 0xff};
+	uint8_t cmd[9] = {0x00, 0x81, 0x04, 0x00, 0x00, 0xff, 0x00, 0x00, 0x00};
 	struct tfa98xx *tfa98xx = NULL;
     int is_probus = 0, err = 0;
 
