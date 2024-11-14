@@ -376,14 +376,14 @@ int pe50_hal_enable_sw_vbusovp(struct chg_alg_device *alg, bool en)
 	return 0;
 }
 
-int pe5_hal_set_operating_mode(struct chg_alg_device *alg, enum chg_idx chgidx, bool en)
+int pe5_hal_set_operating_mode(struct chg_alg_device *alg, enum chg_idx chgidx, enum pe50_cp_op_mode cp_op_mode)
 {
 	int chgtyp = to_chgtyp(chgidx);
 	struct pe50_hal *hal = chg_alg_dev_get_drv_hal_data(alg);
 
 	if (chgtyp < 0)
 		return chgtyp;
-	return charger_dev_set_operation_mode(hal->chgdevs[chgtyp], en);
+	return charger_dev_set_cp_operation_mode(hal->chgdevs[chgtyp], cp_op_mode);
 }
 
 int pe50_hal_enable_charging(struct chg_alg_device *alg, enum chg_idx chgidx,

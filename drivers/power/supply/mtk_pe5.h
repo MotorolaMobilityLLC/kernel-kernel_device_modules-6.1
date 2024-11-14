@@ -197,7 +197,7 @@ struct pe50_algo_data {
 	int mmi_max_ibat;
 	int mmi_hardreset_cnt;
 	int mmi_hardreset_max_cnt;
-	bool div4_mode;
+	enum pe50_cp_op_mode cp_op_mode_curr;
 };
 
 /* Setting from dtsi */
@@ -250,7 +250,7 @@ struct pe50_algo_desc {
 	const char **support_ta;	/* supported ta name */
 	u32 support_ta_cnt;		/* supported ta count */
 	bool allow_not_check_ta_status;	/* allow not to check ta status */
-	u32 charge_pump_op_mode;	/* define if cp op mode*/
+	int charge_pump_op_mode_max_support;	/* define max supported cp op mode*/
 };
 
 struct pe50_algo_info {
@@ -308,7 +308,7 @@ extern int pe50_hal_send_ta_hardreset(struct chg_alg_device *alg);
 extern int pe50_hal_init_hardware(struct chg_alg_device *alg,
 				  const char **support_ta, int support_ta_cnt);
 extern int pe50_hal_enable_sw_vbusovp(struct chg_alg_device *alg, bool en);
-extern int pe5_hal_set_operating_mode(struct chg_alg_device *alg, enum chg_idx chgidx, bool en);
+extern int pe5_hal_set_operating_mode(struct chg_alg_device *alg, enum chg_idx chgidx, enum pe50_cp_op_mode cp_op_mode);
 extern int pe50_hal_enable_charging(struct chg_alg_device *alg,
 				    enum chg_idx chgidx, bool en);
 extern int pe50_hal_enable_chip(struct chg_alg_device *alg, enum chg_idx chgidx,
