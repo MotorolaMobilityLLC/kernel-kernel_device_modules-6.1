@@ -2770,7 +2770,7 @@ static int mmi_detected_qc20_hvdcp(struct mt6375_chg_data * ddata, int *charger_
 	//if (ret)
 	//	return ret;
 
-	msleep(1300);
+	msleep(1350);
 
 	//ret = mt6375_chg_field_set(ddata, F_DM_LDO_EN, 0); //dm 0V ldo disable
 	//if (ret)
@@ -3050,10 +3050,13 @@ rerun:
 				if (ddata->mmi_qc3p_rerun_done == false) {
 					pr_info("HVDCP: Rerun detected hvdcp\n");
 					ddata->mmi_qc3p_rerun_done = true;
-					//pull down dpdm for rerun HVDCP detected
-					ret = mmi_dpdm_manual_mode_enable(ddata, false);
+					ret = mt6375_chg_field_set(ddata, F_DP_LDO_EN, 0);
 					if (ret < 0) {
-						pr_err("HVDCP: dpdm manual mode disable failed\n");
+						pr_err("HVDCP: dp ldo disable failed\n");
+					}
+					ret = mt6375_chg_field_set(ddata, F_DM_LDO_EN, 0);
+					if (ret < 0) {
+						pr_err("HVDCP: dm ldo disable failed\n");
 					}
 					mdelay(100);
 					goto rerun;
