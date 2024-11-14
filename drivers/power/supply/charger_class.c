@@ -696,6 +696,16 @@ int charger_dev_set_operation_mode(struct charger_device *chg_dev, bool div2)
 }
 EXPORT_SYMBOL(charger_dev_set_operation_mode);
 
+int charger_dev_set_cp_operation_mode(struct charger_device *chg_dev, int cp_op_mode)
+{
+	if (chg_dev != NULL && chg_dev->ops != NULL &&
+	    chg_dev->ops->set_cp_operation_mode)
+		return chg_dev->ops->set_cp_operation_mode(chg_dev, cp_op_mode);
+
+	return -EOPNOTSUPP;
+}
+EXPORT_SYMBOL(charger_dev_set_cp_operation_mode);
+
 int charger_dev_enable_chg_type_det(struct charger_device *chg_dev, bool en)
 {
 	if (chg_dev != NULL && chg_dev->ops != NULL &&

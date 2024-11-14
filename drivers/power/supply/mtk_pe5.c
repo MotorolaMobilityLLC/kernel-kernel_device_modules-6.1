@@ -223,7 +223,7 @@ static inline u32 pe50_vout2vbus(struct pe50_algo_info *info, u32 vout)
 	struct pe50_algo_data *data = info->data;
 	u32 ratio;
 
-	if(data->div4_mode) {
+	if(data->cp_op_mode_curr == CP_4_1_MODE) {
 		ratio = data->is_dvchg_en[PE50_DVCHG_MASTER] ?
 		PE50_DVCHG_CHARGING_CONVERT_RATIO_DIV4:
 		PE50_DVCHG_STARTUP_CONVERT_RATIO_DIV4;
@@ -1612,19 +1612,19 @@ err:
 #define VADPT_PPS_D4CP_THRE_CURRENT 3000
 #define VADPT_PPS_MAX_VOLTAGE 11000
 
-int pe5_set_operating_mode(struct pe50_algo_info *info, bool div4) {
+int pe5_set_operating_mode(struct pe50_algo_info *info, enum pe50_cp_op_mode cp_op_mode) {
 	struct pe50_algo_data *data = info->data;
 	int ret = 0;
 
 	if(data->is_dvchg_exist[PE50_DVCHG_MASTER]) {
-		ret = pe5_hal_set_operating_mode(info->alg, to_chgidx(PE50_DVCHG_MASTER), div4);
+		ret = pe5_hal_set_operating_mode(info->alg, to_chgidx(PE50_DVCHG_MASTER), cp_op_mode);
 		if(ret <0) {
 			PE50_ERR("set master cp op mode fail");
 		}
 	}
 
 	if(data->is_dvchg_exist[PE50_DVCHG_SLAVE]) {
-		ret = pe5_hal_set_operating_mode(info->alg, to_chgidx(PE50_DVCHG_SLAVE), div4);
+		ret = pe5_hal_set_operating_mode(info->alg, to_chgidx(PE50_DVCHG_SLAVE), cp_op_mode);
 		if(ret <0) {
 			PE50_ERR("set slave cp op mode fail");
 		}
@@ -1709,17 +1709,16 @@ static int pe50_algo_init_with_ta_cv(struct pe50_algo_info *info)
 		goto err;
 	}
 
-	PE50_INFO("get div4 mode before:%d, adpt_mv:%d, adpt_ia:%d, cp_support_mode:%d\n", data->div4_mode, auth_data->vta_max, auth_data->ita_max, desc->charge_pump_op_mode);
-	data->div4_mode = false;
-	if(desc->charge_pump_op_mode == CP_4_1_MODE && auth_data->vta_max >= VADPT_PPS_D4CP_MAX_VOLTAGE &&
+	PE50_INFO("get curr cp op mode before:%d, adpt_mv:%d, adpt_ia:%d, cp_support_mode:%d\n", data->cp_op_mode_curr, auth_data->vta_max, auth_data->ita_max, desc->charge_pump_op_mode_max_support);
+	if(desc->charge_pump_op_mode_max_support == CP_4_1_MODE && auth_data->vta_max >= VADPT_PPS_D4CP_MAX_VOLTAGE &&
 		auth_data->ita_max >= VADPT_PPS_D4CP_THRE_CURRENT ) {
-		data->div4_mode = true;
-	}else if(auth_data->vta_max >= VADPT_PPS_MAX_VOLTAGE ) {
-		data->div4_mode = false;
+		data->cp_op_mode_curr = CP_4_1_MODE;
+	}else {
+		data->cp_op_mode_curr = CP_2_1_MODE;
 	}
-	pe5_set_operating_mode(info, data->div4_mode);
+	pe5_set_operating_mode(info, data->cp_op_mode_curr);
 
-	PE50_INFO("get div4 mode after:%d\n", data->div4_mode);
+	PE50_INFO("get curr cp op mode after:%d\n", data->cp_op_mode_curr);
 
 	PE50_INFO("charger pump vout (%d)\n",vout);
 	/* Adjust VBUS to make sure DVCHG can be turned on */
@@ -3817,7 +3816,7 @@ static int pe50_algo_threadfn(void *param)
 			pe50_algo_cc_cv(info);
 			break;
 		case PE50_ALGO_STOP:
-			data->div4_mode = false;
+			data->cp_op_mode_curr = CP_2_1_MODE;
 			PE50_INFO("PE5.0 STOP\n");
 			break;
 		default:
@@ -4376,9 +4375,9 @@ static int pe50_parse_dt(struct pe50_algo_info *info)
 	}
 
 	if (of_property_read_u32(np, "charge_pump_op_mode", &val) >= 0)
-		desc->charge_pump_op_mode = val;
+		desc->charge_pump_op_mode_max_support = val;
 	else
-		desc->charge_pump_op_mode = CP_2_1_MODE;
+		desc->charge_pump_op_mode_max_support = CP_2_1_MODE;
 
 	return 0;
 }

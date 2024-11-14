@@ -245,6 +245,7 @@ struct charger_ops {
 	int (*is_power_ready)(struct charger_device *dev);
 	int (*get_vmos_chg)(struct charger_device *chg_dev, bool type, int *uV);
 	int (*enable_vbusovp)(struct charger_device *chg_dev, bool val);
+	int (*set_cp_operation_mode)(struct charger_device *dev, int cp_op_mode);
 };
 
 static inline void *charger_dev_get_drvdata(
@@ -336,6 +337,8 @@ extern int charger_dev_set_auto_trans(
 	struct charger_device *chg_dev, u32 uV, bool en);
 extern int charger_dev_set_operation_mode(
 	struct charger_device *chg_dev, bool div2);
+extern int charger_dev_set_cp_operation_mode(
+	struct charger_device *chg_dev, int cp_op_mode);
 extern int charger_dev_enable_chg_type_det(
 	struct charger_device *charger_dev, bool en);
 extern int charger_dev_enable_otg(
