@@ -4026,6 +4026,7 @@ static int mmi_get_pdc_power(struct mtk_charger *info, bool force)
 }
 
 #define MMI_POWER_30W 30
+#define MMI_POWER_18W 18
 #define MMI_POWER_15W 15
 #define MMI_POWER_10W 10
 #define MMI_POWER_7W 7
@@ -4078,8 +4079,10 @@ static int mmi_check_power_watt(struct mtk_charger *info, bool force)
 			|| info->pd_type == MTK_PD_CONNECT_PE_READY_SNK_PD30) {
 		power_watt = mmi_get_pdc_power(info, force) / 1000;
 
-	} else if (qc_chg_type == USB_TYPE_QC3P_45 || qc_chg_type == USB_TYPE_QC3P_27 || qc_chg_type == USB_TYPE_QC3P_18) {
+	} else if (qc_chg_type == USB_TYPE_QC3P_45 || qc_chg_type == USB_TYPE_QC3P_27) {
 		power_watt = MMI_POWER_30W;
+	} else if (qc_chg_type == USB_TYPE_QC3P_18) {
+		power_watt = MMI_POWER_18W;
 	} else if (qc_chg_type == USB_TYPE_QC30) {
 		power_watt = MMI_POWER_15W;
 	} else { //BC1.2
