@@ -1909,15 +1909,26 @@ static int mtk_dai_etdm_hw_params(struct snd_pcm_substream *substream,
 				   REG_INITIAL_COUNT_MASK_SFT,
 				   0x5 << REG_INITIAL_COUNT_SFT);
 		/* 3: pad top 5: no pad top */
+#if IS_ENABLED(CONFIG_SND_SMARTPA_AW882XX)
+		regmap_update_bits(afe->regmap, ETDM_IN4_CON1,
+				   REG_INITIAL_POINT_MASK_SFT,
+				   0x4 << REG_INITIAL_POINT_SFT);
+#else
 		regmap_update_bits(afe->regmap, ETDM_IN4_CON1,
 				   REG_INITIAL_POINT_MASK_SFT,
 				   0x3 << REG_INITIAL_POINT_SFT);
+#endif
 		regmap_update_bits(afe->regmap, ETDM_IN4_CON1,
 				   REG_LRCK_RESET_MASK_SFT,
 				   0x1 << REG_LRCK_RESET_SFT);
 		regmap_update_bits(afe->regmap, ETDM_IN4_CON2,
 				   REG_CLOCK_SOURCE_SEL_MASK_SFT,
 				   ETDM_CLK_SOURCE_APLL << REG_CLOCK_SOURCE_SEL_SFT);
+#if IS_ENABLED(CONFIG_SND_SMARTPA_AW882XX)
+               regmap_update_bits(afe->regmap, ETDM_IN4_CON2,
+                                  REG_SDATA_DELAY_0P5T_EN_MASK_SFT,
+                                  1<< REG_SDATA_DELAY_0P5T_EN_SFT);
+#endif
 		/* 0: manual 1: auto */
 		regmap_update_bits(afe->regmap, ETDM_IN4_CON2,
 				   REG_CK_EN_SEL_AUTO_MASK_SFT,
@@ -2353,15 +2364,30 @@ static int mtk_dai_i2s_config(struct mtk_base_afe *afe,
 				   REG_INITIAL_COUNT_MASK_SFT,
 				   0x5 << REG_INITIAL_COUNT_SFT);
 		/* 3: pad top 5: no pad top */
+#if IS_ENABLED(CONFIG_SND_SMARTPA_AW882XX)
+		regmap_update_bits(afe->regmap, ETDM_IN4_CON1,
+				   REG_INITIAL_POINT_MASK_SFT,
+				   0x4 << REG_INITIAL_POINT_SFT);
+#else
 		regmap_update_bits(afe->regmap, ETDM_IN4_CON1,
 				   REG_INITIAL_POINT_MASK_SFT,
 				   0x3 << REG_INITIAL_POINT_SFT);
+#endif
+
 		regmap_update_bits(afe->regmap, ETDM_IN4_CON1,
 				   REG_LRCK_RESET_MASK_SFT,
 				   0x1 << REG_LRCK_RESET_SFT);
+
 		regmap_update_bits(afe->regmap, ETDM_IN4_CON2,
 				   REG_CLOCK_SOURCE_SEL_MASK_SFT,
 				   ETDM_CLK_SOURCE_APLL << REG_CLOCK_SOURCE_SEL_SFT);
+
+#if IS_ENABLED(CONFIG_SND_SMARTPA_AW882XX)
+               regmap_update_bits(afe->regmap, ETDM_IN4_CON2,
+                                  REG_SDATA_DELAY_0P5T_EN_MASK_SFT,
+                                  1<< REG_SDATA_DELAY_0P5T_EN_SFT);
+#endif
+
 		/* 0: manual 1: auto */
 		regmap_update_bits(afe->regmap, ETDM_IN4_CON2,
 				   REG_CK_EN_SEL_AUTO_MASK_SFT,
