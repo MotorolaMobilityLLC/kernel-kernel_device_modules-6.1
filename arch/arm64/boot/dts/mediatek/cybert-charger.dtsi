@@ -15,35 +15,6 @@
 #include <dt-bindings/iio/mt635x-auxadc.h>
 
 &pio {
-/*
-	bq25960_int_default_master: bq25960_int_default_master {
-		pinmux = <PINMUX_GPIO12__FUNC_GPIO12>;
-		slew-rate= <0>;
-		input-enable;
-		bias-pull-up;
-	};
-
-	bq25960_int_default_slave: bq25960_int_default_slave {
-		pinmux = <PINMUX_GPIO11__FUNC_GPIO11>;
-		slew-rate= <0>;
-		input-enable;
-		bias-pull-up;
-	};
-
-	nu2115_int_default_master: nu2115_int_default_master {
-		pinmux = <PINMUX_GPIO12__FUNC_GPIO12>;
-		slew-rate= <0>;
-		input-enable;
-		bias-pull-up;
-	};
-
-	nu2115_int_default_slave: nu2115_int_default_slave {
-		pinmux = <PINMUX_GPIO11__FUNC_GPIO11>;
-		slew-rate= <0>;
-		input-enable;
-		bias-pull-up;
-	};
-*/
 	wls_cps4041_int_default: wls_cps4041_int_default {
                 wls_int {
                         pinmux = <PINMUX_GPIO10__FUNC_GPIO10>;
@@ -81,11 +52,6 @@
                         output-low;
                 };
         };
-
-	/*external_otg_boost: external_boost_otg {
-                pinmux = <PINMUX_GPIO25__FUNC_GPIO25>;
-                output-low;
-        };*/
 };
 
 &mtk_gauge {
@@ -100,7 +66,6 @@
 &mt6375_chg {
 	ircmp-r = <0>;
 	ircmp-v = <0>;
-//	mmi,external_otg_boost = <&pio 25 0x0>;
 };
 
 &lk_charger {
@@ -128,7 +93,7 @@
 
 &charger {
 	gauge = <&smart_battery>;
-	battery-cv = <4500000>;
+	battery-cv = <4530000>;
 	max-charger-voltage = <22000000>;
 	ac-charger-current = <3000000>;
 	usb-charger-current = <500000>;
@@ -166,37 +131,31 @@
 	mmi,pd_vbus_low_bound = <5000000>;
 	mmi,pd_vbus_upper_bound = <9000000>;
 
-	mmi,iterm-ma = <210>;
  	mmi,mmi-temp-zones = <0 4200 1168 0>,
                                 <10 4250 5840 2920>,
                                 <15 4530 5840 5840>,
-				<45 4280 18000 15000>,
-				<45 4310 15000 12400>,
-				<45 4350 12400 10000>,
+				<45 4230 18000 12400>,
+				<45 4280 12400 10000>,
 				<45 4450 10000 8000>,
+				<45 4530 8000 5840>,
                                 <60 4200 5840 0>;
 	mmi,mmi-ffc-zones = <0 4200 292>,
 				<10 4530 292>,
 				<15 4530 292>,
-				<25 4560 2760>,
-				<35 4560 3330>,
-				<45 4560 4600>,
+				<25 4560 1045>,
+				<35 4560 1148>,
+				<45 4560 1611>,
 				<60 4200 292>;
 	mmi,mmi-normal-zones = <0 4200 292>,
 				<10 4530 292>,
 				<15 4530 292>,
 				<25 4530 292>,
 				<35 4530 292>,
-				<45 4530 292>,
+				<45 4530 584>,
 				<60 4200 292>;
 	mmi,mmi-cycle-cv-steps =<100 20>;
 };
 
-/*
-&mt6375_chg {
-	mmi,mux_otg_switch_en = <&pio 99 0x0>;
-};
-*/
 &moto_chg_tcmd {
 	compatible = "mmi,moto-chg-tcmd";
 	status = "okay";
@@ -213,6 +172,7 @@
 	mmi,adc-channel-pa = <1>;
 	mmi,adc-channel-batid = <3>;
 	mmi,adc-channel-vbat = <100>;
+	mmi,batt-ids-map = "1", "ATLRE60NVT", "2", "LWNRE60SWD";
 };
 
 &smart_battery {
@@ -519,24 +479,37 @@
 	mmi_therm_cur_thres = <500>;
 	mmi_therm_vol_thres = <80>;
 	mmi_therm_step = <3>;
-	mmi_max_ibat = <23000>;
+	mmi_max_ibat = <18000>;
 	mmi_max_hrst_cnt = <1>;
 	charge_pump_op_mode = <2>;//2_1:0 3_1:1 4_1:2
 };
 
 &mt6375_typec {
-	pd-data {
+        pd-data {
+                pd,sink-cap-ext = /bits/ 8 <0xcf 0x29 0x75 0x63
+                                                0x00 0x00 0x00 0x00
+                                                0x00 0x00 0x01 0x00
+                                                0x00 0x00 0x00 0x00
+                                                0x01 0x0b 0x01 0x0a
+                                                0x1b 0x00 0x00 0x00>;
+                /*5V, 3A  9V, 3A*/
+                pd,sink-pdo-size = <2>;
+                pd,sink-pdo-data = <0x0001912c 0x0002d12c> ;
+                pd,id-vdo-data = <0xd14029cf 0x0 0x63750000
+                                0x61000000 0x0 0x41000000>;
 		/* 5V, 900ma */
-		pd,source-pdo-data = <0x0001905a>;
-		/*5V, 2A 5V, 3A  9V, 2A  9V, 3A*/
-		pd,sink-pdo-size = <4>;
-		pd,sink-pdo-data = <0x000190c8 0x0001912c 0x0002d0c8 0x0002d12c> ;
-	};
+                pd,source-pdo-data = <0x0001905a>;
+        };
+
+        dpm-caps {
+                attempt-discover-id;
+                attempt-discover-svids;
+        };
 };
 
 
 &charger_cooler {
-	mmi,thermal-mitigation = <(-1) 22000000 20000000 16000000 14000000
+	mmi,thermal-mitigation = <(-1) 18000000 17000000 16000000 14000000
 				12000000 10000000 9000000 6000000 5000000
 				4000000 3000000 2000000 1500000 1000000>;
 };
@@ -548,6 +521,6 @@
 &mt6363_dynamic_loading_throttling {
 	status = "okay";
 	bob-check-flag = <0>;
-	uvlo-level = <2600>;
-	vbb-uvlo-level = <2600>;
+	uvlo-level = <2400>;
+	vbb-uvlo-level = <2400>;
 };
