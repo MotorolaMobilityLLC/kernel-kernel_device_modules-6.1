@@ -15943,7 +15943,7 @@ FLL0_out,FLL1_out,FLL4_out,FLL5_out,FLL6_out";
 			tcpc,en-wd;
 			// tcpc,en-wd-dual-port;
 			tcpc,en-ctd;
-			tcpc,en-fod;
+			//tcpc,en-fod;
 			tcpc,en-typec-otp;
 			// tcpc,en-floatgnd;
 			wd,sbu-calib-init = <1200>;	/* mV */
