@@ -3418,8 +3418,16 @@ static bool pe50_is_ta_rdy(struct pe50_algo_info *info)
 		auth_data->vcap_max = desc->vta_cap_max;
 		auth_data->icap_min = desc->ita_cap_min;
 		ret = pe50_hal_authenticate_ta(info->alg, auth_data);
-		if (ret < 0)
-			return false;
+		if (ret < 0) {
+			if(desc->charge_pump_op_mode_max_support == CP_4_1_MODE) {
+				auth_data->vcap_max = VADPT_PPS_MAX_VOLTAGE;
+				ret = pe50_hal_authenticate_ta(info->alg, auth_data);
+				if(ret <0) {
+					return false;
+				}
+			} else
+				return false;
+		}
 		data->ta_ready = true;
 	}
 	return true;
@@ -3437,9 +3445,16 @@ static int pe50_update_ta_cap(struct pe50_algo_info *info)
 		auth_data->vcap_max = desc->vta_cap_max;
 		auth_data->icap_min = desc->ita_cap_min;
 		ret = pe50_hal_update_apdo_cap(info->alg, auth_data);
-		if (ret < 0)
-			return false;
-
+		if (ret < 0){
+			if(desc->charge_pump_op_mode_max_support == CP_4_1_MODE) {
+				auth_data->vcap_max = VADPT_PPS_MAX_VOLTAGE;
+				ret = pe50_hal_update_apdo_cap(info->alg, auth_data);
+				if(ret <0) {
+					return false;
+				}
+			} else
+				return false;
+		}
 		pe50_select_ita_lmt_by_r(info, true);
 		return true;
 	}
