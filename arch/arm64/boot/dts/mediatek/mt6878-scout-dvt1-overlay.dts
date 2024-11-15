@@ -26,6 +26,13 @@
 	};
 };
 
+&i2c3 {
+	wt6670f@35 {
+		status = "okay";
+		not-register-qc-dev;
+	};
+};
+
 &mt6375_typec {
 	mmi,support_CID;
 };
