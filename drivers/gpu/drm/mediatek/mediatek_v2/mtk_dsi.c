@@ -3323,6 +3323,9 @@ static void mtk_output_en_doze_switch(struct mtk_dsi *dsi)
 		mtk_dsi_set_mode(dsi);
 		mtk_dsi_clk_hs_mode(dsi, 1);
 
+		if (dsi->driver_data->dsi_buffer)
+			mtk_dsi_tx_buf_rw(dsi);
+
 		/* Update RDMA golden setting after switch */
 		{
 			struct drm_crtc *crtc = dsi->encoder.crtc;
