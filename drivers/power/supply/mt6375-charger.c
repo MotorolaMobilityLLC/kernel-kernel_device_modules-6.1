@@ -292,7 +292,6 @@ struct mt6375_chg_data {
 	int	qc_chg_type;
 
 	/*for software HVDCP detected*/
-	struct delayed_work mmi_hvdcp_detect_dwork;
 	bool mmi_hvdcp_support;
 	bool mmi_hvdcp_trig_flag;
 	struct task_struct	*mmi_hvdcp_authen_task;
@@ -1316,6 +1315,7 @@ static int mt6375_chg_enable_bc12(struct mt6375_chg_data *ddata, bool en)
 	return mt6375_chg_field_set(ddata, F_BC12_EN, en);
 }
 
+void mmi_start_hvdcp_detect_work(struct mt6375_chg_data *ddata);
 #define DELAY_TIME 1500
 static void mt6375_chg_bc12_work_func(struct work_struct *work)
 {
@@ -1410,7 +1410,7 @@ static void mt6375_chg_bc12_work_func(struct work_struct *work)
 		if (ddata->qc_dev && !ddata->dcp15w.is_detecting)
 			schedule_delayed_work(&ddata->detect_qc_dwork, msecs_to_jiffies(DELAY_TIME)); //for wait PD detected complete
 		else if (ddata->mmi_hvdcp_support && !ddata->dcp15w.is_detecting) {
-			schedule_delayed_work(&ddata->mmi_hvdcp_detect_dwork, msecs_to_jiffies(DELAY_TIME + 500));
+			mmi_start_hvdcp_detect_work(ddata);
 		} else if (ddata->dcp15w.support && !ddata->dcp15w.is_detecting) {
 			schedule_delayed_work(&ddata->dcp15w.detect_dwork, msecs_to_jiffies(DELAY_TIME + 500));
 		}
@@ -1425,7 +1425,7 @@ static void mt6375_chg_bc12_work_func(struct work_struct *work)
 		if (ddata->qc_dev && !ddata->dcp15w.is_detecting)
 			schedule_delayed_work(&ddata->detect_qc_dwork, msecs_to_jiffies(DELAY_TIME)); //for wait PD detected complete
 		else if (ddata->mmi_hvdcp_support && !ddata->dcp15w.is_detecting) {
-			schedule_delayed_work(&ddata->mmi_hvdcp_detect_dwork, msecs_to_jiffies(DELAY_TIME + 500));
+			mmi_start_hvdcp_detect_work(ddata);
 		}else if (ddata->dcp15w.support && !ddata->dcp15w.is_detecting) {
 			schedule_delayed_work(&ddata->dcp15w.detect_dwork, msecs_to_jiffies(DELAY_TIME + 500));
 		}
@@ -2648,23 +2648,10 @@ void get_qc_charger_type_func_work(struct work_struct *work)
 
 #define MMI_HVDCP2_VOLTAGE_STANDARD		8000000
 #define MMI_HVDCP3_VOLTAGE_STANDARD		7500000
-void mmi_start_hvdcp_detect_work(struct work_struct *work)
+void mmi_start_hvdcp_detect_work(struct mt6375_chg_data *ddata)
 {
-	struct delayed_work *mmi_hvdcp_detect_dwork = NULL;
-	struct mt6375_chg_data *ddata;
 	int ret;
 	int vbus_uv = 0;
-
-	mmi_hvdcp_detect_dwork = container_of(work, struct delayed_work, work);
-	if(mmi_hvdcp_detect_dwork == NULL) {
-		pr_err("Cann't get mmi_hvdcp_detect_dwork\n");
-		return ;
-	}
-	ddata = container_of(mmi_hvdcp_detect_dwork, struct mt6375_chg_data, mmi_hvdcp_detect_dwork);
-	if(ddata == NULL) {
-		pr_err("Cann't get mt6375_chg_data \n");
-		return ;
-	}
 
 	if (!ddata->mmi_hvdcp_support) {
 		pr_err("HVDCP: mmi hvdcp don't support, exit \n");
@@ -2742,7 +2729,7 @@ static int mmi_dpdm_manual_mode_enable(struct mt6375_chg_data *ddata, bool enabl
 
 }
 
-static int mmi_adjust_qc20_hvdcp_5v(struct mt6375_chg_data * ddata)
+__maybe_unused static int mmi_adjust_qc20_hvdcp_5v(struct mt6375_chg_data * ddata)
 {
 	int ret;
 
@@ -2758,60 +2745,53 @@ static int mmi_adjust_qc20_hvdcp_5v(struct mt6375_chg_data * ddata)
 
 static int mmi_detected_qc20_hvdcp(struct mt6375_chg_data * ddata, int *charger_type)
 {
-	int ret;
-	int vbus_voltage;
+	int ret, i;
+	int vdp, vdm;
 
 	/*dp and dm connected,dp 0.6V dm 0.6V*/
 	ret = mt6375_chg_field_set(ddata, F_DP_LDO_VSEL, 600); //dp 0.6V
 	if (ret)
-	    return ret;
-
-	//ret = mt6375_chg_field_set(ddata, F_DM_LDO_VSEL, 600); //dm 0.6V
-	//if (ret)
-	//	return ret;
-
-	msleep(1350);
-
-	//ret = mt6375_chg_field_set(ddata, F_DM_LDO_EN, 0); //dm 0V ldo disable
-	//if (ret)
-	//	return ret;
-
-	//mdelay(500);
-
-	/* dp 3.3v and dm 0.6v out 9V */
-	ret = mt6375_chg_field_set(ddata, F_DP_LDO_VSEL, 3300); //dp 3.3v
-	if (ret)
 		return ret;
 
-	ret = mt6375_chg_field_set(ddata, F_DM_LDO_VSEL, 600); //dm 0.6v
-	if (ret)
-		return ret;
+	for (i = 0; i < 15; i++) {
 
-	ret = mt6375_chg_field_set(ddata, F_DM_LDO_EN, 1); //dm ldo enable
-	if (ret)
-		return ret;
+		msleep(100);
 
-	msleep(150);//need tunning
+		if (!ddata->pwr_rdy || is_pd_rdy(ddata)) {
+			ret = -1;
+			break;
+		}
 
-	mt6375_get_vbus(ddata->chgdev, &vbus_voltage);
-	pr_info("HVDCP: vbus voltage now = %d\n", vbus_voltage);
+		if (i >= 10) {
+			/* Check if USB DPDM is shorted */
+			ret = iio_read_channel_processed(&ddata->iio_adcs[ADC_CHAN_USBDP], &vdp);
+			if (ret < 0) {
+				pr_err("HVDCP: Failed to read USB DP voltage\n");
+				break;
+			}
 
-	if (vbus_voltage > MMI_HVDCP2_VOLTAGE_STANDARD) {
-		pr_info("HVDCP: QC20 charger detected\n");
-		*charger_type = USB_TYPE_QC20;
-	} else {
-		pr_info("HVDCP: charger type is not HVDCP\n");
+			ret = iio_read_channel_processed(&ddata->iio_adcs[ADC_CHAN_USBDM], &vdm);
+			if (ret < 0) {
+				pr_err("HVDCP: Failed to read USB DM voltage\n");
+				break;
+			}
+
+			vdp = U_TO_M(vdp);
+			vdm = U_TO_M(vdm);
+
+			pr_info("HVDCP: vdp = %d, vdm = %d\n", vdp, vdm);
+
+			if (vdp > 300 && vdm < 300) {
+				pr_info("HVDCP: QC20 charger detected\n");
+				*charger_type = USB_TYPE_QC20;
+				break;
+			}
+		}
 	}
 
-	ret = mmi_adjust_qc20_hvdcp_5v(ddata);
-	if (ret) {
-		pr_err("HVDCP: Cann't adjust qc20 hvdcp 5V\n");
-	}
-
-	msleep(150);//need tunning
-
-	mt6375_get_vbus(ddata->chgdev, &vbus_voltage);
-	pr_info("HVDCP: vbus voltage now = %d after qc20 detected\n", vbus_voltage);
+	if (ret >= 0)
+		pr_info("HVDCP: charger type is %s HVDCP after qc20 detected\n",
+						*charger_type == USB_TYPE_QC20 ? "a":"not a");
 
 	return ret;
 }
@@ -2887,12 +2867,12 @@ static int mmi_detected_qc30_hvdcp(struct mt6375_chg_data * ddata, int *charger_
 	if (vbus_voltage > MMI_HVDCP3_VOLTAGE_STANDARD) {
 		*charger_type = USB_TYPE_QC30;
 		pr_info("HVDCP: %s QC3.0 charger detected\n", __func__);
-	}
 
-	for (i = 0; i < 16; i++) {
-		ret = mmi_qc30_step_down_vbus(ddata);
-		if (ret)
-			pr_err("HVDCP: %s qc30 step down vbus error\n", __func__);
+		for (i = 0; i < 16; i++) {
+			ret = mmi_qc30_step_down_vbus(ddata);
+			if (ret)
+				pr_err("HVDCP: %s qc30 step down vbus error\n", __func__);
+		}
 	}
 
 	//mt6375_get_vbus(ddata->chgdev, &vbus_voltage);
@@ -3027,15 +3007,21 @@ rerun:
 			goto out;
 		}
 
+		if (!ddata->pwr_rdy || is_pd_rdy(ddata))
+			goto end;
+
 		//do qc2.0 detected
 		ret = mmi_detected_qc20_hvdcp(ddata, &charger_type);
 		if (ret) {
 			pr_err("HVDCP: Cann't detected qc20 hvdcp\n");
-			goto out;
+			goto end;
 		}
 
 		if (charger_type != USB_TYPE_QC20)
 			goto out;
+
+		if (!ddata->pwr_rdy || is_pd_rdy(ddata))
+			goto end;
 
 		//do qc3.0 detected
 		ret = mmi_detected_qc30_hvdcp(ddata, &charger_type);
@@ -3043,9 +3029,16 @@ rerun:
 			pr_err("HVDCP: Cann't detected qc30 hvdcp\n");
 		}
 
+		if (!ddata->pwr_rdy || is_pd_rdy(ddata))
+			goto end;
+
 		//do qc3p detected
 		if (charger_type == USB_TYPE_QC30) {
 			ret = mmi_detected_qc3p_hvdcp(ddata, &charger_type);
+
+			if (!ddata->pwr_rdy || is_pd_rdy(ddata))
+				goto end;
+
 			if (ret) {
 				if (ddata->mmi_qc3p_rerun_done == false) {
 					pr_info("HVDCP: Rerun detected hvdcp\n");
@@ -3066,10 +3059,6 @@ rerun:
 			}
 		}
 
-		ret = power_supply_get_property(ddata->psy, POWER_SUPPLY_PROP_ONLINE, &val);
-		if (!val.intval)
-			goto out;
-
 		ddata->qc_chg_type = charger_type;
 		ddata->qc_is_detect = false;
 
@@ -3087,21 +3076,20 @@ rerun:
 		}
 
 		//notify charging policy to update charger type
-		if ((ddata->qc_chg_type == USB_TYPE_QC30)
+		if ((ddata->qc_chg_type == USB_TYPE_QC20)
+			|| (ddata->qc_chg_type == USB_TYPE_QC30)
 			|| (ddata->qc_chg_type == USB_TYPE_QC3P_18)
 			|| (ddata->qc_chg_type == USB_TYPE_QC3P_27)
 			|| (ddata->qc_chg_type == USB_TYPE_QC3P_45)) {
 			charger_dev_notify(ddata->chgdev, CHARGER_DEV_NOTIFY_CTD_DONE);
 		}
 
-		msleep(300);
-
 out:
 
 		if (ddata->dcp15w.support) {
 			ret = power_supply_get_property(ddata->psy, POWER_SUPPLY_PROP_ONLINE, &val);
 			if (ret == 0 && val.intval &&
-				(ddata->qc_chg_type == USB_TYPE_UNKNOWN)) {
+				(ddata->qc_chg_type == USB_TYPE_UNKNOWN) && !is_pd_rdy(ddata)) {
 				pr_info("dcp15w start detect_dwork after qc detected end\n");
 				schedule_delayed_work(&ddata->dcp15w.detect_dwork, 0);
 			}
@@ -4515,7 +4503,6 @@ static int mt6375_chg_probe(struct platform_device *pdev)
 	INIT_WORK(&ddata->bc12_work, mt6375_chg_bc12_work_func);
 	INIT_DELAYED_WORK(&ddata->pwr_rdy_dwork, mt6375_chg_pwr_rdy_dwork_func);
 	INIT_DELAYED_WORK(&ddata->detect_qc_dwork, get_qc_charger_type_func_work);
-	INIT_DELAYED_WORK(&ddata->mmi_hvdcp_detect_dwork, mmi_start_hvdcp_detect_work);
 	platform_set_drvdata(pdev, ddata);
 
 	ret = device_create_file(dev, &dev_attr_shipping_mode);
@@ -4605,7 +4592,6 @@ static int mt6375_chg_remove(struct platform_device *pdev)
 
 	mt_dbg(&pdev->dev, "%s: entry. 6375 charger remove now.\n", __func__);
 	if (ddata) {
-		cancel_delayed_work_sync(&ddata->mmi_hvdcp_detect_dwork);
 		cancel_delayed_work_sync(&ddata->detect_qc_dwork);
 		charger_device_unregister(ddata->chgdev);
 		device_remove_file(ddata->dev, &dev_attr_shipping_mode);
