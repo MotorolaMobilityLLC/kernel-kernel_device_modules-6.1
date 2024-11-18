@@ -43,6 +43,9 @@
 	gpio_keys: gpio-keys {
 		compatible = "gpio-keys";
 	};
+	hall_phone_case_detect: hall_phone_case_detect {
+		compatible = "hall,hall_phone_case_detect";
+	};
 };
 
 &mt6375_typec {
