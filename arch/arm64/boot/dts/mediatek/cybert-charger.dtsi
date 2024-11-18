@@ -32,18 +32,6 @@
                         pinmux = <PINMUX_GPIO61__FUNC_GPIO61>;
                         output-low;
                 };
-		wls_hall_int1 {
-                        pinmux = <PINMUX_GPIO1__FUNC_GPIO1>;
-                        input-enable;
-                        bias-disable;
-                        //bias-disable;
-                };
-		wls_hall_int2 {
-                        pinmux = <PINMUX_GPIO26__FUNC_GPIO26>;
-                        input-enable;
-                        bias-disable;
-                        //bias-disable;
-                };
        };
 
         mmi_control_wls_default: mmi_control_wls_default {
