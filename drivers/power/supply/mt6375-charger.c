@@ -154,6 +154,8 @@ enum mt6375_chg_reg_field {
 	F_DM_DET_EN, F_DP_DET_EN, F_DPDM_SW_VCP_EN, F_MANUAL_MODE,
 	/* MT6375_REG_DPDM_CTRL2 */
 	F_DM_LDO_VSEL, F_DM_LDO_EN, F_DP_LDO_VSEL, F_DP_LDO_EN,
+	/* MT6375_REG_DPDM_CTRL3 */
+	F_DP_DIS_REN, F_DM_DIS_REN, F_DP_DIS_RSEL, F_DM_DIS_RSEL,
 	/* MT6375_REG_DPDM_CTRL4 */
 	F_DP_PULL_RSEL, F_DP_PULL_REN, F_DP_PULL_ISEL, F_DP_PULL_IEN,
 	/* MT6375_REG_DPDM_CTRL5 */
@@ -509,6 +511,10 @@ static const struct mt6375_chg_field mt6375_chg_fields[F_MAX] = {
 	MT6375_CHG_FIELD(F_DM_LDO_EN, MT6375_REG_DPDM_CTRL2, 3, 3),
 	MT6375_CHG_FIELD(F_DP_LDO_VSEL, MT6375_REG_DPDM_CTRL2, 4, 6),
 	MT6375_CHG_FIELD(F_DP_LDO_EN, MT6375_REG_DPDM_CTRL2, 7, 7),
+	MT6375_CHG_FIELD(F_DP_DIS_REN, MT6375_REG_DPDM_CTRL3, 5, 5),
+	MT6375_CHG_FIELD(F_DP_DIS_RSEL, MT6375_REG_DPDM_CTRL3, 4, 4),
+	MT6375_CHG_FIELD(F_DM_DIS_REN, MT6375_REG_DPDM_CTRL3, 1, 1),
+	MT6375_CHG_FIELD(F_DM_DIS_RSEL, MT6375_REG_DPDM_CTRL3, 0, 0),
 	MT6375_CHG_FIELD(F_DP_PULL_ISEL, MT6375_REG_DPDM_CTRL4, 2, 2),
 	MT6375_CHG_FIELD(F_DP_PULL_IEN, MT6375_REG_DPDM_CTRL4, 3, 3),
 	MT6375_CHG_FIELD(F_DP_PULL_RSEL, MT6375_REG_DPDM_CTRL4, 6, 6),
@@ -2692,14 +2698,18 @@ static int mmi_dpdm_manual_mode_enable(struct mt6375_chg_data *ddata, bool enabl
 	} settings[] = {
 		{ F_MANUAL_MODE, 1 },
 		{ F_DPDM_SW_VCP_EN, 1 },
+		{ F_DP_LDO_VSEL, 600 },
+		{ F_DP_LDO_EN, 0 },
 		{ F_DM_LDO_VSEL, 600 },
 		{ F_DM_LDO_EN, 0 },
-		{ F_DP_LDO_VSEL, 3300 },
-		{ F_DP_LDO_EN, 1 },
 		{ F_DP_PULL_ISEL, 1 },
 		{ F_DP_PULL_IEN, 1 },
 		{ F_DM_PULL_ISEL, 1 },
 		{ F_DM_PULL_IEN, 1 },
+		{ F_DP_DIS_RSEL, 0},
+		{ F_DM_DIS_RSEL, 0},
+		{ F_DP_DIS_REN, 1},
+		{ F_DM_DIS_REN, 1},
 	};
 
 	pr_info("HVDCP: dpdm manual mode %s\n", enable? "enable":"disable");
@@ -2714,7 +2724,19 @@ static int mmi_dpdm_manual_mode_enable(struct mt6375_chg_data *ddata, bool enabl
 			}
 		}
 
-		msleep(100);//need tunning
+		msleep(500);
+
+		ret = mt6375_chg_field_set(ddata, F_DP_DIS_REN, 0);
+		if (ret < 0) {
+			pr_err("HVDCP: dp discharge resistor disable failed (%d)\n", ret);
+			return ret;
+		}
+
+		ret = mt6375_chg_field_set(ddata, F_DM_DIS_REN, 0);
+		if (ret < 0) {
+			pr_err("HVDCP: dm discharge resistor disable failed (%d)\n", ret);
+			return ret;
+		}
 
 	} else {
 		for (i = 0; i < ARRAY_SIZE(settings); i++) {
@@ -2750,6 +2772,10 @@ static int mmi_detected_qc20_hvdcp(struct mt6375_chg_data * ddata, int *charger_
 
 	/*dp and dm connected,dp 0.6V dm 0.6V*/
 	ret = mt6375_chg_field_set(ddata, F_DP_LDO_VSEL, 600); //dp 0.6V
+	if (ret)
+		return ret;
+
+	ret = mt6375_chg_field_set(ddata, F_DP_LDO_EN, 1);
 	if (ret)
 		return ret;
 
