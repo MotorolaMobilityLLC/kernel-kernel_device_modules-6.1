@@ -138,6 +138,13 @@ config ENABLE_FTS_PALM_CANCEL
 	help
 		Say Y here if support touch palm cancel feature.
 
+config ENABLE_FTS_PALM_CANCEL_BY_ID
+
+	bool "Support touch palm cancel by ID feature"
+	help
+		Say Y here if support report touch palm cancel by ID feature.
+
+
 config INPUT_FOCALTECH_V3_MMI_ENABLE_DOUBLE_TAP
 
 	bool "Support tap sensor"
