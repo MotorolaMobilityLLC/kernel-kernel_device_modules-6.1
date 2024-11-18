@@ -5146,13 +5146,24 @@ int mtk_dsi_esd_cmp(struct mtk_ddp_comp *comp, void *handle, void *ptr)
 			if (lcm_esd_tb->mask_list[j])
 				chk_val[j] = chk_val[j] & lcm_esd_tb->mask_list[j];
 
-			if (chk_val[j] == lcm_esd_tb->para_list[j]) {
-				ret = 0;
+			if (dsi->doze_enabled) {
+				if (chk_val[j] == lcm_esd_tb->para_list_aod[j]) {
+					ret = 0;
+				} else {
+					DDPPR_ERR("[DSI]cmp fail-aod:read(0x%x)!=expect(0x%x)\n",
+						  chk_val[j], lcm_esd_tb->para_list_aod[j]);
+					ret = -1;
+					return ret;
+				}
 			} else {
-				DDPPR_ERR("[DSI]cmp fail:read(0x%x)!=expect(0x%x)\n",
-					  chk_val[j], lcm_esd_tb->para_list[j]);
-				ret = -1;
-				return ret;
+				if (chk_val[j] == lcm_esd_tb->para_list[j]) {
+					ret = 0;
+				} else {
+					DDPPR_ERR("[DSI]cmp fail:read(0x%x)!=expect(0x%x)\n",
+						  chk_val[j], lcm_esd_tb->para_list[j]);
+					ret = -1;
+					return ret;
+				}
 			}
 		}
 	}
