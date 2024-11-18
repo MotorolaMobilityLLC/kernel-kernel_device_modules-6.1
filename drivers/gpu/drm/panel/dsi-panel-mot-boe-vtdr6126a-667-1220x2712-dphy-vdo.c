@@ -1303,12 +1303,13 @@ static int panel_doze_disable(struct drm_panel *panel, void *dsi, dcs_write_gce 
 		pTable = &aod_disable_cmd[i];
 		pr_info("%s: para: 0x%x , count %d\n", __func__, pTable->para_list[0], pTable->count);
 		cb(dsi, handle, pTable->para_list, pTable->count);
+		if (i==0) usleep_range(50 * 1000, 51 * 1000);
 	}
 
 	atomic_set(&ctx->doze_enable, 0);
 	atomic_set(&ctx->current_aod_y_start, AOD_Y_START_MIN);
 
-	usleep_range(90 * 1000, 91 * 1000);
+	usleep_range(40 * 1000, 41 * 1000);
 
 	return 0;
 }
