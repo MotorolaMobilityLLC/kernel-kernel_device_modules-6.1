@@ -19,6 +19,7 @@
 #include <linux/of_graph.h>
 #include <linux/platform_device.h>
 #include "../mediatek/mediatek_v2/mtk_corner_pattern/nt37801_cmd_120hz_rc.h"
+#include "dsi-panel-mot-tm-nt37706-667-1220x2712-vdo-lhbm-alpha.h"
 #define CONFIG_MTK_PANEL_EXT
 #if defined(CONFIG_MTK_PANEL_EXT)
 #include "../mediatek/mediatek_v2/mtk_panel_ext.h"
@@ -73,6 +74,7 @@ enum panel_version{
 
 static enum RES_SWITCH_TYPE res_switch_type = RES_SWITCH_NO_USE;
 static int current_fps = 60;
+static struct lcm *g_ctx = NULL;
 
 unsigned int nt37801_wqhs_dsi_cmd_120hz_dphy_buf_thresh[14] = {
 	896, 1792, 2688, 3584, 4480, 5376, 6272, 6720, 7168, 7616, 7744, 7872, 8000, 8064};
@@ -527,6 +529,7 @@ static int panel_ata_check(struct drm_panel *panel)
 static int lcm_setbacklight_cmdq(void *dsi, dcs_write_gce cb,
 	void *handle, unsigned int level)
 {
+	struct lcm *ctx = g_ctx;
 	char bl_tb[] = {0x51, 0x3F, 0xff};
 
 	printk("%s backlight level = %d  \n",__func__,level);
@@ -535,8 +538,9 @@ static int lcm_setbacklight_cmdq(void *dsi, dcs_write_gce cb,
 	if (!cb)
 		return -1;
 	cb(dsi, handle, bl_tb, ARRAY_SIZE(bl_tb));
-	/*if (!level)
-		atomic_set(&ctx->hbm_mode, 0);*/
+	atomic_set(&ctx->current_bl, level);
+	if (!level)
+		atomic_set(&ctx->hbm_mode, 0);
 	return 0;
 }
 static struct mtk_panel_params ext_params = {
@@ -923,99 +927,75 @@ static int mode_switch(struct drm_panel *panel,
 	return ret;
 }
 
-static struct mtk_panel_para_table panel_lhbm_on_120hz[] = {
-	{28, {0xA9, 0x01, 0x00, 0x87, 0x00, 0x00, 0x25, 0x02, 0x00, 0xDF, 0x31, 0x32, 0x00, 0x1A, 0x02, 0x00, 0xDF, 0x38, 0x39, 0x0A, 0xCE, 0x01, 0x00, 0x51, 0x09, 0x0A, 0xBE, 0x80}},
-};
-
-static struct mtk_panel_para_table panel_lhbm_on_90hz[] = {
-	{28, {0xA9, 0x01, 0x00, 0x87, 0x00, 0x00, 0x25, 0x02, 0x00, 0xDF, 0x31, 0x32, 0x01, 0x1A, 0x02, 0x00, 0xDF, 0x38, 0x39, 0x0E, 0x68, 0x01, 0x00, 0x51, 0x09, 0x0A, 0xBE, 0x80}},
-};
-
-static struct mtk_panel_para_table panel_lhbm_on_60hz[] = {
-	{28, {0xA9, 0x01, 0x00, 0x87, 0x00, 0x00, 0x25, 0x02, 0x00, 0xDF, 0x31, 0x32, 0x02, 0x1A, 0x02, 0x00, 0xDF, 0x38, 0x39, 0x15, 0x9C, 0x01, 0x00, 0x51, 0x09, 0x0A, 0xBE, 0x80}},
+static struct mtk_panel_para_table panel_lhbm_on[] = {
+	{16, {0xA9,0x01,0x00,0x87,0x00,0x02,0x25,0x3F,0xF0,0x01,0x00,0x51,0x09,0x0A,0x8F,0xA0}},
 };
 
 static struct mtk_panel_para_table panel_lhbm_off[] = {
-	{14, {0xA9, 0x01, 0x00, 0x87, 0x00, 0x00, 0x20, 0x01, 0x00, 0x51, 0x09, 0x0A, 0x00, 0x00}},
+	{14, {0xA9,0x01,0x00,0x87,0x00,0x00,0x20,0x01,0x00,0x51,0x09,0x0A,0x00,0x00}},
 };
+
+static void set_lhbm_alpha(unsigned int bl_level)
+{
+	struct mtk_panel_para_table *pTable = &panel_lhbm_on[0];
+	unsigned int alpha = 0;
+	unsigned int lhbm_alpha_index = bl_level;
+
+	if (bl_level == 0)
+		lhbm_alpha_index = 0;
+	alpha = lhbm_alpha[lhbm_alpha_index];
+
+	pTable->para_list[7] = (alpha >> 8) & 0xFF;
+	pTable->para_list[8] = alpha & 0xFF;
+	pr_info("%s: backlight %d alpha %d(0x%x, 0x%x)\n", __func__, bl_level, alpha, pTable->para_list[13], pTable->para_list[14]);
+}
 
 static int panel_lhbm_set_cmdq(void *dsi, dcs_grp_write_gce cb, void *handle, uint32_t on, uint32_t bl_level, uint32_t fps)
 {
-	struct mtk_panel_para_table *pTable = NULL;
 	unsigned int para_count = 0;
+	struct mtk_panel_para_table *pTable;
 
-	if (on)
-	{
-		switch (fps)
-		{
-		case 60:
-			para_count = sizeof(panel_lhbm_on_60hz) / sizeof(struct mtk_panel_para_table);
-			pTable = panel_lhbm_on_60hz;
-			break;
-		case 90:
-			para_count = sizeof(panel_lhbm_on_90hz) / sizeof(struct mtk_panel_para_table);
-			pTable = panel_lhbm_on_90hz;
-			break;
-		case 120:
-		default:
-			para_count = sizeof(panel_lhbm_on_120hz) / sizeof(struct mtk_panel_para_table);
-			pTable = panel_lhbm_on_120hz;
-			break;
-		}
-		//set_lhbm_alpha(bl_level, pTable);
-	}
-	else
-	{
+	if (on) {
+		set_lhbm_alpha(bl_level);
+		para_count = sizeof(panel_lhbm_on) / sizeof(struct mtk_panel_para_table);
+		pTable = panel_lhbm_on;
+	} else {
 		para_count = sizeof(panel_lhbm_off) / sizeof(struct mtk_panel_para_table);
 		pTable = panel_lhbm_off;
-		if (bl_level > APL_THRESHOLD)
-		{
-			pTable->para_list[1] = (APL_THRESHOLD >> 8) & 0xFF;
-			pTable->para_list[2] = APL_THRESHOLD & 0xFF;
-		}
-		else
-		{
-			pTable->para_list[1] = (bl_level >> 8) & 0xFF;
-			pTable->para_list[2] = bl_level & 0xFF;
-		}
-		pr_info("%s restore bl to %u ", __func__, bl_level);
 	}
 	cb(dsi, handle, pTable, para_count);
 	return 0;
+
 }
 
 static int panel_hbm_set_cmdq(struct lcm *ctx, void *dsi, dcs_grp_write_gce cb, void *handle, uint32_t hbm_state)
 {
 	struct mtk_panel_para_table hbm_on_table = {3, {0x51, 0x0F, 0xFF}};
-	unsigned int level = 0;
-	unsigned int fps = 120;
-	fps = atomic_read(&ctx->current_fps);
-	level = atomic_read(&ctx->current_bl);
-
+	unsigned int level = atomic_read(&ctx->current_bl);
+	unsigned int fps = atomic_read(&ctx->current_fps);
 	if (hbm_state > 2) return -1;
-
-	pr_info("%s current_fps = %d hbm_state %d", __func__, atomic_read(&ctx->current_fps), hbm_state);
 
 	switch (hbm_state)
 	{
 		case 0:
 			if (ctx->lhbm_en){
-				panel_lhbm_set_cmdq(dsi, cb, handle, 0, level, fps);
+				panel_lhbm_set_cmdq(dsi, cb, handle, 0, level,  fps);
 			}
 			break;
 		case 1:
 			if (ctx->lhbm_en) {
-				panel_lhbm_set_cmdq(dsi, cb, handle, 0, level, fps);
+				panel_lhbm_set_cmdq(dsi, cb, handle, 0, level,  fps);
+
 			} else {
 				cb(dsi, handle, &hbm_on_table, 1);
 			}
 			break;
 		case 2:
 			if (ctx->lhbm_en){
-				panel_lhbm_set_cmdq(dsi, cb, handle, 1, level, fps);
-			} else {
-				cb(dsi, handle, &hbm_on_table, 1);
+				panel_lhbm_set_cmdq(dsi, cb, handle, 1, level,  fps);
 			}
+			else
+				cb(dsi, handle, &hbm_on_table, 1);
 			break;
 		default:
 			break;
@@ -1225,6 +1205,7 @@ static int lcm_probe(struct mipi_dsi_device *dsi)
 	if (!ctx)
 		return -ENOMEM;
 	mipi_dsi_set_drvdata(dsi, ctx);
+	g_ctx = ctx;
 	ctx->dev = dev;
 	dsi->lanes = 4;
 	dsi->format = MIPI_DSI_FMT_RGB888;
