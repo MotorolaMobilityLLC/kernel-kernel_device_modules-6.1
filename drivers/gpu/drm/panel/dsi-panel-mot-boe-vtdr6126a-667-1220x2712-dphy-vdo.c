@@ -27,8 +27,8 @@
 
 #define AOD_AREA_IZE 1416
 #define AOD_Y_START_MIN 0
-#define AOD_Y_START_MAX 1416
-#define AOD_Y_START_STEP_MIN 12
+#define AOD_Y_START_MAX 378
+#define AOD_Y_START_STEP_MIN 4
 
 #define CONFIG_MTK_PANEL_EXT
 #if defined(CONFIG_MTK_PANEL_EXT)
@@ -221,7 +221,7 @@ static void lcm_panel_init(struct lcm *ctx)
 	lcm_dcs_write_seq_static(ctx, 0xff, 0x5a, 0x00);
 
 	lcm_dcs_write_seq_static(ctx, 0x2A, 0x00, 0x00, 0x04, 0xC3);
-	lcm_dcs_write_seq_static(ctx, 0x2B, 0x00, 0x00, 0x05, 0x7b);
+	lcm_dcs_write_seq_static(ctx, 0x2B, 0x00, 0x00, 0x05, 0x87);
 
 	lcm_dcs_write_seq_static(ctx, 0x11);
 	usleep_range(100 * 1000, 101 * 1000);
@@ -1181,7 +1181,7 @@ static int panel_ext_powerdown(struct drm_panel *panel)
 	return 0;
 }
 
-static char aod_area_cmd[] ={0x2B, 0x00, 0x00, 0x05, 0x7B};
+static char aod_area_cmd[] ={0x2B, 0x00, 0x00, 0x05, 0x87};
 
 static int panel_doze_area(struct drm_panel *panel,
 	void *dsi, dcs_write_gce cb, void *handle)
@@ -1279,7 +1279,7 @@ static int panel_doze_enable(struct drm_panel *panel, void *dsi, dcs_write_gce c
 static struct mtk_panel_para_table aod_disable_cmd[] = {
 		{1, {0x38}},
 		{2, {0x6f, 0x01}},
-		{5, {0x2B, 0x00, 0x00, 0x05, 0x7B}},
+		{5, {0x2B, 0x00, 0x00, 0x05, 0x87}},
 	};
 
 static int panel_doze_disable(struct drm_panel *panel, void *dsi, dcs_write_gce cb,
