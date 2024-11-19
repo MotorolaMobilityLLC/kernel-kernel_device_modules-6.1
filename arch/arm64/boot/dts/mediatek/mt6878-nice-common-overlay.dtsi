@@ -102,6 +102,23 @@
 	regulator-max-microvolt = <2100000>;
 };
 
+&pio {
+        i2c_pins_10: i2c10{
+             pins_cmd_dat {
+             pinmux = <PINMUX_GPIO146__FUNC_SDA10>,
+                 <PINMUX_GPIO145__FUNC_SCL10>;
+             mediatek,drive-strength-adv = <5>;/*EH[2:0]*/
+             };
+        };
+};
+
+
+&i2c10 {
+        pinctrl-names = "default";
+	pinctrl-0 = <&i2c_pins_10>;
+	status = "okay";
+};
+
 &i2c10 {
 	clock-frequency = <400000>;
 	status = "ok";
