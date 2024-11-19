@@ -231,8 +231,8 @@ static const struct snd_soc_dapm_route spkr_amp_routes[] = {
 //	{SPKR_AMP_W_NAME, NULL, "HPHR"},
 	{SPKR_AMP_W_NAME, NULL, "Receiver"}, /* mtk mt6539 */
 	{SPKR_AMP_W_NAME, NULL, "LINEOUT L"},
-//	{SPKR_AMP_W_NAME, NULL, "Headphone L Ext Spk Amp"},
-//	{SPKR_AMP_W_NAME, NULL, "Headphone R Ext Spk Amp"},
+	{SPKR_AMP_W_NAME, NULL, "Headphone L Ext Spk Amp"},
+	{SPKR_AMP_W_NAME, NULL, "Headphone R Ext Spk Amp"},
 };
 
 static int spkr_amp_init_controls(struct snd_soc_card *card, int id)
