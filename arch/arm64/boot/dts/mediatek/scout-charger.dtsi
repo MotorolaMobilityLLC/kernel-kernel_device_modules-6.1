@@ -235,6 +235,7 @@
 		latest_fw_version = [01 02 08 52 32];
 		batt_serialnums = "ATLRM52NVT","COSRM52COS","ATLRM55NVT","LWNRM55SWD";
 		batt_versions = /bits/ 16 <02>;
+		nfg,support_ifc;
 	};
 
 	bq25960_master:bq25960-master@6b {
