@@ -91,6 +91,12 @@ config GTP_SPI_PINCTRL
 	help
 		Say Y here if need to adjust SPI mode.
 
+config ENABLE_GTP_PALM_CANCEL_BY_ID
+	bool "Support goodix touch palm cancel by ID feature"
+	help
+		Say Y here if support goodix report touch palm cancel by ID feature.
+
+
 config MTK_PROJECT_NAME
 	string "set project name"
 	help
