@@ -15,13 +15,15 @@
 
 #include "mediatek/mt6897-cybert-common-overlay.dtsi"
 
+#define CYBERT_PRC_RADIO 2
+
 /* Board match root node */
 / {
 	fragment@model {
 		target-path = "/";
 		__overlay__ {
 			mot,model = "cybert";
-			mot,board-id = <0x43 0x9100>;
+			mot,board-id = <(CYBERT_PRC_RADIO << 8 | 0x43) 0x9100>;
 		};
 	};
 };
