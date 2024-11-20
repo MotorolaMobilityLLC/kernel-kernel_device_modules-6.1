@@ -3920,6 +3920,7 @@ static bool mmi_check_vbus_present(struct mtk_charger *info)
 
 #define PPS_6A 6000
 #define MOTO_68W 68000
+#define MOTO_90W 90000
 #define MOTO_125W 125000
 #define PPS_60W 60000
 #define PPS_100W 100000
@@ -3937,6 +3938,10 @@ static int mmi_get_apdo_power(struct mtk_charger *info, bool force)
 		.vcap_max = 11000,
 		.icap_min = 1000,
 	};
+
+	if(info->mmi.pd_pmax_mw >= MOTO_90W){
+		_data.vcap_max = 20000;
+	}
 
 	if (data->vta_max == 0 || data->ita_max == 0 || force == true) {
 		ret = adapter_dev_update_apdo_cap(info->pd_adapter, &_data);
@@ -3956,7 +3961,7 @@ static int mmi_get_apdo_power(struct mtk_charger *info, bool force)
 	pr_info("%s vta_max(%d) ita_max(%d) pmax_mw(%d)\n",
 			__func__, data->vta_max, data->ita_max, pmax_mw);
 
-	if (data->ita_max <= PPS_6A && pmax_mw >= PPS_60W)
+	if (data->ita_max <= PPS_6A && pmax_mw >= PPS_60W && (info->mmi.pd_pmax_mw < MOTO_90W))
 		pmax_mw = PPS_60W;
 
 	if (data->ita_max > PPS_6A &&
