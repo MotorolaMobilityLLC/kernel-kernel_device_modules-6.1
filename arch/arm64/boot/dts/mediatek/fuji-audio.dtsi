@@ -18,28 +18,25 @@
         status = "okay";
         clock-frequency = <400000>;
 
-        aw882xx_smartpa_rcv: aw882xx@34 {
-                compatible = "awinic,aw882xx_smartpa";
-                #sound-dai-cells = <0>;
-                reg = <0x34>;
-                irq-gpio = <&pio 20 0x0>;
-                /*sync-load = <1>;*/
-                sound-channel = <0>; /*0:pri_l 1:pri_r 2:sec_l 3:sec_r*/
-                aw-re-min = <4000>;
-                aw-re-max= <30000>;
-                /*aw-cali-mode = "none";*/
-                status = "okay";
-        };
-        aw882xx_smartpa_spk: aw882xx@35 {
-                compatible = "awinic,aw882xx_smartpa";
+        tfa9864_spk: tfa98xx@35 {
+                compatible = "tfa,tfa98xx";
+                #address-cells = <1>;
+                #size-cells = <0>;
                 #sound-dai-cells = <0>;
                 reg = <0x35>;
-                irq-gpio = <&pio 19 0x0>;
-                /*sync-load = <1>;*/
-                sound-channel = <1>; /*0:pri_l 1:pri_r 2:sec_l 3:sec_r*/
-                aw-re-min = <4000>;
-                aw-re-max= <30000>;
-                /*aw-cali-mode = "none";*/
+                reset-gpio= <&pio 21 0>;
+                reset-polarity=<0>;
+                status = "okay";
+        };
+
+        tfa9864_rcv: tfa98xx@34 {
+                compatible = "tfa,tfa98xx";
+                #address-cells = <1>;
+                #size-cells = <0>;
+                #sound-dai-cells = <0>;
+                reg = <0x34>;
+                reset-gpio= <&pio 22 0>;
+                reset-polarity=<0>;
                 status = "okay";
         };
 };
@@ -47,7 +44,7 @@
 &sound {
         mediatek,spk-i2s = <21 20>;
         mediatek,speaker-codec {
-                sound-dai = <&aw882xx_smartpa_rcv &aw882xx_smartpa_spk>;
+                sound-dai = <&tfa9864_spk &tfa9864_rcv>;
         };
 };
 

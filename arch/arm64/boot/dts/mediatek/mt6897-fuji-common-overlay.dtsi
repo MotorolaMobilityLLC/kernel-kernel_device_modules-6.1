@@ -12,16 +12,12 @@
 
 #include "mediatek/mt6897-moto-common-overlay-single-panel.dtsi"
 
-
-//#include "mediatek/cust_eqg_camera_v4l2.dtsi"
-//#include "mediatek/eqg-charger.dtsi"
-//#include "mediatek/eqg-fps.dtsi"
-//#include "mediatek/eqg-ntc.dtsi"
-#include "mediatek/eqg-display.dtsi"
-//#include "mediatek/eqg-touch.dtsi"
-#include "mediatek/eqg-connfem.dtsi"
-#include "mediatek/eqg-qorvo-uwb.dtsi"
-#include "mediatek/eqg-audio.dtsi"
+#include "mediatek/cybert-charger.dtsi"
+#include "mediatek/cybert-fps.dtsi"
+#include "mediatek/cybert-ntc.dtsi"
+#include "mediatek/cybert-display.dtsi"
+#include "mediatek/cybert-touch.dtsi"
+#include "mediatek/cybert-audio.dtsi"
 
 &rt5133 {
 	status = "disabled";
@@ -33,6 +29,56 @@
 
 &mmc1 {
 	status = "disabled";
+};
+
+&pio {
+	nfc_spi_cs_mode_spi: nfc_spi_cs_mode_spi {
+		pins_cmd_dat {
+			pinmux = <PINMUX_GPIO28__FUNC_SPI3_CSB>;
+			bias-disable;
+		};
+	};
+
+	nfc_spi_cs_mode_idle: nfc_spi_cs_mode_idle {
+		pins_cmd_dat {
+			pinmux = <PINMUX_GPIO28__FUNC_GPIO28>;
+			bias-disable;
+		};
+	};
+};
+
+
+&spi3 {
+	st54spi: st54spi@0 {
+		compatible = "st,st54spi";
+		reg = <0>;
+		spi-max-frequency = <1000000>;
+		gpio-power_nreset = <36>;
+		gpio-power_nreset-std = <&pio 36 0x00>;
+		power_mode = "ST54J";
+		bootmode = <&chosen>;
+		pinctrl-names = "pinctrl_state_mode_spi",
+				"pinctrl_state_mode_idle";
+		pinctrl-0 = <&nfc_spi_cs_mode_spi>;
+		pinctrl-1 = <&nfc_spi_cs_mode_idle>;
+		status = "okay";
+	};
+};
+
+&i2c3 {
+	status = "ok";
+	clock-frequency = <400000>;
+	st21nfc: st21nfc@0x08 {
+		compatible = "st,st21nfc";
+		reg = <0x08>;
+		interrupt-parent = <&pio>;
+		interrupts = <37 0>;
+		bootmode = <&chosen>;
+		reset-gpios = <&pio 38 0x00>;
+		irq-gpios = <&pio 37 0x00>;
+		clkreq-gpios = <&pio 84 0x00>;
+		status = "ok";
+	};
 };
 
 &pio {
@@ -53,11 +99,35 @@
 			bias-pull-up;
 		};
 	};
+	gpio1_input_pull_up: gpio1_input_pull_up {
+		pins_cmd_dat {
+			pinmux = <PINMUX_GPIO24__FUNC_GPIO24>;
+			slew-rate = <0>;
+			bias-pull-up = <00>;
+		};
+	};
 };
 
 &therm_intf {
 	/*Vsensor name should be CASE DIFFERENT with the name in config file*/
 	mmi,temperature-names = "BACK_TEMP", "FRONT_TEMP";/*for "back_temp" in config file*/
+};
+
+&rt6160_bus5{
+	status = "disabled";
+};
+&i2c5 {
+	hl7603@77 {
+		status = "ok";
+		compatible = "hl7603";
+		reg = <0x77>;
+		/* hl7603_vout_voltage = <0x0B>; //3.4v */
+	};
+	sgm6211@75 {
+		status = "ok";
+		compatible = "sgm62110";
+		reg = <0x75>;
+	};
 };
 
 &i2c0 {
@@ -82,69 +152,77 @@
 		Semtech,ref-phases-b = <6>;
 		Semtech,ref-phases-c = <0xff>;
 		Semtech,button-flag = <0x0f>;
-		Semtech,reg-num = <61>;
+		Semtech,reg-num = <69>;
 		Semtech,reg-init = <
-			0x8024 0x00007F00
-			0x4004 0x00000070
-			0x4008 0x00000008
-			0x8020 0x00000032
-			0x8028 0x0000085E
-			0x8034 0x0000086E
-			0x8040 0x0000086E
-			0x804C 0x0000085E
-			0x8058 0x0000086E
-			0x8064 0x0000086E
-			0x8070 0x0000086E
-			0x807C 0x0000085E
-			0x8030 0x00924925
-			0x803C 0x00B24924
-			0x8048 0x0092C924
-			0x8054 0x00964924
-			0x8060 0x0092492C
-			0x806C 0x00925924
-			0x8078 0x00924964
-			0x8084 0x00FFFFFF
-			0x8098 0x00006E37
-			0x80B8 0x00003232
-			0x80D8 0x00006037
-			0x80F8 0x00003737
-			0x8118 0x000000FF
-			0x8138 0x000000FF
-			0x8158 0x000000FF
-			0x8178 0x000000C8
-			0x80A0 0x1E1E0001
-			0x80C0 0x30300000
-			0x80E0 0x20200002
-			0x8100 0x20200003
-			0x8188 0x08000014
-			0x818C 0x08000015
-			0x8190 0x08000016
-			0x8090 0x54B45000
-			0x80B0 0x54B85000
-			0x80D0 0x54B45000
-			0x80F0 0x54B45000
-			0x8110 0x00005300
-			0x8130 0x00005300
-			0x8150 0x00005300
-			0x8170 0x00005300
-			0x8088 0x00300000
-			0x80A8 0x00300000
-			0x80C8 0x00300000
-			0x80E8 0x00300000
-			0x8108 0x00300000
-			0x8128 0x06300000
-			0x8148 0x06300000
-			0x8168 0x00300000
-			0x808C 0x60200030
-			0x80AC 0x60200030
-			0x80CC 0x60200030
-			0x80EC 0x60200030
-			0x810C 0x60200030
-			0x812C 0x60200030
-			0x814C 0x60200030
-			0x816C 0x60200030
-			0x802C 0x00918246
-			0x8038 0x00510144
+			0x8024 0x7F00
+			0x4004 0x60
+			0x4280 0x0
+			0x8020 0x32
+			0x8028 0x26E
+			0x8034 0x26E
+			0x8040 0x26E
+			0x804C 0x26E
+			0x8058 0x26E
+			0x8064 0x26E
+			0x8070 0x26E
+			0x807C 0x0
+			0x8030 0xFFF9FD
+			0x803C 0xF7F9FF
+			0x8048 0xFEF9FF
+			0x8054 0xBFF9FF
+			0x8060 0xFFF9EF
+			0x806C 0xFFD9FF
+			0x8078 0xF7F97F
+			0x8084 0x0
+			0x8098 0x884E
+			0x80B8 0x704E
+			0x80D8 0x884E
+			0x80F8 0x1F1F
+			0x8118 0x0
+			0x8138 0x0
+			0x8158 0x0
+			0x8178 0x0
+			0x80A0 0x0
+			0x80C0 0x0
+			0x80E0 0x0
+			0x8100 0x0
+			0x8120 0x0
+			0x8140 0x0
+			0x8160 0x0
+			0x8180 0x0
+			0x8188 0x8000014
+			0x818C 0x8000015
+			0x8190 0x8000016
+			0x8194 0x0
+			0x8090 0x0
+			0x80B0 0x0
+			0x80D0 0x0
+			0x80F0 0x0
+			0x8110 0x0
+			0x8130 0x0
+			0x8150 0x0
+			0x8170 0x0
+			0x8088 0x300000
+			0x80A8 0x300000
+			0x80C8 0x300000
+			0x80E8 0x300000
+			0x8108 0x300000
+			0x8128 0x300000
+			0x8148 0x300000
+			0x8168 0x0
+			0x808C 0xE0602218
+			0x80AC 0xE0602218
+			0x80CC 0xE0602218
+			0x80EC 0xE0602218
+			0x810C 0xE0602218
+			0x812C 0xE0600018
+			0x814C 0xE0602318
+			0x816C 0x0
+			0x4280 0xF
+			0x4280 0xF
+			0x4280 0xe
+			0x8024 0x7F7F
+			0x4280 0xe
 		>;
 		status = "okay";
 	};
@@ -172,3 +250,125 @@
 			status = "okay";
 	};
 };
+
+&i2c1 {
+	clock-frequency = <400000>;
+	status = "okay";
+	haptic_hv@5A {
+		status = "okay";
+		compatible = "awinic,haptic_hv";
+		reg = <0x5A>;
+		irq-gpio = <&pio 24 0>;
+		reset-gpio = <&pio 23 0>;
+		pinctrl-names = "irq_active";
+		pinctrl-0 = <&gpio1_input_pull_up>;
+		f0_pre = < 1700 >;
+		mode = /bits/ 8 < 5 >;
+
+		aw8692x_f0_cali_percent = /bits/ 8 < 7 >;
+		aw8692x_gain_bypass = /bits/ 8 < 1 >;
+		aw8692x_cont_drv1_lvl = /bits/ 8 < 0x7F >;
+		aw8692x_cont_lra_vrms = < 1500 >;
+		aw8692x_cont_drv1_time = /bits/ 8 < 0x04 >;
+		aw8692x_cont_drv2_time = /bits/ 8 < 0x66 >;
+		aw8692x_cont_track_margin = /bits/ 8 < 0x0F >;
+		aw8692x_cont_brk_gain = /bits/ 8 < 0x08 >;
+		aw8692x_cont_brk_time = /bits/ 8 < 0x08 >;
+		aw8692x_duration_time = /bits/ 8 < 34 67 101 >;
+		aw8692x_d2s_gain = /bits/ 8 < 0x04 >;
+		aw8692x_trig_config = /bits/ 8 < 0 0 0 1 0 2 0 0
+						 0 0 0 1 0 2 0 0
+						 0 0 0 1 0 2 0 0 >;
+		aw8692x_bst_vol_default = < 10000 >;
+		aw8692x_is_enabled_track_en;
+		/* aw8692x_is_enabled_auto_bst; */
+		/* aw8692x_is_enabled_one_wire; */
+	};
+
+};
+
+&u2port0{
+        mediatek,eye-vrt = <0x65>;
+        mediatek,eye-vrt-host = <0x65>;
+        mediatek,eye-term = <0x64>;
+        mediatek,eye-term-host = <0x64>;
+        mediatek,rev6 = <0xa>;
+        mediatek,rev6-host = <0xa>;
+};
+
+/*vol+/- keys swap*/
+&mt6363keys {
+	home {
+		linux,keycodes = <114>;
+	};
+};
+
+/* KEY GPIO standardization start */
+&pio{
+	aikey_gpio_default:key-default {
+		ai_key_int {
+			pinmux = <PINMUX_GPIO101__FUNC_GPIO101>;
+			input-enable;
+			bias-pull-up;
+		};
+	};
+};
+/* KEY GPIO standardization end */
+&gpio_keys {
+	status = "okay";
+	pinctrl-names = "default";
+	pinctrl-0 = <&aikey_gpio_default>;
+	aikey {
+		label = "AI_key";
+		linux,code = <583>;
+		linux,input-type = <1>;
+		gpios = <&pio 101 1>;
+		wakeup-source;
+		debounce-interval = <30>;
+	};
+};
+
+&low_battery_throttling {
+        thd-volts-l = <
+                3369 3243 3133
+                3772 3412 3277
+                4231 3753 3570>;
+        thd-volts-h = <
+                3469 3369 3243
+                3872 3772 3412
+                4331 4231 3753>;
+        lvsys-thd-volt-l = <3133>;
+        lvsys-thd-volt-h = <3243>;
+};
+
+&cpu_power_throttling {
+        lbat-limit-freq-lv2 = < 1800000  1800000 1800000>;
+        lbat-limit-freq-lv3 = < 1200000  1200000 1200000>;
+};
+
+&gpu_power_throttling {
+        lbat-limit-freq = <1200000 700000 600000>;
+};
+
+&bp_thl {
+        soc-limit-threshold = <5>;
+};
+
+&mt6375_batoc_throttle {
+        status = "disabled";
+};
+
+&md_power_throttling {
+        lbat-max-level = <3>;
+        lbat-reduce-tx-lv1 = <0>;
+        lbat-reduce-tx-lv2 = <0>;
+        lbat-reduce-tx-lv3 = <0>;
+
+        oc-max-level = <2>;
+        oc-reduce-tx-lv1 = <0>;
+        oc-reduce-tx-lv2 = <0>;
+
+        soc-max-level = <1>;
+        soc-reduce-tx-lv1 = <6>;
+};
+
