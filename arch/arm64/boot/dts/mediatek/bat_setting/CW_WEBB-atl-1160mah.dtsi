@@ -1,0 +1,26 @@
+/*
+ * Copyright (C) 2024 Motorola Inc.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 as
+ * published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See http://www.gnu.org/licenses/gpl-2.0.html for more details.
+ */
+webb-atl-1160mah {
+	serialnum = "SB18E56671";
+	fcc_design = <1160>;
+	config_profile_info = [ 46 00 00 00 00 00 00 00
+				B8 B2 C2 C9 BB B3 BC 97
+				7F FF FA B0 97 7C 63 51
+				47 45 42 83 4F E4 87 FF
+				DB C6 CB D0 D7 DF E7 DC
+				D8 D9 CF CF CB C9 B8 D3
+				CE DA CF DB F6 FF FF FF
+				20 00 AB 10 00 80 AE 00
+				00 00 64 25 A3 DA 00 00
+				00 00 00 00 00 00 00 6D];
+};
