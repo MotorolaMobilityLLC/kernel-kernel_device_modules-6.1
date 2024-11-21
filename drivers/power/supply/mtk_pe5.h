@@ -90,6 +90,12 @@ enum pe50_dvchg_role {
 	PE50_DVCHG_MAX,
 };
 
+enum mmi_convert_ratio {
+	MMI_RATIO_UNKNOW = 0,
+	MMI_RATIO_LOW,
+	MMI_RATIO_HIGH,
+};
+
 enum pe50_cp_op_mode {
 	CP_2_1_MODE = 0,
 	CP_3_1_MODE,
@@ -197,6 +203,10 @@ struct pe50_algo_data {
 	int mmi_max_ibat;
 	int mmi_hardreset_cnt;
 	int mmi_hardreset_max_cnt;
+
+	enum mmi_convert_ratio mmi_convert_ratio_state;
+	int mmi_startup_convert_ratio;
+
 	enum pe50_cp_op_mode cp_op_mode_curr;
 };
 

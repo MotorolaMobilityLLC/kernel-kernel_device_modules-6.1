@@ -226,11 +226,11 @@ static inline u32 pe50_vout2vbus(struct pe50_algo_info *info, u32 vout)
 	if(data->cp_op_mode_curr == CP_4_1_MODE) {
 		ratio = data->is_dvchg_en[PE50_DVCHG_MASTER] ?
 		PE50_DVCHG_CHARGING_CONVERT_RATIO_DIV4:
-		PE50_DVCHG_STARTUP_CONVERT_RATIO_DIV4;
+		data->mmi_startup_convert_ratio;
 	}else {
 		ratio = data->is_dvchg_en[PE50_DVCHG_MASTER] ?
 		PE50_DVCHG_CHARGING_CONVERT_RATIO :
-		PE50_DVCHG_STARTUP_CONVERT_RATIO;
+		data->mmi_startup_convert_ratio;
 	}
 	return percent(vout, ratio);
 }
@@ -1266,6 +1266,11 @@ static inline int pe50_start(struct pe50_algo_info *info)
 
 	PE50_DBG("++\n");
 
+	if (data->run_once) {
+		PE50_ERR("already run PE5.0 once\n");
+		return -EINVAL;
+	}
+
 	/* disable charger */
 	ret = pe50_hal_enable_charging(info->alg, CHG1, false);
 	if (ret < 0) {
@@ -1431,9 +1436,17 @@ static int pe50_adjust_vta_with_ta_cv(struct pe50_algo_info *info)
 			PE50_ERR("get vbushigherr fail(%d)\n", ret);
 			return ret;
 		}
-		PE50_INFO("vbuslowerr (%d), vbushigherr (%d)\n", vbuslow, vbushigh);
+
+		PE50_INFO("CP_INIT:vbuslowerr (%d), vbushigherr (%d)\n", vbuslow, vbushigh);
 		if (!vbuslow && !vbushigh)
 			break;
+
+		if (vbuslow) {
+			data->mmi_convert_ratio_state = MMI_RATIO_LOW;
+		} else if (vbushigh) {
+			data->mmi_convert_ratio_state = MMI_RATIO_HIGH;
+		}
+		PE50_INFO("CP_INIT:reset convert_ratio_state (%d)\n", data->mmi_convert_ratio_state);
 
 		ita_gap_per_vstep = data->ita_gap_per_vstep > 0 ?
 				    data->ita_gap_per_vstep :
@@ -1650,6 +1663,7 @@ static int pe50_algo_init_with_ta_cv(struct pe50_algo_info *info)
 		.reset_ta = true,
 		.hardreset_ta = false,
 	};
+	int retry_count = 0;
 
 	PE50_DBG("++\n");
 
@@ -1703,24 +1717,31 @@ static int pe50_algo_init_with_ta_cv(struct pe50_algo_info *info)
 		PE50_ERR("sync ta setting fail(%d)\n", ret);
 		goto err;
 	}
+
+	PE50_INFO("get curr cp op mode before:%d, adpt_mv:%d, adpt_ia:%d, cp_support_mode:%d\n", data->cp_op_mode_curr, auth_data->vta_max, auth_data->ita_max, desc->charge_pump_op_mode_max_support);
+	if(desc->charge_pump_op_mode_max_support == CP_4_1_MODE && auth_data->vta_max >= VADPT_PPS_D4CP_MAX_VOLTAGE &&
+		auth_data->ita_max >= VADPT_PPS_D4CP_THRE_CURRENT ) {
+		data->cp_op_mode_curr = CP_4_1_MODE;
+		data->mmi_startup_convert_ratio = PE50_DVCHG_STARTUP_CONVERT_RATIO_DIV4;
+		data->mmi_convert_ratio_state = MMI_RATIO_UNKNOW;
+	}else {
+		data->cp_op_mode_curr = CP_2_1_MODE;
+		data->mmi_startup_convert_ratio = PE50_DVCHG_STARTUP_CONVERT_RATIO;
+		data->mmi_convert_ratio_state = MMI_RATIO_UNKNOW;
+	}
+	pe5_set_operating_mode(info, data->cp_op_mode_curr);
+
+	PE50_INFO("get curr cp op mode after:%d\n", data->cp_op_mode_curr);
+
+MMI_RETRY:
 	ret = pe50_get_adc(info, PE50_ADCCHAN_VOUT, &vout);
 	if (ret < 0) {
 		PE50_ERR("get vout fail(%d)\n", ret);
 		goto err;
 	}
 
-	PE50_INFO("get curr cp op mode before:%d, adpt_mv:%d, adpt_ia:%d, cp_support_mode:%d\n", data->cp_op_mode_curr, auth_data->vta_max, auth_data->ita_max, desc->charge_pump_op_mode_max_support);
-	if(desc->charge_pump_op_mode_max_support == CP_4_1_MODE && auth_data->vta_max >= VADPT_PPS_D4CP_MAX_VOLTAGE &&
-		auth_data->ita_max >= VADPT_PPS_D4CP_THRE_CURRENT ) {
-		data->cp_op_mode_curr = CP_4_1_MODE;
-	}else {
-		data->cp_op_mode_curr = CP_2_1_MODE;
-	}
-	pe5_set_operating_mode(info, data->cp_op_mode_curr);
-
-	PE50_INFO("get curr cp op mode after:%d\n", data->cp_op_mode_curr);
-
-	PE50_INFO("charger pump vout (%d)\n",vout);
+	PE50_INFO("CP_INIT:charger pump vout (%d)\n",vout);
+	PE50_INFO("CP_INIT:mmi_startup_convert_ratio (%d)\n",data->mmi_startup_convert_ratio);
 	/* Adjust VBUS to make sure DVCHG can be turned on */
 	ret = pe50_set_ta_cap_cv(info, pe50_vout2vbus(info, vout),
 				 data->idvchg_ss_init);
@@ -1728,6 +1749,17 @@ static int pe50_algo_init_with_ta_cv(struct pe50_algo_info *info)
 		PE50_ERR("set ta cap fail(%d)\n", ret);
 		goto err;
 	}
+
+	/*only check once*/
+	if (data->mmi_convert_ratio_state == MMI_RATIO_UNKNOW) {
+		if (data->vta_measure > data->vta_setting) {
+			data->mmi_convert_ratio_state = MMI_RATIO_HIGH;
+		} else {
+			data->mmi_convert_ratio_state = MMI_RATIO_LOW;
+		}
+		PE50_INFO("CP_INIT: convert_ratio_state (%d)\n",data->mmi_convert_ratio_state);
+	}
+
 	ret = pe50_adjust_vta_with_ta_cv(info);
 	if (ret < 0) {
 		PE50_ERR("adjust vta fail(%d)\n", ret);
@@ -1776,8 +1808,47 @@ static int pe50_algo_init_with_ta_cv(struct pe50_algo_info *info)
 		PE50_ERR("en dvchg fail\n");
 		goto err;
 	}
+
+	mdelay(500);
+
+	ibus_avg = 0;
+	for (i = 0; i < avg_times; i++) {
+		ret = pe50_get_adc(info, PE50_ADCCHAN_IBUS, &ibus);
+		if (ret < 0) {
+			PE50_ERR("CP_INIT:get ibus fail(%d)\n", ret);
+			goto err;
+		}
+		ibus_avg += ibus;
+	}
+	ibus_avg = precise_div(ibus_avg, avg_times);
+	PE50_INFO("CP_INIT:ibus (%d)\n", ibus_avg);
+	if (ibus_avg < 300) {
+		if (data->mmi_convert_ratio_state == MMI_RATIO_HIGH) {
+			data->mmi_startup_convert_ratio -= 5;
+		} else if (data->mmi_convert_ratio_state == MMI_RATIO_LOW) {
+			data->mmi_startup_convert_ratio += 5;
+		}
+
+		retry_count ++;
+		ret = pe50_set_dvchg_charging(info, false);
+		if (ret < 0) {
+			PE50_ERR("CP_INIT:en dvchg fail\n");
+			goto err;
+		}
+		PE50_ERR("CP_INIT:cp switching failed, goto retry (ratio %d) retry_count(%d)\n", data->mmi_startup_convert_ratio, retry_count);
+
+		if (retry_count < ((40 / 5) * 2)) /* 40% is the rang within which CP can work */
+			goto MMI_RETRY;
+		else {
+			data->run_once = true;
+			PE50_ERR("CP_INIT:cp switching failed, goto PMIC charging\n");
+			goto stop;
+		}
+	}
+
 	if (auth_data->support_meas_cap) {
 		ita_avg = 0;
+		ibus_avg = 0;
 		for (i = 0; i < avg_times; i++) {
 			ret = pe50_get_ta_cap(info);
 			if (ret < 0) {
@@ -1808,6 +1879,8 @@ err:
 		data->err_retry_cnt++;
 		return 0;
 	}
+
+stop:
 	return pe50_stop(info, &sinfo);
 }
 
@@ -3508,6 +3581,9 @@ static inline int __pe50_plugout_reset(struct pe50_algo_info *info,
 
 	PE50_DBG("++\n");
 	data->ta_ready = false;
+	data->run_once = false;
+	data->mmi_startup_convert_ratio = PE50_DVCHG_STARTUP_CONVERT_RATIO;
+	data->mmi_convert_ratio_state = MMI_RATIO_UNKNOW;
 	memset(auth_data, 0, sizeof(*auth_data));
 	pe50_algo_data_partial_reset(info);
 	return pe50_stop(info, sinfo);
@@ -3940,7 +4016,13 @@ static int pe50_is_algo_ready(struct chg_alg_device *alg)
 		PE50_INFO("detach/hardreset happened\n");
 		data->notify &= ~PE50_RESET_NOTIFY;
 		data->ta_ready = false;
+		data->run_once = false;
 		memset(auth_data, 0, sizeof(*auth_data));
+	} else if (data->run_once) {
+		PE50_DBG("run once(%d)\n", data->run_once);
+		ret = ALG_NOT_READY;
+		mutex_unlock(&data->notify_lock);
+		goto out;
 	}
 	mutex_unlock(&data->notify_lock);
 
@@ -4041,7 +4123,6 @@ static int pe50_stop_algo(struct chg_alg_device *alg)
 	if (!data->inited)
 		goto out;
 	data->ta_ready = false;
-	data->run_once = false;
 	ret = pe50_stop(info, &sinfo);
 out:
 	mutex_unlock(&data->lock);
@@ -4393,6 +4474,9 @@ static int pe50_parse_dt(struct pe50_algo_info *info)
 		desc->charge_pump_op_mode_max_support = val;
 	else
 		desc->charge_pump_op_mode_max_support = CP_2_1_MODE;
+
+	data->mmi_startup_convert_ratio = PE50_DVCHG_STARTUP_CONVERT_RATIO;
+	data->mmi_convert_ratio_state = MMI_RATIO_UNKNOW;
 
 	return 0;
 }
