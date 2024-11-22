@@ -923,6 +923,7 @@ def get_overlay_modules_list():
         mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/power/bq25980_mmi:bq25980_mmi")
         mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/power/nu2115_mmi:nu2115_mmi")
         mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/power/mmi_pephv:mmi_pephv")
+        mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/misc/mmi_stow:mmi_stow")
         mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/input/touchscreen/goodix_berlin_u_mmi:goodix_brl_u_mmi")
         mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/input/touchscreen/touchscreen_u_mmi:touchscreen_u_mmi")
         mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/input/touchscreen/focaltech_touch_v3_u_mmi:focaltech_touch_v3_u_mmi")
