@@ -73,7 +73,12 @@
 		res-switch = <2>;
 		rc-enable = <1>;
 		pinctrl-names = "default";
+		port {
+			panel_in3: endpoint {
+				remote-endpoint = <&dsi_out3>;
+			};
 		};
+	};
 	panel4@3 {
 		/delete-property/ compatible;
 		/delete-property/ pm-enable-gpios;
@@ -98,6 +103,9 @@
 	};
 	ports {
 		port {
+			dsi_out3: endpoint3 {
+				remote-endpoint = <&panel_in3>;
+			};
 			dsi_out4: endpoint4 {
 				remote-endpoint = <&panel_in4>;
 			};
