@@ -354,6 +354,19 @@
 	mot-sku = <0>;  /* mt6637 = 0, mt6631 = 1 , mt6631 + mt6686 = 2 */
 };
 
+&low_battery_throttling {
+	thd-volts-l = <
+		3163 2975 2907
+		3440 3171 3072
+		3958 3549 3395>;
+	thd-volts-h = <
+		3263 3163 2975
+		3540 3440 3171
+		4058 3958 3549>;
+	lvsys-thd-volt-l = <2824>;
+	lvsys-thd-volt-h = <2875>;
+};
+
 &md_power_throttling {
 	lbat-max-level = <3>;
 	lbat-reduce-tx-lv1 = <0>;
