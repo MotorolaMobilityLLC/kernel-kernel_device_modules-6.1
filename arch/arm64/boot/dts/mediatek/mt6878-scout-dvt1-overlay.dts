@@ -52,6 +52,11 @@
 	};
 };
 
+&haptic_nv {
+		pinctrl-names = "default";
+		pinctrl-0 = <&i2c12_mode_default>;
+};
+
 &mt6375_chg {
 	mmi,otp-mos-regulator-name = "mt6369_mos_con1";
 };

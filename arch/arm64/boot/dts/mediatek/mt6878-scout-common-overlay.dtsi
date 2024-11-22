@@ -53,6 +53,15 @@
 			bias-pull-up;
 		};
 	};
+
+	i2c12_mode_default: i2c12_mode_default {
+		pins_cmd_dat {
+			pinmux = <PINMUX_GPIO53__FUNC_SCL12>,
+				<PINMUX_GPIO52__FUNC_SDA12>;
+			/*mt65xx.h PULL_UP 2.5k*/
+			bias-pull-up = <202>;
+		};
+	};
 };
 
 
@@ -386,7 +395,7 @@
 &i2c12 {
 	clock-frequency = <400000>;
 	status = "ok";
-	haptic_nv@5A{
+	haptic_nv:haptic_nv@5A{
 		compatible = "awinic,haptic_nv";
 		reg = < 0x5A >;
 		aw862xx_i2c_addr = < 0x58 >;
