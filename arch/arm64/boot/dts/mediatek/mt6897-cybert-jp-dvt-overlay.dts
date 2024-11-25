@@ -1,0 +1,75 @@
+/* Copyright (c) 2023, Motorola Mobility Inc. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
+/dts-v1/;
+/plugin/;
+
+#include "mediatek/mt6897-cybert-common-overlay.dtsi"
+
+#define CYBERT_JP_RADIO 3
+
+/* Board match root node */
+/ {
+	fragment@model {
+		target-path = "/";
+		__overlay__ {
+			mot,model = "cybert";
+			mot,board-id = <(CYBERT_JP_RADIO << 8 | 0x43) 0xB100>;
+		};
+	};
+};
+
+&moto_chg_tcmd {
+        mmi,batt-ids-map = "1", "ATLRE50NVT";
+};
+
+&pe5 {
+	ita-level-dual = <6200 3000 2000 1500>;//125w
+	mmi_max_ibat = <23000>;
+};
+
+&charger {
+	mmi,pd-pmax-mw = <125000>;//125w
+        mmi,mmi-temp-zones = <0 4200 1168 0>,
+                                <10 4250 5840 2920>,
+                                <15 4530 5840 5840>,
+                                <45 4150 22000 20000>,
+                                <45 4250 20000 15400>,
+                                <45 4350 15400 13200>,
+                                <45 4530 8000 5840>,
+                                <60 4200 5840 0>;
+        mmi,mmi-ffc-zones = <0 4200 292>,
+                                <10 4530 292>,
+                                <15 4530 292>,
+                                <25 4560 2760>,
+                                <35 4560 3330>,
+                                <45 4560 4600>,
+                                <60 4200 292>;
+        mmi,mmi-normal-zones = <0 4200 292>,
+                                <10 4530 292>,
+                                <15 4530 292>,
+                                <25 4530 292>,
+                                <35 4530 292>,
+                                <45 4530 584>,
+                                <60 4200 292>;
+};
+
+&charger_cooler {
+        mmi,thermal-mitigation = <(-1) 22000000 20000000 16000000 14000000
+                                12000000 10000000 9000000 6000000 5000000
+                                4000000 3000000 2000000 1500000 1000000>;
+};
+
+
+#include <cybert_evb/cust.dtsi>
+#include "mediatek/cust_cybert_camera_v4l2.dtsi"
+/*End of this file, DO NOT ADD ANYTHING HERE*/
