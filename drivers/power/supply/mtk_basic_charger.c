@@ -273,39 +273,40 @@ static bool select_charging_current_limit(struct mtk_charger *info,
 		is_basic = false;
 	else {
 		is_basic = true;
-		/* AICL */
-		if (!info->disable_aicl)
-			charger_dev_run_aicl(info->chg1_dev,
-				&pdata->input_current_limit_by_aicl);
-		if (info->enable_dynamic_mivr) {
-			if (pdata->input_current_limit_by_aicl >
-				info->data.max_dmivr_charger_current)
-				pdata->input_current_limit_by_aicl =
-					info->data.max_dmivr_charger_current;
-		}
-		if (is_typec_adapter(info)) {
-			if (adapter_dev_get_property(info->pd_adapter, TYPEC_RP_LEVEL)
-				== 3000) {
-				if (info->mmi.typec_rp_max_current)
-					pdata->input_current_limit = info->mmi.typec_rp_max_current;
-				else
-					pdata->input_current_limit = 3000000;
-				pdata->charging_current_limit = 3000000;
-			} else if (adapter_dev_get_property(info->pd_adapter,
-				TYPEC_RP_LEVEL) == 1500) {
-				pdata->input_current_limit = 1500000;
-				pdata->charging_current_limit = 2000000;
-			} else {
-				chr_err("type-C: inquire rp error\n");
-				pdata->input_current_limit = 500000;
-				pdata->charging_current_limit = 500000;
-			}
+	}
 
-			chr_err("type-C:%d current:%d\n",
-				info->pd_type,
-				adapter_dev_get_property(info->pd_adapter,
-					TYPEC_RP_LEVEL));
+	/* AICL */
+	if (!info->disable_aicl)
+		charger_dev_run_aicl(info->chg1_dev,
+			&pdata->input_current_limit_by_aicl);
+	if (info->enable_dynamic_mivr) {
+		if (pdata->input_current_limit_by_aicl >
+			info->data.max_dmivr_charger_current)
+			pdata->input_current_limit_by_aicl =
+				info->data.max_dmivr_charger_current;
+	}
+	if (is_typec_adapter(info)) {
+		if (adapter_dev_get_property(info->pd_adapter, TYPEC_RP_LEVEL)
+			== 3000) {
+			if (info->mmi.typec_rp_max_current)
+				pdata->input_current_limit = info->mmi.typec_rp_max_current;
+			else
+				pdata->input_current_limit = 3000000;
+			pdata->charging_current_limit = 3000000;
+		} else if (adapter_dev_get_property(info->pd_adapter,
+			TYPEC_RP_LEVEL) == 1500) {
+			pdata->input_current_limit = 1500000;
+			pdata->charging_current_limit = 2000000;
+		} else {
+			chr_err("type-C: inquire rp error\n");
+			pdata->input_current_limit = 500000;
+			pdata->charging_current_limit = 500000;
 		}
+
+		chr_err("type-C:%d current:%d\n",
+			info->pd_type,
+			adapter_dev_get_property(info->pd_adapter,
+				TYPEC_RP_LEVEL));
 	}
 
 	if (info->enable_sw_jeita) {
