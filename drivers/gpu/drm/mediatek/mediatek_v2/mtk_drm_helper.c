@@ -257,6 +257,10 @@ void mtk_drm_helper_init(struct device *dev, struct mtk_drm_helper **helper_opt)
 		mtk_drm_helper_set_opt_by_name(tmp_opt,
 				"MTK_DRM_OPT_MML_TABLET_EXT", 1);
 
+	if (of_property_read_bool(dev->of_node, "force-disable-idlemgr-by-repaint"))
+		mtk_drm_helper_set_opt_by_name(tmp_opt,
+				"MTK_DRM_OPT_IDLEMGR_BY_REPAINT", 0);
+
 	*helper_opt = tmp_opt;
 }
 
