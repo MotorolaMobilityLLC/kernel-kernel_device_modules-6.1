@@ -19,7 +19,7 @@
 #include <linux/of_graph.h>
 #include <linux/platform_device.h>
 #include "../mediatek/mediatek_v2/mtk_corner_pattern/nt37801_cmd_120hz_rc.h"
-#include "dsi-panel-mot-csot-nt37706-667-1220x2712-vdo-nice-lhbm-alpha.h"
+#include "dsi-panel-mot-boe-vtdr6126-667-1220x2712-vdo-lhbm-alpha.h"
 #define CONFIG_MTK_PANEL_EXT
 #if defined(CONFIG_MTK_PANEL_EXT)
 #include "../mediatek/mediatek_v2/mtk_panel_ext.h"
@@ -29,35 +29,41 @@
 #include "../mediatek/mediatek_v2/mtk_corner_pattern/mtk_data_hw_roundedpattern.h"
 #endif
 #define FRAME_WIDTH				(1220)
-#define FRAME_HEIGHT			        (2712)
-#define PLL_CLOCK				(540)
+#define FRAME_HEIGHT			(2712)
+#define PLL_CLOCK				(505)
 #define REAL_MODE_NUM           (6)
 #define FHD_FRAME_WIDTH    (1220)
-#define FHD_HFP            (48)
-#define FHD_HSA            (8)
-#define FHD_HBP            (48)
+#define FHD_HFP            (44)
+#define FHD_HSA            (4)
+#define FHD_HBP            (24)
 #define FHD_HTOTAL         (FHD_FRAME_WIDTH + FHD_HFP + FHD_HSA + FHD_HBP)
 #define FHD_FRAME_HEIGHT   (2712)
-#define FHD_VFP            (57)
-#define FHD_VSA            (2)
-#define FHD_VBP            (13)
+#define FHD_VFP            (56)
+#define FHD_VSA            (4)
+#define FHD_VBP            (12)
 #define FHD_VTOTAL         (FHD_FRAME_HEIGHT + FHD_VFP + FHD_VSA + FHD_VBP)
 #define MODE_SWITCH_CMDQ_ENABLE 1
-#define FHD_HFP_90            (48)
-#define FHD_HSA_90            (8)
-#define FHD_HBP_90            (48)
-#define FHD_VFP_90            (985)
-#define FHD_VSA_90            (2)
-#define FHD_VBP_90            (13)
+#define FHD_HFP_90            (44)
+#define FHD_HSA_90            (4)
+#define FHD_HBP_90            (24)
+#define FHD_VFP_90            (984)
+#define FHD_VSA_90            (4)
+#define FHD_VBP_90            (12)
+#define FHD_HFP_60            (44)
+#define FHD_HSA_60            (4)
+#define FHD_HBP_60            (24)
+#define FHD_VFP_60            (2840)
+#define FHD_VSA_60            (4)
+#define FHD_VBP_60            (12)
 //extern int _lcm_i2c_write_bytes(unsigned char addr, unsigned char value);
 struct mtk_mode_switch_cmd cmd_table_120fps[] = {
-	{2, {0x2F,0x00}}
+	{2, {0x6C,0x00}}
 };
 struct mtk_mode_switch_cmd cmd_table_90fps[] = {
-	{2, {0x2F,0x01}}
+	{2, {0x6C,0x01}}
 };
 struct mtk_mode_switch_cmd cmd_table_60fps[] = {
-	{2, {0x2F,0x02}}
+	{2, {0x6C,0x02}}
 };
 
 enum panel_version{
@@ -70,12 +76,13 @@ static enum RES_SWITCH_TYPE res_switch_type = RES_SWITCH_NO_USE;
 static int current_fps = 60;
 static struct lcm *g_ctx = NULL;
 
+
 unsigned int nt37801_wqhs_dsi_cmd_120hz_dphy_buf_thresh[14] = {
 	896, 1792, 2688, 3584, 4480, 5376, 6272, 6720, 7168, 7616, 7744, 7872, 8000, 8064};
 unsigned int nt37801_wqhs_dsi_cmd_120hz_dphy_range_min_qp[15] = {
-	0, 4, 5, 5, 7, 7, 7, 7, 7, 7, 9, 9, 9, 11, 17};
+	0, 4, 5, 5, 7, 7, 7, 7, 7, 7, 9, 9, 9, 13, 16};
 unsigned int nt37801_wqhs_dsi_cmd_120hz_dphy_range_max_qp[15] = {
-	8, 8, 9, 10, 11, 11, 11, 12, 13, 14, 15, 16, 17, 17, 19};
+	8, 8, 9, 10, 11, 11, 11, 12, 13, 14, 14, 15, 15, 16, 17};
 int nt37801_wqhs_dsi_cmd_120hz_dphy_range_bpg_ofs[15] = {
 	2, 0, 0, -2, -4, -6, -8, -8, -8, -10, -10, -12, -12, -12, -12};
 struct lcm {
@@ -111,6 +118,9 @@ struct lcm {
 	static const u8 d[] = { seq };\
 	lcm_dcs_write(ctx, d, ARRAY_SIZE(d));\
 })
+
+#define APL_THRESHOLD 16000
+
 static inline struct lcm *panel_to_lcm(struct drm_panel *panel)
 {
 	return container_of(panel, struct lcm, panel);
@@ -189,62 +199,62 @@ static void lcm_panel_init(struct lcm *ctx)
 	gpiod_set_value(ctx->reset_gpio, 1);
 	udelay(10 * 1000);
 	gpiod_set_value(ctx->reset_gpio, 0);
-	udelay(2 * 1000);
+	udelay(10 * 1000);
 	gpiod_set_value(ctx->reset_gpio, 1);
-	msleep(20);
-	lcm_dcs_write_seq_static(ctx, 0xFF,0xAA,0x55,0xA5,0x80);
-	lcm_dcs_write_seq_static(ctx, 0x6F,0x46);
-	lcm_dcs_write_seq_static(ctx, 0xF4,0x07,0x09);
-	lcm_dcs_write_seq_static(ctx, 0x6F,0x4A);
-	lcm_dcs_write_seq_static(ctx, 0xF4,0x08,0x0A);
-	lcm_dcs_write_seq_static(ctx, 0x6F,0x56);
-	lcm_dcs_write_seq_static(ctx, 0xF4,0x44,0x44);
-	lcm_dcs_write_seq_static(ctx, 0x6F,0x18);
-	lcm_dcs_write_seq_static(ctx, 0xF4,0x73);
-	lcm_dcs_write_seq_static(ctx, 0x6F,0x2A);
-	lcm_dcs_write_seq_static(ctx, 0xF4,0x08);
-	lcm_dcs_write_seq_static(ctx, 0xFF,0xAA,0x55,0xA5,0x81);
-	lcm_dcs_write_seq_static(ctx, 0x6F,0x3C);
-	lcm_dcs_write_seq_static(ctx, 0xF5,0x84);
-	lcm_dcs_write_seq_static(ctx, 0xF0,0x55,0xAA,0x52,0x08,0x00);
-	lcm_dcs_write_seq_static(ctx, 0xC5,0x22,0x22);
-	lcm_dcs_write_seq_static(ctx, 0x6F,0x8B);
-	lcm_dcs_write_seq_static(ctx, 0xDF,0x2F,0x0C,0x2F,0x0C,0x2F,0x0C);
-	lcm_dcs_write_seq_static(ctx, 0x17,0x03);
-	lcm_dcs_write_seq_static(ctx, 0x71,0x00);
-	lcm_dcs_write_seq_static(ctx, 0x8D,0x00,0x00,0x04,0xAF,0x00,0x00,0x0A,0x6D);
-	lcm_dcs_write_seq_static(ctx, 0x2A,0x00,0x00,0x04,0xC3);
-	lcm_dcs_write_seq_static(ctx, 0x2B,0x00,0x00,0x0A,0x97);
-	lcm_dcs_write_seq_static(ctx, 0x03,0x00);
-	lcm_dcs_write_seq_static(ctx, 0x90,0x03);
-	lcm_dcs_write_seq_static(ctx, 0x6F,0x01);
-	lcm_dcs_write_seq_static(ctx, 0x90,0x43);
-	lcm_dcs_write_seq_static(ctx, 0x91,0xAB,0x28,0x00,0x0C,0xC2,0x00,0x02,0x32,0x01,0x31,0x00,0x08,0x08,0xBB,0x07,0x7B,0x10,0xF0);
-	lcm_dcs_write_seq_static(ctx, 0x2F,0x00);
-	lcm_dcs_write_seq_static(ctx, 0x26,0x00);
-	lcm_dcs_write_seq_static(ctx, 0x5F,0x00);
-	lcm_dcs_write_seq_static(ctx, 0x53,0x20);
-	lcm_dcs_write_seq_static(ctx, 0x3B,0x00,0x0F,0x00,0x39,0x00,0x0F,0x03,0xD9,0x00,0x0F,0x0B,0x19,0x00,0x0F,0x10,0x89);
-	lcm_dcs_write_seq_static(ctx, 0x6F,0x10);
-	lcm_dcs_write_seq_static(ctx, 0x3B,0x00,0x18,0x00,0x30);
+	msleep(25);
+	lcm_dcs_write_seq_static(ctx, 0x03,0x01);
 	lcm_dcs_write_seq_static(ctx, 0x35,0x00);
-	lcm_dcs_write_seq_static(ctx, 0x51,0x00,0x00);
-	lcm_dcs_write_seq_static(ctx, 0x6F,0x04);
-	lcm_dcs_write_seq_static(ctx, 0x51,0x3F,0xFC);
-	lcm_dcs_write_seq_static(ctx, 0x57,0x00);
-	lcm_dcs_write_seq_static(ctx, 0x88,0x01,0x02,0x62,0x09,0x84);
-	lcm_dcs_write_seq_static(ctx, 0x5F,0x00,0x04);
+	lcm_dcs_write_seq_static(ctx, 0x51,0x36,0xE8); //800nit
+	lcm_dcs_write_seq_static(ctx, 0x53,0x20);
+	lcm_dcs_write_seq_static(ctx, 0x55,0x10);
+	lcm_dcs_write_seq_static(ctx, 0x59,0x09);
+	lcm_dcs_write_seq_static(ctx, 0x5e,0x00);
+	lcm_dcs_write_seq_static(ctx, 0x6c,0x00);
+	lcm_dcs_write_seq_static(ctx, 0x6d,0x00);
+	lcm_dcs_write_seq_static(ctx, 0x6f,0x01);
+	lcm_dcs_write_seq_static(ctx, 0x72,0x00);
+    lcm_dcs_write_seq_static(ctx, 0x70,0x11,0x00,0x00,0xAB,0x30,0x80,0x0A,0x98,0x04,0xC4,0x00,0x0C,0x02,0x62,0x02,0x62,0x02,0x00,0x01,0x1A,0x00,0x20,0x02,0x5B,0x00,0x08,0x00,0x01,0x00,0xBB,0x07,0x7B,0x18,0x00,0x10,0xF0,0x07,0x10,0x20,0x00,0x06,0x0F,0x0F,0x33,0x0E,0x1C,0x2A,0x38,0x46,0x54,0x62,0x69,0x70,0x77,0x79,0x7B,0x7D,0x7E,0x02,0x02,0x22,0x00,0x2A,0x40,0x2A,0xBE,0x3A,0xFC,0x3A,0xFA,0x3A,0xF8,0x3B,0x38,0x3B,0x78,0x3B,0xB6,0x4B,0xB6,0x4B,0xF4,0x4B,0xF4,0x6C,0x34,0x84,0x74,0x00,0x00,0x00,0x00,0x00,0x00);
+	
+	lcm_dcs_write_seq_static(ctx, 0xf0,0xaa,0x12);
+	lcm_dcs_write_seq_static(ctx, 0xC7,0x5F,0x78,0x43,0x5A,0x33,0x33);
+
+    lcm_dcs_write_seq_static(ctx, 0xF0,0xAA,0x10);
+    lcm_dcs_write_seq_static(ctx, 0xB0,0x05,0x4C,0x01,0x31,0x01,0x04,0xC4,0x05,0x4C);
+
+    lcm_dcs_write_seq_static(ctx, 0xF0,0xAA,0x16);	
+	lcm_dcs_write_seq_static(ctx, 0xD1,0x00,0x00,0x00);
+	lcm_dcs_write_seq_static(ctx, 0x65,0x03);
+   	lcm_dcs_write_seq_static(ctx, 0XD1,0x00,0x00,0x00);
+	lcm_dcs_write_seq_static(ctx, 0x65,0x06);
+    lcm_dcs_write_seq_static(ctx, 0XD1,0x00,0x00,0x00);
+	lcm_dcs_write_seq_static(ctx, 0x65,0x09);
+    lcm_dcs_write_seq_static(ctx, 0XD1,0x00,0x00,0x00);
+	lcm_dcs_write_seq_static(ctx, 0x65,0x0C);
+    lcm_dcs_write_seq_static(ctx, 0XD1,0x00,0x00,0x00);
+	
+	lcm_dcs_write_seq_static(ctx, 0xff,0x5a,0x81);
+	lcm_dcs_write_seq_static(ctx, 0x65,0x03);
+	lcm_dcs_write_seq_static(ctx, 0xf3,0x61);
+	lcm_dcs_write_seq_static(ctx, 0x65,0x0b);
+	lcm_dcs_write_seq_static(ctx, 0xf3,0x78);
+
+	lcm_dcs_write_seq_static(ctx, 0XFF,0x5A,0x80);
+	lcm_dcs_write_seq_static(ctx, 0x65,0x25);
+	lcm_dcs_write_seq_static(ctx, 0xFD,0x01);
+	lcm_dcs_write_seq_static(ctx, 0xff,0x5a,0x00);
+	lcm_dcs_write_seq_static(ctx, 0xf0,0xaa,0x00);
+
 	pr_info("%s current_fps:%d\n", __func__, current_fps);
 	current_fps = 120;
 	switch (current_fps) {
 	case 120:
-		lcm_dcs_write_seq_static(ctx, 0x2F,0x00);
+		lcm_dcs_write_seq_static(ctx, 0x6C,0x00);
 		break;
 	case 90:
-		lcm_dcs_write_seq_static(ctx, 0x2F,0x01);
-            	break;
+		lcm_dcs_write_seq_static(ctx, 0x6C,0x01);
+		break;
 	case 60:
-		lcm_dcs_write_seq_static(ctx, 0x2F,0x02);
+		lcm_dcs_write_seq_static(ctx, 0x6C,0x02);
 		break;
 	default:
 		pr_info("%s current_fps mismatch:%d\n", __func__, current_fps);
@@ -271,6 +281,7 @@ static int lcm_disable(struct drm_panel *panel)
 	printk("%s exit  \n",__func__);
 	return 0;
 }
+
 static int lcm_unprepare(struct drm_panel *panel)
 {
 	struct lcm *ctx = panel_to_lcm(panel);
@@ -282,7 +293,7 @@ static int lcm_unprepare(struct drm_panel *panel)
 	lcm_dcs_write_seq_static(ctx, 0x28);
 	msleep(50);
 	lcm_dcs_write_seq_static(ctx, 0x10);
-	msleep(240);
+	msleep(150);
 	ctx->error = 0;
 	ctx->prepared = false;
 
@@ -297,6 +308,14 @@ static int lcm_unprepare(struct drm_panel *panel)
 	devm_gpiod_put(ctx->dev, ctx->reset_gpio);
 
 	msleep(30);
+	/* disable regulator */
+	ret = regulator_disable(ctx->oled_dvdd);
+	if (ret < 0)
+		pr_err("enable regulator ctx->oled_dvdd fail, ret = %d\n", ret);
+	devm_regulator_put(ctx->oled_dvdd);
+	/*devm_regulator_put(ctx->oled_dvdd);*/
+
+	udelay(6000);
 	ctx->vci_gpio =
 		devm_gpiod_get(ctx->dev, "vci", GPIOD_OUT_HIGH);
 	if (IS_ERR(ctx->vci_gpio)) {
@@ -308,14 +327,7 @@ static int lcm_unprepare(struct drm_panel *panel)
 	devm_gpiod_put(ctx->dev, ctx->vci_gpio);
 	udelay(2000);
 
-	/* disable regulator */
-	ret = regulator_disable(ctx->oled_dvdd);
-	if (ret < 0)
-		pr_err("enable regulator ctx->oled_dvdd fail, ret = %d\n", ret);
-	devm_regulator_put(ctx->oled_dvdd);
-	/*devm_regulator_put(ctx->oled_dvdd);*/
-
-	udelay(6000);
+	
 	ctx->vddi_gpio =
 		devm_gpiod_get(ctx->dev, "vddi", GPIOD_OUT_HIGH);
 	if (IS_ERR(ctx->vddi_gpio)) {
@@ -338,8 +350,6 @@ static int lcm_prepare(struct drm_panel *panel)
 	printk("%s enter  \n",__func__);
 	if (ctx->prepared)
 		return 0;
-	//_gate_ic_Power_on();
-
 	ctx->vddi_gpio =
 		devm_gpiod_get(ctx->dev, "vddi", GPIOD_OUT_HIGH);
 	if (IS_ERR(ctx->vddi_gpio)) {
@@ -349,6 +359,17 @@ static int lcm_prepare(struct drm_panel *panel)
 	}
 	gpiod_set_value(ctx->vddi_gpio, 1);
 	devm_gpiod_put(ctx->dev, ctx->vddi_gpio);
+	udelay(2000);
+
+	ctx->vci_gpio =
+		devm_gpiod_get(ctx->dev, "vci", GPIOD_OUT_HIGH);
+	if (IS_ERR(ctx->vci_gpio)) {
+		dev_err(ctx->dev, "%s: cannot get vci_gpio %ld\n",
+			__func__, PTR_ERR(ctx->vci_gpio));
+		return PTR_ERR(ctx->vci_gpio);
+	}
+	gpiod_set_value(ctx->vci_gpio, 1);
+	devm_gpiod_put(ctx->dev, ctx->vci_gpio);
 	udelay(2000);
 
 	ctx->oled_dvdd = devm_regulator_get_optional(ctx->dev, "oled-dvdd");
@@ -366,17 +387,6 @@ static int lcm_prepare(struct drm_panel *panel)
 	if (ret < 0)
 		pr_err("enable regulator ctx->oled_dvdd fail, ret = %d\n", ret);
 
-	udelay(2000);
-
-	ctx->vci_gpio =
-		devm_gpiod_get(ctx->dev, "vci", GPIOD_OUT_HIGH);
-	if (IS_ERR(ctx->vci_gpio)) {
-		dev_err(ctx->dev, "%s: cannot get vci_gpio %ld\n",
-			__func__, PTR_ERR(ctx->vci_gpio));
-		return PTR_ERR(ctx->vci_gpio);
-	}
-	gpiod_set_value(ctx->vci_gpio, 1);
-	devm_gpiod_put(ctx->dev, ctx->vci_gpio);
 	udelay(2000);
 
 	lcm_panel_init(ctx);
@@ -407,38 +417,38 @@ static int lcm_enable(struct drm_panel *panel)
 	printk("%s exit  \n",__func__);
 	return 0;
 }
-static const struct drm_display_mode default_mode = {
-	.clock = 442321,
-	.hdisplay = FRAME_WIDTH,//1220
-	.hsync_start = FRAME_WIDTH + FHD_HFP,//1270
-	.hsync_end = FRAME_WIDTH + FHD_HFP + FHD_HSA,//1272
-	.htotal = FRAME_WIDTH + FHD_HFP + FHD_HSA + FHD_HBP,//1322
-	.vdisplay = FRAME_HEIGHT,//2712
-	.vsync_start = FRAME_HEIGHT + FHD_VFP,//2712+57
-	.vsync_end = FRAME_HEIGHT + FHD_VFP + FHD_VSA,//2712+57+2
-	.vtotal = FRAME_HEIGHT + FHD_VFP + FHD_VSA + FHD_VBP,//2712+37+13+2
+static const struct drm_display_mode mode_120hz = {
+	.clock = 441653,
+	.hdisplay = FRAME_WIDTH,//1200
+	.hsync_start = FRAME_WIDTH + FHD_HFP,//1215
+	.hsync_end = FRAME_WIDTH + FHD_HFP + FHD_HSA,//1230
+	.htotal = FRAME_WIDTH + FHD_HFP + FHD_HSA + FHD_HBP,//1245
+	.vdisplay = FRAME_HEIGHT,//2670
+	.vsync_start = FRAME_HEIGHT + FHD_VFP,//2715
+	.vsync_end = FRAME_HEIGHT + FHD_VFP + FHD_VSA,//2717
+	.vtotal = FRAME_HEIGHT + FHD_VFP + FHD_VSA + FHD_VBP,//2752
 };
-static const struct drm_display_mode mode_90 = {
-	.clock = 442321,
+static const struct drm_display_mode mode_90hz = {
+	.clock = 441653,
 	.hdisplay = FRAME_WIDTH,
 	.hsync_start = FRAME_WIDTH + FHD_HFP_90,
 	.hsync_end = FRAME_WIDTH + FHD_HFP_90 + FHD_HSA_90,
 	.htotal = FRAME_WIDTH + FHD_HFP_90 + FHD_HSA_90 + FHD_HBP_90,
 	.vdisplay = FRAME_HEIGHT,
-	.vsync_start = FRAME_HEIGHT + FHD_VFP_90,//3659
+	.vsync_start = FRAME_HEIGHT + FHD_VFP_90,
 	.vsync_end = FRAME_HEIGHT + FHD_VFP_90 + FHD_VSA_90,
-	.vtotal = FRAME_HEIGHT + FHD_VFP_90 + FHD_VSA_90 + FHD_VBP_90,//3696
+	.vtotal = FRAME_HEIGHT + FHD_VFP_90 + FHD_VSA_90 + FHD_VBP_90,
 };
-static const struct drm_display_mode mode_60 = {
-	.clock = 442321,
-	.hdisplay = FRAME_WIDTH,//1220
-	.hsync_start = FRAME_WIDTH + FHD_HFP,//1270
-	.hsync_end = FRAME_WIDTH + FHD_HFP + FHD_HSA,//1272
-	.htotal = FRAME_WIDTH + FHD_HFP + FHD_HSA + FHD_HBP,//1322
-	.vdisplay = FRAME_HEIGHT,//2712
-	.vsync_start = FRAME_HEIGHT + FHD_VFP,//2712+2841
-	.vsync_end = FRAME_HEIGHT + FHD_VFP + FHD_VSA,//2712_2841_2
-	.vtotal = FRAME_HEIGHT + FHD_VFP + FHD_VSA + FHD_VBP,//2712_2841_2_13
+static const struct drm_display_mode mode_60hz = {
+	.clock = 441653,
+	.hdisplay = FRAME_WIDTH,//1200
+	.hsync_start = FRAME_WIDTH + FHD_HFP_60,//1215
+	.hsync_end = FRAME_WIDTH + FHD_HFP_60 + FHD_HSA_60,//1230
+	.htotal = FRAME_WIDTH + FHD_HFP_60 + FHD_HSA_60+ FHD_HBP_60,//1245
+	.vdisplay = FRAME_HEIGHT,
+	.vsync_start = FRAME_HEIGHT + FHD_VFP_60,
+	.vsync_end = FRAME_HEIGHT + FHD_VFP_60 + FHD_VSA_60,
+	.vtotal = FRAME_HEIGHT + FHD_VFP_60 + FHD_VSA_60 + FHD_VBP_60,
 };
 
 enum SWITCH_MODE_DELAY switch_mode_delay_table[DISPLAY_MODE_NUM][DISPLAY_MODE_NUM] = {
@@ -488,6 +498,7 @@ static int panel_ext_reset(struct drm_panel *panel, int on)
 	}
 	gpiod_set_value(ctx->reset_gpio, on);
 	devm_gpiod_put(ctx->dev, ctx->reset_gpio);
+
 	printk("%s exit  \n",__func__);
 	return 0;
 }
@@ -564,12 +575,12 @@ static struct mtk_panel_params ext_params = {
 		.slice_width = (FRAME_WIDTH/2),
 		.chunk_size = 610,
 		.xmit_delay = 512,
-		.dec_delay = 562,
+		.dec_delay = 282,
 		.scale_value = 32,
-		.increment_interval = 305,
+		.increment_interval = 603,
 		.decrement_interval = 8,
-		.line_bpg_offset = 12,
-		.nfl_bpg_offset = 2235,
+		.line_bpg_offset = 1,
+		.nfl_bpg_offset = 187,
 		.slice_bpg_offset = 1915,
 		.initial_offset = 6144,
 		.final_offset = 4336,
@@ -601,7 +612,7 @@ static struct mtk_panel_params ext_params = {
 	.dyn_fps = {
 		.switch_en = 0,
 		.vact_timing_fps = 120,
-		.dfps_cmd_grp_table[0] = {2, {0x2f, 0x00} },
+		.dfps_cmd_grp_table[0] = {2, {0x6C, 0x00} },
 		.dfps_cmd_grp_size = 1,
 	},
 	//.mode_switch_cmdq = MODE_SWITCH_CMDQ_ENABLE,
@@ -612,8 +623,8 @@ static struct mtk_panel_params ext_params = {
 	.panel_cellid_offset = 0x0D,
 	.panel_cellid_len = 23,
 	.panel_ver = 1,
-	.panel_name = "csot_nt37706_667_vdo_1220_2712",
-	.panel_supplier = "csot-nt37706",
+	.panel_name = "boe_vtdr6126_667_vdo_1220_2712",
+	.panel_supplier = "boe-vtdr6126",
 };
 static struct mtk_panel_params ext_params_90hz = {
 	.cust_esd_check = 1,
@@ -648,12 +659,12 @@ static struct mtk_panel_params ext_params_90hz = {
 		.slice_width = (FRAME_WIDTH/2),
 		.chunk_size = 610,
 		.xmit_delay = 512,
-		.dec_delay = 562,
+		.dec_delay = 282,
 		.scale_value = 32,
-		.increment_interval = 305,
+		.increment_interval = 603,
 		.decrement_interval = 8,
-		.line_bpg_offset = 12,
-		.nfl_bpg_offset = 2235,
+		.line_bpg_offset = 1,
+		.nfl_bpg_offset = 187,
 		.slice_bpg_offset = 1915,
 		.initial_offset = 6144,
 		.final_offset = 4336,
@@ -685,7 +696,7 @@ static struct mtk_panel_params ext_params_90hz = {
 	.dyn_fps = {
 		.switch_en = 0,
 		.vact_timing_fps = 120,
-		.dfps_cmd_grp_table[0] = {2, {0x2f, 0x01} },
+		.dfps_cmd_grp_table[0] = {2, {0x6C, 0x01} },
 		.dfps_cmd_grp_size = 1,
 	},
 	//.mode_switch_cmdq = MODE_SWITCH_CMDQ_ENABLE,
@@ -696,8 +707,8 @@ static struct mtk_panel_params ext_params_90hz = {
 	.panel_cellid_offset = 0x0D,
 	.panel_cellid_len = 23,
 	.panel_ver = 1,
-	.panel_name = "csot_nt37706_667_vdo_1220_2712",
-	.panel_supplier = "csot-nt37706",
+	.panel_name = "boe_vtdr6126_667_vdo_1220_2712",
+	.panel_supplier = "boe-vtdr6126",
 };
 static struct mtk_panel_params ext_params_60hz = {
 	.cust_esd_check = 1,
@@ -732,12 +743,12 @@ static struct mtk_panel_params ext_params_60hz = {
 		.slice_width = (FRAME_WIDTH/2),
 		.chunk_size = 610,
 		.xmit_delay = 512,
-		.dec_delay = 562,
+		.dec_delay = 282,
 		.scale_value = 32,
-		.increment_interval = 305,
+		.increment_interval = 603,
 		.decrement_interval = 8,
-		.line_bpg_offset = 12,
-		.nfl_bpg_offset = 2235,
+		.line_bpg_offset = 1,
+		.nfl_bpg_offset = 187,
 		.slice_bpg_offset = 1915,
 		.initial_offset = 6144,
 		.final_offset = 4336,
@@ -763,13 +774,13 @@ static struct mtk_panel_params ext_params_60hz = {
 		.switch_en = 1,
 		.pll_clk = PLL_CLOCK + 1,
 	}, */
-  	.lfr_enable = 0,
+	.lfr_enable = 0,
 	.lfr_minimum_fps = 60,
 	.change_fps_by_vfp_send_cmd = 1,
 	.dyn_fps = {
 		.switch_en = 0,
 		.vact_timing_fps = 120,
-		.dfps_cmd_grp_table[0] = {2, {0x2f, 0x02} },
+		.dfps_cmd_grp_table[0] = {2, {0x6C, 0x02} },
 		.dfps_cmd_grp_size = 1,
 	},
 	//.mode_switch_cmdq = MODE_SWITCH_CMDQ_ENABLE,
@@ -780,8 +791,8 @@ static struct mtk_panel_params ext_params_60hz = {
 	.panel_cellid_offset = 0x0D,
 	.panel_cellid_len = 23,
 	.panel_ver = 1,
-	.panel_name = "csot_nt37706_667_vdo_1220_2712",
-	.panel_supplier = "csot-nt37706",
+	.panel_name = "boe_vtdr6126_667_vdo_1220_2712",
+	.panel_supplier = "boe-vtdr6126",
 };
 
 struct drm_display_mode *get_mode_by_id(struct drm_connector *connector,
@@ -912,55 +923,76 @@ static int mode_switch(struct drm_panel *panel,
 		pr_err("%s, dst_fps %d\n", __func__, dst_fps);
 		ret = -EINVAL;
 	}
-
 	return ret;
 }
+
 static struct mtk_panel_para_table panel_lhbm_on[] = {
-	{15, {0xA9, 0x02, 0x00, 0xB5, 0x2C, 0x2C, 0x00, 0x01, 0x00, 0x87, 0x00, 0x02, 0x25, 0x3C,0x06}},
+	{5, {0x63, 0x0f, 0xff, 0x0f, 0xa0}},
+	{2, {0x62, 0x03}},
+
 };
 
 static struct mtk_panel_para_table panel_lhbm_off[] = {
-	{13, {0xA9, 0x02, 0x00, 0xB5, 0x2C, 0x2C, 0x03, 0x01, 0x00, 0x87, 0x00, 0x00, 0x20}},
+	{2, {0x62, 0x00}},
+	{3, {0x51, 0x03, 0xff}},
+
 };
-
-static void set_lhbm_alpha(unsigned int bl_level)
-{
-	struct mtk_panel_para_table *pTable = &panel_lhbm_on[0];
-	unsigned int alpha = 0;
-	unsigned int lhbm_alpha_index = bl_level;
-
-	if (bl_level == 0)
-		lhbm_alpha_index = 0;
-	alpha = lhbm_alpha[lhbm_alpha_index];
-
-	pTable->para_list[13] = (alpha >> 8) & 0xFF;
-	pTable->para_list[14] = alpha & 0xFF;
-	pr_info("%s: backlight %d alpha %d(0x%x, 0x%x)\n", __func__, bl_level, alpha, pTable->para_list[13], pTable->para_list[14]);
-}
 
 static int panel_lhbm_set_cmdq(void *dsi, dcs_grp_write_gce cb, void *handle, uint32_t on, uint32_t bl_level, uint32_t fps)
 {
 	unsigned int para_count = 0;
 	struct mtk_panel_para_table *pTable;
+	struct mtk_panel_para_table *pTable_alpha;
+	unsigned int alpha = 0;
 
 	if (on) {
-		set_lhbm_alpha(bl_level);
-		para_count = sizeof(panel_lhbm_on) / sizeof(struct mtk_panel_para_table);
-		pTable = panel_lhbm_on;
+		if (bl_level <= 0x10AF) {
+			pTable_alpha = &panel_lhbm_on[0];
+
+			alpha = lhbm_alpha[bl_level];
+
+			pTable_alpha->para_list[1] = (alpha >> 8) & 0xFF;
+			pTable_alpha->para_list[2] = alpha & 0xFF;
+			pTable_alpha->para_list[3] = 0x10;
+			pTable_alpha->para_list[4] = 0xB0;
+			pr_info("%s: backlight %d alpha_hbm %d(0x%x, 0x%x)\n", __func__, bl_level, alpha, pTable_alpha->para_list[1], pTable_alpha->para_list[2]);
+
+			para_count = sizeof(panel_lhbm_on) / sizeof(struct mtk_panel_para_table);
+			pTable = panel_lhbm_on;
+		} else {
+			pTable_alpha = &panel_lhbm_on[0];
+
+			pTable_alpha->para_list[1] = 0x10;
+			pTable_alpha->para_list[2] = 0x00;
+			pTable_alpha->para_list[3] = (bl_level >> 8) & 0xFF;
+			pTable_alpha->para_list[4] = bl_level & 0xFF;
+
+			para_count = sizeof(panel_lhbm_on) / sizeof(struct mtk_panel_para_table);
+			pTable = panel_lhbm_on;
+		}
+
+	  cb(dsi, handle, pTable, para_count);
+
 	} else {
-		para_count = sizeof(panel_lhbm_off) / sizeof(struct mtk_panel_para_table);
-		pTable = panel_lhbm_off;
+
+			pTable_alpha = &panel_lhbm_off[1];
+			pTable_alpha->para_list[1] = (bl_level >> 8) & 0xFF;
+			pTable_alpha->para_list[2] = bl_level & 0xFF;
+
+			para_count = sizeof(panel_lhbm_off) / sizeof(struct mtk_panel_para_table);
+			pTable = panel_lhbm_off;
+			cb(dsi, handle, pTable, para_count);
 	}
-	cb(dsi, handle, pTable, para_count);
 	return 0;
 
 }
 
 static int panel_hbm_set_cmdq(struct lcm *ctx, void *dsi, dcs_grp_write_gce cb, void *handle, uint32_t hbm_state)
 {
-	struct mtk_panel_para_table hbm_on_table = {3, {0x51, 0x0F, 0xFF}};
+	//struct mtk_panel_para_table hbm_on_table = {3, {0x51, 0x0F, 0xFF}};
 	unsigned int level = atomic_read(&ctx->current_bl);
 	unsigned int fps = atomic_read(&ctx->current_fps);
+
 	if (hbm_state > 2) return -1;
 
 	switch (hbm_state)
@@ -974,16 +1006,12 @@ static int panel_hbm_set_cmdq(struct lcm *ctx, void *dsi, dcs_grp_write_gce cb, 
 			if (ctx->lhbm_en) {
 				panel_lhbm_set_cmdq(dsi, cb, handle, 0, level,  fps);
 
-			} else {
-				cb(dsi, handle, &hbm_on_table, 1);
 			}
 			break;
 		case 2:
 			if (ctx->lhbm_en){
 				panel_lhbm_set_cmdq(dsi, cb, handle, 1, level,  fps);
 			}
-			else
-				cb(dsi, handle, &hbm_on_table, 1);
 			break;
 		default:
 			break;
@@ -992,19 +1020,12 @@ static int panel_hbm_set_cmdq(struct lcm *ctx, void *dsi, dcs_grp_write_gce cb, 
 	atomic_set(&ctx->hbm_mode, hbm_state);
 	return 0;
 }
-
 static struct mtk_panel_para_table panel_dc_off[] = {
-	{2, {0x6F, 0x01}},
-	{2, {0x8B, 0x00}},
-	{6, {0xF0, 0x55, 0xAA, 0x52, 0x08, 0x00}},
-	{27, {0xB3, 0x00, 0x04, 0x04, 0x5C, 0x04, 0x5C, 0x06, 0xCC, 0x06, 0xCC, 0x09, 0xD0, 0x09, 0xD0, 0x0D, 0xC8, 0x0D, 0xC8, 0x10, 0xAF, 0x10, 0xAF, 0x10, 0xB0, 0x10, 0xB0}},
+	{2, {0x5E,0x00}},
 };
 
 static struct mtk_panel_para_table panel_dc_on[] = {
-	{2, {0x6f, 0x01}},
-	{2, {0x8B, 0x81}},
-	{6, {0xF0, 0x55, 0xAA, 0x52, 0x08, 0x00}},
-	{27, {0xB3, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x10, 0xB0}},
+	{2, {0x5E,0x01}},
 };
 
 static int pane_dc_set_cmdq(struct lcm *ctx, void *dsi, dcs_grp_write_gce cb, void *handle, uint32_t dc_state)
@@ -1118,34 +1139,45 @@ struct panel_desc {
 };
 static int lcm_get_modes(struct drm_panel *panel, struct drm_connector *connector)
 {
-	struct drm_display_mode *mode;
 	struct drm_display_mode *mode1;
 	struct drm_display_mode *mode2;
+	struct drm_display_mode *mode3;
+	//struct drm_display_mode *mode4;
 
-	printk("%s enter  \n",__func__);
-	mode = drm_mode_duplicate(connector->dev, &default_mode);
-	if (!mode) {
-		dev_err(connector->dev->dev, "failed to add mode %ux%ux@%u\n",
-			default_mode.hdisplay, default_mode.vdisplay,
-			drm_mode_vrefresh(&default_mode));
+	mode1 = drm_mode_duplicate(connector->dev, &mode_120hz);
+	if (!mode1) {
+		dev_info(connector->dev->dev, "failed to add mode %ux%ux@%u\n",
+			 mode_120hz.hdisplay, mode_120hz.vdisplay,
+			 drm_mode_vrefresh(&mode_120hz));
 		return -ENOMEM;
 	}
-	drm_mode_set_name(mode);
-	mode->type = DRM_MODE_TYPE_DRIVER | DRM_MODE_TYPE_PREFERRED;
-	drm_mode_probed_add(connector, mode);
-	mode1 = drm_mode_duplicate(connector->dev, &mode_90);
-	if (!mode1)
-		return -ENOMEM;
+
 	drm_mode_set_name(mode1);
-	mode1->type = DRM_MODE_TYPE_DRIVER;
+	mode1->type = DRM_MODE_TYPE_DRIVER | DRM_MODE_TYPE_PREFERRED;
 	drm_mode_probed_add(connector, mode1);
-	mode2 = drm_mode_duplicate(connector->dev, &mode_60);
+
+	mode2 = drm_mode_duplicate(connector->dev, &mode_90hz);
 	if (!mode2) {
-		dev_err(connector->dev->dev, "failed to add mode %ux%ux@%u\n",
-			mode_60.hdisplay, mode_60.vdisplay,
-			drm_mode_vrefresh(&mode_60));
+		dev_info(connector->dev->dev, "failed to add mode %ux%ux@%u\n",
+			 mode_90hz.hdisplay, mode_90hz.vdisplay,
+			 drm_mode_vrefresh(&mode_90hz));
 		return -ENOMEM;
 	}
+
+	drm_mode_set_name(mode2);
+	mode2->type = DRM_MODE_TYPE_DRIVER;
+	drm_mode_probed_add(connector, mode2);
+
+	mode3 = drm_mode_duplicate(connector->dev, &mode_60hz);
+	if (!mode3) {
+		dev_info(connector->dev->dev, "failed to add mode %ux%ux@%u\n",
+			 mode_60hz.hdisplay, mode_60hz.vdisplay,
+			 drm_mode_vrefresh(&mode_60hz));
+		return -ENOMEM;
+	}
+	drm_mode_set_name(mode3);
+	mode3->type = DRM_MODE_TYPE_DRIVER;
+	drm_mode_probed_add(connector, mode3);
 
 	connector->display_info.width_mm = 64;
 	connector->display_info.height_mm = 129;
@@ -1288,7 +1320,7 @@ static void lcm_remove(struct mipi_dsi_device *dsi)
 #endif
 }
 static const struct of_device_id lcm_of_match[] = {
-	{ .compatible = "csot,nt37706,gt9916,vdo,667" },
+	{ .compatible = "boe,vtdr6126,gt9916,vdo,667" },
 	{ }
 };
 MODULE_DEVICE_TABLE(of, lcm_of_match);
@@ -1296,12 +1328,12 @@ static struct mipi_dsi_driver lcm_driver = {
 	.probe = lcm_probe,
 	.remove = lcm_remove,
 	.driver = {
-		.name = "csot_nt37706_667_vdo_1220_2712",
+		.name = "boe_vtdr6126_667_vdo_1220_2712",
 		.owner = THIS_MODULE,
 		.of_match_table = lcm_of_match,
 	},
 };
 module_mipi_dsi_driver(lcm_driver);
 MODULE_AUTHOR("Randy Lin <randy.lin@mediatek.com>");
-MODULE_DESCRIPTION("NT37706 VDO LCD Panel Driver");
+MODULE_DESCRIPTION("vtdr6126 VDO LCD Panel Driver");
 MODULE_LICENSE("GPL v2");
