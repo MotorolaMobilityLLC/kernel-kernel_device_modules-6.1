@@ -63,7 +63,7 @@
 		/delete-property/ reset-gpios;
 		/delete-property/ gate-ic;
 
-		compatible = "csot,nt37706,gt9916,vdo,667";
+		compatible = "boe,vtdr6126,gt9916,vdo,667";
 		reg = <2>;
 		/*pm-enable-gpios = <&pio 149 0>;*/
 		reset-gpios = <&pio 90 0>;
@@ -101,6 +101,7 @@
 			};
 		};
 	};
+
 	ports {
 		port {
 			dsi_out3: endpoint3 {
