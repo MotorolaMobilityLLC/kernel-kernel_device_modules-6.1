@@ -269,7 +269,7 @@
 	pinctrl-names = "default","sleep";
 	pinctrl-0 = <&phone_case_int_default>;
 	pinctrl-1 = <&phone_case_int_sleep>;
-	hall,factory-class-name = "hall_16";
+	hall,factory-class-name = "hall_gpio";
 	hall,input-dev-name = "phone_case_hall_sensor";
 	/* hall_vdd-supply = <&pm8350c_l8>; */
 	hall,nirq-gpio-num = <1>;
