@@ -117,6 +117,11 @@ config FTS_VDD_GPIO_CONTROL
 	help
 		Say Y here if need to control vdd by gpio.
 
+config FTS_POWER_PMU_CONTROL
+	bool "VDD ~3.3V controlled by pmu"
+	help
+		Say Y here if need to control vdd by pmu.
+
 config FTS_DOUBLE_TAP_CONTROL
 	bool "Support touch wake gesture feature"
 	help
