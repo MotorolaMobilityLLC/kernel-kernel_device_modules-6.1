@@ -20,8 +20,8 @@
 	fragment@model {
 		target-path = "/";
 		__overlay__ {
-			mot,model = "cybert";
-			mot,board-id = <0x43 0x9100>;
+			mot,model = "fuji";
+			mot,board-id = <0x41 0xA100>;
 		};
 	};
 };
