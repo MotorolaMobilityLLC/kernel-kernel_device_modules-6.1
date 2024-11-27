@@ -25,10 +25,12 @@
 
 #define DIC_COMMAND_MODE_AOD
 
+#if 0
 #define AOD_AREA_IZE 1416
 #define AOD_Y_START_MIN 0
 #define AOD_Y_START_MAX 378
 #define AOD_Y_START_STEP_MIN 4
+#endif
 
 #define CONFIG_MTK_PANEL_EXT
 #if defined(CONFIG_MTK_PANEL_EXT)
@@ -72,7 +74,7 @@ struct lcm {
 	atomic_t current_fps;
 	atomic_t pcd_mode;
 	atomic_t doze_enable;
-	atomic_t current_aod_y_start;
+	//atomic_t current_aod_y_start;
 	enum panel_version version;
 };
 
@@ -1181,6 +1183,7 @@ static int panel_ext_powerdown(struct drm_panel *panel)
 	return 0;
 }
 
+#if 0
 static char aod_area_cmd[] ={0x2B, 0x00, 0x00, 0x05, 0x87};
 
 static int panel_doze_area(struct drm_panel *panel,
@@ -1215,6 +1218,7 @@ static int panel_doze_area(struct drm_panel *panel,
 	atomic_set(&ctx->doze_enable, 1);
 	return 0;
 }
+#endif
 
 static struct mtk_panel_para_table aod_en_start_cmd[] = {
 		{1, {0x28}},
@@ -1279,7 +1283,7 @@ static int panel_doze_enable(struct drm_panel *panel, void *dsi, dcs_write_gce c
 static struct mtk_panel_para_table aod_disable_cmd[] = {
 		{1, {0x38}},
 		{2, {0x6f, 0x01}},
-		{5, {0x2B, 0x00, 0x00, 0x05, 0x87}},
+		//{5, {0x2B, 0x00, 0x00, 0x05, 0x87}},
 	};
 
 static int panel_doze_disable(struct drm_panel *panel, void *dsi, dcs_write_gce cb,
@@ -1307,7 +1311,7 @@ static int panel_doze_disable(struct drm_panel *panel, void *dsi, dcs_write_gce 
 	}
 
 	atomic_set(&ctx->doze_enable, 0);
-	atomic_set(&ctx->current_aod_y_start, AOD_Y_START_MIN);
+	//atomic_set(&ctx->current_aod_y_start, AOD_Y_START_MIN);
 
 	usleep_range(40 * 1000, 41 * 1000);
 
@@ -1353,7 +1357,7 @@ static struct mtk_panel_funcs ext_funcs = {
 	.doze_enable_start = panel_doze_enable_start,
 	.doze_disable = panel_doze_disable,
 	.doze_enable = panel_doze_enable,
-	.doze_area = panel_doze_area,
+	//.doze_area = panel_doze_area,
 };
 #endif
 
