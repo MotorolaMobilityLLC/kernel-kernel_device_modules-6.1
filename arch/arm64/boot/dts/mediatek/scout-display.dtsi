@@ -184,3 +184,12 @@
 &dispsys_config {
 	force-disable-idlemgr-by-repaint;
 };
+
+&mtk_leds {
+	backlight {
+		/delete-property/ max-hw-brightness;
+		/delete-property/ max-brightness;
+		max-brightness = <16181>;
+		max-hw-brightness = <16181>;
+	};
+};
