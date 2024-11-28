@@ -97,6 +97,17 @@ static bool is_typec_adapter(struct mtk_charger *info)
 	return false;
 }
 
+static bool mmi_is_charging_done(struct mtk_charger *info)
+{
+	if (info->mmi.sm_param[BASE_BATT].pres_chrg_step == STEP_FULL)
+		return true;
+
+	if (info->mmi.enable_ifc && info->mmi.ifc_is_working && (info->mmi.pres_ifc_step == IFC_STEP_FULL))
+		return true;
+
+	return false;
+}
+
 static bool support_fast_charging(struct mtk_charger *info)
 {
 	struct chg_alg_device *alg;
@@ -325,7 +336,7 @@ static bool select_charging_current_limit(struct mtk_charger *info,
 
 	/*When charging FULL mt6375 trigger pwr rdy interrupt frequent.
 	It can't be reproduced by reduce ICL when FULL.*/
-	if (info->mmi.sm_param[BASE_BATT].pres_chrg_step == STEP_FULL)
+	if (mmi_is_charging_done(info))
 		pdata->input_current_limit = 500000;
 
 	charger_dev_qc_is_detect(info->chg1_dev, &qc_is_detect);
@@ -495,7 +506,7 @@ static int do_algorithm(struct mtk_charger *info)
 #ifdef MTK_BASE
 	charger_dev_is_charging_done(info->chg1_dev, &chg_done);
 #else
-	if (info->mmi.sm_param[BASE_BATT].pres_chrg_step == STEP_FULL)
+	if (mmi_is_charging_done(info))
 		chg_done = true;
 #endif
 	is_basic = select_charging_current_limit(info, &info->setting);
