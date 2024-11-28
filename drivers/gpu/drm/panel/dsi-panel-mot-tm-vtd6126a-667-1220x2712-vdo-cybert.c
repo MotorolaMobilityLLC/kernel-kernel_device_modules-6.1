@@ -176,6 +176,11 @@ static void lcm_panel_init(struct lcm *ctx)
 	//Vesa PPS (DSC V1.1)
 	//	lcm_dcs_write_seq_static(ctx, 0x70, 0x11,0x00,0x00,0x89,0x30,0x80,0x0a,0x98,0x04,0xc4,0x00,0x0c,0x02,0x62,0x02,0x62,0x02,0x00,0x02,0x32,0x00,0x20,0x01,0x31,0x00,0x08,0x00,0x0c,0x08,0xbb,0x07,0x7b,0x18,0x00,0x10,0xf0,0x03,0x0c,0x20,0x00,0x06,0x0b,0x0b,0x33,0x0e,0x1c,0x2a,0x38,0x46,0x54,0x62,0x69,0x70,0x77,0x79,0x7b,0x7d,0x7e,0x01,0x02,0x01,0x00,0x09,0x40,0x09,0xbe,0x19,0xfc,0x19,0xfa,0x19,0xf8,0x1a,0x38,0x1a,0x78,0x1a,0xb6,0x2a,0xb6,0x2a,0xf4,0x2a,0xf4,0x4b,0x34,0x63,0x74,0x00,0x00,0x00,0x00,0x00,0x00);
 	lcm_dcs_write_seq_static(ctx, 0x70, 0x11,0x00,0x00,0xAB,0x30,0x80,0x0A,0x98,0x04,0xC4,0x00,0x0C,0x02,0x62,0x02,0x62,0x02,0x00,0x01,0x1A,0x00,0x20,0x02,0x5B,0x00,0x08,0x00,0x01,0x00,0xBB,0x07,0x7B,0x18,0x00,0x10,0xF0,0x07,0x10,0x20,0x00,0x06,0x0F,0x0F,0x33,0x0E,0x1C,0x2A,0x38,0x46,0x54,0x62,0x69,0x70,0x77,0x79,0x7B,0x7D,0x7E,0x02,0x02,0x22,0x00,0x2A,0x40,0x2A,0xBE,0x3A,0xFC,0x3A,0xFA,0x3A,0xF8,0x3B,0x38,0x3B,0x78,0x3B,0xB6,0x4B,0xB6,0x4B,0xF4,0x4B,0xF4,0x6C,0x34,0x84,0x74,0x00,0x00,0x00,0x00,0x00,0x00);
+
+	lcm_dcs_write_seq_static(ctx, 0xF0, 0xAA,0x10);
+	lcm_dcs_write_seq_static(ctx, 0xB1, 0x01,0x9C,0x00,0x0F,0x00,0x39,0x00,0x01,0x9C,0x00,0x0F,0x03,0xD9,0x00,0x01,0x9C,0x00,0x0F,0x0B,0x19,0x00,0x01,0x9C,0x00,0x0F,0x10,0x89,0x00);
+	lcm_dcs_write_seq_static(ctx, 0xB2, 0x01,0x9C,0x00,0x0F,0x00,0x39,0x03,0x01,0x9C,0x00,0x0F,0x00,0x39,0x03,0x01,0x9C,0x00,0x0F,0x00,0x39,0x03);
+
 	//LV ON
 	lcm_dcs_write_seq_static(ctx, 0xf0, 0xaa, 0x16);
 	lcm_dcs_write_seq_static(ctx, 0xd1, 0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00);
@@ -340,17 +345,17 @@ static int lcm_enable(struct drm_panel *panel)
 }
 
 #define FHDP_FRAME_WIDTH    (1220)
-#define FHDP_HFP            (32)
-#define FHDP_HSA            (4)
-#define FHDP_HBP            (32)
+#define FHDP_HFP            (16)
+#define FHDP_HSA            (8)
+#define FHDP_HBP            (8)
 #define FHDP_HTOTAL         (FHDP_FRAME_WIDTH + FHDP_HFP + FHDP_HSA + FHDP_HBP)
 #define FHDP_FRAME_HEIGHT   (2712)
-#define FHDP_VFP_120        (56)
-#define FHDP_VFP_90         (984)
-#define FHDP_VFP_60         (2840)
-#define FHDP_VFP_48         (4232)
+#define FHDP_VFP_120        (57)
+#define FHDP_VFP_90         (985)
+#define FHDP_VFP_60         (2841)
+#define FHDP_VFP_48         (4233)
 #define FHDP_VSA            (2)
-#define FHDP_VBP            (14)
+#define FHDP_VBP            (13)
 #define FHDP_VTOTAL_120     (FHDP_FRAME_HEIGHT + FHDP_VFP_120 + FHDP_VSA + FHDP_VBP)
 #define FHDP_VTOTAL_90      (FHDP_FRAME_HEIGHT + FHDP_VFP_90 + FHDP_VSA + FHDP_VBP)
 #define FHDP_VTOTAL_60      (FHDP_FRAME_HEIGHT + FHDP_VFP_60 + FHDP_VSA + FHDP_VBP)
@@ -428,7 +433,7 @@ static const struct drm_display_mode mode_120hz = {
 #if defined(CONFIG_MTK_PANEL_EXT)
 #if 0
 static struct mtk_panel_params ext_params_48hz = {
-	.pll_clk = 615,
+	.pll_clk = 441,
 	//.vfp_low_power = 4180,
 	.cust_esd_check = 1,
 	.esd_check_enable = 1,
@@ -441,6 +446,7 @@ static struct mtk_panel_params ext_params_48hz = {
 	.physical_width_um = 69540,
 	.physical_height_um = 154454,
 	.lp_perline_en = 1,
+	.vdo_per_frame_lp_enable = 1,
 	.output_mode = MTK_PANEL_DSC_SINGLE_PORT,
 
 	.dsc_params = {
@@ -448,7 +454,7 @@ static struct mtk_panel_params ext_params_48hz = {
 		.ver = 17,
 		.slice_mode = 1,
 		.rgb_swap = 0,
-		.dsc_cfg = 40,
+		.dsc_cfg = 2088,
 		.rct_on = 1,
 		.bit_per_channel = 10,
 		.dsc_line_buf_depth = 11,
@@ -487,7 +493,7 @@ static struct mtk_panel_params ext_params_48hz = {
 		},
 	},
 
-	.data_rate = 1230,
+	.data_rate = 882,
 	.lfr_enable = 0,
 	.lfr_minimum_fps = 60,
 
@@ -506,7 +512,7 @@ static struct mtk_panel_params ext_params_48hz = {
 };
 #endif
 static struct mtk_panel_params ext_params_60hz = {
-	.pll_clk = 553,
+	.pll_clk = 441,
 	//.vfp_low_power = 4180,
 	.cust_esd_check = 1,
 	.esd_check_enable = 1,
@@ -518,6 +524,8 @@ static struct mtk_panel_params ext_params_60hz = {
 	.lcm_color_mode = MTK_DRM_COLOR_MODE_DISPLAY_P3,
 	.physical_width_um = 69540,
 	.physical_height_um = 154454,
+	.lp_perline_en = 1,
+	.vdo_per_frame_lp_enable = 1,
 	.output_mode = MTK_PANEL_DSC_SINGLE_PORT,
 
 	.dsc_params = {
@@ -525,7 +533,7 @@ static struct mtk_panel_params ext_params_60hz = {
 		.ver = 17,
 		.slice_mode = 1,
 		.rgb_swap = 0,
-		.dsc_cfg = 2088,//34,//40,
+		.dsc_cfg = 2088,
 		.rct_on = 1,
 		.bit_per_channel = 10,
 		.dsc_line_buf_depth = 11,
@@ -564,7 +572,7 @@ static struct mtk_panel_params ext_params_60hz = {
 		},
 	},
 
-	.data_rate = 1106,
+	.data_rate = 882,
 	.lfr_enable = 0,
 	.lfr_minimum_fps = 60,
 	.change_fps_by_vfp_send_cmd = 1,
@@ -592,7 +600,7 @@ static struct mtk_panel_params ext_params_60hz = {
 };
 
 static struct mtk_panel_params ext_params_90hz = {
-	.pll_clk = 553,
+	.pll_clk = 441,
 	//.vfp_low_power = 2578,
 	.cust_esd_check = 1,
 	.esd_check_enable = 1,
@@ -604,6 +612,8 @@ static struct mtk_panel_params ext_params_90hz = {
 	.lcm_color_mode = MTK_DRM_COLOR_MODE_DISPLAY_P3,
 	.physical_width_um = 69540,
 	.physical_height_um = 154454,
+	.lp_perline_en = 1,
+	.vdo_per_frame_lp_enable = 1,
 	.output_mode = MTK_PANEL_DSC_SINGLE_PORT,
 	.dsc_param_load_mode = 0, //0: default flow; 1: key param only; 2: full control
 	.dsc_params = {
@@ -611,7 +621,7 @@ static struct mtk_panel_params ext_params_90hz = {
 		.ver = 17,
 		.slice_mode = 1,
 		.rgb_swap = 0,
-		.dsc_cfg = 2088,//34,//40,
+		.dsc_cfg = 2088,
 		.rct_on = 1,
 		.bit_per_channel = 10,
 		.dsc_line_buf_depth = 11,
@@ -649,7 +659,7 @@ static struct mtk_panel_params ext_params_90hz = {
 			.range_bpg_ofs = vtd6126a_vdo_range_bpg_ofs,
 		},
 	},
-	.data_rate = 1106,
+	.data_rate = 882,
 	.lfr_enable = 0,
 	.lfr_minimum_fps = 60,
 	.change_fps_by_vfp_send_cmd = 1,
@@ -677,7 +687,7 @@ static struct mtk_panel_params ext_params_90hz = {
 };
 
 static struct mtk_panel_params ext_params_120hz = {
-	.pll_clk = 553,
+	.pll_clk = 441,
 	//.vfp_low_power = 2578,
 	.cust_esd_check = 1,
 	.esd_check_enable = 1,
@@ -689,6 +699,8 @@ static struct mtk_panel_params ext_params_120hz = {
 	.lcm_color_mode = MTK_DRM_COLOR_MODE_DISPLAY_P3,
 	.physical_width_um = 69540,
 	.physical_height_um = 154454,
+	.lp_perline_en = 1,
+	.vdo_per_frame_lp_enable = 1,
 	.output_mode = MTK_PANEL_DSC_SINGLE_PORT,
 	.dsc_param_load_mode = 0, //0: default flow; 1: key param only; 2: full control
 	.dsc_params = {
@@ -696,7 +708,7 @@ static struct mtk_panel_params ext_params_120hz = {
 		.ver = 17,
 		.slice_mode = 1,
 		.rgb_swap = 0,
-		.dsc_cfg = 2088,//34,//40,
+		.dsc_cfg = 2088,
 		.rct_on = 1,
 		.bit_per_channel = 10,
 		.dsc_line_buf_depth = 11,
@@ -734,7 +746,7 @@ static struct mtk_panel_params ext_params_120hz = {
 			.range_bpg_ofs = vtd6126a_vdo_range_bpg_ofs,
 		},
 	},
-	.data_rate = 1106,
+	.data_rate = 882,
 	.lfr_enable = 0,
 	.lfr_minimum_fps = 60,
 	.change_fps_by_vfp_send_cmd = 1,
