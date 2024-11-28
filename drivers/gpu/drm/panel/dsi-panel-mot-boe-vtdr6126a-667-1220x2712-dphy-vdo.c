@@ -226,7 +226,7 @@ static void lcm_panel_init(struct lcm *ctx)
 	lcm_dcs_write_seq_static(ctx, 0x2B, 0x00, 0x00, 0x05, 0x87);
 
 	lcm_dcs_write_seq_static(ctx, 0x11);
-	usleep_range(100 * 1000, 101 * 1000);
+	usleep_range(85 * 1000, 86 * 1000);
 	lcm_dcs_write_seq_static(ctx, 0x29);
 
 	atomic_set(&ctx->hbm_mode, 0);
@@ -301,9 +301,9 @@ static int lcm_unprepare(struct drm_panel *panel)
 		return 0;
 
 	lcm_dcs_write_seq_static(ctx, 0x28);
-	msleep(50);
+	msleep(10);
 	lcm_dcs_write_seq_static(ctx, 0x10);
-	msleep(150);
+	msleep(90);
 
 	ctx->error = 0;
 	ctx->prepared = false;
