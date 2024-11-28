@@ -4428,7 +4428,7 @@ static void mmi_ifc_heart_work(struct mtk_charger *info, int batt_mv, int batt_m
 	}
 
 	pr_info("IFC:[%s]"
-			" Now ifc zone is %d, step is %d, "
+			" Now ifc zone %d, now ifc step %d, "
 			"CV Volt %d mV, MAX Current %d mA, "
 			"Taper Current %d mA\n", __func__, mmi->pres_ifc_zone, mmi->pres_ifc_step,
 			info->mmi.ifc_zones[mmi->pres_ifc_zone].norm_mv,
