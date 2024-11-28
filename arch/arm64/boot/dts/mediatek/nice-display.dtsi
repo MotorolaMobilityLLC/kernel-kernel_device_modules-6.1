@@ -182,3 +182,7 @@
 		status = "disabled";
 	};
 };
+
+&dispsys_config {
+	force-disable-idlemgr-by-repaint;
+};
