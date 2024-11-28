@@ -979,7 +979,6 @@ static void set_lhbm_alpha(unsigned int bl_level)
 		pTable->para_list[3] = (bl_level >> 8) & 0xFF;
 		pTable->para_list[4] = bl_level & 0xFF;
 		pTable->para_list[5] = 1;
-	pTable->para_list[14] = alpha & 0xFF;
 	} else if (bl_level > 0x10AF) {
 		pTable->para_list[1] = 0x10;
 		pTable->para_list[2] = 0x00;
