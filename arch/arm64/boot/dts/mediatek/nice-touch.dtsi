@@ -61,12 +61,12 @@
 		focaltech,panel-supplier = "boe";
 		spi-max-frequency = <9600000>;
 //		focaltech,vdd-gpio = <&pio 183 0x0>;
-		vdd-supply= <&mt6369_vant18>;
+		vdd-supply= <&mt6369_vtp>;
 		focaltech,reset-gpio = <&pio 152 0x0>;
 		focaltech,irq-gpio = <&pio 7 0x2002>;
 		vant18-supply = <&mt6369_vant18>;
 //		vtp-supply = <&mt6369_vtp>;
-		vcc_i2c-supply = <&mt6369_vtp>;
+		vcc_i2c-supply = <&mt6369_vant18>;
 		focaltech,max-touch-number = <10>;
 		focaltech,display-coords =  <0 0 19520 43392>;
 		focaltech,edge-ctrl;
