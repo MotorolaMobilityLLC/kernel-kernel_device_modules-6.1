@@ -26,6 +26,7 @@
                 reg = <0x35>;
                 reset-gpio= <&pio 21 0>;
                 reset-polarity=<0>;
+                irq-gpio=<&pio 19 0>;
                 status = "okay";
         };
 
@@ -37,6 +38,7 @@
                 reg = <0x34>;
                 reset-gpio= <&pio 22 0>;
                 reset-polarity=<0>;
+                irq-gpio=<&pio 20 0>;
                 status = "okay";
         };
 };
