@@ -155,12 +155,16 @@ config ENABLE_FTS_PALM_CANCEL_BY_ID
 	help
 		Say Y here if support report touch palm cancel by ID feature.
 
-
 config INPUT_FOCALTECH_V3_MMI_ENABLE_DOUBLE_TAP
 
 	bool "Support tap sensor"
 	help
 		Say Y here if need to enable tap sensor.
+
+config FTS_LAST_TIME
+	bool "Support get the timestamp of last touch event for focaltech"
+	help
+		Say Y here if need to get the timestamp of last touch event.
 
 config TOUCHSCREEN_GOODIX_TIMING
 	bool "TP timing repair"
