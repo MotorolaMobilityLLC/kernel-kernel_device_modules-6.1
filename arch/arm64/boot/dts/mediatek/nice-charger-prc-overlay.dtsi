@@ -46,5 +46,6 @@
 
 	df-serialnum = "ATLRN60NVT";
 	#include "bat_setting/mt6878_battery_table_nice_nvt_6000mah.dtsi"
+	#include "bat_setting/mt6878_battery_table_nice_xwd_6000mah.dtsi"
 };
 
