@@ -190,7 +190,7 @@ static void lcm_panel_init(struct lcm *ctx)
 #if defined(DIC_COMMAND_MODE_AOD)
 	lcm_dcs_write_seq_static(ctx, 0xF0, 0x55, 0xAA, 0x52, 0x08, 0x00);
 	lcm_dcs_write_seq_static(ctx, 0xC0, 0x20, 0x00);
-	lcm_dcs_write_seq_static(ctx, 0x8D, 0x00, 0x00, 0x04, 0xC3, 0x01, 0x50, 0x05, 0x87);
+	lcm_dcs_write_seq_static(ctx, 0x8D, 0x00, 0x00, 0x04, 0xC3, 0x00, 0x00, 0x05, 0x87);
 	lcm_dcs_write_seq_static(ctx, 0x17, 0x21);
 	lcm_dcs_write_seq_static(ctx, 0x71, 0x11);
 	lcm_dcs_write_seq_static(ctx, 0xF0, 0x55, 0xAA, 0x52, 0x08, 0x04);
@@ -203,7 +203,7 @@ static void lcm_panel_init(struct lcm *ctx)
 	//VideomodeAODsetting
 	lcm_dcs_write_seq_static(ctx, 0x17, 0x03);
 	lcm_dcs_write_seq_static(ctx, 0x71, 0x00);
-	lcm_dcs_write_seq_static(ctx, 0x8D, 0x00, 0x00, 0x04, 0xC3, 0x01, 0x50, 0x05, 0x87);
+	lcm_dcs_write_seq_static(ctx, 0x8D, 0x00, 0x00, 0x04, 0xC3, 0x00, 0x00, 0x05, 0x87);
 #endif
 	lcm_dcs_write_seq_static(ctx, 0xF0, 0x55, 0xAA, 0x52, 0x08, 0x00);
 	lcm_dcs_write_seq_static(ctx, 0x6F, 0x1A);
@@ -269,7 +269,7 @@ static void lcm_panel_init(struct lcm *ctx)
 	atomic_set(&ctx->apl_mode, 0);
 	atomic_set(&ctx->current_bl, 0);
 	atomic_set(&ctx->current_fps, 120);
-	//////atomic_set(&ctx->current_aod_y_start, AOD_Y_START_MIN);
+	//atomic_set(&ctx->current_aod_y_start, AOD_Y_START_MIN);
 
 	pr_info("%s-\n", __func__);
 }
@@ -1253,7 +1253,7 @@ static int panel_doze_area(struct drm_panel *panel,
 
 		cb(dsi, handle, aod_area_cmd, ARRAY_SIZE(aod_area_cmd));
 
-		////atomic_set(&ctx->current_aod_y_start, current_y_start);
+		//atomic_set(&ctx->current_aod_y_start, current_y_start);
 	} else {
 		pr_info("%s: skip update doze area because of  doze_enable = %d\n", __func__, atomic_read(&ctx->doze_enable));
 	}
@@ -1300,7 +1300,7 @@ static int panel_doze_disable(struct drm_panel *panel, void *dsi, dcs_write_gce 
 	cb(dsi, handle, aod_disable_cmd, ARRAY_SIZE(aod_disable_cmd));
 
 	atomic_set(&ctx->doze_enable, 0);
-	////atomic_set(&ctx->current_aod_y_start, AOD_Y_START_MIN);
+	//atomic_set(&ctx->current_aod_y_start, AOD_Y_START_MIN);
 
 	usleep_range(120* 1000, 121 * 1000);
 
@@ -1499,7 +1499,7 @@ static int lcm_probe(struct mipi_dsi_device *dsi)
 	atomic_set(&ctx->apl_mode, 0);
 	atomic_set(&ctx->current_fps, 120);
 	atomic_set(&ctx->doze_enable, 0);
-	////atomic_set(&ctx->current_aod_y_start, AOD_Y_START_MIN);
+	//atomic_set(&ctx->current_aod_y_start, AOD_Y_START_MIN);
 
 	ctx->lhbm_en = 1;
 	pr_info("%s- lcm,tianma,nt37706,vdo,667\n", __func__);
