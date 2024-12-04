@@ -19,6 +19,9 @@
 #include "ccci_modem.h"
 #include "ccci_swtp.h"
 #include "ccci_fsm.h"
+#ifdef CONFIG_MOTO_SWTP_CUST
+#include "ccci_core.h"
+#endif
 
 /* must keep ARRAY_SIZE(swtp_of_match) = ARRAY_SIZE(irq_name) */
 const struct of_device_id swtp_of_match[] = {
@@ -64,6 +67,66 @@ static struct class swtp_class = {
 	.name			= "swtp",
 	.owner			= THIS_MODULE,
 };
+
+struct rfcable_state_t {
+	int	last_swtp_tx_power_mode;
+	bool	is_needed_to_reset_md;
+	struct	delayed_work	rfcable_delayed_work;
+};
+
+static struct rfcable_state_t rfcable_state;
+
+static void reboot_md_delayed_work(struct work_struct *work)
+{
+	if(rfcable_state.is_needed_to_reset_md && rfcable_state.last_swtp_tx_power_mode != swtp_tx_power_mode){
+		ccci_fsm_ioctl(CCCI_IOC_MD_RESET, 0);
+		rfcable_state.is_needed_to_reset_md = false;
+		rfcable_state.last_swtp_tx_power_mode = swtp_tx_power_mode;
+		CCCI_NORMAL_LOG(0, SYS, "%s reset MD\n", __func__);
+	}
+}
+
+static void rfcable_state_update(void)
+{
+	if(rfcable_state.is_needed_to_reset_md && rfcable_state.last_swtp_tx_power_mode != swtp_tx_power_mode){
+		schedule_delayed_work(&rfcable_state.rfcable_delayed_work, 2 * HZ);
+		CCCI_NORMAL_LOG(0, SYS, "%s schedule reset MD\n", __func__);
+	}
+}
+
+void set_rfcable_monitor_state(bool state)
+{
+	rfcable_state.is_needed_to_reset_md = state;
+	if(rfcable_state.is_needed_to_reset_md == true && rfcable_state.last_swtp_tx_power_mode == -1)
+		rfcable_state.last_swtp_tx_power_mode = swtp_tx_power_mode;//initial value for first bootup
+}
+
+void force_modem_reset(void)
+{
+	ccci_fsm_ioctl(CCCI_IOC_MD_RESET, 0);
+}
+
+unsigned int get_rfcable_state(void)
+{
+	unsigned int ret = 0;
+#ifdef CONFIG_TARGET_BUILD_FACTORY
+	if (swtp_tx_power_mode == SWTP_NO_TX_POWER) {
+		ret = 1;
+	}
+	else{
+		ret = 0;
+	}
+#else
+	if (swtp_tx_power_mode == SWTP_NO_TX_POWER) {
+		ret = 3;
+	}
+	else{
+		ret = 2;
+	}
+#endif
+
+	return ret;
+}
 #endif
 
 #ifdef CONFIG_MOTO_SWTP_CUST
@@ -242,6 +305,7 @@ static int swtp_switch_state(int irq, struct swtp_t *swtp)
 #endif
 #if defined(CONFIG_MOTO_SWTP_CUST)
     swtp_tx_power_mode = swtp->tx_power_mode;
+    rfcable_state_update();
 #endif
 
 	spin_unlock_irqrestore(&swtp->spinlock, flags);
@@ -405,6 +469,9 @@ int swtp_init(void)
 {
 #if defined(CONFIG_MOTO_SWTP_CUST)
 	char bypass_rfcable_detect_str[16] = "false";
+		/* rfcable state work setting */
+	INIT_DELAYED_WORK(&rfcable_state.rfcable_delayed_work,
+		reboot_md_delayed_work);
 #endif
 	/* init woke setting */
 	INIT_DELAYED_WORK(&swtp_data.init_delayed_work,
@@ -420,6 +487,8 @@ int swtp_init(void)
 
 	#if defined(CONFIG_MOTO_SWTP_CUST)
 	swtp_tx_power_mode = swtp_data.tx_power_mode;
+	rfcable_state.is_needed_to_reset_md = false;
+	rfcable_state.last_swtp_tx_power_mode = -1;
 	#endif
 
 	spin_lock_init(&swtp_data.spinlock);

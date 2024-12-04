@@ -44,6 +44,11 @@
 #ifdef CONFIG_MOTO_DRDI_SUPPORT
 #include "mt-plat/mtk_ccci_common.h"
 #endif
+#ifdef CONFIG_MOTO_SWTP_CUST
+extern unsigned int get_rfcable_state(void);
+extern void force_modem_reset(void);
+extern void set_rfcable_monitor_state(bool state);
+#endif
 
 static struct gpio_item gpio_mapping_table[] = {
 	{"GPIO_FDD_Band_Support_Detection_1",
@@ -1328,6 +1333,48 @@ static void ccci_rpc_work_helper(struct port_t *port, struct rpc_pkt *pkt,
 			pkt[pkt_num].len = product_data_len;
 			pkt[pkt_num++].buf = (void *)product_data;
 
+			break;
+		}
+#endif
+
+#ifdef CONFIG_MOTO_SWTP_CUST
+	case IPC_RPC_RFCABLE_OP:
+		{
+			unsigned int rfcable_op = 0;
+			int val = 0;
+
+			if (pkt_num != 1) {
+				CCCI_ERROR_LOG(0, RPC,
+					"invalid parameter for [0x%X]: pkt_num=%d!\n",
+					p_rpc_buf->op_id, pkt_num);
+				tmp_data[0] = FS_PARAM_ERROR;
+				goto rfcable_err;
+			}
+
+			rfcable_op = *(unsigned int *)(pkt[0].buf);
+			if (rfcable_op == 0){
+				val = get_rfcable_state();
+			}
+			else if (rfcable_op == 1){
+				set_rfcable_monitor_state(true);
+			}
+			else if (rfcable_op == 2){
+				set_rfcable_monitor_state(false);
+			}
+			else if (rfcable_op == 3){
+				force_modem_reset();
+			}
+
+			tmp_data[0] = val;
+			CCCI_NORMAL_LOG(0, RPC, "[0x%X]: rfcable op=%d, val=%d\n",
+				p_rpc_buf->op_id, rfcable_op, tmp_data[0]);
+
+ rfcable_err:
+			pkt_num = 0;
+			pkt[pkt_num].len = sizeof(unsigned int);
+			pkt[pkt_num++].buf = (void *)&tmp_data[0];
+			pkt[pkt_num].len = sizeof(unsigned int);
+			pkt[pkt_num++].buf = (void *)&tmp_data[0];
 			break;
 		}
 #endif

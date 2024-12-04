@@ -59,6 +59,9 @@ enum RPC_OP_ID {
 #ifdef CONFIG_MOTO_DRDI_SUPPORT
 	IPC_RPC_PRODUCT_OP = 0x5000,  //product data
 #endif
+#ifdef CONFIG_MOTO_SWTP_CUST
+	IPC_RPC_RFCABLE_OP = 0x5001,  //RF cable operation
+#endif
 #ifdef CONFIG_MOTO_CCCI_SEC_SUPPORT
 	IPC_RPC_CIDDATA_OP = 0x5010,  //CID data
 #endif
