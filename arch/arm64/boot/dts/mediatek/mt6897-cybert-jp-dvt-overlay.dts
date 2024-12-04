@@ -69,6 +69,28 @@
                                 4000000 3000000 2000000 1500000 1000000>;
 };
 
+&charger {
+	/*typec_otp*/
+	mmi,typecotp-charger;
+};
+
+&spmi {
+	second_pmic@5 {
+		regulators {
+			mt6368_mos_con1: mos-con1 {
+				regulator-name = "mt6368_mos_con1";
+			};
+		};
+	};
+};
+
+&mt6375_chg {
+	mmi,otp-mos-regulator-name = "mt6368_mos_con1";
+};
+
+&mt6375_typec {
+	mmi,en-moto-typec-otp;
+};
 
 #include <cybert_evb/cust.dtsi>
 #include "mediatek/cust_cybert_camera_v4l2_flash_compatible.dtsi"
