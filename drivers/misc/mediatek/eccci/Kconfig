@@ -70,3 +70,12 @@ config MOTO_SWTP_CUST
 	  then it is supported, if no,
 	  it is disabled.
 	  The option default disabled.
+
+config TARGET_BUILD_FACTORY
+	bool "Identify if it's a factory build"
+	depends on MTK_ECCCI_DRIVER
+	help
+	  This is a factory build, if yes,
+	  then it is a customer build, if no,
+	  it is disabled.
+	  The option default disabled.
