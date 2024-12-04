@@ -494,6 +494,14 @@ enum MTK_CRTC_PROP {
 #define USER_SCEN_BLANK (BIT(0))
 #define USER_SCEN_SKIP_PANEL_SWITCH (BIT(1))
 #define USER_SCEN_SAME_POWER_MODE (BIT(2))
+#define USER_SCEN_ASYNC_EARLY_POWER_ON (BIT(3))
+
+
+enum disp_hrt_usage {
+	DISP_DISABLE,
+	DISP_ENABLE,
+	DISP_OPENING,
+};
 
 enum MTK_CRTC_COLOR_FMT {
 	CRTC_COLOR_FMT_UNKNOWN = 0,
@@ -959,6 +967,7 @@ struct mtk_drm_crtc {
 	unsigned int layer_nr;
 	bool pending_planes;
 	unsigned int ovl_usage_status;
+	enum disp_hrt_usage cur_usage;
 	void __iomem *ovlsys0_regs;
 	resource_size_t ovlsys0_regs_pa;
 	void __iomem *ovlsys1_regs;
@@ -1038,6 +1047,8 @@ struct mtk_drm_crtc {
 	atomic_t already_config;
 	bool skip_update;
 	bool skip_idle;
+
+	bool hold_top_clk_by_early_power_on;
 
 	bool layer_rec_en;
 	unsigned int mode_change_index;
