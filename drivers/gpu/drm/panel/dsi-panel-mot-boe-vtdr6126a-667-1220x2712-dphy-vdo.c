@@ -323,11 +323,11 @@ static int lcm_prepare(struct drm_panel *panel)
 	// lcd reset L->H -> L -> L
 	ctx->reset_gpio = devm_gpiod_get(ctx->dev, "reset", GPIOD_OUT_LOW);
 	gpiod_set_value(ctx->reset_gpio, 0);
-	usleep_range(11000, 11001);
+	usleep_range(5000, 5001);
 	gpiod_set_value(ctx->reset_gpio, 1);
-	usleep_range(1000, 1001);
+	usleep_range(5000, 5001);
 	gpiod_set_value(ctx->reset_gpio, 0);
-	usleep_range(1000, 1001);
+	usleep_range(5000, 5001);
 	gpiod_set_value(ctx->reset_gpio, 1);
 	usleep_range(20000, 20001);
 	devm_gpiod_put(ctx->dev, ctx->reset_gpio);
