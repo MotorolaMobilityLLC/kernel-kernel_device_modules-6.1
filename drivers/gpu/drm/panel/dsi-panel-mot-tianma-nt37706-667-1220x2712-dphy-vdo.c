@@ -38,7 +38,8 @@
 #include "../mediatek/mediatek_v2/mtk_drm_graphics_base.h"
 #endif
 
-#include "include/dsi-panel-mot-tianma-nt37706-667-1220x2712-dphy-vdo-120hz-lhbm-alpha.h"
+#include "include/dsi-panel-mot-tianma-nt37706-667-1220x2712-dphy-vdo-120hz-lhbm-alpha.h" // for dvt1 and evt panel
+#include "include/dsi-panel-mot-tianma-nt37706-667-1220x2712-dphy-vdo-120hz-lhbm-alpha-v3.h" // for dvt2
 //#include "../../../misc/mediatek/gate_ic/gate_i2c.h"
 
 /* enable this to check panel self -bist pattern */
@@ -237,8 +238,10 @@ static void lcm_panel_init(struct lcm *ctx)
 	lcm_dcs_write_seq_static(ctx, 0xE4, 0x90);
 
 	//mux
-	lcm_dcs_write_seq_static(ctx, 0xF0, 0x55, 0xAA, 0x52, 0x08, 0x00);
-	lcm_dcs_write_seq_static(ctx, 0xC4, 0x00, 0x00);
+	if ((ctx->version == 1) || (ctx->version == 1)) {
+		lcm_dcs_write_seq_static(ctx, 0xF0, 0x55, 0xAA, 0x52, 0x08, 0x00);
+		lcm_dcs_write_seq_static(ctx, 0xC4, 0x00, 0x00);
+	}
 	lcm_dcs_write_seq_static(ctx, 0xF0, 0x55, 0xAA, 0x52, 0x08, 0x03);
 	lcm_dcs_write_seq_static(ctx, 0x6F, 0x00);
 	lcm_dcs_write_seq_static(ctx, 0xB5, 0x07, 0x00, 0x17, 0x25, 0x04, 0x06, 0x00);
@@ -248,6 +251,15 @@ static void lcm_panel_init(struct lcm *ctx)
 	lcm_dcs_write_seq_static(ctx, 0xB5, 0x07, 0x00, 0x17, 0x25, 0x04, 0x06, 0x00);
 	lcm_dcs_write_seq_static(ctx, 0xF0, 0x55, 0xAA, 0x52, 0x08, 0x06);
 	lcm_dcs_write_seq_static(ctx, 0xBC, 0x00, 0x66);
+
+	if (ctx->version == 3) {
+		//VDC preset dimming
+		lcm_dcs_write_seq_static(ctx, 0xF0, 0x55, 0xAA, 0x52, 0x08, 0x08);
+		lcm_dcs_write_seq_static(ctx, 0x6F, 0xCE);
+		lcm_dcs_write_seq_static(ctx, 0xBC, 0x01);
+		lcm_dcs_write_seq_static(ctx, 0x6F, 0xCF);
+		lcm_dcs_write_seq_static(ctx, 0xBC, 0x00, 0x44, 0x00, 0x5B, 0x00, 0x88, 0x00, 0xAA, 0x00, 0x44, 0x00, 0x44);
+	}
 
 #if defined(DIC_COMMAND_MODE_AOD)
 	lcm_dcs_write_seq_static(ctx, 0xF0, 0x55, 0xAA, 0x52, 0x08, 0x00);
@@ -1009,7 +1021,7 @@ static struct mtk_panel_para_table panel_lhbm_off[] = {
 };
 
 
-static void set_lhbm_alpha(unsigned int bl_level, struct mtk_panel_para_table *panel_lhbm_on)
+static void set_lhbm_alpha(struct lcm *ctx, unsigned int bl_level, struct mtk_panel_para_table *panel_lhbm_on)
 {
 	struct mtk_panel_para_table *pTable = panel_lhbm_on;
 
@@ -1021,7 +1033,10 @@ static void set_lhbm_alpha(unsigned int bl_level, struct mtk_panel_para_table *p
 	else if (bl_level > 16000)
 		lhbm_alpha_index = 15999;
 
-	alpha = lhbm_alpha[lhbm_alpha_index];
+	if ((ctx->version == 1) || (ctx->version == 2))
+		alpha = lhbm_alpha[lhbm_alpha_index];
+	else
+		alpha = lhbm_alpha_v3[lhbm_alpha_index];
 
 	pTable->para_list[7] = (alpha >> 8) & 0xFF;
 	pTable->para_list[8] = alpha & 0xFF;
@@ -1029,7 +1044,7 @@ static void set_lhbm_alpha(unsigned int bl_level, struct mtk_panel_para_table *p
 	pr_info("%s: backlight %d alpha %d(0x%x, 0x%x)\n", __func__, bl_level, alpha, pTable->para_list[7], pTable->para_list[8]);
 }
 
-static int panel_lhbm_set_cmdq(void *dsi, dcs_grp_write_gce cb, void *handle, uint32_t on, uint32_t bl_level, uint32_t fps)
+static int panel_lhbm_set_cmdq(struct lcm *ctx, void *dsi, dcs_grp_write_gce cb, void *handle, uint32_t on, uint32_t bl_level, uint32_t fps)
 {
 	struct mtk_panel_para_table *pTable = NULL;
 	unsigned int para_count = 0;
@@ -1052,7 +1067,7 @@ static int panel_lhbm_set_cmdq(void *dsi, dcs_grp_write_gce cb, void *handle, ui
 			pTable = panel_lhbm_on_120hz;
 			break;
 		}
-		set_lhbm_alpha(bl_level, pTable);
+		set_lhbm_alpha(ctx, bl_level, pTable);
 	}
 	else
 	{
@@ -1091,19 +1106,19 @@ static int panel_hbm_set_cmdq(struct lcm *ctx, void *dsi, dcs_grp_write_gce cb, 
 	{
 		case 0:
 			if (ctx->lhbm_en){
-				panel_lhbm_set_cmdq(dsi, cb, handle, 0, level, fps);
+				panel_lhbm_set_cmdq(ctx, dsi, cb, handle, 0, level, fps);
 			}
 			break;
 		case 1:
 			if (ctx->lhbm_en) {
-				panel_lhbm_set_cmdq(dsi, cb, handle, 0, level, fps);
+				panel_lhbm_set_cmdq(ctx, dsi, cb, handle, 0, level, fps);
 			} else {
 				cb(dsi, handle, &hbm_on_table, 1);
 			}
 			break;
 		case 2:
 			if (ctx->lhbm_en){
-				panel_lhbm_set_cmdq(dsi, cb, handle, 1, level, fps);
+				panel_lhbm_set_cmdq(ctx, dsi, cb, handle, 1, level, fps);
 			} else {
 				cb(dsi, handle, &hbm_on_table, 1);
 			}
@@ -1440,6 +1455,7 @@ static int lcm_probe(struct mipi_dsi_device *dsi)
 	struct device_node *backlight;
 //	unsigned int value;
 	int ret;
+	const u32 *val;
 
 	pr_info("%s+ lcm,tianma,nt37706,vdo,667\n", __func__);
 
@@ -1495,6 +1511,11 @@ static int lcm_probe(struct mipi_dsi_device *dsi)
 	drm_panel_init(&ctx->panel, dev, &lcm_drm_funcs, DRM_MODE_CONNECTOR_DSI);
 
 	drm_panel_add(&ctx->panel);
+
+	val = of_get_property(dev->of_node, "panel-version", NULL);
+	ctx->version = val ? be32_to_cpup(val) : 3;
+
+	pr_info("%s: panel version 0x%x\n", __func__, ctx->version);
 
 	ret = mipi_dsi_attach(dsi);
 	if (ret < 0)
