@@ -115,11 +115,14 @@
 		eswin,panel-max-x = <19520>;
 		eswin,panel-max-y = <43392>;
 		eswin,fw_name = "EPH86XX_fw.bin";
-		eswin,device_settings_name = "EPH86XX_device_settings.bin";
-		eswin,input_name = "ESWIN EPH861X Touchscreen";
+		eswin,input_name = "eswin_ts";
+		eswin,edge-ctrl;
+		eswin,interpolation-ctrl;
+		eswin,sample-ctrl;
 		mmi,usb-charger-detection;
 		mmi,enable-gestures;
 		mmi,supported_gesture_type = <0x07>;
+		mmi,resolution_boost = <16>;
 		mtk-charger = <&mt6375_chg>;
 	};
 };
