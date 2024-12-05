@@ -1369,8 +1369,8 @@ void pd_dpm_dfp_inform_cvdm(struct pd_port *pd_port, bool ack)
 	uint16_t svid = dpm_vdm_get_svid(pd_port);
 	uint16_t expected_svid = pd_port->cvdm_svid;
 	struct svdm_svid_data *svid_data = pd_port->cvdm_cable ?
-			dpm_get_svdm_svid_data_via_cable_svids(pd_port, svid) :
-			dpm_get_svdm_svid_data(pd_port, svid);
+			dpm_get_svdm_svid_data_via_cable_svids(pd_port, expected_svid) :
+			dpm_get_svdm_svid_data(pd_port, expected_svid);
 	struct tcpc_device *tcpc = pd_port->tcpc;
 
 	if (svid != expected_svid)
