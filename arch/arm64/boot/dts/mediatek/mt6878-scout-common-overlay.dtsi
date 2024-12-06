@@ -229,20 +229,20 @@
 		ref_phase   = <1 0 0 1 0 1 0 0>; //reference phase set to '1'
 		mapping_phase = <1 4 6 2 0 3 5 7>;
 		dist1_en = <0 1 1 0 1 0 1 0>; // enable dist1
-		dist0_thd = <3000 5000 3000 3000 3000 3000 2000 3000>;
-		dist1_thd = <6000 10000 6000 6000 6000 6000 4000 6000>;
+		dist0_thd = <3000 6000  5000  3000 5000 3000 4000 3000>;
+		dist1_thd = <6000 12000 10000 6000 9000 6000 6000 6000>;
 		tc_config_a = <80000 0 1>; //temp_delta_thd, maping_ref_ph, major_ph
 		tc_config_b = <80000 3 4>; //temp_delta_thd, maping_ref_ph, major_ph
 		tc_config_c = <80000 4 5>; //temp_delta_thd, maping_ref_ph, major_ph
 		rxio_map = < //usage: 0=OPT, 1=HZ, 3=SHIELD, 4=MEASUER
-			1 4	//RXIO_0 mappint to (phase_idx, usage)
-			0 4	//RXIO_1 mappint to (phase_idx, usage)
-			5 4	//RXIO_2 mappint to (phase_idx, usage)
+			4 4	//RXIO_0 mappint to (phase_idx, usage)
+			5 4	//RXIO_1 mappint to (phase_idx, usage)
+			0 4	//RXIO_2 mappint to (phase_idx, usage)
 			0 0	//RXIO_3 is INT, don't change
 			3 4	//RXIO_4 mappint to (phase_idx, usage)
-			4 4	//RXIO_5 mappint to (phase_idx, usage)
-			6 4	//RXIO_6 mappint to (phase_idx, usage)
-			2 4	//RXIO_7 mappint to (phase_idx, usage)
+			6 4	//RXIO_5 mappint to (phase_idx, usage)
+			2 4	//RXIO_6 mappint to (phase_idx, usage)
+			1 4	//RXIO_7 mappint to (phase_idx, usage)
 		>;
 		replace_reg_num = <140>;
 		replace_reg_val = <
@@ -263,13 +263,13 @@
 			0x760 0x10001d1d
 			0x764 0x30200
 			0x58 0x22242222
-			0x5c 0x22222422
-			0x60 0x24222222
+			0x5c 0x22422222
+			0x60 0x22222224
 			0x64 0x0
-			0x68 0x22222224
-			0x6c 0x22224222
-			0x70 0x22222242
-			0x74 0x22422222
+			0x68 0x22224222
+			0x6c 0x24222222
+			0x70 0x22222422
+			0x74 0x22222242
 			0xd0 0x00000FA0
 			0xd4 0x40ff
 			0x200 0x0
