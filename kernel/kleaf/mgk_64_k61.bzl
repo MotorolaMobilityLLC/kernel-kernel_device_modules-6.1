@@ -956,6 +956,7 @@ def get_overlay_modules_list():
         mgk_64_k61_device_modules.append("sound/soc/codecs/aw882xx/snd-soc-aw882xx.ko")
 
     if "fuji" in DEFCONFIG_OVERLAYS:
+        mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/misc/awinic/aw86927:aw86927")
         mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/input/misc/fpc_fps_mmi:fpc_mtk_tee")
         mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/nfc/st54lnfc/st21nfc:st54lnfc")
         mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/nfc/st54lnfc/st54spi:st54lspi")
@@ -997,7 +998,7 @@ def get_overlay_modules_list():
         mgk_64_k61_device_modules.append("drivers/misc/mediatek/flashlight/flashlights-ocp81373.ko")
         mgk_64_k61_device_modules.append("drivers/misc/mediatek/lens/ois/mot_tele_dw9784/mot_tele_dw9784.ko")
         mgk_64_k61_device_modules.append("drivers/misc/mediatek/typec/mux/fsa4480-i2c.ko")
-        mgk_64_k61_device_modules.append("sound/soc/codecs/aw882xx/snd-soc-aw882xx.ko")
+        mgk_64_k61_device_modules.append("sound/soc/codecs/tfa9864/snd-soc-tfa9864.ko")
         mgk_64_k61_device_modules.append("drivers/regulator/et5904.ko")
         mgk_64_k61_device_modules.append("drivers/regulator/et59041c.ko")
         
