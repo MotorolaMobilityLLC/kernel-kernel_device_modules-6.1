@@ -15,8 +15,8 @@
 #include "mediatek/cybert-charger.dtsi"
 #include "mediatek/cybert-fps.dtsi"
 #include "mediatek/cybert-ntc.dtsi"
-#include "mediatek/cybert-display.dtsi"
-#include "mediatek/cybert-touch.dtsi"
+#include "mediatek/fuji-display.dtsi"
+#include "mediatek/fuji-touch.dtsi"
 #include "mediatek/fuji-audio.dtsi"
 
 &rt5133 {
