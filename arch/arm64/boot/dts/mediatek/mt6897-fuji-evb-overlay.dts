@@ -13,7 +13,7 @@
 /dts-v1/;
 /plugin/;
 
-#include "mediatek/mt6897-cybert-common-overlay.dtsi"
+#include "mediatek/mt6897-fuji-common-overlay.dtsi"
 
 /* Board match root node */
 / {

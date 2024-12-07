@@ -781,3 +781,14 @@ config DRM_PANEL_CSOT_VTDR6126_667_1220x2712_VDO_NICE
 	  resolution and uses 24-bits RGB per pixel. It provides a
 	  MIPI DSI interface to host.
 
+config DRM_PANEL_CSOT_VTDR6130_636_FHDP_DPHY_CMD_FUJI
+	tristate "VTDR6130 fhd plus cmd 636 panel"
+	depends on OF
+	depends on DRM_MIPI_DSI
+	depends on BACKLIGHT_CLASS_DEVICE
+	help
+	  Say Y here if you want to enable support for ALPHA JDI VTDR6126
+	  DPHY vdo mode Full HD Plus 120HZ panel. The panel has a 1220x2712
+	  resolution and uses 24-bits RGB per pixel. It provides a
+	  MIPI DSI interface to host.
+
