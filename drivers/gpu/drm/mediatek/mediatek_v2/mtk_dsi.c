@@ -5146,7 +5146,7 @@ int mtk_dsi_esd_cmp(struct mtk_ddp_comp *comp, void *handle, void *ptr)
 			if (lcm_esd_tb->mask_list[j])
 				chk_val[j] = chk_val[j] & lcm_esd_tb->mask_list[j];
 
-			if (dsi->doze_enabled) {
+			if (dsi->doze_enabled && lcm_esd_tb->esd_check_aod_enable) {
 				if (chk_val[j] == lcm_esd_tb->para_list_aod[j]) {
 					ret = 0;
 				} else {
