@@ -114,7 +114,6 @@
 
 	// mmi,mux_switch_enn_en = <&pio 32 0x0>;
 	/*mmi,mux_wls_switch_en = <&pio 122 0x0>;
-	mmi,mux_usb_switch_en = <&pio 33 0x0>;
 	mmi,mux_wls_boost_en = <&pio 25 0x0>;*/
 	/* dynamic mivr */
 	enable-dynamic-mivr;
@@ -242,7 +241,6 @@
 	wls_ext_boost_en =<&pio 25 0x0>;
         wls_envdd_en = <&pio 96 0x0>;
         wls_ext_boost_7v_en = <&pio 187 0x0>;
-	usb_ld_sw_en = <&pio 33 0x0>;
 	wls_ld_sw_en = <&pio 122 0x0>;
 	wls_inhibit = <&pio 42 0x0>;
         pinctrl-names = "default";
@@ -270,7 +268,6 @@
                 status = "okay";
 		/*wls_ext_boost_en =<&pio 25 0x0>;
         	wls_ext_boost_7v_en = <&pio 187 0x0>;
-        	usb_ld_sw_en = <&pio 33 0x0>;
         	wls_ld_sw_en = <&pio 122 0x0>;*/
 		//enable_wlc_hall = <1>;//wlc hall sensor feature flag.
 		//wls_hal_int1 = <&pio 1 0x0>;

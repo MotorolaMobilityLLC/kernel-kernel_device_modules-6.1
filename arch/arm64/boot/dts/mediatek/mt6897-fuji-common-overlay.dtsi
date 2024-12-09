@@ -12,12 +12,13 @@
 
 #include "mediatek/mt6897-moto-common-overlay-single-panel.dtsi"
 
-#include "mediatek/cybert-charger.dtsi"
+#include "mediatek/fuji-charger.dtsi"
 #include "mediatek/cybert-fps.dtsi"
 #include "mediatek/cybert-ntc.dtsi"
 #include "mediatek/fuji-display.dtsi"
 #include "mediatek/fuji-touch.dtsi"
 #include "mediatek/fuji-audio.dtsi"
+#include <dt-bindings/gpio/gpio.h>
 
 &rt5133 {
 	status = "disabled";
@@ -27,8 +28,30 @@
 	status = "disabled";
 };
 
+&spmi {
+	second_pmic@5 {
+		regulators {
+			mt6368_vmch_eint_low: vmch-eint-low {
+				regulator-compatible = "VMCH_EINT_LOW";
+				regulator-name = "mt6368_vmch_eint_low";
+				regulator-min-microvolt = <1200000>;
+				regulator-max-microvolt = <3500000>;
+				regulator-enable-ramp-delay = <680>;
+				regulator-allowed-modes = <0 2>;
+			};
+		};
+	};
+};
+
 &mmc1 {
-	status = "disabled";
+       status = "ok";
+       cd-gpios = <&pio 33 GPIO_ACTIVE_HIGH>;
+       vmmc-supply = <&mt6368_vmch_eint_low>;
+       ocr-voltage = <0x00030000>;
+};
+
+&mmc2 {
+       status = "disabled";
 };
 
 &pio {
