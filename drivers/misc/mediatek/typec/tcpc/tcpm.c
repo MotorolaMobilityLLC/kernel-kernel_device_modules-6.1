@@ -2075,8 +2075,6 @@ static inline int __tcpm_dpm_wait_bk_event(
 	wait_event_timeout(pd_port->tcpm_bk_wait_que, pd_port->tcpm_bk_done,
 			   msecs_to_jiffies(tout_ms));
 
-	if (pd_port->tcpm_bk_done)
-		return pd_port->tcpm_bk_ret;
 	mutex_lock(&pd_port->pd_lock);
 
 	pd_port->tcpm_bk_event_id = TCP_DPM_EVT_UNKNOWN;
@@ -2087,7 +2085,7 @@ static inline int __tcpm_dpm_wait_bk_event(
 
 	mutex_unlock(&pd_port->pd_lock);
 
-	return ret;
+	return (pd_port->tcpm_bk_done) ? (pd_port->tcpm_bk_ret) : ret;
 }
 
 static inline int tcpm_dpm_wait_bk_event(
