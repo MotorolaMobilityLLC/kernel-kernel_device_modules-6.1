@@ -319,6 +319,7 @@ extern int pe50_hal_init_hardware(struct chg_alg_device *alg,
 				  const char **support_ta, int support_ta_cnt);
 extern int pe50_hal_enable_sw_vbusovp(struct chg_alg_device *alg, bool en);
 extern int pe5_hal_set_operating_mode(struct chg_alg_device *alg, enum chg_idx chgidx, enum pe50_cp_op_mode cp_op_mode);
+extern int pe5_hal_get_operating_max_mode(struct chg_alg_device *alg, enum chg_idx chgidx, int *cp_op_mode);
 extern int pe50_hal_enable_charging(struct chg_alg_device *alg,
 				    enum chg_idx chgidx, bool en);
 extern int pe50_hal_enable_chip(struct chg_alg_device *alg, enum chg_idx chgidx,

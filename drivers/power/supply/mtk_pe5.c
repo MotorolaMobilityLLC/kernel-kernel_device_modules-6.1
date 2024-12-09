@@ -3950,6 +3950,8 @@ static int pe50_algo_threadfn(void *param)
 static int pe50_init_algo(struct chg_alg_device *alg)
 {
 	int ret = 0;
+	int cp_op_mode = 0;
+
 	struct pe50_algo_info *info = chg_alg_dev_get_drvdata(alg);
 	struct pe50_algo_data *data = info->data;
 	struct pe50_algo_desc *desc = info->desc;
@@ -3967,6 +3969,15 @@ static int pe50_init_algo(struct chg_alg_device *alg)
 		PE50_ERR("%s: init hw fail\n", __func__);
 		goto out;
 	}
+
+	ret = pe5_hal_get_operating_max_mode(info->alg, to_chgidx(PE50_DVCHG_MASTER), &cp_op_mode);
+	if (ret) {
+		PE50_INFO("%s: pe5 use default 2:1 cp mode\n", __func__);
+		desc->charge_pump_op_mode_max_support = CP_2_1_MODE;
+	} else {
+		desc->charge_pump_op_mode_max_support = cp_op_mode;
+	}
+
 	data->inited = true;
 	data->mmi_hardreset_cnt = 0;
 	PE50_INFO("successfully\n");
@@ -4475,11 +4486,6 @@ static int pe50_parse_dt(struct pe50_algo_info *info)
 			MMI_MAX_HRST_CNT);
 		data->mmi_hardreset_max_cnt = MMI_MAX_HRST_CNT;
 	}
-
-	if (of_property_read_u32(np, "charge_pump_op_mode", &val) >= 0)
-		desc->charge_pump_op_mode_max_support = val;
-	else
-		desc->charge_pump_op_mode_max_support = CP_2_1_MODE;
 
 	data->mmi_startup_convert_ratio = PE50_DVCHG_STARTUP_CONVERT_RATIO;
 	data->mmi_convert_ratio_state = MMI_RATIO_UNKNOW;
