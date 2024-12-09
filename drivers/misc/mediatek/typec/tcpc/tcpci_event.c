@@ -89,16 +89,6 @@ static void __pd_free_event(
 	}
 }
 
-bool pd_is_msg_empty(struct tcpc_device *tcpc)
-{
-	bool empty;
-
-	mutex_lock(&tcpc->access_lock);
-	empty = !tcpc->pd_msg_buffer_allocated;
-	mutex_unlock(&tcpc->access_lock);
-	return empty;
-}
-
 void pd_free_msg(struct tcpc_device *tcpc, struct pd_msg *pd_msg)
 {
 	mutex_lock(&tcpc->access_lock);
