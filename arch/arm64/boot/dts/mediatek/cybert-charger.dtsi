@@ -469,7 +469,6 @@
 	mmi_therm_step = <3>;
 	mmi_max_ibat = <18000>;
 	mmi_max_hrst_cnt = <1>;
-	charge_pump_op_mode = <2>;//2_1:0 3_1:1 4_1:2
 };
 
 &mt6375_typec {

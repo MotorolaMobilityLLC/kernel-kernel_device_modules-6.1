@@ -386,6 +386,16 @@ int pe5_hal_set_operating_mode(struct chg_alg_device *alg, enum chg_idx chgidx, 
 	return charger_dev_set_cp_operation_mode(hal->chgdevs[chgtyp], cp_op_mode);
 }
 
+int pe5_hal_get_operating_max_mode(struct chg_alg_device *alg, enum chg_idx chgidx, int *cp_op_mode)
+{
+	int chgtyp = to_chgtyp(chgidx);
+	struct pe50_hal *hal = chg_alg_dev_get_drv_hal_data(alg);
+
+	if (chgtyp < 0)
+		return chgtyp;
+	return charger_dev_get_cp_operation_max_mode(hal->chgdevs[chgtyp], cp_op_mode);
+}
+
 int pe50_hal_enable_charging(struct chg_alg_device *alg, enum chg_idx chgidx,
 			     bool en)
 {
