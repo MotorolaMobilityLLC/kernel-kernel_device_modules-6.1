@@ -2,24 +2,7 @@
 //
 // Copyright (c) 2023 Motorola Inc.
 &pio {
-
-	fingerfp_rst_high: fingerfp_rst_high {
-		pins_cmd_dat {
-			pinmux = <PINMUX_GPIO134__FUNC_GPIO134>;
-			slew-rate = <1>;
-			output-high;
-		};
-	};
-
-	fingerfp_rst_low: fingerfp_rst_low {
-		pins_cmd_dat {
-			pinmux = <PINMUX_GPIO134__FUNC_GPIO134>;
-			slew-rate = <1>;
-			output-low;
-		};
-	};
-
-	fingerfp_irq_active: fingerfp_irq_active {
+	fps_irq: fps_irq {
 		pins_cmd_dat {
 			pinmux = <PINMUX_GPIO8__FUNC_GPIO8>;
 			slew-rate = <0>;
@@ -27,108 +10,51 @@
 		};
 	};
 
-	fingerfp_spi_active: fingerfp_spi_active {
+	fps_reset_high: fps_reset_high {
 		pins_cmd_dat {
-			pinmux = <PINMUX_GPIO52__FUNC_SPI1_MI>, <PINMUX_GPIO51__FUNC_SPI1_CSB>, <PINMUX_GPIO53__FUNC_SPI1_MO>, <PINMUX_GPIO50__FUNC_SPI1_CLK>;
-			drive-strength = <2>;
+			pinmux = <PINMUX_GPIO134__FUNC_GPIO134>;
+			slew-rate = <1>;
+			output-high;
 		};
 	};
 
-	fingerfp_spi_default: fingerfp_spi_default {
+	fps_reset_low: fps_reset_low {
 		pins_cmd_dat {
-			pinmux = <PINMUX_GPIO52__FUNC_GPIO52>, <PINMUX_GPIO51__FUNC_GPIO51>, <PINMUX_GPIO53__FUNC_GPIO53>, <PINMUX_GPIO50__FUNC_GPIO50>;
+			pinmux = <PINMUX_GPIO134__FUNC_GPIO134>;
 			slew-rate = <1>;
 			output-low;
 		};
 	};
-	jiiov_fp_reset_output_low: jiiov_fp_reset_output_low {
-		pins_cmd_dat {
-		    pinmux = <PINMUX_GPIO134__FUNC_GPIO134>;
-		    slew-rate = <1>;
-		    output-low;
-		};
-	};
-
-	jiiov_fp_reset_output_high: jiiov_fp_reset_output_high {
-		pins_cmd_dat {
-		    pinmux = <PINMUX_GPIO134__FUNC_GPIO134>;
-		    slew-rate = <1>;
-		    output-high;
-		};
-	};
-
-	jiiov_fp_irq_default: jiiov_fp_irq_default {
-		pins_cmd_dat {
-		    pinmux = <PINMUX_GPIO8__FUNC_GPIO8>;
-		    slew-rate = <0>;
-		    bias-disable;
-		};
-	};
-
-	jiiov_fp_spi_active: jiiov_fp_spi_active {
-		pins_cmd_dat {
-			pinmux = <PINMUX_GPIO52__FUNC_SPI1_MI>, <PINMUX_GPIO51__FUNC_SPI1_CSB>, <PINMUX_GPIO53__FUNC_SPI1_MO>, <PINMUX_GPIO50__FUNC_SPI1_CLK>;
-			slew-rate = <0>;
-			bias-disable;
-		};
-	};
 };
-
-// SPI node start
 &spi1 {
 	status = "okay";
 	tee-only;
-	mediatek,pad-select =  <0>, <1>;
-	goodix_tee@0 {
-		status = "okay";
-		compatible = "goodix,goodix-fp";
+	mediatek,pad-select =  <0>;
+	fingerprint@0 {
+		compatible = "fpc,fpc_spi";
 		reg = <0>;
-		spi-max-frequency = <10000000>;
-		netlink-event = <30>;
-	};
-
-	//egis spi
-	fp_egistec@1 {
-		compatible = "mediatek,fingerprint", "fp-egistec";
-		interrupt-parent = <&pio>;
-		interrupts = <8 IRQ_TYPE_EDGE_RISING 8 0>;
-		fp-ctrl-power;
-		egistec,gpio_reset = <&pio 134 0x0>;
-		egistec,gpio_irq = <&pio 8 0x0>;
-
-		vcc_fp-supply = <&mt6368_vfp>;	// ldo for support module vcc
-		egis-fp,vcc-voltage = <3300000 3300000>;	// ldo voltage default 3.3V
-		egis-fp,vcc-current = <100000>;
-
-		pinctrl-names = "egis_rst_high", "egis_rst_low", "egis_irq_active", "egis_spi_active", "egis_spi_default";
-		pinctrl-0 = <&fingerfp_rst_high>;
-		pinctrl-1 = <&fingerfp_rst_low>;
-		pinctrl-2 = <&fingerfp_irq_active>;
-		pinctrl-3 = <&fingerfp_spi_active>;
-		pinctrl-4 = <&fingerfp_spi_default>;
-		reg = <1>;
 		spi-max-frequency = <8000000>;
 		status = "okay";
 	};
 };
-&odm {
-	goodix_fp:goodix_fp{
-		compatible = "mediatek,fingerprint-goodix";
-		interrupt-parent = <&pio>;
 
+
+&odm {
+	fingerprint_int: fingerprint_int {
+		compatible = "mediatek,fingerprint-fpc";
+		fpc,enable-wakeup;
+		interrupt-parent = <&pio>;
 		interrupts = <8 IRQ_TYPE_EDGE_RISING 8 0>;
-		pinctrl-names = "fingerprint_irq", "fingerprint_reset_high", "fingerprint_reset_low";
-		pinctrl-0 = <&fingerfp_irq_active>;
-		pinctrl-1 = <&fingerfp_rst_high>;
-		pinctrl-2 = <&fingerfp_rst_low>;
-		int-gpios = <&pio 8 0>;
 		rgltr-ctrl-support;
-		fp,vdd-supply = <&mt6368_vfp>;	// ldo for support module vcc
-		fp,voltage-range = <3300000 3300000>;	// ldo voltage default 3.3V
-		fp,vdd-current = <100000>;
+		fp,vdd-supply = <&mt6368_vfp>;
+		fp,voltage-range = <3300000 3300000>;
+		pinctrl-names = "fingerprint_irq", "fingerprint_reset_high", "fingerprint_reset_low";
+		pinctrl-0 = <&fps_irq>;
+		pinctrl-1 = <&fps_reset_high>;
+		pinctrl-2 = <&fps_reset_low>;
+		fpc,rst= <&pio 134 0>;
+		fpc,irq = <&pio 8 0>;
 		status = "okay";
 	};
-
 };
-
 
