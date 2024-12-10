@@ -92,6 +92,22 @@
 	mmi,en-moto-typec-otp;
 };
 
+&thermal_zones {
+	conn_ntc: conn_ntc {
+		polling-delay = <0>; /* milliseconds */
+		polling-delay-passive = <0>; /* milliseconds */
+		thermal-sensors = <&mt6375_thermistor>;
+
+		trips {
+			conn_ntc_crit: conn-ntc-crit {
+				temperature = <119000>;
+				hysteresis = <2000>;
+				type = "passive";
+			};
+		};
+	};
+};
+
 #include <cybert_evb/cust.dtsi>
 #include "mediatek/cust_cybert_camera_v4l2_flash_compatible.dtsi"
 /*End of this file, DO NOT ADD ANYTHING HERE*/
