@@ -14,45 +14,7 @@
 #include <dt-bindings/iio/adc/mediatek,mt6375_adc.h>
 #include <dt-bindings/iio/mt635x-auxadc.h>
 
-&pio {
-	wls_cps4041_int_default: wls_cps4041_int_default {
-                wls_int {
-                        pinmux = <PINMUX_GPIO10__FUNC_GPIO10>;
-                        input-enable;
-			bias-disable;
-                        //bias-pull-up;
-                };
-                wls_det_int {
-                        pinmux = <PINMUX_GPIO40__FUNC_GPIO40>;
-                        input-enable;
-			bias-disable;
-                        //bias-disable;
-                };
-                wls_mode_select {
-                        pinmux = <PINMUX_GPIO61__FUNC_GPIO61>;
-                        output-low;
-                };
-		wls_hall_int1 {
-                        pinmux = <PINMUX_GPIO1__FUNC_GPIO1>;
-                        input-enable;
-                        bias-disable;
-                        //bias-disable;
-                };
-		wls_hall_int2 {
-                        pinmux = <PINMUX_GPIO26__FUNC_GPIO26>;
-                        input-enable;
-                        bias-disable;
-                        //bias-disable;
-                };
-       };
 
-        mmi_control_wls_default: mmi_control_wls_default {
-                wls_control {
-                        pinmux = <PINMUX_GPIO42__FUNC_GPIO42>;
-                        output-low;
-                };
-        };
-};
 
 &mtk_gauge {
 	status = "disabled";
@@ -60,7 +22,7 @@
 
 &mt6375_typec {
        tcpc,en_wd;
-       mmi_cid_int = <&pio 4 0x0>;
+       //mmi_cid_int = <&pio 4 0x0>;
 };
 
 &mt6375_chg {
@@ -100,21 +62,16 @@
 	ac-charger-input-current = <2000000>;
 	charging-host-charger-current = <1500000>;
 
-	/*pe5 && pdc && pe2 && wlc*/
-	fast_charging_indicator = <0x8014>;
+	/*pe5 && pdc*/
+	fast_charging_indicator = <0x14>;
 	/*swchg + 2CP*/
 	charger_configuration= <4>;
 
-	wireless_factory_max_current = <3000000>;
-	wireless_factory_max_input_current = <600000>;
 
 	disable-aicl;
 
-	mmi,enable-mux;
+	//mmi,enable-mux;
 
-	// mmi,mux_switch_enn_en = <&pio 32 0x0>;
-	/*mmi,mux_wls_switch_en = <&pio 122 0x0>;
-	mmi,mux_wls_boost_en = <&pio 25 0x0>;*/
 	/* dynamic mivr */
 	enable-dynamic-mivr;
 
@@ -218,60 +175,7 @@
         sc,sc858x,tshut-dis = <1>;
     };
 
-/*
-    cps_wls_charger:cps_wls_charger@30 {
-        compatible = "cps,wls-charger-cps4059";
-        wireless-fw-name = "cps4059.bin";
-        enable_stop_epp = <1>;
-        enable_bat_full_stop_epp = <1>;
-        enable_wls_auto_switch = <1>;
-        wls_auto_switch_overtemp = <420>;
-        enable_rx_offset_detect = <1>;
-        config-otg-support;
-        enable_wls_auto_stop = <1>;
-        backpower-mode-support;
-        //stop rx offset detect battery soc
-        rod_stop_battery_soc = <90>;
-        bootmode = <&chosen>;
-        reg = <0x30>;
-        cps_wls_int = <&pio 10 0x0>;
-        cps_det_int = <&pio 40 0x0>;
-        wls_mode_select = <&pio 61 0x0>;
-	wls_ext_boost_en =<&pio 25 0x0>;
-        wls_envdd_en = <&pio 96 0x0>;
-        wls_ext_boost_7v_en = <&pio 187 0x0>;
-	wls_ld_sw_en = <&pio 122 0x0>;
-	wls_inhibit = <&pio 42 0x0>;
-        pinctrl-names = "default";
-        pinctrl-0 = <&wls_cps4041_int_default>;
-        status = "okay";
-	wireless-tx-support;
-        config-otg-vout = <5500000>;
-        config-otg-iout = <1800000>;
-     };*/
 
-	cps_wls_charger@38 {
-                compatible = "cps,wls-charger-cps4038";
-                wireless-fw-name = "cps4038.bin";
-                enable_stop_epp = <1>;
-                enable_rx_offset_detect = <1>;
-                /*stop rx offset detect battery soc*/
-                rod_stop_battery_soc = <90>;
-                bootmode = <&chosen>;
-                reg = <0x38>;
-                cps_wls_int = <&pio 10 0x0>;
-                cps_det_int = <&pio 40 0x0>;
-                wls_mode_select = <&pio 61 0x0>;
-                pinctrl-names = "default";
-                pinctrl-0 = <&wls_cps4041_int_default>;
-                status = "okay";
-		/*wls_ext_boost_en =<&pio 25 0x0>;
-        	wls_ext_boost_7v_en = <&pio 187 0x0>;
-        	wls_ld_sw_en = <&pio 122 0x0>;*/
-		//enable_wlc_hall = <1>;//wlc hall sensor feature flag.
-		//wls_hal_int1 = <&pio 1 0x0>;
-		//wls_hal_int2 = <&pio 26 0x0>;
-        };
 };
 
 &i2c11 {
@@ -330,26 +234,6 @@
         };
 };
 
-&moto_wlc {
-        compatible = "moto,charger,wlc";
-        gauge = <&smart_battery>;
-        min_charger_voltage = <4600000>;
-        wlc_max_charger_current = <3150000>;
-        wlc_max_input_current = <1150000>;
-        mmi,wls_control_en = <&pio 42 0x0>;
-        pinctrl-names = "default";
-        pinctrl-0 = <&mmi_control_wls_default>;
-        #cooling-cells = <2>;
-        mmi,wlc-rx-mitigation = <(-1) 2500000 2000000 1500000 1200000
-                                                        1000000 800000 500000>;
-        mmi,wlc-thermal-config-com = <400 1>,
-                                <420 2>,
-                                <425 3>,
-                                <430 4>,
-                                <435 5>,
-                                <455 6>,
-                                <470 7>;
-};
 
 &pdc {
 	compatible = "mediatek,charger,pd";
@@ -379,22 +263,27 @@
 };
 
 &pe {
+	status = "disabled";
 	gauge = <&smart_battery>;
 };
 
 &pe45 {
+	status = "disabled";
 	gauge = <&smart_battery>;
 };
 
 &pe5p {
+	status = "disabled";
 	gauge = <&smart_battery>;
 };
 
 &hvbp {
+	status = "disabled";
 	gauge = <&smart_battery>;
 };
 
 &pe2 {
+	status = "disabled";
 	compatible = "mediatek,charger,pe2";
 	gauge = <&smart_battery>;
 
