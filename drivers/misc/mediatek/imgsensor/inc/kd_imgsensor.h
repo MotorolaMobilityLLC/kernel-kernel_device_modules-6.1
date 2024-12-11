@@ -674,6 +674,16 @@
 #define MOT_CYBERT_GC32E1_SENSOR_ID                       0x32e1
 #define SENSOR_DRVNAME_MOT_CYBERT_GC32E1_MIPI_RAW         "mot_cybert_gc32e1_mipi_raw"
 
+
+
+#define MOT_FUJI_IMX896_SENSOR_ID                       0x0897
+#define SENSOR_DRVNAME_MOT_FUJI_IMX896_MIPI_RAW         "mot_fuji_imx896_mipi_raw"
+#define MOT_FUJI_S5KJNS_SENSOR_ID                       0x38EF
+#define SENSOR_DRVNAME_MOT_FUJI_S5KJNS_MIPI_RAW         "mot_fuji_s5kjns_mipi_raw"
+#define MOT_FUJI_S5KJNS_UW_SENSOR_ID                    0x38EE
+#define SENSOR_DRVNAME_MOT_FUJI_S5KJNS_UW_MIPI_RAW      "mot_fuji_s5kjns_uw_mipi_raw"
+
+
 /*PAS (PixArt Image)*/
 #define SENSOR_DRVNAME_PAS6180_SERIAL_YUV       "pas6180_serial_yuv"
 /*Panasoic*/
