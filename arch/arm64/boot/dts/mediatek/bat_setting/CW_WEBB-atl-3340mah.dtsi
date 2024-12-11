@@ -21,6 +21,6 @@ webb-atl-3340mah {
 				DC DA D0 D1 CE CA BE D3
 				D2 DA CF DF F8 FF FF FF
 				20 00 AB 10 00 A2 83 00
-				00 00 64 28 B1 76 00 00
+				00 00 64 3F B1 76 00 00
 				00 00 00 00 00 00 00 70];
 };
