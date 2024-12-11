@@ -314,6 +314,8 @@ struct charger_data {
 	int force_charging_current;
 	int thermal_input_current_limit;
 	int thermal_charging_current_limit;
+	int usb_input_current_limit;
+	int pd_input_current_limit;
 	bool thermal_throttle_record;
 	int disable_charging_count;
 	int input_current_limit_by_aicl;
@@ -579,6 +581,7 @@ struct mtk_charger {
 	int chr_type;
 	int usb_type;
 	int usb_state;
+	int en_cts_mode;
 
 	struct mutex cable_out_lock;
 	int cable_out_cnt;
@@ -618,6 +621,7 @@ struct mtk_charger {
 	bool dpdmov_stat;
 	bool lst_dpdmov_stat;
 	bool is_chg_done;
+	bool en_power_path;
 	/* ATM */
 	bool atm_enabled;
 

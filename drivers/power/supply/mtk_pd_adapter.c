@@ -166,6 +166,14 @@ static int pd_tcp_notifier_call(struct notifier_block *nb,
 		srcu_notifier_call_chain(&adapter->evt_nh, MTK_TYPEC_WD_STATUS,
 					 &noti->wd_status.water_detected);
 		break;
+	case TCP_NOTIFY_SINK_VBUS:
+		dev_info(info->dev, "%s: sink vbus mv:%d, ma:%d, type:%d\n",
+			__func__, noti->vbus_state.mv, noti->vbus_state.ma,
+			noti->vbus_state.type);
+		if (noti->vbus_state.type & TCP_VBUS_CTRL_PD_DETECT)
+			srcu_notifier_call_chain(&adapter->evt_nh,
+					 MTK_SINK_VBUS, &noti->vbus_state.ma);
+		break;
 	case TCP_NOTIFY_CC_HI:
 		srcu_notifier_call_chain(&adapter->evt_nh,
 					 MTK_TYPEC_CC_HI_STATUS, &noti->cc_hi);
@@ -201,6 +209,13 @@ static int pd_get_property(struct adapter_device *dev,
 	case PD_TYPE:
 		mutex_lock(&info->idx_lock);
 		ret = info->pd_type[info->active_idx];
+		mutex_unlock(&info->idx_lock);
+		break;
+	/*Ryan*/
+	case PD_SRC_PDO_SUPPORT_USB_SUSPEND:
+		mutex_lock(&info->idx_lock);
+		ret = tcpm_inquire_dpm_flags(info->tcpc[info->active_idx])
+		& DPM_FLAGS_PARTNER_USB_SUSPEND;
 		mutex_unlock(&info->idx_lock);
 		break;
 	default:
