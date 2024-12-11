@@ -1395,7 +1395,7 @@ static void mt6375_chg_bc12_work_func(struct work_struct *work)
 		ddata->mmi_bc12_rerun_done = true;
 		mt6375_chg_enable_bc12(ddata, false); //need to toggle bc12 en for rerun bc12
 		dev_info(ddata->dev, "rerun bc12 for port stat = %s\n", mt6375_port_stat_names[val]);
-		msleep(1000);
+		msleep(500);
 		goto out;
 	}
 
