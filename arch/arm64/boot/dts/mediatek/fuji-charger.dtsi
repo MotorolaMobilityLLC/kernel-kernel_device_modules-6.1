@@ -291,6 +291,7 @@
                 latest_fw_version = [01 02 08 52 32];
                 batt_serialnums = "ATLR041NVT";
                 //batt_versions = /bits/ 16 <01>;
+                nfg,support_ifc;
         };
 
 	sc858x_slave:sc858x-slave@6e{
