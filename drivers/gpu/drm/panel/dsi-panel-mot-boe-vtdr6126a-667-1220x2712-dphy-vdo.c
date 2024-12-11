@@ -182,6 +182,14 @@ static void lcm_panel_init(struct lcm *ctx)
 //CMD mode 6F=02, Video mode 6F=01
 	lcm_dcs_write_seq_static(ctx, 0x6f, 0x01);
 	lcm_dcs_write_seq_static(ctx, 0x72, 0x00);
+
+	lcm_dcs_write_seq_static(ctx, 0x2A, 0x00, 0x00, 0x04, 0xC3);
+	lcm_dcs_write_seq_static(ctx, 0x2B, 0x00, 0x00, 0x05, 0x87);
+
+	lcm_dcs_write_seq_static(ctx, 0xf0, 0xaa, 0x16);
+	lcm_dcs_write_seq_static(ctx, 0x65, 0x04);
+	lcm_dcs_write_seq_static(ctx, 0xc4, 0x55, 0xff, 0xff, 0xff, 0xff, 0x55);
+
 //Vesa PPS (DSC V1.1)
 	lcm_dcs_write_seq_static(ctx, 0x70, 0x11, 0x00, 0x00, 0xAB, 0x30, 0x80, 0x0A, 0x98, 0x04, 0xC4, 0x00, 0x0C, 0x02, 0x62,
 					0x02, 0x62, 0x02, 0x00, 0x01, 0x1A, 0x00, 0x20, 0x02, 0x5B, 0x00, 0x08, 0x00, 0x01, 0x00, 0xBB,
@@ -191,13 +199,17 @@ static void lcm_panel_init(struct lcm *ctx)
 					0x4B, 0xB6, 0x4B, 0xF4, 0x4B, 0xF4, 0x6C, 0x34, 0x84, 0x74, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00);
 //LV ON
 	lcm_dcs_write_seq_static(ctx, 0xf0, 0xaa, 0x12);
-	lcm_dcs_write_seq_static(ctx, 0xC7, 0x5F, 0x78, 0x43, 0x5A, 0x33, 0x33);
-	lcm_dcs_write_seq_static(ctx, 0xd1, 0x06, 0x01, 0x00);
-	lcm_dcs_write_seq_static(ctx, 0xd6, 0x04);
+	lcm_dcs_write_seq_static(ctx, 0xc7, 0xff);
+	lcm_dcs_write_seq_static(ctx, 0xd6, 0x04, 0x00);
+
+	if (ctx->version < 3)
+		lcm_dcs_write_seq_static(ctx, 0xd1, 0x06, 0x01, 0x00);
 
 	lcm_dcs_write_seq_static(ctx, 0xF0, 0xaa, 0x10);
 	lcm_dcs_write_seq_static(ctx, 0xB0, 0x05, 0x4C, 0x01, 0x31, 0x00, 0x04, 0xC4, 0x05, 0x4C);
-	lcm_dcs_write_seq_static(ctx, 0xBE, 0x3E, 0x79);
+
+	if (ctx->version < 3)
+		lcm_dcs_write_seq_static(ctx, 0xBE, 0x3E, 0x78);
 
 	lcm_dcs_write_seq_static(ctx, 0xf0, 0xaa, 0x16);
 	lcm_dcs_write_seq_static(ctx, 0xd1, 0x00, 0x00, 0x00);
@@ -209,6 +221,15 @@ static void lcm_panel_init(struct lcm *ctx)
 	lcm_dcs_write_seq_static(ctx, 0xd1, 0x00, 0x00, 0x00);
 	lcm_dcs_write_seq_static(ctx, 0x65, 0x0c);
 	lcm_dcs_write_seq_static(ctx, 0xd1, 0x00, 0x00, 0x00);
+
+
+	if (ctx->version < 3) {
+		//LHBM offset
+		lcm_dcs_write_seq_static(ctx, 0xf0, 0xaa, 0x1c);
+		lcm_dcs_write_seq_static(ctx, 0xC1, 0x10, 0xB0, 0x17, 0x08, 0x27, 0x1C, 0x36, 0xE8, 0x3E, 0x80);
+		lcm_dcs_write_seq_static(ctx, 0xC2, 0x02, 0x02, 0x02, 0x87, 0x87, 0x87, 0x88, 0x88, 0x88, 0x8c, 0x88, 0x8f, 0x8a, 0x8a, 0xa5);
+		lcm_dcs_write_seq_static(ctx, 0xc4, 0x01, 0xff, 0x02, 0x02, 0x02, 0x06, 0x06, 0x06, 0x12, 0x0d, 0x15, 0x1a, 0x16, 0x21, 0x27, 0x25, 0x34);
+	}
 
 	lcm_dcs_write_seq_static(ctx, 0xff, 0x5a, 0x81);
 	lcm_dcs_write_seq_static(ctx, 0x65, 0x03);
@@ -222,11 +243,10 @@ static void lcm_panel_init(struct lcm *ctx)
 	lcm_dcs_write_seq_static(ctx, 0xf0, 0xaa, 0x00);
 	lcm_dcs_write_seq_static(ctx, 0xff, 0x5a, 0x00);
 
-	lcm_dcs_write_seq_static(ctx, 0x2A, 0x00, 0x00, 0x04, 0xC3);
-	lcm_dcs_write_seq_static(ctx, 0x2B, 0x00, 0x00, 0x05, 0x87);
+
 
 	lcm_dcs_write_seq_static(ctx, 0x11);
-	usleep_range(85 * 1000, 86 * 1000);
+	usleep_range(120 * 1000, 121 * 1000);
 	lcm_dcs_write_seq_static(ctx, 0x29);
 
 	atomic_set(&ctx->hbm_mode, 0);
@@ -303,7 +323,7 @@ static int lcm_unprepare(struct drm_panel *panel)
 	lcm_dcs_write_seq_static(ctx, 0x28);
 	msleep(10);
 	lcm_dcs_write_seq_static(ctx, 0x10);
-	msleep(90);
+	msleep(120);
 
 	ctx->error = 0;
 	ctx->prepared = false;
@@ -952,7 +972,7 @@ int mtk_scaling_mode_mapping(int mode_idx)
 }
 
 static struct mtk_panel_para_table panel_lhbm_on[] = {
-	{6, {0x63, 0x10, 0x00, 0x3E, 0x80, 0x02}},
+	{5, {0x63, 0x3E, 0x80, 0x10, 0xB0}},
 	{2, {0x62, 0x03}},
 };
 
@@ -973,32 +993,17 @@ static void set_lhbm_alpha(unsigned int bl_level)
 		lhbm_alpha_index = 0;
 	else if (bl_level > 16000)
 		lhbm_alpha_index = 15999;
-
-	if (bl_level > 0x3E7F) {
+	if (bl_level > 0x10AF) {
 		pTable->para_list[1] = 0x10;
 		pTable->para_list[2] = 0x00;
 		pTable->para_list[3] = (bl_level >> 8) & 0xFF;
 		pTable->para_list[4] = bl_level & 0xFF;
-		pTable->para_list[5] = 2;
-	} else if (bl_level > 0x271B) {
-		pTable->para_list[1] = 0x10;
-		pTable->para_list[2] = 0x00;
-		pTable->para_list[3] = (bl_level >> 8) & 0xFF;
-		pTable->para_list[4] = bl_level & 0xFF;
-		pTable->para_list[5] = 1;
-	} else if (bl_level > 0x10AF) {
-		pTable->para_list[1] = 0x10;
-		pTable->para_list[2] = 0x00;
-		pTable->para_list[3] = (bl_level >> 8) & 0xFF;
-		pTable->para_list[4] = bl_level & 0xFF;
-		pTable->para_list[5] = 0;
 	} else {
 		alpha = lhbm_alpha[lhbm_alpha_index];
-		pTable->para_list[1] = 0x10;
-		pTable->para_list[2] = 0x00;
-		pTable->para_list[3] = (alpha >> 8) & 0xFF;
-		pTable->para_list[4] = alpha & 0xFF;
-		pTable->para_list[5] = 0;
+		pTable->para_list[1] = (alpha >> 8) & 0xFF;
+		pTable->para_list[2] = alpha & 0xFF;
+		pTable->para_list[3] = 0x10;
+		pTable->para_list[4] = 0xB0;
 	}
 
 	pr_info("%s: backlight 0x%x, 0x%x,0x%x,0x%x,0x%x,0x%x\n", __func__, bl_level, pTable->para_list[1],pTable->para_list[2], pTable->para_list[3],pTable->para_list[4],pTable->para_list[5]);
@@ -1446,6 +1451,7 @@ static int lcm_probe(struct mipi_dsi_device *dsi)
 	struct device_node *backlight;
 //	unsigned int value;
 	int ret;
+	const u32 *val;
 
 	pr_info("%s+ lcm,boe,vtdr6126a,vdo,667\n", __func__);
 
@@ -1501,6 +1507,11 @@ static int lcm_probe(struct mipi_dsi_device *dsi)
 	drm_panel_init(&ctx->panel, dev, &lcm_drm_funcs, DRM_MODE_CONNECTOR_DSI);
 
 	drm_panel_add(&ctx->panel);
+
+	val = of_get_property(dev->of_node, "panel-version", NULL);
+	ctx->version = val ? be32_to_cpup(val) : 3;
+
+	pr_info("%s: panel version 0x%x\n", __func__, ctx->version);
 
 	ret = mipi_dsi_attach(dsi);
 	if (ret < 0)
