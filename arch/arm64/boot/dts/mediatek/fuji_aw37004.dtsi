@@ -1,13 +1,24 @@
 &odm{
-    cam_ext_1v35: gpio62-fixed {
+    cam_ext_1p2: gpio62-fixed {
         compatible = "regulator-fixed";
-        regulator-name = "vcam_ext_gpio_regulator";
+        regulator-name = "vcam_ext_1p2_gpio_regulator";
         regulator-min-microvolt = <1350000>;
         regulator-max-microvolt = <1350000>;
         enable-active-high;
         regulator-always-on;
         regulator-boot-on;
         gpio = <&pio 62 0x0>;
+    };
+
+     cam_ext_buck: gpio100-fixed {
+        compatible = "regulator-fixed";
+        regulator-name = "vcam_common_buck_regulator";
+        regulator-min-microvolt = <1350000>;
+        regulator-max-microvolt = <1350000>;
+        enable-active-high;
+        regulator-always-on;
+        regulator-boot-on;
+        gpio = <&pio 100 0x0>;
     };
 
 };
@@ -17,7 +28,8 @@
         status = "okay";
         compatible = "aw37004";
         reg = <0x28>;
-        vin1-supply = <&cam_ext_1v35>;
+        vin1-supply = <&cam_ext_1p2>;
+        vin2-supply = <&cam_ext_buck>;
         init-value = <0x00>;
         regulators{
             cam_rw_dvdd_ldo: ldo1 {

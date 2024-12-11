@@ -997,9 +997,8 @@ def get_overlay_modules_list():
         mgk_64_k61_device_modules.append("drivers/misc/mediatek/lens/ois/mot_tele_dw9784/mot_tele_dw9784.ko")
         mgk_64_k61_device_modules.append("drivers/misc/mediatek/typec/mux/fsa4480-i2c.ko")
         mgk_64_k61_device_modules.append("sound/soc/codecs/tfa9864/snd-soc-tfa9864.ko")
-        mgk_64_k61_device_modules.append("drivers/regulator/et5904.ko")
-        mgk_64_k61_device_modules.append("drivers/regulator/et59041c.ko")
-        
+        mgk_64_k61_device_modules.append("drivers/regulator/aw37004-regulator.ko")
+
     if "nice" in DEFCONFIG_OVERLAYS:
         mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/input/misc/fpc_fps_mmi:fpc_mtk_tee")
         mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/nfc/st54lnfc/st21nfc:st54lnfc")
