@@ -14,7 +14,7 @@
 
 #include "mediatek/fuji-charger.dtsi"
 #include "mediatek/fuji-fps.dtsi"
-#include "mediatek/cybert-ntc.dtsi"
+#include "mediatek/fuji-ntc.dtsi"
 #include "mediatek/fuji-display.dtsi"
 #include "mediatek/fuji-touch.dtsi"
 #include "mediatek/fuji-audio.dtsi"
