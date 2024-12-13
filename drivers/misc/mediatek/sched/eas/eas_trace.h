@@ -742,10 +742,10 @@ TRACE_EVENT(sched_get_vip_task_prio,
 
 TRACE_EVENT(sched_insert_vip_task,
 	TP_PROTO(struct task_struct *p, int cpu, int vip_prio, bool at_front,
-			pid_t prev_pid, pid_t next_pid, bool requeue, bool is_first_entry),
+			pid_t prev_pid, pid_t next_pid, bool requeue, bool is_first_entry, int num_vip),
 
 	TP_ARGS(p, cpu, vip_prio, at_front, prev_pid, next_pid, requeue,
-		is_first_entry),
+		is_first_entry, num_vip),
 
 	TP_STRUCT__entry(
 		__array(char,		comm, TASK_COMM_LEN)
@@ -759,6 +759,7 @@ TRACE_EVENT(sched_insert_vip_task,
 		__field(bool, is_first_entry)
 		__field(int, prio)
 		__field(int, cpuctl)
+		__field(int, num_vip)
 	),
 
 	TP_fast_assign(
@@ -773,6 +774,7 @@ TRACE_EVENT(sched_insert_vip_task,
 		__entry->is_first_entry = is_first_entry;
 		__entry->prio    = p->prio;
 		__entry->cpuctl  = sched_cgroup_state(p, cpu_cgrp_id);
+		__entry->num_vip = num_vip;
 	),
 
 	TP_printk("comm=%s pid=%d cpu=%d vip_prio=%d at_front=%d prev_pid=%d next_pid=%d requeue=%d, is_first_entry=%d, prio=%d, cpuctl=%d",
@@ -783,15 +785,16 @@ TRACE_EVENT(sched_insert_vip_task,
 
 TRACE_EVENT(sched_deactivate_vip_task,
 	TP_PROTO(pid_t pid, int cpu, pid_t prev_pid,
-			pid_t next_pid),
+			pid_t next_pid, int num_vip),
 
-	TP_ARGS(pid, cpu, prev_pid, next_pid),
+	TP_ARGS(pid, cpu, prev_pid, next_pid, num_vip),
 
 	TP_STRUCT__entry(
 		__field(int, pid)
 		__field(int, cpu)
 		__field(int, prev_pid)
 		__field(int, next_pid)
+		__field(int, num_vip)
 	),
 
 	TP_fast_assign(
@@ -799,11 +802,12 @@ TRACE_EVENT(sched_deactivate_vip_task,
 		__entry->cpu       = cpu;
 		__entry->prev_pid  = prev_pid;
 		__entry->next_pid  = next_pid;
+		__entry->num_vip   = num_vip;
 	),
 
-	TP_printk("pid=%d cpu=%d orig_prev_pid=%d orig_next_pid=%d",
+	TP_printk("pid=%d cpu=%d orig_prev_pid=%d orig_next_pid=%d num_vip=%d",
 		  __entry->pid, __entry->cpu, __entry->prev_pid,
-		  __entry->next_pid)
+		  __entry->next_pid, __entry->num_vip)
 );
 
 TRACE_EVENT(sched_vip_replace_next_task_fair,

@@ -155,6 +155,7 @@ bool task_is_vip(struct task_struct *p, int type)
 
 	return (vts->vip_prio != NOT_VIP);
 }
+EXPORT_SYMBOL_GPL(task_is_vip);
 
 static inline unsigned int vip_task_limit(struct task_struct *p)
 {
@@ -204,7 +205,7 @@ static void insert_vip_task(struct rq *rq, struct vip_task_struct *vts,
 		struct task_struct *p = vts_to_ts(vts);
 
 		trace_sched_insert_vip_task(p, cpu_of(rq), vts->vip_prio,
-			at_front, prev_pid, next_pid, requeue, is_first_entry);
+			at_front, prev_pid, next_pid, requeue, is_first_entry, vrq->num_vip_tasks);
 	}
 }
 
@@ -448,6 +449,7 @@ out:
 	}
 	return vip_prio;
 }
+EXPORT_SYMBOL_GPL(get_vip_task_prio);
 
 void vip_enqueue_task(struct rq *rq, struct task_struct *p)
 {
@@ -520,7 +522,7 @@ static void deactivate_vip_task(struct task_struct *p, struct rq *rq)
 		pid_t prev_pid = list_head_to_pid(prev);
 		pid_t next_pid = list_head_to_pid(next);
 
-		trace_sched_deactivate_vip_task(p->pid, task_cpu(p), prev_pid, next_pid);
+		trace_sched_deactivate_vip_task(p->pid, task_cpu(p), prev_pid, next_pid, vrq->num_vip_tasks);
 	}
 }
 
