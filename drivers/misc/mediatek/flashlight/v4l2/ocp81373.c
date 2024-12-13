@@ -617,10 +617,55 @@ static void ocp81373_v4l2_i2c_subdev_init(struct v4l2_subdev *sd,
 		client->addr);
 }
 
+/* flashlight init */
+static int ocp81373_init(struct ocp81373_flash *flash)
+{
+	int rval = 0;
+	unsigned int reg_val;
+
+	ocp81373_pinctrl_set(flash, OCP81373_PINCTRL_PIN_HWEN, OCP81373_PINCTRL_PINSTATE_HIGH);
+  mdelay(1);
+
+	/* set timeout */
+	rval = ocp81373_flash_tout_ctrl(flash, OCP81373_FLASH_TOUT_MAX);
+	if (rval < 0)
+		return rval;
+
+	/* output disable */
+	flash->led_mode = V4L2_FLASH_LED_MODE_NONE;
+	rval = ocp81373_mode_ctrl(flash);
+	if (rval < 0)
+		return rval;
+
+	ocp81373_torch_brt_ctrl(flash, OCP81373_LED0,
+				flash->ori_current[OCP81373_LED0]);
+	ocp81373_flash_brt_ctrl(flash, OCP81373_LED0,
+				flash->ori_current[OCP81373_LED0]);
+#if OCP81373_DUAL_LED
+	ocp81373_flash_brt_ctrl(flash, OCP81373_LED1,
+				flash->ori_current[OCP81373_LED1]);
+	ocp81373_torch_brt_ctrl(flash, OCP81373_LED1,
+				flash->ori_current[OCP81373_LED1]);
+#endif
+
+	/* reset faults */
+	rval = regmap_read(flash->regmap, REG_FLAG1, &reg_val);
+	return rval;
+}
+
+/* flashlight uninit */
+static int ocp81373_uninit(struct ocp81373_flash *flash)
+{
+	ocp81373_pinctrl_set(flash, OCP81373_PINCTRL_PIN_HWEN, OCP81373_PINCTRL_PINSTATE_LOW);
+	return 0;
+}
+
 static int ocp81373_open(struct v4l2_subdev *sd, struct v4l2_subdev_fh *fh)
 {
 	int ret;
 	pr_info("%s\n", __func__);
+
+	ocp81373_init(ocp81373_flash_data);
 
 	ret = pm_runtime_get_sync(sd->dev);
 	if (ret < 0) {
@@ -635,6 +680,8 @@ static int ocp81373_close(struct v4l2_subdev *sd, struct v4l2_subdev_fh *fh)
 {
 	regmap_update_bits(ocp81373_flash_data->regmap, REG_FLAG2, 0x0f, 0x00);
 	pr_info("%s\n", __func__);
+
+	ocp81373_uninit(ocp81373_flash_data);
 
 	pm_runtime_put(sd->dev);
 
@@ -696,49 +743,6 @@ static int ocp81373_subdev_init(struct ocp81373_flash *flash,
 err_out:
 	v4l2_ctrl_handler_free(&flash->ctrls_led[led_no]);
 	return rval;
-}
-
-/* flashlight init */
-static int ocp81373_init(struct ocp81373_flash *flash)
-{
-	int rval = 0;
-	unsigned int reg_val;
-
-	ocp81373_pinctrl_set(flash, OCP81373_PINCTRL_PIN_HWEN, OCP81373_PINCTRL_PINSTATE_HIGH);
-  mdelay(1);
-
-	/* set timeout */
-	rval = ocp81373_flash_tout_ctrl(flash, OCP81373_FLASH_TOUT_MAX);
-	if (rval < 0)
-		return rval;
-
-	/* output disable */
-	flash->led_mode = V4L2_FLASH_LED_MODE_NONE;
-	rval = ocp81373_mode_ctrl(flash);
-	if (rval < 0)
-		return rval;
-
-	ocp81373_torch_brt_ctrl(flash, OCP81373_LED0,
-				flash->ori_current[OCP81373_LED0]);
-	ocp81373_flash_brt_ctrl(flash, OCP81373_LED0,
-				flash->ori_current[OCP81373_LED0]);
-#if OCP81373_DUAL_LED
-	ocp81373_flash_brt_ctrl(flash, OCP81373_LED1,
-				flash->ori_current[OCP81373_LED1]);
-	ocp81373_torch_brt_ctrl(flash, OCP81373_LED1,
-				flash->ori_current[OCP81373_LED1]);
-#endif
-
-	/* reset faults */
-	rval = regmap_read(flash->regmap, REG_FLAG1, &reg_val);
-	return rval;
-}
-
-/* flashlight uninit */
-static int ocp81373_uninit(struct ocp81373_flash *flash)
-{
-	ocp81373_pinctrl_set(flash, OCP81373_PINCTRL_PIN_HWEN, OCP81373_PINCTRL_PINSTATE_LOW);
-	return 0;
 }
 
 static int ocp81373_flash_open(void)
@@ -1068,20 +1072,14 @@ static void ocp81373_shutdown(struct i2c_client *client)
 
 static int __maybe_unused ocp81373_suspend(struct device *dev)
 {
-	struct i2c_client *client = to_i2c_client(dev);
-	struct ocp81373_flash *flash = i2c_get_clientdata(client);
-
-	pr_info("%s %d", __func__, __LINE__);
-	return ocp81373_uninit(flash);
+	// pr_info("%s %d", __func__, __LINE__);
+	return 0;
 }
 
 static int __maybe_unused ocp81373_resume(struct device *dev)
 {
-	struct i2c_client *client = to_i2c_client(dev);
-	struct ocp81373_flash *flash = i2c_get_clientdata(client);
-
-	pr_info("%s %d", __func__, __LINE__);
-	return ocp81373_init(flash);
+	// pr_info("%s %d", __func__, __LINE__);
+	return 0;
 }
 
 static const struct i2c_device_id ocp81373_id_table[] = {

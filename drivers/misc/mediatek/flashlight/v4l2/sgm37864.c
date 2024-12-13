@@ -618,10 +618,55 @@ static void sgm37864_v4l2_i2c_subdev_init(struct v4l2_subdev *sd,
 		client->addr);
 }
 
+/* flashlight init */
+static int sgm37864_init(struct sgm37864_flash *flash)
+{
+	int rval = 0;
+	unsigned int reg_val;
+
+	sgm37864_pinctrl_set(flash, SGM37864_PINCTRL_PIN_HWEN, SGM37864_PINCTRL_PINSTATE_HIGH);
+  mdelay(1);
+
+	/* set timeout */
+	rval = sgm37864_flash_tout_ctrl(flash, SGM37864_FLASH_TOUT_MAX);
+	if (rval < 0)
+		return rval;
+
+	/* output disable */
+	flash->led_mode = V4L2_FLASH_LED_MODE_NONE;
+	rval = sgm37864_mode_ctrl(flash);
+	if (rval < 0)
+		return rval;
+
+	sgm37864_torch_brt_ctrl(flash, SGM37864_LED0,
+				flash->ori_current[SGM37864_LED0]);
+	sgm37864_flash_brt_ctrl(flash, SGM37864_LED0,
+				flash->ori_current[SGM37864_LED0]);
+#if SGM37864_DUAL_LED
+	sgm37864_flash_brt_ctrl(flash, SGM37864_LED1,
+				flash->ori_current[SGM37864_LED1]);
+	sgm37864_torch_brt_ctrl(flash, SGM37864_LED1,
+				flash->ori_current[SGM37864_LED1]);
+#endif
+
+	/* reset faults */
+	rval = regmap_read(flash->regmap, REG_FLAG1, &reg_val);
+	return rval;
+}
+
+/* flashlight uninit */
+static int sgm37864_uninit(struct sgm37864_flash *flash)
+{
+	sgm37864_pinctrl_set(flash, SGM37864_PINCTRL_PIN_HWEN, SGM37864_PINCTRL_PINSTATE_LOW);
+	return 0;
+}
+
 static int sgm37864_open(struct v4l2_subdev *sd, struct v4l2_subdev_fh *fh)
 {
 	int ret;
 	pr_info("%s\n", __func__);
+
+	sgm37864_init(sgm37864_flash_data);
 
 	ret = pm_runtime_get_sync(sd->dev);
 	if (ret < 0) {
@@ -636,6 +681,8 @@ static int sgm37864_close(struct v4l2_subdev *sd, struct v4l2_subdev_fh *fh)
 {
 	regmap_update_bits(sgm37864_flash_data->regmap, REG_FLAG2, 0x0f, 0x00);
 	pr_info("%s\n", __func__);
+
+	sgm37864_uninit(sgm37864_flash_data);
 
 	pm_runtime_put(sd->dev);
 
@@ -697,49 +744,6 @@ static int sgm37864_subdev_init(struct sgm37864_flash *flash,
 err_out:
 	v4l2_ctrl_handler_free(&flash->ctrls_led[led_no]);
 	return rval;
-}
-
-/* flashlight init */
-static int sgm37864_init(struct sgm37864_flash *flash)
-{
-	int rval = 0;
-	unsigned int reg_val;
-
-	sgm37864_pinctrl_set(flash, SGM37864_PINCTRL_PIN_HWEN, SGM37864_PINCTRL_PINSTATE_HIGH);
-  mdelay(1);
-
-	/* set timeout */
-	rval = sgm37864_flash_tout_ctrl(flash, SGM37864_FLASH_TOUT_MAX);
-	if (rval < 0)
-		return rval;
-
-	/* output disable */
-	flash->led_mode = V4L2_FLASH_LED_MODE_NONE;
-	rval = sgm37864_mode_ctrl(flash);
-	if (rval < 0)
-		return rval;
-
-	sgm37864_torch_brt_ctrl(flash, SGM37864_LED0,
-				flash->ori_current[SGM37864_LED0]);
-	sgm37864_flash_brt_ctrl(flash, SGM37864_LED0,
-				flash->ori_current[SGM37864_LED0]);
-#if SGM37864_DUAL_LED
-	sgm37864_flash_brt_ctrl(flash, SGM37864_LED1,
-				flash->ori_current[SGM37864_LED1]);
-	sgm37864_torch_brt_ctrl(flash, SGM37864_LED1,
-				flash->ori_current[SGM37864_LED1]);
-#endif
-
-	/* reset faults */
-	rval = regmap_read(flash->regmap, REG_FLAG1, &reg_val);
-	return rval;
-}
-
-/* flashlight uninit */
-static int sgm37864_uninit(struct sgm37864_flash *flash)
-{
-	sgm37864_pinctrl_set(flash, SGM37864_PINCTRL_PIN_HWEN, SGM37864_PINCTRL_PINSTATE_LOW);
-	return 0;
 }
 
 static int sgm37864_flash_open(void)
@@ -1077,20 +1081,14 @@ static void sgm37864_shutdown(struct i2c_client *client)
 
 static int __maybe_unused sgm37864_suspend(struct device *dev)
 {
-	struct i2c_client *client = to_i2c_client(dev);
-	struct sgm37864_flash *flash = i2c_get_clientdata(client);
-
-	pr_info("%s %d", __func__, __LINE__);
-	return sgm37864_uninit(flash);
+	// pr_info("%s %d", __func__, __LINE__);
+	return 0;
 }
 
 static int __maybe_unused sgm37864_resume(struct device *dev)
 {
-	struct i2c_client *client = to_i2c_client(dev);
-	struct sgm37864_flash *flash = i2c_get_clientdata(client);
-
-	pr_info("%s %d", __func__, __LINE__);
-	return sgm37864_init(flash);
+	// pr_info("%s %d", __func__, __LINE__);
+	return 0;
 }
 
 static const struct i2c_device_id sgm37864_id_table[] = {
