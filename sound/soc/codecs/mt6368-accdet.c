@@ -177,7 +177,7 @@ static char accdet_log_buf[1280];
 static bool debug_thread_en;
 static bool dump_reg;
 static struct task_struct *thread;
-
+static bool attached_audio_handled;
 static u32 button_press_debounce = 0x400;
 static u32 button_press_debounce_01 = 0x800;
 
@@ -2242,11 +2242,11 @@ static irqreturn_t mtk_accdet_irq_handler_thread(int irq, void *data)
 }
 
 #if IS_ENABLED(CONFIG_FSA4480_I2C_DF)
-static void typec_headset_handler(void)
+static void typec_headset_handler(uint8_t state)
 {
-	if (accdet->cur_eint_state == EINT_PLUG_IN) {
+	if ((accdet->cur_eint_state == EINT_PLUG_IN) && (state == TYPEC_UNATTACHED)) {
 		accdet->cur_eint_state = EINT_PLUG_OUT;
-	} else {
+	} else if ((accdet->cur_eint_state == EINT_PLUG_OUT) && (state == TYPEC_ATTACHED_AUDIO)) {
 		accdet->cur_eint_state = EINT_PLUG_IN;
 		if (accdet_dts.moisture_detect_mode != 0x5) {
 			mod_timer(&micbias_timer,
@@ -2533,6 +2533,7 @@ static int accdet_get_dts_data(void)
 			memcpy(&accdet_dts.three_key, three_key+1,
 					sizeof(struct three_key_threshold));
 	}
+	attached_audio_handled = false;
 	dis_micbias_done = false;
 
 	ret = of_property_read_u32(node, "moisture-water-r", &accdet->water_r);
@@ -2984,10 +2985,10 @@ void mt6368_accdet_late_init(unsigned long data)
 	} else
 		pr_info("%s inited dts fail\n", __func__);
 	#if IS_ENABLED(CONFIG_FSA4480_I2C_DF)
-	if (tcpm_inquire_typec_attach_state(accdet_typec->tcpc) == TYPEC_ATTACHED_AUDIO) {
+	if (tcpm_inquire_typec_attach_state(accdet_typec->tcpc) == TYPEC_ATTACHED_AUDIO && !attached_audio_handled) {
 		fsa4480_switch_event(FSA_TYPEC_ACCESSORY_AUDIO);
 		msleep(300);
-		typec_headset_handler();
+		typec_headset_handler(TYPEC_ATTACHED_AUDIO);
 	}
 	#endif
 }
@@ -3116,14 +3117,15 @@ static int accdet_tcp_notifier_call(struct notifier_block *nb,
 			   new_state == TYPEC_ATTACHED_AUDIO) {
 			/* enable AudioAccessory connection */
 			pr_err(" fsa4480 enable AudioAccessory connection\n");
+			attached_audio_handled = true;
 			fsa4480_switch_event(FSA_TYPEC_ACCESSORY_AUDIO);
 			msleep(300);
-			typec_headset_handler();
+			typec_headset_handler(new_state);
 		} else if (old_state == TYPEC_ATTACHED_AUDIO &&
 			   new_state == TYPEC_UNATTACHED) {
 			/* disable AudioAccessory connection */
 			pr_err("fsa4480 disable AudioAccessory connection\n");
-			typec_headset_handler();
+			typec_headset_handler(new_state);
 			msleep(300);
 			fsa4480_switch_event(FSA_TYPEC_ACCESSORY_NONE);
 		}
