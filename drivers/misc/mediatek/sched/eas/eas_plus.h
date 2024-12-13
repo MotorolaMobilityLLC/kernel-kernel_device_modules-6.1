@@ -32,6 +32,7 @@ DECLARE_PER_CPU(unsigned long, min_freq);
 #define LB_IRQ_BEST_IDLE    (0x410)
 #define LB_IRQ_SYS_MAX_SPARE   (0x420)
 #define LB_IRQ_MAX_SPARE   (0x440)
+#define LB_VIP   (0x450)
 #define LB_BACKUP_CURR         (0x480)
 #define LB_BACKUP_PREV         (0x481)
 #define LB_BACKUP_IDLE_CAP      (0x482)

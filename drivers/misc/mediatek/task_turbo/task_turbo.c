@@ -31,7 +31,7 @@
 #include <trace/hooks/sysrqcrash.h>
 #include <trace/hooks/cgroup.h>
 #include <trace/hooks/sys.h>
-
+#include <eas/vip.h>
 #include <task_turbo.h>
 
 #define CREATE_TRACE_POINTS
@@ -361,6 +361,10 @@ static void probe_android_rvh_select_task_rq_fair(void *ignore, struct task_stru
 							int prev_cpu, int sd_flag,
 							int wake_flags, int *target_cpu)
 {
+	if (get_vip_task_prio(p) != NOT_VIP) {
+		return;
+	}
+
 	*target_cpu = select_turbo_cpu(p);
 }
 
