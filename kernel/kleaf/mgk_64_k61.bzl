@@ -991,11 +991,11 @@ def get_overlay_modules_list():
         mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/uwb/qm358:qm35_spi")
 
         mgk_64_k61_device_modules.append("drivers/gpu/drm/panel/dsi-panel-mot-csot-vtdr6130-636-fhdp-dphy-cmd-fuji.ko")
-        mgk_64_k61_device_modules.append("drivers/misc/mediatek/flashlight/flashlights-ocp81373.ko")
         mgk_64_k61_device_modules.append("drivers/misc/mediatek/lens/ois/mot_tele_dw9784/mot_tele_dw9784.ko")
         mgk_64_k61_device_modules.append("drivers/misc/mediatek/typec/mux/fsa4480-i2c.ko")
         mgk_64_k61_device_modules.append("sound/soc/codecs/tfa9864/snd-soc-tfa9864.ko")
         mgk_64_k61_device_modules.append("drivers/regulator/aw37004-regulator.ko")
+        mgk_64_k61_device_modules.append("drivers/misc/mediatek/flashlight/v4l2/aw36518.ko")
 
     if "nice" in DEFCONFIG_OVERLAYS:
         mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/input/misc/fpc_fps_mmi:fpc_mtk_tee")
