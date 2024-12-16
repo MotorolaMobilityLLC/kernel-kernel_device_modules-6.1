@@ -1,0 +1,46 @@
+&pio {
+	goodix_int: goodix {
+		pins_cmd_dat {
+			pinmux = <PINMUX_GPIO5__FUNC_GPIO5>;
+			input-enable;
+			bias-pull-up;
+		};
+	};
+	goodix_int1: goodix1 {
+		pins_cmd_dat {
+			pinmux = <PINMUX_GPIO25__FUNC_GPIO25>;
+			input-enable;
+			bias-pull-up;
+		};
+	};
+	goodix_int2: goodix2 {
+		pins_cmd_dat {
+			pinmux = <PINMUX_GPIO96__FUNC_GPIO96>;
+			input-enable;
+			bias-pull-up;
+		};
+	};
+};
+
+&mt6363_vio18 {
+	regulator-min-microvolt = <1800000>;
+	regulator-max-microvolt = <2100000>;
+};
+
+&i2c4 {
+	status = "ok";
+	goodix,health {
+		compatible = "goodix,health";
+		reg = <0x14>;
+		interrupt-parent = <&pio>;
+		interrupts = <5 0x01>;
+		goodix,gpio_reset = <&pio 26 0>;
+		goodix,gpio_irq = <&pio 5 0>;
+		goodix,gh_vdd_leds = <&pio 25 0>;
+		goodix,gh_vdd = <&pio 96 0>;
+		vddio-ctrl-support;
+		goodix,vddio-supply = <&mt6363_vio18>;
+		pinctrl-0 = <&goodix_int>,<&goodix_int1>,<&goodix_int2>;
+		status = "okay";
+	};
+};
