@@ -10,6 +10,12 @@ config UFSHID
 	help
 	  UFS HID Feature Enable
 
+config UFSHID_V3
+	bool "new driver for UFS Host Initiated Defrag support"
+	depends on SCSI_UFSHCD && UFSFEATURE
+	help
+	  UFS HID Feature Enable
+
 config MICRON_UFSHID
 	bool "Micron UFS Host Initiated Defrag support"
 	depends on SCSI_UFSHCD && UFSFEATURE

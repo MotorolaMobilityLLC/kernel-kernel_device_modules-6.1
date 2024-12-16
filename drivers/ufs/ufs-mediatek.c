@@ -200,31 +200,48 @@ static void ufs_vh_compl_command(void *data, struct ufs_hba *hba,
 			struct ufshcd_lrb *lrbp)
 {
 	struct utp_upiu_header *header = &lrbp->ucd_rsp_ptr->header;
+#if !defined(CONFIG_UFSHID_V3)
 	struct ufsf_feature *ufsf = ufs_mtk_get_ufsf(hba);
+#endif
 	struct scsi_cmnd *cmd = lrbp->cmd;
 	int scsi_status, result, ocs;
+#if !defined(CONFIG_UFSHID_V3)
 	unsigned long *outstanding_reqs;
 	unsigned long out_tasks = 0;
 	unsigned long ongoing_cnt = 0;
 	int tmp_tag, nr_tag;
+#endif
 
 	if (!cmd)
 		return;
 
 	ocs = le32_to_cpu(lrbp->utr_descriptor_ptr->header.dword_2) & MASK_OCS;
 	if (ocs != OCS_SUCCESS)
+#if defined(CONFIG_UFSHID_V3)
+		return;
+#else
 		goto check_last_req;
+#endif
 
 	result = be32_to_cpu(header->dword_0) >> 24;
 	if (result != UPIU_TRANSACTION_RESPONSE)
+#if defined(CONFIG_UFSHID_V3)
+		return;
+#else
 		goto check_last_req;
+#endif
 
 	scsi_status = be32_to_cpu(header->dword_1) & MASK_SCSI_STATUS;
 	if (scsi_status != SAM_STAT_GOOD)
+#if defined(CONFIG_UFSHID_V3)
+		return;
+#else
 		goto check_last_req;
+#endif
 
 	ufsf_upiu_check_for_ccd(lrbp);
 
+#if !defined(CONFIG_UFSHID_V3)
 	outstanding_reqs = &hba->outstanding_reqs;
 	nr_tag = hba->nutrs;
 
@@ -242,6 +259,7 @@ check_last_req:
 		schedule_work(&ufsf->on_idle_work);
 #endif
 	;
+#endif
 }
 
 static void ufs_vh_update_sdev(void *data, struct scsi_device *sdev)
@@ -252,6 +270,7 @@ static void ufs_vh_update_sdev(void *data, struct scsi_device *sdev)
 	ufsf_slave_configure(ufsf, sdev);
 }
 
+#if !defined(CONFIG_UFSHID_V3)
 static void ufs_vh_send_command(void *data, struct ufs_hba *hba,
 				struct ufshcd_lrb *lrbp)
 {
@@ -259,6 +278,7 @@ static void ufs_vh_send_command(void *data, struct ufs_hba *hba,
 
 	ufsf_hid_acc_io_stat(ufsf, lrbp);
 }
+#endif
 #endif
 
 static bool ufs_mtk_is_boost_crypt_enabled(struct ufs_hba *hba)
@@ -1727,7 +1747,11 @@ ufs_mtk_query_ioctl(struct ufs_hba *hba, u8 lun, void __user *buffer)
 	if (IS_SAMSUNG_DEVICE(storage_mfrid) || IS_MICRON_DEVICE(storage_mfrid)) {
 		if (ufsf_check_query(ioctl_data->opcode)) {
 			err = ufsf_query_ioctl(ufs_mtk_get_ufsf(hba), lun, buffer,
+#if defined(CONFIG_UFSHID_V3)
+					       ioctl_data);
+#else
 					       ioctl_data, UFSFEATURE_SELECTOR);
+#endif
 			goto out_release_mem;
 		}
 	}
@@ -2838,7 +2862,11 @@ static int ufs_mtk_suspend(struct ufs_hba *hba, enum ufs_pm_op pm_op,
 	if (status == PRE_CHANGE) {
 #if defined(CONFIG_UFSFEATURE)
 		if (IS_SAMSUNG_DEVICE(storage_mfrid) || IS_MICRON_DEVICE(storage_mfrid))
+#if defined(CONFIG_UFSHID_V3)
+			ufsf_suspend(ufs_mtk_get_ufsf(hba), pm_op == UFS_SYSTEM_PM);
+#else
 			ufsf_suspend(ufs_mtk_get_ufsf(hba));
+#endif
 #endif
 
 		if (!ufshcd_is_auto_hibern8_supported(hba))
@@ -3555,7 +3583,9 @@ static void ufs_samsung_register_hooks(void)
 {
 	register_trace_android_vh_ufs_compl_command(ufs_vh_compl_command, NULL);
 	register_trace_android_vh_ufs_update_sdev(ufs_vh_update_sdev, NULL);
+#if !defined(CONFIG_UFSHID_V3)
 	register_trace_android_vh_ufs_send_command(ufs_vh_send_command, NULL);
+#endif
 }
 #endif
 

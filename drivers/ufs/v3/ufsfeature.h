@@ -39,9 +39,6 @@
 #ifndef _UFSFEATURE_H_
 #define _UFSFEATURE_H_
 
-#if defined(CONFIG_UFSHID_V3)
-#include <../v3/ufsfeature.h>
-#else
 #include <scsi/scsi_cmnd.h>
 #include <asm/unaligned.h>
 
@@ -62,7 +59,7 @@ enum {
 #define UFSFEATURE_QUERY_OPCODE			0x5500
 
 /* Version info */
-#define UFSFEATURE_DD_VER			0x020300
+#define UFSFEATURE_DD_VER			0x030402
 #define UFSFEATURE_DD_VER_POST			""
 
 /* For read10 debug */
@@ -81,17 +78,18 @@ enum {
 #define OS_PAGE_SHIFT				12
 
 /* Description */
-#define UFSF_QUERY_DESC_DEVICE_MAX_SIZE		0x65
+#define UFSF_QUERY_DESC_DEVICE_MAX_SIZE		0xFF
 #define UFSF_QUERY_DESC_CONFIGURAION_MAX_SIZE	0xE6
 #define UFSF_QUERY_DESC_UNIT_MAX_SIZE		0x2D
-#define UFSF_QUERY_DESC_GEOMETRY_MAX_SIZE	0x5E
+#define UFSF_QUERY_DESC_GEOMETRY_MAX_SIZE	0xFF
+#define UFSF_QUERY_DESC_FBO_MAX_SIZE		0x12
+#define UFSF_QUERY_DESC_COPY_MAX_SIZE		0x0E
 
 /* Descriptor idn for Query Request */
 #define UFSF_QUERY_DESC_IDN_VENDOR_DEVICE	0xF0
 #define UFSF_QUERY_DESC_IDN_VENDOR_GEOMETRY	0xF7
 #define UFSF_QUERY_DESC_IDN_FBO			0x0A
-
-#define UFSFEATURE_SELECTOR			0x01
+#define UFSF_QUERY_DESC_IDN_COPY		0x0B
 
 /* query_flag  */
 #define MASK_QUERY_UPIU_FLAG_LOC		0xFF
@@ -140,8 +138,8 @@ struct ufsf_feature {
 
 	struct work_struct reset_wait_work;
 	struct work_struct resume_work;
+
 #if defined(CONFIG_UFSHID)
-	struct work_struct on_idle_work;
 	atomic_t hid_state;
 	struct ufshid_dev *hid_dev;
 #endif
@@ -153,20 +151,18 @@ struct ufs_ioctl_query_data;
 
 void ufsf_device_check(struct ufs_hba *hba);
 int ufsf_query_ioctl(struct ufsf_feature *ufsf, int lun, void __user *buffer,
-		     struct ufs_ioctl_query_data *ioctl_data,
-		     u8 selector);
+		     struct ufs_ioctl_query_data *ioctl_data);
 void ufsf_upiu_check_for_ccd(struct ufshcd_lrb *lrbp);
 int ufsf_get_scsi_device(struct ufs_hba *hba, struct scsi_device *sdev);
 bool ufsf_is_valid_lun(int lun);
 void ufsf_slave_configure(struct ufsf_feature *ufsf, struct scsi_device *sdev);
 
-void ufsf_reset_lu(struct ufsf_feature *ufsf);
 void ufsf_reset_host(struct ufsf_feature *ufsf);
 void ufsf_init(struct ufsf_feature *ufsf);
 void ufsf_reset(struct ufsf_feature *ufsf);
 void ufsf_remove(struct ufsf_feature *ufsf);
 void ufsf_set_init_state(struct ufs_hba *hba);
-void ufsf_suspend(struct ufsf_feature *ufsf);
+void ufsf_suspend(struct ufsf_feature *ufsf, bool is_system_pm);
 void ufsf_resume(struct ufsf_feature *ufsf, bool is_link_off);
 
 /* mimic */
@@ -179,28 +175,32 @@ void ufsf_rpm_put_noidle(struct ufs_hba *hba);
 int ufsf_get_bkops_status(struct ufs_hba *hba, u32 *status);
 void ufsf_exception_event_handler(struct ufs_hba *hba);
 
-/* for hid */
-void ufsf_hid_acc_io_stat(struct ufsf_feature *ufsf, struct ufshcd_lrb *lrbp);
-
-#if defined(CONFIG_MICRON_UFSHID)
-#define QUERY_FLAG_IDN_HID_EN                           0x13
-#endif
 /* Attribute idn for Query requests */
 #if defined(CONFIG_UFSHID)
-#define QUERY_ATTR_IDN_HID_OPERATION			0x20
-#define QUERY_ATTR_IDN_HID_FRAG_LEVEL			0x21
+#define QUERY_ATTR_IDN_HID_OPERATION			0x80
+#define QUERY_ATTR_IDN_HID_FRAG_LEVEL			0x81
+#define QUERY_ATTR_IDN_HID_SIZE				0x8A
+#define QUERY_ATTR_IDN_HID_AVAIL_SIZE			0x8B
+#define QUERY_ATTR_IDN_HID_PROGRESS_RATIO		0x8C
+#define QUERY_ATTR_IDN_HID_STATE			0x8D
+#define QUERY_ATTR_IDN_HID_L2P_FRAG_LEVEL		0x8E
+#define QUERY_ATTR_IDN_HID_L2P_DEFRAG_THRESHOLD		0x8F
+#define QUERY_ATTR_IDN_HID_FEAT_SUP			0x90
 #endif
 #define QUERY_ATTR_IDN_VENDOR_EE_CONTROL		0x97
-#if defined(CONFIG_MICRON_UFSHID)
-#define QUERY_ATTR_IDN_HID_FRAG_STATUS                  0x31
-#define QUERY_ATTR_IDN_HID_PROGRESS                     0x32
-#endif
 #define QUERY_ATTR_IDN_VENDOR_EE_STATUS			0x98
 
 /* Device descriptor parameters offsets in bytes*/
-#define DEVICE_DESC_PARAM_EX_FEAT_SUP                  0x4F
+#define DEVICE_DESC_PARAM_EX_FEAT_SUP			0x4F
+#define DEVICE_DESC_PARAM_SAMSUNG_SUP			0xFB
 #if defined(CONFIG_UFSHID)
-#define DEVICE_DESC_PARAM_HID_VER			0x59
+#define DEVICE_DESC_PARAM_HID_VER			0xF7
+#endif
+
+/* Geometry descriptor parameters offsets in bytes*/
+#if defined(CONFIG_UFSHID)
+#define GEOMETRY_DESC_HID_MAX_LBA_RANGE_CNT		0xF8
+#define GEOMETRY_DESC_HID_MAX_LBA_RANGE_SIZE		0xF9
 #endif
 
 /**
@@ -224,5 +224,4 @@ static inline int ufsf_check_query(__u32 opcode)
 	return (opcode & 0xffff0000) >> 16 == UFSFEATURE_QUERY_OPCODE;
 }
 
-#endif /* CONFIG_UFSHID_V3 */
 #endif /* End of Header */
