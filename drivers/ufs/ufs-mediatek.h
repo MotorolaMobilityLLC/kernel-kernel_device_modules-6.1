@@ -17,7 +17,11 @@
 #include "ufs-mediatek-rpmb.h"
 
 #if defined(CONFIG_UFSFEATURE)
+#if defined(CONFIG_UFSHID_V3)
+#include "v3/ufsfeature.h"
+#else
 #include "vendor/ufsfeature.h"
+#endif
 #endif
 
 /*

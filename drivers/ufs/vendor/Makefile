@@ -4,6 +4,9 @@ ccflags-y += -I$(DEVICE_MODULES_PATH)/drivers/clk/mediatek/
 ccflags-y += -I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/include/
 ccflags-y += -I$(DEVICE_MODULES_PATH)/drivers/misc/mediatek/power_throttling/
 ccflags-y += -I$(DEVICE_MODULES_PATH)/drivers/ufs/
+ifeq ($(CONFIG_UFSHID_V3),y)
+ccflags-y += -I$(DEVICE_MODULES_PATH)/drivers/ufs/v3
+endif
 ccflags-y += -I$(DEVICE_MODULES_PATH)/drivers/ufs/vendor/
 
 # must after -I$(DEVICE_MODULES_PATH)/drivers/ufs/
@@ -21,8 +24,13 @@ ufs-mediatek-mod-y                              += ../ufs-mediatek.o ../ufs-medi
 ufs-mediatek-mod-$(CONFIG_MTK_BLOCK_IO_TRACER)  += ../ufs-mediatek-btag.o
 ufs-mediatek-mod-$(CONFIG_RPMB)                 += ../ufs-mediatek-rpmb.o
 ufs-mediatek-mod-$(CONFIG_RPMB)                 += ../ufs-mediatek-ise-dummy.o
+ifeq ($(CONFIG_UFSHID_V3),y)
+ufs-mediatek-mod-$(CONFIG_UFSFEATURE)           += ../v3/ufsfeature.o ufsfeature-mimic.o
+ufs-mediatek-mod-$(CONFIG_UFSHID_V3)           += ../v3/ufshid.o
+else
 ufs-mediatek-mod-$(CONFIG_UFSFEATURE)           += ufsfeature.o ufsfeature-mimic.o
 ufs-mediatek-mod-$(CONFIG_UFSHID)               += ufshid.o
+endif
 ufs-mediatek-mod-$(CONFIG_SCSI_SKHID)           += ufs-manual-gc.o
 ufs-mediatek-mod-$(CONFIG_FSCRYPT_WRAPED_KEY_MODE_SUPPORT) += ../ufshcd-moto-crypto.o
 
@@ -32,7 +40,12 @@ ufs-mediatek-mod-ise-y                              += ../ufs-mediatek.o ../ufs-
 ufs-mediatek-mod-ise-$(CONFIG_MTK_BLOCK_IO_TRACER)  += ../ufs-mediatek-btag.o
 ufs-mediatek-mod-ise-$(CONFIG_RPMB)                 += ../ufs-mediatek-rpmb.o
 ufs-mediatek-mod-ise-$(CONFIG_RPMB)                 += ../ufs-mediatek-ise.o
+ifeq ($(CONFIG_UFSHID_V3),y)
+ufs-mediatek-mod-ise-$(CONFIG_UFSFEATURE)           += ../v3/ufsfeature.o ufsfeature-mimic.o
+ufs-mediatek-mod-ise-$(CONFIG_UFSHID)               += ../v3/ufshid.o
+else
 ufs-mediatek-mod-ise-$(CONFIG_UFSFEATURE)           += ufsfeature.o ufsfeature-mimic.o
 ufs-mediatek-mod-ise-$(CONFIG_UFSHID)               += ufshid.o
+endif
 ufs-mediatek-mod-ise-$(CONFIG_SCSI_SKHID)           += ufs-manual-gc.o
 ufs-mediatek-mod-ise-$(CONFIG_FSCRYPT_WRAPED_KEY_MODE_SUPPORT) += ../ufshcd-moto-crypto.o
