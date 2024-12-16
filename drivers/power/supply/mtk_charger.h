@@ -168,6 +168,15 @@ enum {
 	DP_DM_DM_PULSE,
 };
 
+enum {
+	POWER_SUPPLY_USB_TYPE_HVDCP2 = 128,
+	POWER_SUPPLY_USB_TYPE_HVDCP3,
+	POWER_SUPPLY_USB_TYPE_HVDCP3P5,
+	POWER_SUPPLY_USB_TYPE_WLC_BPP = 144,
+	POWER_SUPPLY_USB_TYPE_WLC_EPP,
+	POWER_SUPPLY_USB_TYPE_WLC_MOTO,
+};
+
 enum bat_temp_state_enum {
 	BAT_TEMP_LOW = 0,
 	BAT_TEMP_NORMAL,
@@ -486,8 +495,9 @@ struct mmi_params {
 	int			vbus_h;
 	int			vbus_l;
 	int			charger_watt;
+	int			real_charger_type;
 	struct work_struct		notify_power_event_work;
-	struct mutex		power_watt_lock;
+	struct mutex		power_info_lock;
 #ifdef CONFIG_MOTO_1200_CYCLE
 	int			num_cycle_cv_steps;
 	struct mmi_cycle_cv_steps	*cycle_cv_steps;
