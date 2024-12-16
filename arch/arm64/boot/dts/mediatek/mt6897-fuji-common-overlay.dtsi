@@ -18,6 +18,7 @@
 #include "mediatek/fuji-display.dtsi"
 #include "mediatek/fuji-touch.dtsi"
 #include "mediatek/fuji-audio.dtsi"
+#include "mediatek/fuji-ppg.dtsi"
 #include <dt-bindings/gpio/gpio.h>
 
 &rt5133 {
