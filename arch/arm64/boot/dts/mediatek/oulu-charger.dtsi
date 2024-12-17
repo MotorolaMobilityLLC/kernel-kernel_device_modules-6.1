@@ -474,11 +474,10 @@
 	start-soc-max = <90>;
 	idvchg-term = <500>;
 	idvchg-step = <50>;
-	ita-level = <3000 2000 1500 1000>;
+	ita-level = <3000 2500 2000 1500>;
 	rcable-level = <230 260 300 480>;
-	ita-level-dual = <6200 3000 2000 1500>;
+	ita-level-dual = <6200 3000 2500 2000>;
 	rcable-level-dual = <180 230 260 300>;
-	//rcable-level-dual = <240 250 260 300>;//debug
 	idvchg-ss-init = <1000>;
 	idvchg-ss-step = <250>;
 	idvchg-ss-step1 = <100>;
