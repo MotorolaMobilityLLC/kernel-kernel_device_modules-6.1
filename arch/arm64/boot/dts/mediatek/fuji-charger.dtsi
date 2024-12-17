@@ -28,6 +28,7 @@
 &mt6375_chg {
 	ircmp-r = <0>;
 	ircmp-v = <0>;
+	mmi,otp-mos-regulator-name = "mt6368_mos_con1";
 };
 
 &lk_charger {
@@ -110,6 +111,8 @@
 				<45 4530 584>,
 				<60 4200 292>;
 	mmi,mmi-cycle-cv-steps =<100 20>;
+	/*typec_otp*/
+	mmi,typecotp-charger;
 };
 
 &moto_chg_tcmd {
@@ -390,9 +393,19 @@
         dpm-caps {
                 attempt-discover-id;
                 attempt-discover-svids;
+        mmi,en-moto-typec-otp;
         };
 };
 
+&spmi {
+	second_pmic@5 {
+		regulators {
+			mt6368_mos_con1: mos-con1 {
+				regulator-name = "mt6368_mos_con1";
+			};
+		};
+	};
+};
 
 &charger_cooler {
 	mmi,thermal-mitigation = <(-1) 18000000 17000000 16000000 14000000
