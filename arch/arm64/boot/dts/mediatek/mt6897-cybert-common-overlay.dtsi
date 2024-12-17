@@ -308,13 +308,14 @@
 		aw8693x_cont_track_margin = /bits/ 8 < 0x0F >;
 		aw8693x_cont_brk_gain = /bits/ 8 < 0x08 >;
 		aw8693x_cont_brk_time = /bits/ 8 < 0x08 >;
-		aw8693x_duration_time = /bits/ 8 < 34 67 101 >;
+		aw8693x_duration_time = /bits/ 8 < 20 30 60 >;
 		aw8693x_d2s_gain = /bits/ 8 < 0x04 >;
 		aw8693x_trig_config = /bits/ 8 < 0 0 0 1 0 2 0 0
 						 0 0 0 1 0 2 0 0
 						 0 0 0 1 0 2 0 0 >;
 		aw8693x_bst_vol_default = < 8500 >;
 		aw8693x_is_enabled_track_en;
+		aw8693x_is_pwm_12k;
 		/* aw8693x_is_enabled_auto_bst; */
 		/* aw8693x_is_enabled_one_wire; */
 	};
