@@ -150,6 +150,8 @@
 	/* dynamic mivr */
 	enable-dynamic-mivr;
 
+	enable-pdtest-mode = <1>;
+
 	mmi,enable-mux;
 
 	mmi,enable-ifc;

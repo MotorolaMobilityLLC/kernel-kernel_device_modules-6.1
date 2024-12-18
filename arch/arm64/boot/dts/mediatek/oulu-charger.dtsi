@@ -119,6 +119,8 @@
 
 	disable-aicl;
 
+	enable-pdtest-mode = <1>;
+
 	mmi,enable-mux;
 	mmi,typec-mos-only;
 
