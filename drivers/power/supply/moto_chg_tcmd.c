@@ -1118,7 +1118,10 @@ static ssize_t wireless_chip_id_show(struct device *dev,
 		char *buf)
 {
 	int val = 0;
-	if (wls_client->get_chip_id) {
+
+	if (!wls_client) {
+		pr_err("%s wls_client is null\n", __func__);
+	} else if (wls_client->get_chip_id) {
 		val = wls_client->get_chip_id(wls_client->data);
 		if (!val) {
 			pr_err("%s wls get chip id fail %d\n", __func__, val);
