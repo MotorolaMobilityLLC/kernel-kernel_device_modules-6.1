@@ -60,6 +60,21 @@
 			bias-pull-up;
 		};
 	};
+	phone_case_int_default: phone_case_int_default {
+		pins_cmd_dat {
+			pinmux = <PINMUX_GPIO31__FUNC_GPIO31>;
+			input-enable;
+			bias-disable;
+		};
+	};
+
+	phone_case_int_sleep: phone_case_int_sleep {
+		pins_cmd_dat {
+			pinmux = <PINMUX_GPIO31__FUNC_GPIO31>;
+			input-enable;
+			bias-disable;
+		};
+	};
 };
 
 
@@ -232,6 +247,19 @@
 
 &mmc1 {
 	status = "disabled";
+};
+
+&hall_phone_case_detect {
+	pinctrl-names = "default","sleep";
+	pinctrl-0 = <&phone_case_int_default>;
+	pinctrl-1 = <&phone_case_int_sleep>;
+	hall,factory-class-name = "hall_gpio";
+	hall,input-dev-name = "phone_case_hall_sensor";
+	/* hall_vdd-supply = <&pm8350c_l8>; */
+	hall,nirq-gpio-num = <1>;
+	hall,nirq-gpio_0 = <&pio 31 0x02>;
+	hall,nirq-gpio-high-val_0 = <0>;
+	hall,nirq-gpio-low-val_0 = <1>;
 };
 
 &i2c6 {
