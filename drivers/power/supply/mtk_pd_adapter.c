@@ -577,7 +577,7 @@ static int pd_update_apdo_cap(struct adapter_device *dev,
 	if (info->pd_type[active_idx] != MTK_PD_CONNECT_PE_READY_SNK_APDO) {
 		dev_notice(info->dev, "%s pd type is not snk apdo\n", __func__);
 		mutex_unlock(&info->idx_lock);
-		return ret;
+		return MTK_ADAPTER_NOT_SUPPORT;
 	}
 	mutex_unlock(&info->idx_lock);
 

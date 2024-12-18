@@ -1146,6 +1146,7 @@ static int pe50_stop(struct pe50_algo_info *info, struct pe50_stop_info *sinfo)
 	if (pe50_hal_is_adaptor_power_change(info->alg, &data->ta_auth_data)) {
 		data->ta_ready = false;
 		data->run_once = false;
+		sinfo->hardreset_ta = false;
 		PE50_INFO("PE50 stop due to adaptor power change\n");
 	}
 
