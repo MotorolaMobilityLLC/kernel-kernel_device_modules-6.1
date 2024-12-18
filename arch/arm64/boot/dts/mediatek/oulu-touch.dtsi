@@ -57,6 +57,15 @@
 	status = "disabled";
 };
 
+&odm {
+	mmi_stow: mmi_stow {
+		compatible = "moto,mmi_stow";
+		pinctrl-names = "default";
+		pinctrl-0 = <&ctp_gt9896s_stow_gpio>;
+		mmi,stow-gpio = <&pio 4 0x0>;
+	};
+};
+
 &pio {
 	ctp_gt9896s_pins_default: pins_default {
 	};
@@ -82,6 +91,12 @@
 		pins-cmd-dat {
 			pinmux = <PINMUX_GPIO152__FUNC_GPIO152>;
 			output-low;
+		};
+	};
+	ctp_gt9896s_stow_gpio: stow_gpio_active {
+		pins-cmd-dat {
+			pinmux = <PINMUX_GPIO4__FUNC_GPIO4>;
+			drive-strength = <2>;
 		};
 	};
 	ctp_gt9896s_spi_mode: spimode-default {
