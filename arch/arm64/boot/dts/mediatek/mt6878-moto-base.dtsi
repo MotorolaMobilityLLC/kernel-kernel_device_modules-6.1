@@ -33,9 +33,12 @@
 	swtp_3: swtp_3 {
 		compatible = "mediatek, swtp3-eint";
 	};
-        swtp_4: swtp_4 {
-                compatible = "mediatek, swtp4-eint";
-        };
+	swtp_4: swtp_4 {
+		compatible = "mediatek, swtp4-eint";
+	};
+	hall_phone_case_detect: hall_phone_case_detect {
+		compatible = "hall,hall_phone_case_detect";
+    };
 };
 
 /*vol+/- keys swap*/
