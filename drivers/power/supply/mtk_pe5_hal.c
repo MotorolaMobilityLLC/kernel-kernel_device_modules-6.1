@@ -276,6 +276,12 @@ bool pe50_hal_is_adaptor_power_change(struct chg_alg_device *alg,
 		if (!hal->adapters[i])
 			continue;
 		ret = adapter_dev_update_apdo_cap(hal->adapters[i], &_data);
+
+		if (ret == MTK_ADAPTER_NOT_SUPPORT) {
+			PE50_INFO("adaptor power change to Fixed PDO\n");
+			return true;
+		}
+
 		if (ret < 0 || ret != MTK_ADAPTER_OK) {
 			PE50_DBG("authenticate fail(%d)\n", ret);
 			continue;
