@@ -4064,7 +4064,7 @@ static int mmi_check_power_info(struct mtk_charger *info, bool force)
 			power_watt = val.intval;
 
 			rc = power_supply_get_property(info->wl_psy,
-				POWER_SUPPLY_PROP_USB_TYPE, &val);
+				POWER_SUPPLY_PROP_CHARGE_TYPE, &val);
 			if (rc == 0)
 				real_charger_type = val.intval;
 
