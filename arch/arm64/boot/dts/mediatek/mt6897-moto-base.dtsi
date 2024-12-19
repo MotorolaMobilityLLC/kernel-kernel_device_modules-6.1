@@ -51,4 +51,7 @@
 &mt6375_typec {
 	/* Remove mtk typec otp */
 	/delete-property/ tcpc,en-typec-otp;
+	dpm-caps {
+                /delete-property/ attempt-enter-dp-mode;
+        };
 };
