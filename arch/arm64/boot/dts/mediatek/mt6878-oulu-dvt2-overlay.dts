@@ -21,10 +21,10 @@
 		target-path = "/";
 		__overlay__ {
 			mot,model = "oulu";
-			mot,board-id = <0x47 0xB1B0>;
+			mot,board-id = <0x47 0xB200>;
 		};
 	};
 };
 
-#include <oulu_dvt1b/cust.dtsi>
+#include <oulu_dvt2/cust.dtsi>
 /*End of this file, DO NOT ADD ANYTHING HERE*/
