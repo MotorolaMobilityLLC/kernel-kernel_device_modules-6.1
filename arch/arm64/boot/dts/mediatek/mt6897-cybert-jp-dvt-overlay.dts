@@ -108,6 +108,19 @@
 	};
 };
 
+&low_battery_throttling {
+        thd-volts-l = <
+                3099 2863 2797
+                3301 3044 2950
+                3947 3518 3355>;
+        thd-volts-h = <
+                3199 3099 2863
+                3401 3301 3044
+                4047 3947 3518>;
+        lvsys-thd-volt-l = <2797>;
+        lvsys-thd-volt-h = <2863>;
+};
+
 #include <cybert_evb/cust.dtsi>
 #include "mediatek/cust_cybert_camera_v4l2_flash_compatible.dtsi"
 /*End of this file, DO NOT ADD ANYTHING HERE*/
