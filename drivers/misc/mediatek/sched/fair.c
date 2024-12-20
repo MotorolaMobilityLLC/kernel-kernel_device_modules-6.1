@@ -1964,6 +1964,7 @@ void mtk_find_energy_efficient_cpu(void *data, struct task_struct *p, int prev_c
 	unsigned long cpu_utils[MAX_NR_CPUS] = {[0 ... MAX_NR_CPUS-1] = ULONG_MAX};
 	int recent_used_cpu, target;
 #if IS_ENABLED(CONFIG_MTK_SCHED_VIP_TASK)
+	struct vip_task_struct *vts;
 	int min_num_vip_cpu = -1;
 	unsigned int num_vip = 0, min_num_vip_in_cpu = UINT_MAX;
 #endif
@@ -1977,6 +1978,8 @@ void mtk_find_energy_efficient_cpu(void *data, struct task_struct *p, int prev_c
 
 	pd = rcu_dereference(rd->pd);
 #if IS_ENABLED(CONFIG_MTK_SCHED_VIP_TASK)
+	vts = &((struct mtk_task *) p->android_vendor_data1)->vip_task;
+	vts->vip_prio = get_vip_task_prio(p);
 	if (task_is_vip(p, NOT_VIP) && pd) {
 		if (cpumask_empty(&allowed_cpu_mask)) {
 		    cpumask_andnot(&allowed_cpu_mask, p->cpus_ptr, cpu_pause_mask);
