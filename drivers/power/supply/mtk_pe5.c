@@ -1830,6 +1830,22 @@ MMI_RETRY:
 	ibus_avg = precise_div(ibus_avg, avg_times);
 	PE50_INFO("CP_INIT:ibus (%d)\n", ibus_avg);
 	if (ibus_avg < 300) {
+
+		/*some charger pump don't support errorhigh or errorlow function, workaround it.*/
+		if (data->cp_op_mode_curr == CP_2_1_MODE) {
+			if (data->mmi_startup_convert_ratio < 200) {
+				data->mmi_convert_ratio_state = MMI_RATIO_LOW;
+			} else if (data->mmi_startup_convert_ratio > 240) {
+				data->mmi_convert_ratio_state = MMI_RATIO_HIGH;
+			}
+		} else if (data->cp_op_mode_curr == CP_4_1_MODE) {
+			if (data->mmi_startup_convert_ratio < 400) {
+				data->mmi_convert_ratio_state = MMI_RATIO_LOW;
+			} else if (data->mmi_startup_convert_ratio > 440) {
+				data->mmi_convert_ratio_state = MMI_RATIO_HIGH;
+			}
+		}
+
 		if (data->mmi_convert_ratio_state == MMI_RATIO_HIGH) {
 			data->mmi_startup_convert_ratio -= 5;
 		} else if (data->mmi_convert_ratio_state == MMI_RATIO_LOW) {
