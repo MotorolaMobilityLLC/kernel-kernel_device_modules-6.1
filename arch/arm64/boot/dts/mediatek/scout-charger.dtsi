@@ -247,7 +247,7 @@
 		nfg,enable_user_upgrade_batt;
 	};
 
-	bq25960_master:bq25960-master@6b {
+	sc8541_master:sc8541-master@6b {
 		status = "okay";
 		compatible = "ti,bq25960-master";
 		reg = <0x6b>;
@@ -263,13 +263,39 @@
 		pinctrl-0 = <&bq25960_int_default_master>;
 	};
 
-	bq25960_slave:bq25960-slave@6c {
+	sc8541_slave:sc8541-slave@6c {
 		status = "okay";
 		compatible = "ti,bq25960-slave";
 		reg = <0x6c>;
 
 		sc8541-addr = <0x6c>;
 		sc8541-name = "sc8541-slave";
+
+		interrupt-parent = <&pio>;
+		interrupts = <11 IRQ_TYPE_EDGE_FALLING 11 0>;
+		interrupt-names = "bq25960_irq_slave";
+
+		pinctrl-names = "default";
+		pinctrl-0 = <&bq25960_int_default_slave>;
+	};
+
+	bq25960_master:bq25960-master@66 {
+		status = "okay";
+		compatible = "ti,bq25960-master";
+		reg = <0x66>;
+
+		interrupt-parent = <&pio>;
+		interrupts = <12 IRQ_TYPE_EDGE_FALLING 12 0>;
+		interrupt-names = "bq25960_irq_master";
+
+		pinctrl-names = "default";
+		pinctrl-0 = <&bq25960_int_default_master>;
+	};
+
+	bq25960_slave:bq25960-slave@67 {
+		status = "okay";
+		compatible = "ti,bq25960-slave";
+		reg = <0x67>;
 
 		interrupt-parent = <&pio>;
 		interrupts = <11 IRQ_TYPE_EDGE_FALLING 11 0>;
