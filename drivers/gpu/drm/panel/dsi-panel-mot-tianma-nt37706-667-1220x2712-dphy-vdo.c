@@ -211,6 +211,26 @@ static void lcm_panel_init(struct lcm *ctx)
 	lcm_dcs_write_seq_static(ctx, 0xF0, 0x55, 0xAA, 0x52, 0x08, 0x01);
 	lcm_dcs_write_seq_static(ctx, 0x6F, 0x03);
 	lcm_dcs_write_seq_static(ctx, 0xC7, 0x47);
+	//for VGL abnormal power off to GND
+	lcm_dcs_write_seq_static(ctx, 0x6F, 0x09);
+	lcm_dcs_write_seq_static(ctx, 0xC7, 0x24);
+	//for clk abnormal power off to GND
+	lcm_dcs_write_seq_static(ctx, 0xF0, 0x55, 0xAA, 0x52, 0x08, 0x05);
+	lcm_dcs_write_seq_static(ctx, 0xCB, 0x33, 0x33, 0x33, 0x33, 0x33, 0x33, 0x33);
+	lcm_dcs_write_seq_static(ctx, 0XF0, 0X55, 0XAA, 0X52, 0X08, 0X00);
+	lcm_dcs_write_seq_static(ctx, 0X6F, 0X07);
+	lcm_dcs_write_seq_static(ctx, 0XCA, 0x07,0x07,0x36);
+	lcm_dcs_write_seq_static(ctx, 0XF0, 0X55, 0XAA, 0X52, 0X08, 0X01);
+	lcm_dcs_write_seq_static(ctx, 0XCD, 0X60);
+	lcm_dcs_write_seq_static(ctx, 0X6F, 0X21);
+	lcm_dcs_write_seq_static(ctx, 0XD8, 0x40,0x40,0x40);
+	lcm_dcs_write_seq_static(ctx, 0X6F, 0X24);
+	lcm_dcs_write_seq_static(ctx, 0XD8, 0x30,0x30,0x30,0x30);
+	lcm_dcs_write_seq_static(ctx, 0X6F, 0X06);
+	lcm_dcs_write_seq_static(ctx, 0XD8, 0x52,0x57,0x20,0x00);
+	lcm_dcs_write_seq_static(ctx, 0X6F, 0X0C);
+	lcm_dcs_write_seq_static(ctx, 0XD8, 0x32,0x37,0x30,0x00);
+
 	//120Hz
 	lcm_dcs_write_seq_static(ctx, 0x2F, 0x00);
 	//##CMD1,DPCTemperature
