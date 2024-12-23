@@ -735,7 +735,6 @@ static struct mtk_panel_params ext_params_90hz = {
 
 	.panel_cellid_reg = 0x5a,
 	.panel_cellid_offset_reg = 0x65,
-	.panel_cellid_offset = 0x0D,
 	.panel_cellid_len = 23,
 
 	.panel_ver = 1,
@@ -822,7 +821,6 @@ static struct mtk_panel_params ext_params_120hz = {
 
 	.panel_cellid_reg = 0x5a,
 	.panel_cellid_offset_reg = 0x65,
-	.panel_cellid_offset = 0x0D,
 	.panel_cellid_len = 23,
 
 	.panel_ver = 1,
