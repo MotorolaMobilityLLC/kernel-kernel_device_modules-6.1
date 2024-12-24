@@ -189,6 +189,14 @@ static void lcm_panel_init(struct lcm *ctx)
 	lcm_dcs_write_seq_static(ctx, 0x6F, 0x04);
 	lcm_dcs_write_seq_static(ctx, 0xC7, 0xFF);
 
+	lcm_dcs_write_seq_static(ctx, 0xF0, 0x55, 0xAA, 0x52, 0x08, 0x01);
+	lcm_dcs_write_seq_static(ctx, 0x6F, 0x03);
+	lcm_dcs_write_seq_static(ctx, 0xC7, 0x47);
+	lcm_dcs_write_seq_static(ctx, 0x6F, 0x09);
+	lcm_dcs_write_seq_static(ctx, 0xC7, 0x24);
+	lcm_dcs_write_seq_static(ctx, 0xF0, 0x55, 0xAA, 0x52, 0x08, 0x05);
+	lcm_dcs_write_seq_static(ctx, 0xCB, 0x33, 0x33, 0x33, 0x33, 0x33, 0x33, 0x33);
+
 	if (ctx->version == 1) {
 		lcm_dcs_write_seq_static(ctx, 0xF0, 0x55, 0xAA, 0x52, 0x08, 0x00);
 		//Source CONTROL in V-Porch HIZ
@@ -199,10 +207,6 @@ static void lcm_panel_init(struct lcm *ctx)
 		lcm_dcs_write_seq_static(ctx, 0XDF, 0X2F, 0x0C, 0X2F, 0X0C, 0X2F, 0X0C);
 	}
 
-	if (ctx->version < 3) {
-		lcm_dcs_write_seq_static(ctx, 0xF0, 0x55, 0xAA, 0x52, 0x08, 0x00);
-		lcm_dcs_write_seq_static(ctx, 0xC0, 0x20, 0x00);
-	}
 	lcm_dcs_write_seq_static(ctx, 0x17, 0x21);
 	lcm_dcs_write_seq_static(ctx, 0x71, 0x11);
 	lcm_dcs_write_seq_static(ctx, 0x8D, 0x00, 0x00, 0x04, 0xC3, 0x00, 0x00, 0x05, 0x87);
@@ -213,6 +217,8 @@ static void lcm_panel_init(struct lcm *ctx)
 		lcm_dcs_write_seq_static(ctx, 0xF0, 0x55, 0xAA, 0x52, 0x08, 0x04);
 		lcm_dcs_write_seq_static(ctx, 0x6F, 0x08);
 		lcm_dcs_write_seq_static(ctx, 0xB5, 0x04);
+		lcm_dcs_write_seq_static(ctx, 0xF0, 0x55, 0xAA, 0x52, 0x08, 0x00);
+		lcm_dcs_write_seq_static(ctx, 0xC0, 0x20, 0x00);
 	}
 
 	lcm_dcs_write_seq_static(ctx, 0xF0, 0x55, 0xAA, 0x52, 0x08, 0x00);
@@ -266,6 +272,12 @@ static void lcm_panel_init(struct lcm *ctx)
 		lcm_dcs_write_seq_static(ctx, 0x5F, 0x00, 0x04);
 	else
 		lcm_dcs_write_seq_static(ctx, 0x5F, 0x00, 0x00);
+
+	lcm_dcs_write_seq_static(ctx, 0xF0, 0x55, 0xAA, 0x52, 0x08, 0x01);
+	lcm_dcs_write_seq_static(ctx, 0x6F, 0x0A);
+	lcm_dcs_write_seq_static(ctx, 0xE4, 0x90);
+	lcm_dcs_write_seq_static(ctx, 0x6F, 0x00);
+	lcm_dcs_write_seq_static(ctx, 0xE4, 0x90);
 
 	lcm_dcs_write_seq_static(ctx, 0x11);
 	usleep_range(120 * 1000, 121 * 1000);
@@ -342,12 +354,6 @@ static int lcm_unprepare(struct drm_panel *panel)
 	pr_info("%s+\n", __func__);
 	if (!ctx->prepared)
 		return 0;
-
-	lcm_dcs_write_seq_static(ctx, 0xF0, 0x55, 0xAA, 0x52, 0x08, 0x01);
-	lcm_dcs_write_seq_static(ctx, 0x6F, 0x0A);
-	lcm_dcs_write_seq_static(ctx, 0xE4, 0x90);
-	lcm_dcs_write_seq_static(ctx, 0x6F, 0x00);
-	lcm_dcs_write_seq_static(ctx, 0xE4, 0x90);
 
 	lcm_dcs_write_seq_static(ctx, 0x28);
 	lcm_dcs_write_seq_static(ctx, 0x10);
