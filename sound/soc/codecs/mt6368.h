@@ -5878,6 +5878,8 @@ struct mt6368_priv {
 	int hp_plugged;
 	int mtkaif_protocol;
 	int dmic_one_wire_mode;
+	int amic_bias0vref;
+	int amic_bias2vref;
 
 	/* dc trim */
 	struct dc_trim_data dc_trim;
