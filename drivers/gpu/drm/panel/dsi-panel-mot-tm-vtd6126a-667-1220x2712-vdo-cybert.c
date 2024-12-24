@@ -196,7 +196,7 @@ static void lcm_panel_init(struct lcm *ctx)
 	lcm_dcs_write_seq_static(ctx, 0xf3, 0x78);
 
 	lcm_dcs_write_seq_static(ctx, 0x11);
-	usleep_range(100 * 1000, 101 * 1000);
+	usleep_range(85 * 1000, 86 * 1000);
 	lcm_dcs_write_seq_static(ctx, 0x29);
 
 	atomic_set(&ctx->hbm_mode, 0);
@@ -243,7 +243,7 @@ static int gate_ic_Power_on(struct drm_panel *panel, int enabled)
 			}
 			gpiod_set_value(pm_en_pin, gpio_status);
 			devm_gpiod_put(ctx->dev, pm_en_pin);
-			usleep_range(1000, 1001);
+			usleep_range(2000, 2001);
 		}
 	} else {
 		for (i=2; i >=0; i--) {
@@ -255,7 +255,7 @@ static int gate_ic_Power_on(struct drm_panel *panel, int enabled)
 			}
 			gpiod_set_value(pm_en_pin, gpio_status);
 			devm_gpiod_put(ctx->dev, pm_en_pin);
-			usleep_range(1000, 1001);
+			usleep_range(3000, 3001);
 		}
 	}
 	return 0;
@@ -271,9 +271,9 @@ static int lcm_unprepare(struct drm_panel *panel)
 		return 0;
 
 	lcm_dcs_write_seq_static(ctx, 0x28);
-	msleep(50);
+	msleep(10);
 	lcm_dcs_write_seq_static(ctx, 0x10);
-	msleep(150);
+	msleep(90);
 
 	ctx->error = 0;
 	ctx->prepared = false;
@@ -293,7 +293,7 @@ static int lcm_prepare(struct drm_panel *panel)
 	// lcd reset L->H -> L -> L
 	ctx->reset_gpio = devm_gpiod_get(ctx->dev, "reset", GPIOD_OUT_LOW);
 	gpiod_set_value(ctx->reset_gpio, 0);
-	usleep_range(11000, 11001);
+	usleep_range(5000, 5001);
 	gpiod_set_value(ctx->reset_gpio, 1);
 	usleep_range(1000, 1001);
 	gpiod_set_value(ctx->reset_gpio, 0);
@@ -1163,7 +1163,7 @@ static int panel_ext_init_power(struct drm_panel *panel)
 	int ret;
 	struct lcm *ctx = panel_to_lcm(panel);
 
-	ctx->reset_gpio = devm_gpiod_get(ctx->dev, "reset", GPIOD_OUT_HIGH);
+	ctx->reset_gpio = devm_gpiod_get(ctx->dev, "reset", GPIOD_OUT_LOW);
 	gpiod_set_value(ctx->reset_gpio, 0);
 	devm_gpiod_put(ctx->dev, ctx->reset_gpio);
 
@@ -1179,9 +1179,10 @@ static int panel_ext_powerdown(struct drm_panel *panel)
 	if (ctx->prepared)
 	    return 0;
 
-	ctx->reset_gpio = devm_gpiod_get(ctx->dev, "reset", GPIOD_OUT_HIGH);
+	ctx->reset_gpio = devm_gpiod_get(ctx->dev, "reset", GPIOD_OUT_LOW);
 	gpiod_set_value(ctx->reset_gpio, 0);
 	devm_gpiod_put(ctx->dev, ctx->reset_gpio);
+	usleep_range(2000, 2001);
 
 	gate_ic_Power_on(panel, 0);
 
