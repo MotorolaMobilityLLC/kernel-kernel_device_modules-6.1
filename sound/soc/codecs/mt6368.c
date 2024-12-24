@@ -1913,9 +1913,15 @@ static int mt_mic_bias_0_event(struct snd_soc_dapm_widget *w,
 		}
 
 		/* MISBIAS0 = 1P9V */
-		regmap_update_bits(priv->regmap, MT6368_AUDENC_ANA_CON31,
-				   RG_AUDMICBIAS0VREF_MASK_SFT,
-				   MIC_BIAS_1P9 << RG_AUDMICBIAS0VREF_SFT);
+		if(priv->amic_bias0vref == 2700) {
+			regmap_update_bits(priv->regmap, MT6368_AUDENC_ANA_CON31,
+					   RG_AUDMICBIAS0VREF_MASK_SFT,
+					   MIC_BIAS_2P7 << RG_AUDMICBIAS0VREF_SFT);
+		} else {
+			regmap_update_bits(priv->regmap, MT6368_AUDENC_ANA_CON31,
+					   RG_AUDMICBIAS0VREF_MASK_SFT,
+					   MIC_BIAS_1P9 << RG_AUDMICBIAS0VREF_SFT);
+		}
 		/* vow low power select */
 		regmap_update_bits(priv->regmap, MT6368_AUDENC_ANA_CON31,
 				   RG_AUDMICBIAS0LOWPEN_MASK_SFT,
@@ -2004,9 +2010,15 @@ static int mt_mic_bias_2_event(struct snd_soc_dapm_widget *w,
 		}
 
 		/* MISBIAS2 = 1P9V */
-		regmap_update_bits(priv->regmap, MT6368_AUDENC_ANA_CON35,
-				   RG_AUDMICBIAS2VREF_MASK_SFT,
-				   MIC_BIAS_1P9 << RG_AUDMICBIAS2VREF_SFT);
+		if(priv->amic_bias2vref == 2700) {
+			regmap_update_bits(priv->regmap, MT6368_AUDENC_ANA_CON35,
+					   RG_AUDMICBIAS2VREF_MASK_SFT,
+					   MIC_BIAS_2P7 << RG_AUDMICBIAS2VREF_SFT);
+		} else {
+			regmap_update_bits(priv->regmap, MT6368_AUDENC_ANA_CON35,
+					   RG_AUDMICBIAS2VREF_MASK_SFT,
+					   MIC_BIAS_1P9 << RG_AUDMICBIAS2VREF_SFT);
+		}
 		/* vow low power select */
 		regmap_update_bits(priv->regmap, MT6368_AUDENC_ANA_CON35,
 				   RG_AUDMICBIAS2LOWPEN_MASK_SFT,
@@ -5716,7 +5728,11 @@ static int mt6368_rcv_dcc_set(struct snd_kcontrol *kcontrol,
 
 	/* phone mic */
 	/* Enable MICBIAS0, MISBIAS0 = 1P9V */
-	regmap_write(priv->regmap, MT6368_AUDENC_ANA_CON31, 0x21);
+	if(priv->amic_bias0vref == 2700) {
+		regmap_write(priv->regmap, MT6368_AUDENC_ANA_CON31, 0x71);
+	} else {
+		regmap_write(priv->regmap, MT6368_AUDENC_ANA_CON31, 0x21);
+	}
 	regmap_write(priv->regmap, MT6368_AUDENC_ANA_CON32, 0x0);
 
 	/* dcc precharge */
@@ -7452,6 +7468,21 @@ static int mt6368_parse_dt(struct mt6368_priv *priv)
 		dev_err(dev, "%s() Get regulator failed (%d)\n",
 			__func__, ret);
 		return ret;
+	}
+
+	ret = of_property_read_u32(np, "mediatek,amic_bias0vref",
+				   &priv->amic_bias0vref);
+	if (ret) {
+		dev_info(dev, "%s() failed to read amic_bias0vref, default is 1900\n",
+			 __func__);
+		priv->amic_bias0vref = 1900;
+	}
+	ret = of_property_read_u32(np, "mediatek,amic_bias2vref",
+				   &priv->amic_bias2vref);
+	if (ret) {
+		dev_info(dev, "%s() failed to read amic_bias2vref, default is 1900\n",
+			 __func__);
+		priv->amic_bias2vref = 1900;
 	}
 
 	return 0;
