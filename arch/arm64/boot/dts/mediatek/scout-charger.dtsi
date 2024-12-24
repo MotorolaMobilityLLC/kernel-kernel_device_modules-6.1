@@ -261,8 +261,6 @@
 
 		pinctrl-names = "default";
 		pinctrl-0 = <&bq25960_int_default_master>;
-
-		mmi,disable_mux;
 	};
 
 	sc8541_slave:sc8541-slave@6c {
@@ -279,8 +277,6 @@
 
 		pinctrl-names = "default";
 		pinctrl-0 = <&bq25960_int_default_slave>;
-
-		mmi,disable_mux;
 	};
 
 	bq25960_master:bq25960-master@66 {
@@ -294,8 +290,6 @@
 
 		pinctrl-names = "default";
 		pinctrl-0 = <&bq25960_int_default_master>;
-
-		mmi,disable_mux;
 	};
 
 	bq25960_slave:bq25960-slave@67 {
@@ -309,8 +303,6 @@
 
 		pinctrl-names = "default";
 		pinctrl-0 = <&bq25960_int_default_slave>;
-
-		mmi,disable_mux;
 	};
 
 	nu2115_master:nu2115-master@6e {
