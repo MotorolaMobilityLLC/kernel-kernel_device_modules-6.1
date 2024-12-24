@@ -78,8 +78,8 @@
 		reg = <2>;
 
                 pm-enable-gpios = <&pio 185 0>,
-                          <&pio 186 0>,
-                          <&pio 184 0>;
+                          <&pio 184 0>,
+                          <&pio 186 0>;
                 reset-gpios = <&pio 41 0>;
 		pinctrl-names = "default";
 		port {
