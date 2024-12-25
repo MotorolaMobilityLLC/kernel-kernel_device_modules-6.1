@@ -3280,6 +3280,11 @@ static int mtk_charger_plug_in(struct mtk_charger *info,
 		mtk_charger_enable_power_path(info, CHG1_SETTING, true);
 	mtk_charger_force_disable_power_path(info, CHG1_SETTING, false);
 
+	if (info->mmi.factory_mode) {
+		/* Set ICL 2A when enter ATM mode(factory mode) */
+		mtk_charger_tcmd_set_usb_current((void *)info, 2000);
+	}
+
 	power_supply_changed(info->psy1);
 	return 0;
 }
