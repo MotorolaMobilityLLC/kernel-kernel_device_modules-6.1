@@ -338,7 +338,7 @@
 	};
 
 	wt6670f@35 {
-		status = "disabled";
+		status = "okay";
 		compatible = "mediatek,wt6670f_qc3p";
 		reg = <0x35>;
 		wt6670f-reset-gpio = <&pio 38 0x0>;
