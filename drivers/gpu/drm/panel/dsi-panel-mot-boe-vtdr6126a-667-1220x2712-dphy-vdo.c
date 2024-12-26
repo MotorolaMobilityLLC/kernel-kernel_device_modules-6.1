@@ -396,9 +396,9 @@ static int lcm_enable(struct drm_panel *panel)
 }
 
 #define FHDP_FRAME_WIDTH    (1220)
-#define FHDP_HFP            (21)
-#define FHDP_HSA            (6)
-#define FHDP_HBP            (6)
+#define FHDP_HFP            (24)
+#define FHDP_HSA            (8)
+#define FHDP_HBP            (8)
 #define FHDP_HTOTAL         (FHDP_FRAME_WIDTH + FHDP_HFP + FHDP_HSA + FHDP_HBP)
 #define FHDP_FRAME_HEIGHT   (2712)
 #define FHDP_VFP_120        (56)
@@ -572,7 +572,7 @@ static struct mtk_panel_params ext_params_48hz = {
 #endif
 
 static struct mtk_panel_params ext_params_60hz = {
-	.pll_clk = 441,
+	.pll_clk = 449,
 	//.vfp_low_power = 4180,
 	.cust_esd_check = 1,
 	.esd_check_enable = 1,
@@ -659,7 +659,7 @@ static struct mtk_panel_params ext_params_60hz = {
 };
 
 static struct mtk_panel_params ext_params_90hz = {
-	.pll_clk = 441,
+	.pll_clk = 449,
 	//.vfp_low_power = 2578,
 	.cust_esd_check = 1,
 	.esd_check_enable = 1,
@@ -745,7 +745,7 @@ static struct mtk_panel_params ext_params_90hz = {
 };
 
 static struct mtk_panel_params ext_params_120hz = {
-	.pll_clk = 441,
+	.pll_clk = 449,
 	//.vfp_low_power = 2578,
 	.cust_esd_check = 1,
 	.esd_check_enable = 1,
