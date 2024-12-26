@@ -207,6 +207,8 @@ static void lcm_panel_init(struct lcm *ctx)
 	lcm_dcs_write_seq_static(ctx, 0x35, 0x00);
 	//VDC GIR off
 	lcm_dcs_write_seq_static(ctx, 0x5F, 0x01, 0x00);
+	if (ctx->version > 2)
+		lcm_dcs_write_seq_static(ctx, 0x5F, 0x00, 0x00);
 	//LVD ON
 	lcm_dcs_write_seq_static(ctx, 0xF0, 0x55, 0xAA, 0x52, 0x08, 0x01);
 	lcm_dcs_write_seq_static(ctx, 0x6F, 0x03);
@@ -258,7 +260,7 @@ static void lcm_panel_init(struct lcm *ctx)
 	lcm_dcs_write_seq_static(ctx, 0xE4, 0x90);
 
 	//mux
-	if ((ctx->version == 1) || (ctx->version == 1)) {
+	if ((ctx->version == 1) || (ctx->version == 2)) {
 		lcm_dcs_write_seq_static(ctx, 0xF0, 0x55, 0xAA, 0x52, 0x08, 0x00);
 		lcm_dcs_write_seq_static(ctx, 0xC4, 0x00, 0x00);
 	}
@@ -272,7 +274,7 @@ static void lcm_panel_init(struct lcm *ctx)
 	lcm_dcs_write_seq_static(ctx, 0xF0, 0x55, 0xAA, 0x52, 0x08, 0x06);
 	lcm_dcs_write_seq_static(ctx, 0xBC, 0x00, 0x66);
 
-	if (ctx->version == 3) {
+	if (ctx->version > 2) {
 		//VDC preset dimming
 		lcm_dcs_write_seq_static(ctx, 0xF0, 0x55, 0xAA, 0x52, 0x08, 0x08);
 		lcm_dcs_write_seq_static(ctx, 0x6F, 0xCE);
@@ -382,7 +384,7 @@ static int lcm_unprepare(struct drm_panel *panel)
 
 	lcm_dcs_write_seq_static(ctx, 0x28);
 	lcm_dcs_write_seq_static(ctx, 0x10);
-	msleep(100);
+	msleep(120);
 
 	ctx->error = 0;
 	ctx->prepared = false;
@@ -892,18 +894,42 @@ static int panel_ata_check(struct drm_panel *panel)
 	return 1;
 }
 
-static int lcm_setbacklight_cmdq(void *dsi, dcs_write_gce cb, void *handle,
-				 unsigned int level)
+static char bl_tb_aod_apl[] = {0xA9,0x01,0x00,0x5F,0x00,0x01,0x00,0x00,0x01,0x00,0x51,0x00,0x01,0x3E,0x80,0x01,0x00,0x51,0x04,0x05,0x05,0x54};// apl:bit7  normal_bl: bit 13~14 aod_bl: 20~21
+
+static void fill_backlight_cmd(unsigned int bl_level, char *pCmdTable)
 {
-	struct lcm *ctx = g_ctx;
-	char bl_tb_aod[] = {0x51, 0x3F, 0xff, 0x00, 0x00, 0x3F, 0xFC};
 	char aod_mode[3][2] = {
 		{0x05, 0x54},
 		{0x14, 0xAC},
 		{0x3F, 0xFC},
 	};
-
 	unsigned int aod_light_mode = 0;
+	struct lcm *ctx = g_ctx;
+
+	if (bl_level > 7300) aod_light_mode = 2;
+	else if (bl_level > 4400) aod_light_mode =1;
+	else aod_light_mode = 0;
+
+	pCmdTable[13] = (bl_level >> 8) & 0x3F;
+	pCmdTable[14] = bl_level & 0xFF;
+	pCmdTable[20] = aod_mode[aod_light_mode][0];
+	pCmdTable[21] = aod_mode[aod_light_mode][1];
+
+	if( ctx->version > 2) {
+		if (bl_level < APL_THRESHOLD) pCmdTable[7] = 0x00;
+		else pCmdTable[7] = 0x01;
+	} else {
+		pCmdTable[6] = 0x01;
+		pCmdTable[7] = 0x00;
+	}
+	if (atomic_read(&ctx->doze_enable))
+		pr_info("%s: backlight_level %d aod_light_mode %d\n", __func__, bl_level, aod_light_mode);
+}
+
+static int lcm_setbacklight_cmdq(void *dsi, dcs_write_gce cb, void *handle,
+				 unsigned int level)
+{
+	struct lcm *ctx = g_ctx;
 
 	if (atomic_read(&ctx->hbm_mode) && level) {
 		pr_info("hbm_mode = %d, skip backlight(%d)\n", atomic_read(&ctx->hbm_mode), level);
@@ -914,18 +940,9 @@ static int lcm_setbacklight_cmdq(void *dsi, dcs_write_gce cb, void *handle,
 	if (!cb)
 		return -1;
 
-	if (level > 7300) aod_light_mode = 2;
-	else if (level > 4400) aod_light_mode =1;
-	else aod_light_mode = 0;
+	fill_backlight_cmd(level, bl_tb_aod_apl);
 
-	bl_tb_aod[1] = (level >> 8) & 0x3F;
-	bl_tb_aod[2] = level & 0xFF;
-	bl_tb_aod[5] = aod_mode[aod_light_mode][0];
-	bl_tb_aod[6] = aod_mode[aod_light_mode][1];
-
-	cb(dsi, handle, bl_tb_aod, ARRAY_SIZE(bl_tb_aod));
-	if (atomic_read(&ctx->doze_enable))
-		pr_info("%s: backlight_level %d aod_light_mode %d\n", __func__, level, aod_light_mode);
+	cb(dsi, handle, bl_tb_aod_apl, ARRAY_SIZE(bl_tb_aod_apl));
 
 	if (!(atomic_read(&ctx->current_bl) && level))
 		pr_info("backlight changed from %u to %u\n", atomic_read(&ctx->current_bl),level);
@@ -1028,7 +1045,7 @@ int mtk_scaling_mode_mapping(int mode_idx)
 }
 
 static struct mtk_panel_para_table panel_lhbm_on_120hz[] = {
-	{30, {0xA9, 0x01, 0x00, 0x87, 0x00, 0x02, 0x25, 0x39, 0xb9, 0x02, 0x00, 0xDF, 0x31, 0x32, 0x02, 0x1A, 0x02, 0x00, 0xDF, 0x38, 0x39, 0x0A, 0xCE, 0x01, 0x00, 0x51, 0x09, 0x0A, 0x8F, 0xA0}},
+	{30, {0xA9, 0x01, 0x00, 0x87, 0x00, 0x02, 0x25, 0x39, 0xb9, 0x02, 0x00, 0xDF, 0x31, 0x32, 0x00, 0x1A, 0x02, 0x00, 0xDF, 0x38, 0x39, 0x0A, 0xCE, 0x01, 0x00, 0x51, 0x09, 0x0A, 0x8F, 0xA0}},
 };
 
 static struct mtk_panel_para_table panel_lhbm_on_90hz[] = {
