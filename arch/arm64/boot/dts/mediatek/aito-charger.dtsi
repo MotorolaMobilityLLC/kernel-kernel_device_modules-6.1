@@ -165,6 +165,8 @@
 	/* dynamic mivr */
 	enable-dynamic-mivr;
 
+	enable-pdtest-mode = <1>;
+
 	/*mmi config*/
 	mmi,typec-rp-max-current = <2000000>;
 
