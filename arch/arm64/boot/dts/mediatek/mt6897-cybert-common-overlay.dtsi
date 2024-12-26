@@ -261,7 +261,8 @@
 			channel_use_flag = <0x0f>;
 			monitor_esd_flag = <1>;
 			aw_sar,use_plug_cail;
-			aw_sar,update_fw;
+			aw_sar,new_fw_format;
+			//aw_sar,update_fw;
 			aw_sar,using_pm_ops;
 			/* private node belongs to aw963xx */
 			start-mode = < 1 >; // 0: start in rom  1: start in ram
