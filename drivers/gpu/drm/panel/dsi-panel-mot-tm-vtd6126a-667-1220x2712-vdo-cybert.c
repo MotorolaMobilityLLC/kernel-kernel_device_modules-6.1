@@ -23,6 +23,15 @@
 #include <linux/of_graph.h>
 #include <linux/platform_device.h>
 
+#define DIC_COMMAND_MODE_AOD
+
+#if 0
+#define AOD_AREA_IZE 1416
+#define AOD_Y_START_MIN 0
+#define AOD_Y_START_MAX 378
+#define AOD_Y_START_STEP_MIN 4
+#endif
+
 #define CONFIG_MTK_PANEL_EXT
 #if defined(CONFIG_MTK_PANEL_EXT)
 #include "../mediatek/mediatek_v2/mtk_panel_ext.h"
@@ -62,6 +71,8 @@ struct lcm {
 	atomic_t current_bl;
 	atomic_t current_fps;
 	atomic_t pcd_mode;
+	atomic_t doze_enable;
+	//atomic_t current_aod_y_start;
 	enum panel_version version;
 };
 
@@ -173,6 +184,10 @@ static void lcm_panel_init(struct lcm *ctx)
 	//CMD mode 6F=02, Video mode 6F=01
 	lcm_dcs_write_seq_static(ctx, 0x6f, 0x01);
 	lcm_dcs_write_seq_static(ctx, 0x72, 0x00);
+
+	lcm_dcs_write_seq_static(ctx, 0x2A, 0x00, 0x00, 0x04, 0xC3);
+	lcm_dcs_write_seq_static(ctx, 0x2B, 0x00, 0x00, 0x05, 0x87);
+
 	//Vesa PPS (DSC V1.1)
 	//	lcm_dcs_write_seq_static(ctx, 0x70, 0x11,0x00,0x00,0x89,0x30,0x80,0x0a,0x98,0x04,0xc4,0x00,0x0c,0x02,0x62,0x02,0x62,0x02,0x00,0x02,0x32,0x00,0x20,0x01,0x31,0x00,0x08,0x00,0x0c,0x08,0xbb,0x07,0x7b,0x18,0x00,0x10,0xf0,0x03,0x0c,0x20,0x00,0x06,0x0b,0x0b,0x33,0x0e,0x1c,0x2a,0x38,0x46,0x54,0x62,0x69,0x70,0x77,0x79,0x7b,0x7d,0x7e,0x01,0x02,0x01,0x00,0x09,0x40,0x09,0xbe,0x19,0xfc,0x19,0xfa,0x19,0xf8,0x1a,0x38,0x1a,0x78,0x1a,0xb6,0x2a,0xb6,0x2a,0xf4,0x2a,0xf4,0x4b,0x34,0x63,0x74,0x00,0x00,0x00,0x00,0x00,0x00);
 	lcm_dcs_write_seq_static(ctx, 0x70, 0x11,0x00,0x00,0xAB,0x30,0x80,0x0A,0x98,0x04,0xC4,0x00,0x0C,0x02,0x62,0x02,0x62,0x02,0x00,0x01,0x1A,0x00,0x20,0x02,0x5B,0x00,0x08,0x00,0x01,0x00,0xBB,0x07,0x7B,0x18,0x00,0x10,0xF0,0x07,0x10,0x20,0x00,0x06,0x0F,0x0F,0x33,0x0E,0x1C,0x2A,0x38,0x46,0x54,0x62,0x69,0x70,0x77,0x79,0x7B,0x7D,0x7E,0x02,0x02,0x22,0x00,0x2A,0x40,0x2A,0xBE,0x3A,0xFC,0x3A,0xFA,0x3A,0xF8,0x3B,0x38,0x3B,0x78,0x3B,0xB6,0x4B,0xB6,0x4B,0xF4,0x4B,0xF4,0x6C,0x34,0x84,0x74,0x00,0x00,0x00,0x00,0x00,0x00);
@@ -318,6 +333,8 @@ static int lcm_prepare(struct drm_panel *panel)
 	atomic_set(&ctx->apl_mode, 0);
 	atomic_set(&ctx->current_bl, 0);
 	atomic_set(&ctx->current_fps, 120);
+	atomic_set(&ctx->pcd_mode, 0);
+	atomic_set(&ctx->doze_enable, 0);
 
 	pr_info("%s-\n", __func__);
 	return ret;
@@ -345,9 +362,9 @@ static int lcm_enable(struct drm_panel *panel)
 }
 
 #define FHDP_FRAME_WIDTH    (1220)
-#define FHDP_HFP            (16)
-#define FHDP_HSA            (8)
-#define FHDP_HBP            (8)
+#define FHDP_HFP            (29)
+#define FHDP_HSA            (6)
+#define FHDP_HBP            (6)
 #define FHDP_HTOTAL         (FHDP_FRAME_WIDTH + FHDP_HFP + FHDP_HSA + FHDP_HBP)
 #define FHDP_FRAME_HEIGHT   (2712)
 #define FHDP_VFP_120        (57)
@@ -433,93 +450,18 @@ static const struct drm_display_mode mode_120hz = {
 #if defined(CONFIG_MTK_PANEL_EXT)
 #if 0
 static struct mtk_panel_params ext_params_48hz = {
-	.pll_clk = 441,
+	.pll_clk = 449,
 	//.vfp_low_power = 4180,
 	.cust_esd_check = 1,
 	.esd_check_enable = 1,
 	.lcm_esd_check_table[0] = {
-		.cmd = 0x0A,
-		.count = 1,
-		.para_list[0] = 0x9C,
-	},
-	.lcm_color_mode = MTK_DRM_COLOR_MODE_DISPLAY_P3,
-	.physical_width_um = 69540,
-	.physical_height_um = 154454,
-	.lp_perline_en = 1,
-	.vdo_per_frame_lp_enable = 1,
-	.output_mode = MTK_PANEL_DSC_SINGLE_PORT,
-
-	.dsc_params = {
-		.enable = 1,
-		.ver = 17,
-		.slice_mode = 1,
-		.rgb_swap = 0,
-		.dsc_cfg = 2088,
-		.rct_on = 1,
-		.bit_per_channel = 10,
-		.dsc_line_buf_depth = 11,
-		.bp_enable = 1,
-		.bit_per_pixel = 128,
-		.pic_height = 2712,
-		.pic_width = 1220,
-		.slice_height = 12,
-		.slice_width = 610,
-		.chunk_size = 610,
-		.xmit_delay = 512,
-		.dec_delay = 562,
-		.scale_value = 32,
-		.increment_interval = 305,
-		.decrement_interval = 8,
-		.line_bpg_offset = 12,
-		.nfl_bpg_offset = 2235,
-		.slice_bpg_offset = 1915,
-		.initial_offset = 6144,
-		.final_offset = 4336,
-		.flatness_minqp = 7,
-		.flatness_maxqp = 16,
-		.rc_model_size = 8192,
-		.rc_edge_factor = 6,
-		.rc_quant_incr_limit0 = 15,
-		.rc_quant_incr_limit1 = 15,
-		.rc_tgt_offset_hi = 3,
-		.rc_tgt_offset_lo = 3,
-
-		.ext_pps_cfg = {
-			.enable = 1,
-			.rc_buf_thresh = vtd6126a_vdo_buf_thresh,
-			.range_min_qp = vtd6126a_vdo_range_min_qp,
-			.range_max_qp = vtd6126a_vdo_range_max_qp,
-			.range_bpg_ofs = vtd6126a_vdo_range_bpg_ofs,
-		},
-	},
-
-	.data_rate = 882,
-	.lfr_enable = 0,
-	.lfr_minimum_fps = 60,
-
-	/* following MIPI hopping parameter might cause screen mess */
-/*	.dyn = {
-		.switch_en = 1,
-		.pll_clk = 556,
-		.vfp_lp_dyn = 4178,
-		.hfp = 76,
-		.vfp = 2590,
-	},*/
-
-	.panel_cellid_reg = 0x5A,
-	.panel_cellid_offset_reg = 0x65,
-	.panel_cellid_len = 23,
-};
-#endif
-static struct mtk_panel_params ext_params_60hz = {
-	.pll_clk = 441,
-	//.vfp_low_power = 4180,
-	.cust_esd_check = 1,
-	.esd_check_enable = 1,
-	.lcm_esd_check_table[0] = {
-		.cmd = 0x0A,
-		.count = 1,
-		.para_list[0] = 0x9C,
+		.cmd = 0x66,
+		.count = 2,
+		.para_list[0] = 0x00,
+		.para_list[1] = 0x00,
+		.para_list_aod[0] = 0x08,
+		.para_list_aod[1] = 0x00,
+		.esd_check_aod_enable = 1,
 	},
 	.lcm_color_mode = MTK_DRM_COLOR_MODE_DISPLAY_P3,
 	.physical_width_um = 69540,
@@ -572,7 +514,95 @@ static struct mtk_panel_params ext_params_60hz = {
 		},
 	},
 
-	.data_rate = 882,
+	.data_rate = 898,
+	.lfr_enable = 0,
+	.lfr_minimum_fps = 60,
+
+	.change_fps_by_vfp_send_cmd = 1,
+	.dyn_fps = {
+		.switch_en = 0,
+		.vact_timing_fps = 120,
+		.dfps_cmd_grp_table[0] = {2, {0x6c, 0x03} },
+		.dfps_cmd_grp_size = 1,
+	},
+
+	.panel_cellid_reg = 0x5A,
+	.panel_cellid_offset_reg = 0x65,
+	.panel_cellid_len = 23,
+	.panel_ver = 1,
+	.panel_name = "tm_vtd6126a_667_vdo_1220_2712",
+	.panel_supplier = "tm-vtd6126a",
+
+	.check_panel_feature = 1,
+};
+#endif
+
+static struct mtk_panel_params ext_params_60hz = {
+	.pll_clk = 449,
+	//.vfp_low_power = 4180,
+	.cust_esd_check = 1,
+	.esd_check_enable = 1,
+	.lcm_esd_check_table[0] = {
+		.cmd = 0x66,
+		.count = 2,
+		.para_list[0] = 0x00,
+		.para_list[1] = 0x00,
+		.para_list_aod[0] = 0x08,
+		.para_list_aod[1] = 0x00,
+		.esd_check_aod_enable = 1,
+	},
+	.lcm_color_mode = MTK_DRM_COLOR_MODE_DISPLAY_P3,
+	.physical_width_um = 69540,
+	.physical_height_um = 154454,
+	.lp_perline_en = 1,
+	.vdo_per_frame_lp_enable = 1,
+	.output_mode = MTK_PANEL_DSC_SINGLE_PORT,
+
+	.dsc_params = {
+		.enable = 1,
+		.ver = 17,
+		.slice_mode = 1,
+		.rgb_swap = 0,
+		.dsc_cfg = 2088,
+		.rct_on = 1,
+		.bit_per_channel = 10,
+		.dsc_line_buf_depth = 11,
+		.bp_enable = 1,
+		.bit_per_pixel = 128,
+		.pic_height = 2712,
+		.pic_width = 1220,
+		.slice_height = 12,
+		.slice_width = 610,
+		.chunk_size = 610,
+		.xmit_delay = 512,
+		.dec_delay = 282,
+		.scale_value = 32,
+		.increment_interval = 603,
+		.decrement_interval = 8,
+		.line_bpg_offset = 1,
+		.nfl_bpg_offset = 187,
+		.slice_bpg_offset = 1915,
+		.initial_offset = 6144,
+		.final_offset = 4336,
+		.flatness_minqp = 7,
+		.flatness_maxqp = 16,
+		.rc_model_size = 8192,
+		.rc_edge_factor = 6,
+		.rc_quant_incr_limit0 = 15,
+		.rc_quant_incr_limit1 = 15,
+		.rc_tgt_offset_hi = 3,
+		.rc_tgt_offset_lo = 3,
+
+		.ext_pps_cfg = {
+			.enable = 1,
+			.rc_buf_thresh = vtd6126a_vdo_buf_thresh,
+			.range_min_qp = vtd6126a_vdo_range_min_qp,
+			.range_max_qp = vtd6126a_vdo_range_max_qp,
+			.range_bpg_ofs = vtd6126a_vdo_range_bpg_ofs,
+		},
+	},
+
+	.data_rate = 898,
 	.lfr_enable = 0,
 	.lfr_minimum_fps = 60,
 	.change_fps_by_vfp_send_cmd = 1,
@@ -582,14 +612,6 @@ static struct mtk_panel_params ext_params_60hz = {
 		.dfps_cmd_grp_table[0] = {2, {0x6c, 0x02} },
 		.dfps_cmd_grp_size = 1,
 	},
-	/* following MIPI hopping parameter might cause screen mess */
-/*	.dyn = {
-		.switch_en = 1,
-		.pll_clk = 556,
-		.vfp_lp_dyn = 4178,
-		.hfp = 76,
-		.vfp = 2590,
-	},*/
 
 	.panel_cellid_reg = 0x5A,
 	.panel_cellid_offset_reg = 0x65,
@@ -597,17 +619,23 @@ static struct mtk_panel_params ext_params_60hz = {
 	.panel_ver = 1,
 	.panel_name = "tm_vtd6126a_667_vdo_1220_2712",
 	.panel_supplier = "tm-vtd6126a",
+
+	.check_panel_feature = 1,
 };
 
 static struct mtk_panel_params ext_params_90hz = {
-	.pll_clk = 441,
+	.pll_clk = 449,
 	//.vfp_low_power = 2578,
 	.cust_esd_check = 1,
 	.esd_check_enable = 1,
 	.lcm_esd_check_table[0] = {
-		.cmd = 0x0A,
-		.count = 1,
-		.para_list[0] = 0x9C,
+		.cmd = 0x66,
+		.count = 2,
+		.para_list[0] = 0x00,
+		.para_list[1] = 0x00,
+		.para_list_aod[0] = 0x08,
+		.para_list_aod[1] = 0x00,
+		.esd_check_aod_enable = 1,
 	},
 	.lcm_color_mode = MTK_DRM_COLOR_MODE_DISPLAY_P3,
 	.physical_width_um = 69540,
@@ -659,9 +687,10 @@ static struct mtk_panel_params ext_params_90hz = {
 			.range_bpg_ofs = vtd6126a_vdo_range_bpg_ofs,
 		},
 	},
-	.data_rate = 882,
+	.data_rate = 898,
 	.lfr_enable = 0,
 	.lfr_minimum_fps = 60,
+
 	.change_fps_by_vfp_send_cmd = 1,
 	.dyn_fps = {
 		.switch_en = 0,
@@ -669,14 +698,6 @@ static struct mtk_panel_params ext_params_90hz = {
 		.dfps_cmd_grp_table[0] = {2, {0x6c, 0x01} },
 		.dfps_cmd_grp_size = 1,
 	},
-	/* following MIPI hopping parameter might cause screen mess */
-/*	.dyn = {
-		.switch_en = 1,
-		.pll_clk = 556,
-		.vfp_lp_dyn = 2578,
-		.hfp = 76,
-		.vfp = 940,
-	},*/
 
 	.panel_cellid_reg = 0x5A,
 	.panel_cellid_offset_reg = 0x65,
@@ -684,17 +705,23 @@ static struct mtk_panel_params ext_params_90hz = {
 	.panel_ver = 1,
 	.panel_name = "tm_vtd6126a_667_vdo_1220_2712",
 	.panel_supplier = "tm-vtd6126a",
+
+	.check_panel_feature = 1,
 };
 
 static struct mtk_panel_params ext_params_120hz = {
-	.pll_clk = 441,
+	.pll_clk = 449,
 	//.vfp_low_power = 2578,
 	.cust_esd_check = 1,
 	.esd_check_enable = 1,
 	.lcm_esd_check_table[0] = {
-		.cmd = 0x0A,
-		.count = 1,
-		.para_list[0] = 0x9C,
+		.cmd = 0x66,
+		.count = 2,
+		.para_list[0] = 0x00,
+		.para_list[1] = 0x00,
+		.para_list_aod[0] = 0x08,
+		.para_list_aod[1] = 0x00,
+		.esd_check_aod_enable = 1,
 	},
 	.lcm_color_mode = MTK_DRM_COLOR_MODE_DISPLAY_P3,
 	.physical_width_um = 69540,
@@ -746,7 +773,7 @@ static struct mtk_panel_params ext_params_120hz = {
 			.range_bpg_ofs = vtd6126a_vdo_range_bpg_ofs,
 		},
 	},
-	.data_rate = 882,
+	.data_rate = 898,
 	.lfr_enable = 0,
 	.lfr_minimum_fps = 60,
 	.change_fps_by_vfp_send_cmd = 1,
@@ -756,14 +783,6 @@ static struct mtk_panel_params ext_params_120hz = {
 		.dfps_cmd_grp_table[0] = {2, {0x6c, 0x00} },
 		.dfps_cmd_grp_size = 1,
 	},
-	/* following MIPI hopping parameter might cause screen mess */
-/*	.dyn = {
-		.switch_en = 1,
-		.pll_clk = 556,
-		.vfp_lp_dyn = 2578,
-		.hfp = 76,
-		.vfp = 116,
-	},*/
 
 	.panel_cellid_reg = 0x5A,
 	.panel_cellid_offset_reg = 0x65,
@@ -771,6 +790,8 @@ static struct mtk_panel_params ext_params_120hz = {
 	.panel_ver = 1,
 	.panel_name = "tm_vtd6126a_667_vdo_1220_2712",
 	.panel_supplier = "tm-vtd6126a",
+
+	.check_panel_feature = 1,
 };
 
 static int panel_ata_check(struct drm_panel *panel)
@@ -784,9 +805,9 @@ static int lcm_setbacklight_cmdq(void *dsi, dcs_write_gce cb,
 {
 	struct lcm *ctx = g_ctx;
 	char bl_tb[] = {0x51, 0x3F, 0xff};
-//	char apl_off[] = {0x5F, 0x01, 0x00};
-//	char apl_on[] = {0x5F, 0x01, 0x01};
-//	unsigned int current_backlight;
+	char bl_tb_aod[] = {0x6D, 0x02};
+	unsigned int aod_light_mode = 0;
+	static unsigned int current_aod_light_mode = 0;
 
 	/*if (atomic_read(&ctx->hbm_mode) && level) {
 		pr_info("hbm_mode = %d, skip backlight(%d)\n", atomic_read(&ctx->hbm_mode), level);
@@ -794,36 +815,49 @@ static int lcm_setbacklight_cmdq(void *dsi, dcs_write_gce cb,
 		return 0;
 	}*/
 
-#if 0
-	current_backlight = atomic_read(&ctx->current_backlight);
-	if (atomic_read(&ctx->apl_mode) && (level <= APL_THRESHOLD)) {
-		pr_info("%s: disable DIC APL (BL: %d -> %d)\n", __func__, current_backlight, level);
-		cb(dsi, handle, apl_off, ARRAY_SIZE(apl_off));
-		atomic_set(&ctx->apl_mode, 0);
-	} else if(!(atomic_read(&ctx->apl_mode))  && (level > APL_THRESHOLD)) {
-		pr_info("%s: enable DIC APL (BL: %d -> %d)\n", __func__, current_backlight, level);
-		cb(dsi, handle, apl_on, ARRAY_SIZE(apl_on));
-		atomic_set(&ctx->apl_mode, 1);
-	}
-	if (!(atomic_read(&ctx->current_backlight) && level))
-		pr_info("backlight changed from %u to %u\n", atomic_read(&ctx->current_backlight),level);
-	else
-		pr_debug("backlight changed from %u to %u\n", atomic_read(&ctx->current_backlight), level);
-#endif
+	if (!cb)
+		return -1;
 
 	printk("%s enter  \n",__func__);
 	printk("%s backlight level = %d  \n",__func__,level);
 	bl_tb[1] = (level >> 8) & 0x3F;
 	bl_tb[2] = level & 0xFF;
-	if (!cb)
-		return -1;
 	cb(dsi, handle, bl_tb, ARRAY_SIZE(bl_tb));
+
+	if (level > 7300) aod_light_mode = 2;
+	else if (level > 4400) aod_light_mode =1;
+	else aod_light_mode = 0;
+
+	bl_tb_aod[1] = aod_light_mode;
+	if (current_aod_light_mode != aod_light_mode) {
+		cb(dsi, handle, bl_tb_aod, ARRAY_SIZE(bl_tb_aod));
+		current_aod_light_mode = aod_light_mode;
+		if (atomic_read(&ctx->doze_enable))
+			pr_info("%s: backlight_level %d aod_light_mode %d\n", __func__, level, aod_light_mode);
+	}
+
+	if (!(atomic_read(&ctx->current_bl) && level))
+		pr_info("backlight changed from %u to %u\n", atomic_read(&ctx->current_bl),level);
+	else
+		pr_debug("backlight changed from %u to %u\n", atomic_read(&ctx->current_bl), level);
+
 	atomic_set(&ctx->current_bl, level);
 	if (!level)
 		atomic_set(&ctx->hbm_mode, 0);
 	return 0;
 }
 
+static int panel_ext_reset(struct drm_panel *panel, int on)
+{
+	struct lcm *ctx = panel_to_lcm(panel);
+
+	ctx->reset_gpio =
+		devm_gpiod_get(ctx->dev, "reset", GPIOD_OUT_HIGH);
+	gpiod_set_value(ctx->reset_gpio, on);
+	devm_gpiod_put(ctx->dev, ctx->reset_gpio);
+
+	return 0;
+}
 
 struct drm_display_mode *get_mode_by_id(struct drm_connector *connector,
 	unsigned int mode)
@@ -855,9 +889,9 @@ static int mtk_panel_ext_param_set(struct drm_panel *panel,
 	} else*/
 	if (dst_fps == 60) {
 		ext->params = &ext_params_60hz;
-	} else if (dst_fps == 90)
+	} else if (dst_fps == 90) {
 		ext->params = &ext_params_90hz;
-	else if (dst_fps == 120) {
+	} else if (dst_fps == 120) {
 		ext->params = &ext_params_120hz;
 	} else {
 		pr_err("%s, dst_fps %d\n", __func__, dst_fps);
@@ -891,7 +925,6 @@ static int mtk_panel_ext_param_get(struct drm_panel *panel,
 
 	if (!ret)
 		atomic_set(&ctx->current_fps, drm_mode_vrefresh(m));
-		
 
 	return ret;
 }
@@ -901,83 +934,6 @@ int mtk_scaling_mode_mapping(int mode_idx)
 {
 	return (mode_idx % REAL_MODE_NUM);
 }
-
-/*
-static void mode_switch_to_48(struct drm_panel *panel,
-	enum MTK_PANEL_MODE_SWITCH_STAGE stage)
-{
-//	struct lcm *ctx = panel_to_lcm(panel);
-
-	pr_info("%s\n", __func__);
-	//cb(dsi, handle, bl_tb0, ARRAY_SIZE(bl_tb0));
-}
-*/
-
-static void mode_switch_to_120(struct drm_panel *panel)
-{
-//	struct lcm *ctx = panel_to_lcm(panel);
-
-	pr_info("%s\n", __func__);
-	//cb(dsi, handle, bl_tb0, ARRAY_SIZE(bl_tb0));
-
-}
-
-static void mode_switch_to_90(struct drm_panel *panel)
-{
-//	struct lcm *ctx = panel_to_lcm(panel);
-
-	pr_info("%s\n", __func__);
-
-}
-
-static void mode_switch_to_60(struct drm_panel *panel)
-{
-//	struct lcm *ctx = panel_to_lcm(panel);
-
-	pr_info("%s\n", __func__);
-}
-
-static int mode_switch(struct drm_panel *panel,
-		struct drm_connector *connector, unsigned int cur_mode,
-		unsigned int dst_mode, enum MTK_PANEL_MODE_SWITCH_STAGE stage)
-{
-	int ret = 0;
-	int dst_fps = 0;
-	struct drm_display_mode *m = get_mode_by_id(connector, dst_mode);
-
-	pr_info("%s cur_mode = %d dst_mode %d\n", __func__, cur_mode, dst_mode);
-
-	dst_fps = m ? drm_mode_vrefresh(m) : -EINVAL;
-
-	/*if (dst_fps == 48) {
-		mode_switch_to_48(panel, stage);
-	} else */
-	if (dst_fps == 60) { /* 60 switch to 120 */
-		mode_switch_to_60(panel);
-	} else if (dst_fps == 90) { /* 1200 switch to 60 */
-		mode_switch_to_90(panel);
-	} else if (dst_fps == 120) { /* 1200 switch to 60 */
-		mode_switch_to_120(panel);
-	} else {
-		pr_err("%s, dst_fps %d\n", __func__, dst_fps);
-		ret = -EINVAL;
-	}
-
-	return ret;
-}
-
-static int panel_ext_reset(struct drm_panel *panel, int on)
-{
-	struct lcm *ctx = panel_to_lcm(panel);
-
-	ctx->reset_gpio =
-		devm_gpiod_get(ctx->dev, "reset", GPIOD_OUT_HIGH);
-	gpiod_set_value(ctx->reset_gpio, on);
-	devm_gpiod_put(ctx->dev, ctx->reset_gpio);
-
-	return 0;
-}
-
 
 static struct mtk_panel_para_table panel_lhbm_on[] = {
 	{5, {0x63, 0x0f, 0xff, 0x0f, 0xa0}},
@@ -1100,32 +1056,6 @@ static int pane_dc_set_cmdq(struct lcm *ctx, void *dsi, dcs_grp_write_gce cb, vo
 	return 0;
 }
 
-
-static int panel_feature_get(struct drm_panel *panel, struct panel_param_info *param_info){
-
-	struct lcm *ctx = panel_to_lcm(panel);
-	int ret = 0;
-
-	switch (param_info->param_idx) {
-		case PARAM_CABC:
-			break;
-		case PARAM_ACL:
-			ret = -1;
-			break;
-		case PARAM_HBM:
-			param_info->value = atomic_read(&ctx->hbm_mode);
-			break;
-		case PARAM_DC:
-			param_info->value = atomic_read(&ctx->dc_mode);
-			break;
-		default:
-			ret = -1;
-			break;
-	}
-	return ret;
-
-}
-
 static int panel_feature_set(struct drm_panel *panel, void *dsi,
 			      dcs_grp_write_gce cb, void *handle, struct panel_param_info param_info)
 {
@@ -1158,6 +1088,31 @@ static int panel_feature_set(struct drm_panel *panel, void *dsi,
 	return ret;
 }
 
+static int panel_feature_get(struct drm_panel *panel, struct panel_param_info *param_info){
+
+	struct lcm *ctx = panel_to_lcm(panel);
+	int ret = 0;
+
+	switch (param_info->param_idx) {
+		case PARAM_CABC:
+			break;
+		case PARAM_ACL:
+			ret = -1;
+			break;
+		case PARAM_HBM:
+			param_info->value = atomic_read(&ctx->hbm_mode);
+			break;
+		case PARAM_DC:
+			param_info->value = atomic_read(&ctx->dc_mode);
+			break;
+		default:
+			ret = -1;
+			break;
+	}
+	return ret;
+
+}
+
 static int panel_ext_init_power(struct drm_panel *panel)
 {
 	int ret;
@@ -1183,11 +1138,166 @@ static int panel_ext_powerdown(struct drm_panel *panel)
 	gpiod_set_value(ctx->reset_gpio, 0);
 	devm_gpiod_put(ctx->dev, ctx->reset_gpio);
 	usleep_range(2000, 2001);
-
 	gate_ic_Power_on(panel, 0);
 
 	return 0;
 }
+
+#if 0
+static char aod_area_cmd[] ={0x2B, 0x00, 0x00, 0x05, 0x87};
+
+static int panel_doze_area(struct drm_panel *panel,
+	void *dsi, dcs_write_gce cb, void *handle)
+{
+	struct lcm *ctx = panel_to_lcm(panel);
+	unsigned int current_y_start = AOD_Y_START_MIN;
+	unsigned int mini_step = AOD_Y_START_STEP_MIN;
+	unsigned int max_y_start = AOD_Y_START_MAX;
+
+	if (atomic_read(&ctx->doze_enable)) {
+		current_y_start = atomic_read(&ctx->current_aod_y_start);
+		if (current_y_start < max_y_start) current_y_start += mini_step;
+		else current_y_start = AOD_Y_START_MIN;
+
+		aod_area_cmd[1] = (current_y_start >> 8) & 0xFF;
+		aod_area_cmd[2] = current_y_start& 0xFF;
+		aod_area_cmd[3] = ((current_y_start + AOD_AREA_IZE - 1) >> 8) & 0xFF;
+		aod_area_cmd[4] = (current_y_start + AOD_AREA_IZE - 1) & 0xFF;
+
+		pr_info("%s: doze_enable %d current_y_start %d\n", __func__, atomic_read(&ctx->doze_enable), current_y_start);
+		pr_info("%s-2B: %d -> %d\n", __func__, (aod_area_cmd[1]*256 + aod_area_cmd[2]),
+				(aod_area_cmd[3]*256 + aod_area_cmd[4]));
+
+		cb(dsi, handle, aod_area_cmd, ARRAY_SIZE(aod_area_cmd));
+
+		atomic_set(&ctx->current_aod_y_start, current_y_start);
+	} else {
+		pr_info("%s: skip update doze area because of  doze_enable = %d\n", __func__, atomic_read(&ctx->doze_enable));
+	}
+
+	atomic_set(&ctx->doze_enable, 1);
+	return 0;
+}
+#endif
+
+static struct mtk_panel_para_table aod_en_start_cmd[] = {
+		{1, {0x28}},
+		{2, {0x6F, 0x02}},
+		{1, {0x39}},
+	};
+
+static int panel_doze_enable_start(struct drm_panel *panel, void *dsi, dcs_write_gce cb,
+	void *handle)
+{
+	unsigned int para_count = 0;
+	struct mtk_panel_para_table *pTable;
+	unsigned int i = 0;
+
+	if (!cb)
+		return -1;
+
+	para_count = sizeof(aod_en_start_cmd) / sizeof(struct mtk_panel_para_table);
+	pr_info("%s: para_count %d\n", __func__, para_count);
+
+	for(i = 0; i < para_count; i++) {
+		pTable = &aod_en_start_cmd[i];
+		pr_info("%s: para: 0x%x , count %d\n", __func__, pTable->para_list[0], pTable->count);
+		cb(dsi, handle, pTable->para_list, pTable->count);
+	}
+
+	return 0;
+}
+
+static struct mtk_panel_para_table aod_en_cmd[] = {
+		{1, {0x29}},
+	};
+
+static int panel_doze_enable(struct drm_panel *panel, void *dsi, dcs_write_gce cb,
+	void *handle)
+{
+	struct lcm *ctx = panel_to_lcm(panel);
+	unsigned int para_count = 0;
+	struct mtk_panel_para_table *pTable;
+	unsigned int i = 0;
+
+	pr_info("%s: %d -> %d\n", __func__, atomic_read(&ctx->doze_enable), 1);
+
+	if (!cb)
+		return -1;
+
+	para_count = sizeof(aod_en_cmd) / sizeof(struct mtk_panel_para_table);
+
+	pr_info("%s: para_count %d\n", __func__, para_count);
+
+	for(i = 0; i < para_count; i++) {
+		pTable = &aod_en_cmd[i];
+		pr_info("%s: para: 0x%x , count %d\n", __func__, pTable->para_list[0], pTable->count);
+		cb(dsi, handle, pTable->para_list, pTable->count);
+	}
+
+	atomic_set(&ctx->doze_enable, 1);
+
+	return 0;
+}
+
+static struct mtk_panel_para_table aod_disable_cmd[] = {
+		{1, {0x38}},
+		{2, {0x6f, 0x01}},
+		//{5, {0x2B, 0x00, 0x00, 0x05, 0x87}},
+	};
+
+static int panel_doze_disable(struct drm_panel *panel, void *dsi, dcs_write_gce cb,
+	void *handle)
+{
+	struct lcm *ctx = panel_to_lcm(panel);
+	unsigned int para_count = 0;
+	struct mtk_panel_para_table *pTable;
+	unsigned int i = 0;
+
+	pr_info("%s: %d -> %d\n", __func__, atomic_read(&ctx->doze_enable), 0);
+
+	if (!cb)
+		return -1;
+
+	para_count = sizeof(aod_disable_cmd) / sizeof(struct mtk_panel_para_table);
+
+	pr_info("%s: para_count %d\n", __func__, para_count);
+
+	for(i = 0; i < para_count; i++) {
+		pTable = &aod_disable_cmd[i];
+		pr_info("%s: para: 0x%x , count %d\n", __func__, pTable->para_list[0], pTable->count);
+		cb(dsi, handle, pTable->para_list, pTable->count);
+		if (i==0) usleep_range(50 * 1000, 51 * 1000);
+	}
+
+	atomic_set(&ctx->doze_enable, 0);
+	//atomic_set(&ctx->current_aod_y_start, AOD_Y_START_MIN);
+
+	usleep_range(40 * 1000, 41 * 1000);
+
+	return 0;
+}
+
+#if defined(DIC_COMMAND_MODE_AOD)
+static unsigned long panel_doze_get_mode_flags(struct drm_panel *panel,
+	int doze_en)
+{
+	unsigned long mode_flags;
+
+	if (doze_en) {
+		mode_flags = MIPI_DSI_MODE_LPM
+		       | MIPI_DSI_MODE_NO_EOT_PACKET
+		       | MIPI_DSI_CLOCK_NON_CONTINUOUS;
+	} else {
+		mode_flags = MIPI_DSI_MODE_VIDEO
+		       | MIPI_DSI_MODE_VIDEO_SYNC_PULSE
+		       | MIPI_DSI_MODE_LPM | MIPI_DSI_MODE_NO_EOT_PACKET
+		       | MIPI_DSI_CLOCK_NON_CONTINUOUS;
+	}
+	pr_info("%s: mode_flags %ld\n", __func__, mode_flags);
+	return mode_flags;
+}
+#endif
 
 static struct mtk_panel_funcs ext_funcs = {
 	.reset = panel_ext_reset,
@@ -1197,10 +1307,17 @@ static struct mtk_panel_funcs ext_funcs = {
 	.ata_check = panel_ata_check,
 	.ext_param_set = mtk_panel_ext_param_set,
 	.ext_param_get = mtk_panel_ext_param_get,
-	.mode_switch = mode_switch,
+	//.mode_switch = mode_switch,
 	.panel_feature_set = panel_feature_set,
 	.panel_feature_get = panel_feature_get,
 	.scaling_mode_mapping = mtk_scaling_mode_mapping,
+#if defined(DIC_COMMAND_MODE_AOD)
+	.doze_get_mode_flags = panel_doze_get_mode_flags,
+#endif
+	.doze_enable_start = panel_doze_enable_start,
+	.doze_disable = panel_doze_disable,
+	.doze_enable = panel_doze_enable,
+	//.doze_area = panel_doze_area,
 };
 #endif
 
