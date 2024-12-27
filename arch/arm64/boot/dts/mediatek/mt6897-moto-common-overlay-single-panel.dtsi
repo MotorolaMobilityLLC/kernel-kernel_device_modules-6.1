@@ -303,7 +303,7 @@ long powerkey reset setting
 };
 
 &usb_dp_selector {
-	status = "disabled";
+	status = "okay";
 };
 /* usb typec mux end */
 

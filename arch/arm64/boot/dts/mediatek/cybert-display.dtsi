@@ -186,17 +186,8 @@
        status = "disabled";
 };
 
-&i2c13 {
-	ps5169: ps5169@30 {
-		compatible = "parade,ps5170";
-		reg = <0x30>;
-		mediatek,vs-voter = <&pmic 0x189a 0x20 1>;
-		pinctrl-names = "enable", "disable";
-		pinctrl-0 = <&ps_enable>;
-		pinctrl-1 = <&ps_disable>;
-
-		status = "okay";
-	};
+&usb_dp_selector {
+	status = "disabled";
 };
 
 &dp_tx {
