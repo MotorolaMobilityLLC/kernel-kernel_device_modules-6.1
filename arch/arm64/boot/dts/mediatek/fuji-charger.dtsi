@@ -196,8 +196,7 @@
                 uirbat_pull_up_r_full = <24000>;/*24k*/
 
                 latest_fw_version = [01 02 08 52 32];
-                batt_serialnums = "ATLR041NVT";
-                //batt_versions = /bits/ 16 <01>;
+                mmi,batt-ids-map = "ATLR041NVT","00";
                 nfg,support_ifc;
         };
 
