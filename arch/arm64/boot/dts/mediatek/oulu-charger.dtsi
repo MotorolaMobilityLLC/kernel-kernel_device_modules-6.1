@@ -212,9 +212,8 @@
 		uirbat_pull_up_r_full = <24000>;/*24k*/
 
 		latest_fw_version = [01 02 08 52 32];
-		batt_serialnums = "ATLRM52NVT","COSRM52COS";
-		batt_versions = /bits/ 16 <03>,
-				/bits/ 16 <02>;
+		mmi,batt-ids-map = "ATLRM52NVT","03",
+				   "COSRM52COS","02";
 		nfg,support_ifc;
 	};
 
