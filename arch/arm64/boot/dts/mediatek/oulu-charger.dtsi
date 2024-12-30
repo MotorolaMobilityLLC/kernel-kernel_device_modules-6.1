@@ -44,6 +44,10 @@
 			pinmux = <PINMUX_GPIO81__FUNC_GPIO81>;
 			output-low;
 		};
+		wls_mc_det {
+			pinmux = <PINMUX_GPIO52__FUNC_GPIO52>;
+			output-low;
+		};
 	};
 
 	mmi_control_wls_default: mmi_control_wls_default {
@@ -358,6 +362,7 @@
 		wls-int = <&pio 34 0x0>;
 		wls-det-int = <&pio 36 0x0>;
 		wls-mode-select = <&pio 81 0x0>;
+		wls-mc-det = <&pio 52 0x0>;
 		pinctrl-names = "default";
 		pinctrl-0 = <&wls_int_default>;
 		status = "okay";
@@ -389,6 +394,7 @@
 				<435 5>,
 				<455 6>,
 				<470 7>;
+	wlc-mc-support;
 };
 
 &pdc {
