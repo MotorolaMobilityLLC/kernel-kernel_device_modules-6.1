@@ -54,6 +54,11 @@
         mediatek,ap-dmic = <0>;
 };
 
+&mt6368codec {
+        mediatek,amic_bias0vref = <2700>; /*HW request: change micbias to max, default is 1.9V */
+        mediatek,amic_bias2vref = <2700>;
+};
+
 &i2c13 {
         status = "okay";
         clock-frequency = <400000>;
