@@ -19,6 +19,9 @@
 /*reg 01, bit 3: 1 for pwm/ 0 form lpm*/
 #define REG_CONTROL_BIT_FPWM	3
 
+#define SGM62110_VID_MASK     GENMASK(7, 4)
+#define SGM62110_VENDOR_ID    0x40
+
 enum sgm62110_registers {
 	SGM62110_REG_CONTROL = 1,
 	SGM62110_REG_STATUS,
@@ -235,6 +238,9 @@ static int sgm62110_i2c_probe(struct i2c_client *client,
 	struct sgm62110_chip *chip;
 	struct device_node *node = client->dev.of_node;
 	int error = 0;
+#ifdef CONFIG_MOTO_SGM62110_RT6160
+	unsigned int devid;
+#endif /* CONFIG_MOTO_SGM62110_RT6160 */
 	pr_info("sgm62110_i2c_probe start\n");
 
 	chip = devm_kzalloc(dev, sizeof(struct sgm62110_chip), GFP_KERNEL);
@@ -253,6 +259,17 @@ static int sgm62110_i2c_probe(struct i2c_client *client,
 			error);
 		return error;
 	}
+
+#ifdef CONFIG_MOTO_SGM62110_RT6160
+	error = regmap_read(chip->regmap, SGM62110_REG_DEVID, &devid);
+	if (error)
+		return error;
+
+	if ((devid & SGM62110_VID_MASK) != SGM62110_VENDOR_ID) {
+		dev_err(dev, "VID not correct [0x%02x]\n", devid);
+		return -ENODEV;
+	}
+#endif /* CONFIG_MOTO_SGM62110_RT6160 */
 
 	sgm62110_regulator_init(chip);
 
@@ -290,6 +307,9 @@ static const struct dev_pm_ops sgm62110_pm_ops = {
 
 static const struct i2c_device_id sgm62110_i2c_id[] = {
 	{"sgm62110", 0},
+#ifdef CONFIG_MOTO_SGM62110_RT6160
+	{"rt6160", 0},
+#endif /* CONFIG_MOTO_SGM62110_RT6160 */
 	{},
 };
 MODULE_DEVICE_TABLE(i2c, sgm62110_i2c_id);
