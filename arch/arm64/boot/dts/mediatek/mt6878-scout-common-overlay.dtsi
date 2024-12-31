@@ -24,23 +24,15 @@
 &pio {
 	nfc_spi_cs_mode_spi: nfc_spi_cs_mode_spi {
 		pins_cmd_dat {
-			pinmux = <PINMUX_GPIO72__FUNC_SPI5_CLK>,
-			<PINMUX_GPIO73__FUNC_SPI5_CSB>,
-			<PINMUX_GPIO74__FUNC_SPI5_MO>,
-			<PINMUX_GPIO75__FUNC_SPI5_MI>;
+			pinmux = <PINMUX_GPIO73__FUNC_SPI5_CSB>;
 			bias-disable;
 		};
 	};
 
 	nfc_spi_cs_mode_idle: nfc_spi_cs_mode_idle {
 		pins_cmd_dat {
-			pinmux = <PINMUX_GPIO72__FUNC_GPIO72>, <PINMUX_GPIO73__FUNC_GPIO73>, <PINMUX_GPIO74__FUNC_GPIO74>;
-			output-high;
-		};
-		pins_cmd_dat1 {
-			pinmux = <PINMUX_GPIO75__FUNC_GPIO75>;
-			input-enable;
-			bias-pull-up;
+			pinmux = <PINMUX_GPIO73__FUNC_GPIO73>;
+			bias-disable;
 		};
 	};
 
