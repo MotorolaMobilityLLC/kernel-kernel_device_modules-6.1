@@ -45,6 +45,13 @@ config MOTO_SGM62110
 	help
 	  sgm62110 is an pmic chip.
 
+config MOTO_SGM62110_RT6160
+	bool  "detect sgm62110 or rt6160 regulator"
+	depends on MOTO_SGM62110
+	default n
+	help
+		support sgm62110 and rt6160 togetherly
+
 config MOTO_CAM_SGM62110
         tristate "moto sgm62110 regulator driver"
 	depends on I2C
