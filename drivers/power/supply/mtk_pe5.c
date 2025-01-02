@@ -3514,7 +3514,7 @@ static bool pe50_is_ta_rdy(struct pe50_algo_info *info)
 		auth_data->vcap_max = desc->vta_cap_max;
 		auth_data->icap_min = desc->ita_cap_min;
 		ret = pe50_hal_authenticate_ta(info->alg, auth_data);
-		if (ret < 0) {
+		if (ret < 0 || (desc->charge_pump_op_mode_max_support == CP_4_1_MODE && auth_data->ita_max < VADPT_PPS_D4CP_THRE_CURRENT)) {
 			if(desc->charge_pump_op_mode_max_support == CP_4_1_MODE) {
 				auth_data->vcap_max = VADPT_PPS_MAX_VOLTAGE;
 				ret = pe50_hal_authenticate_ta(info->alg, auth_data);
