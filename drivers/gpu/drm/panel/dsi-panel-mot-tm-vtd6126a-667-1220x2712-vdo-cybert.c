@@ -178,7 +178,23 @@ static void lcm_panel_init(struct lcm *ctx)
 	//5Eh 0x00 BC mode 0x01 DC mode
 	lcm_dcs_write_seq_static(ctx, 0x5e, 0x00);
 	//120hz 6c=00 ,90hz 6c=01 ,60hz 6c=02 ,48hz 6c=03
-	lcm_dcs_write_seq_static(ctx, 0x6c, 0x00);
+	pr_info("%s current_fps:%d\n", __func__, atomic_read(&ctx->current_fps));
+	switch (atomic_read(&ctx->current_fps)) {
+	case 120:
+		lcm_dcs_write_seq_static(ctx, 0x6c, 0x00);
+		break;
+	case 90:
+		lcm_dcs_write_seq_static(ctx, 0x6c, 0x01);
+		break;
+	case 60:
+		lcm_dcs_write_seq_static(ctx, 0x6c, 0x02);
+		break;
+	default:
+		lcm_dcs_write_seq_static(ctx, 0x6c, 0x00);
+		pr_info("%s current_fps :%d, set default 120\n", __func__,atomic_read(&ctx->current_fps));
+		atomic_set(&ctx->current_fps, 120);
+		break;
+	}
 	//AOD1 5nit 6D=00 ,AOD2 60nit 6D=01 ,AOD3 160nit 6D=02
 	lcm_dcs_write_seq_static(ctx, 0x6d, 0x00);
 	//CMD mode 6F=02, Video mode 6F=01
@@ -239,7 +255,6 @@ static void lcm_panel_init(struct lcm *ctx)
 	atomic_set(&ctx->dc_mode, 0);
 	atomic_set(&ctx->apl_mode, 0);
 	atomic_set(&ctx->current_bl, 0);
-	atomic_set(&ctx->current_fps, 120);
 
 	pr_info("%s-\n", __func__);
 }
@@ -476,12 +491,10 @@ static struct mtk_panel_params ext_params_48hz = {
 	.cust_esd_check = 1,
 	.esd_check_enable = 1,
 	.lcm_esd_check_table[0] = {
-		.cmd = 0x66,
-		.count = 2,
-		.para_list[0] = 0x00,
-		.para_list[1] = 0x00,
-		.para_list_aod[0] = 0x08,
-		.para_list_aod[1] = 0x00,
+		.cmd = 0x0A,
+		.count = 1,
+		.para_list[0] = 0x9C,
+		.para_list_aod[0] = 0xDC,
 		.esd_check_aod_enable = 1,
 	},
 	.lcm_color_mode = MTK_DRM_COLOR_MODE_DISPLAY_P3,
@@ -564,12 +577,10 @@ static struct mtk_panel_params ext_params_60hz = {
 	.cust_esd_check = 1,
 	.esd_check_enable = 1,
 	.lcm_esd_check_table[0] = {
-		.cmd = 0x66,
-		.count = 2,
-		.para_list[0] = 0x00,
-		.para_list[1] = 0x00,
-		.para_list_aod[0] = 0x08,
-		.para_list_aod[1] = 0x00,
+		.cmd = 0x0A,
+		.count = 1,
+		.para_list[0] = 0x9C,
+		.para_list_aod[0] = 0xDC,
 		.esd_check_aod_enable = 1,
 	},
 	.lcm_color_mode = MTK_DRM_COLOR_MODE_DISPLAY_P3,
@@ -650,12 +661,10 @@ static struct mtk_panel_params ext_params_90hz = {
 	.cust_esd_check = 1,
 	.esd_check_enable = 1,
 	.lcm_esd_check_table[0] = {
-		.cmd = 0x66,
-		.count = 2,
-		.para_list[0] = 0x00,
-		.para_list[1] = 0x00,
-		.para_list_aod[0] = 0x08,
-		.para_list_aod[1] = 0x00,
+		.cmd = 0x0A,
+		.count = 1,
+		.para_list[0] = 0x9C,
+		.para_list_aod[0] = 0xDC,
 		.esd_check_aod_enable = 1,
 	},
 	.lcm_color_mode = MTK_DRM_COLOR_MODE_DISPLAY_P3,
@@ -736,12 +745,10 @@ static struct mtk_panel_params ext_params_120hz = {
 	.cust_esd_check = 1,
 	.esd_check_enable = 1,
 	.lcm_esd_check_table[0] = {
-		.cmd = 0x66,
-		.count = 2,
-		.para_list[0] = 0x00,
-		.para_list[1] = 0x00,
-		.para_list_aod[0] = 0x08,
-		.para_list_aod[1] = 0x00,
+		.cmd = 0x0A,
+		.count = 1,
+		.para_list[0] = 0x9C,
+		.para_list_aod[0] = 0xDC,
 		.esd_check_aod_enable = 1,
 	},
 	.lcm_color_mode = MTK_DRM_COLOR_MODE_DISPLAY_P3,
