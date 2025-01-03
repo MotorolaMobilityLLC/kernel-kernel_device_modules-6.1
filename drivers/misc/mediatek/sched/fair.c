@@ -1967,6 +1967,8 @@ void mtk_find_energy_efficient_cpu(void *data, struct task_struct *p, int prev_c
 	struct vip_task_struct *vts;
 	int min_num_vip_cpu = -1;
 	unsigned int num_vip = 0, min_num_vip_in_cpu = UINT_MAX;
+	int min_num_vvip_cpu = -1;
+	unsigned int num_vvip = 0, min_num_vvip_in_cpu = UINT_MAX;
 #endif
 
 	cpumask_clear(&allowed_cpu_mask);
@@ -1977,34 +1979,7 @@ void mtk_find_energy_efficient_cpu(void *data, struct task_struct *p, int prev_c
 	compute_effective_softmask(p, &latency_sensitive, &effective_softmask);
 
 	pd = rcu_dereference(rd->pd);
-#if IS_ENABLED(CONFIG_MTK_SCHED_VIP_TASK)
-	vts = &((struct mtk_task *) p->android_vendor_data1)->vip_task;
-	vts->vip_prio = get_vip_task_prio(p);
-	if (task_is_vip(p, NOT_VIP) && pd) {
-		if (cpumask_empty(&allowed_cpu_mask)) {
-		    cpumask_andnot(&allowed_cpu_mask, p->cpus_ptr, cpu_pause_mask);
-		    cpumask_and(&allowed_cpu_mask, &allowed_cpu_mask, cpu_active_mask);
-	    }
 
-		for (; pd; pd = pd->next) {
-			cpumask_and(cpus, perf_domain_span(pd), &allowed_cpu_mask);
-			for_each_cpu(cpu, cpus) {
-				num_vip = num_vip_in_cpu(cpu);
-				if (min_num_vip_in_cpu > num_vip) {
-					min_num_vip_cpu = cpu;
-					min_num_vip_in_cpu = num_vip;
-				}
-			}
-		}
-
-		if (min_num_vip_cpu != -1) {
-			*new_cpu = min_num_vip_cpu;
-			select_reason = LB_VIP;
-			rcu_read_unlock();
-			goto done;
-		}
-	}
-#endif
 	if (!pd || READ_ONCE(rd->overutilized)) {
 		select_reason = LB_FAIL;
 		rcu_read_unlock();
@@ -2165,6 +2140,53 @@ fail:
 	}
 
 	rcu_read_lock();
+
+#if IS_ENABLED(CONFIG_MTK_SCHED_VIP_TASK)
+	vts = &((struct mtk_task *) p->android_vendor_data1)->vip_task;
+	vts->vip_prio = get_vip_task_prio(p);
+	if (task_is_vip(p, NOT_VIP) && pd) {
+		for (; pd; pd = pd->next) {
+			cpumask_and(cpus, perf_domain_span(pd), &allowed_cpu_mask);
+			for_each_cpu(cpu, cpus) {
+				num_vip = num_vip_in_cpu(cpu);
+				if (min_num_vip_in_cpu > num_vip) {
+					min_num_vip_cpu = cpu;
+					min_num_vip_in_cpu = num_vip;
+				}
+			}
+		}
+
+		if (min_num_vip_cpu != -1) {
+			*new_cpu = min_num_vip_cpu;
+			backup_reason = LB_BACKUP_VIP;
+			goto backup_unlock;
+		}
+	}
+#endif
+
+#if IS_ENABLED(CONFIG_MTK_SCHED_VIP_TASK)
+	/* iterrate from biggest cpu, find CPU with minimum num VVIP.
+	 * if all CPU have the same num of VVIP, min_num_vvip_cpu = biggest_cpu.
+	 */
+	if (task_is_vip(p, VVIP) && balance_vvip_overutilied && pd) {
+		for (; pd; pd = pd->next) {
+			cpumask_and(cpus, perf_domain_span(pd), &allowed_cpu_mask);
+			for_each_cpu(cpu, cpus) {
+				num_vvip = num_vvip_in_cpu(cpu);
+				if (min_num_vvip_in_cpu > num_vvip) {
+					min_num_vvip_cpu = cpu;
+					min_num_vvip_in_cpu = num_vvip;
+				}
+			}
+		}
+
+		if (min_num_vvip_cpu != -1) {
+			*new_cpu = min_num_vvip_cpu;
+			backup_reason = LB_BACKUP_VVIP;
+			goto backup_unlock;
+		}
+	}
+#endif
 
 	if (cpumask_test_cpu(this_cpu, p->cpus_ptr) && (this_cpu != prev_cpu))
 		target = mtk_wake_affine(p, this_cpu, prev_cpu, sync);
