@@ -184,6 +184,14 @@ static void lcm_panel_init(struct lcm *ctx)
 	lcm_dcs_write_seq_static(ctx, 0x6f, 0x01);
 	lcm_dcs_write_seq_static(ctx, 0x72, 0x00);
 
+	//exit cmd AOD
+	lcm_dcs_write_seq_static(ctx, 0xa4, 0x01);
+	lcm_dcs_write_seq_static(ctx, 0x38, 0x00);
+	lcm_dcs_write_seq_static(ctx, 0x6f, 0x01);
+	lcm_dcs_write_seq_static(ctx, 0xa4, 0x00);
+
+	lcm_dcs_write_seq_static(ctx, 0x44, 0x06, 0x8c);
+
 	lcm_dcs_write_seq_static(ctx, 0x2A, 0x00, 0x00, 0x04, 0xC3);
 	lcm_dcs_write_seq_static(ctx, 0x2B, 0x00, 0x00, 0x05, 0x87);
 
@@ -198,6 +206,12 @@ static void lcm_panel_init(struct lcm *ctx)
 					0x2A, 0x38, 0x46, 0x54, 0x62, 0x69, 0x70, 0x77, 0x79, 0x7B, 0x7D, 0x7E, 0x02, 0x02, 0x22, 0x00,
 					0x2A, 0x40, 0x2A, 0xBE, 0x3A, 0xFC, 0x3A, 0xFA, 0x3A, 0xF8, 0x3B, 0x38, 0x3B, 0x78, 0x3B, 0xB6,
 					0x4B, 0xB6, 0x4B, 0xF4, 0x4B, 0xF4, 0x6C, 0x34, 0x84, 0x74, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00);
+
+	lcm_dcs_write_seq_static(ctx, 0xf0, 0xaa, 0x10);
+	lcm_dcs_write_seq_static(ctx, 0x65, 0x09);
+	lcm_dcs_write_seq_static(ctx, 0xcf, 0x5b);
+	lcm_dcs_write_seq_static(ctx, 0x65, 0x0b);
+	lcm_dcs_write_seq_static(ctx, 0xcf, 0xfd, 0x79);
 //LV ON
 	lcm_dcs_write_seq_static(ctx, 0xf0, 0xaa, 0x12);
 	lcm_dcs_write_seq_static(ctx, 0xc7, 0xff);
@@ -582,6 +596,7 @@ static struct mtk_panel_params ext_params_60hz = {
 		.count = 2,
 		.para_list[0] = 0x00,
 		.para_list[1] = 0x00,
+		.mask_list[0] = 0xFB,
 		.para_list_aod[0] = 0x08,
 		.para_list_aod[1] = 0x00,
 		.esd_check_aod_enable = 1,
@@ -669,6 +684,7 @@ static struct mtk_panel_params ext_params_90hz = {
 		.count = 2,
 		.para_list[0] = 0x00,
 		.para_list[1] = 0x00,
+		.mask_list[0] = 0xFB,
 		.para_list_aod[0] = 0x08,
 		.para_list_aod[1] = 0x00,
 		.esd_check_aod_enable = 1,
@@ -755,6 +771,7 @@ static struct mtk_panel_params ext_params_120hz = {
 		.count = 2,
 		.para_list[0] = 0x00,
 		.para_list[1] = 0x00,
+		.mask_list[0] = 0xFB,
 		.para_list_aod[0] = 0x08,
 		.para_list_aod[1] = 0x00,
 		.esd_check_aod_enable = 1,
@@ -1263,6 +1280,7 @@ static int panel_doze_enable_start(struct drm_panel *panel, void *dsi, dcs_write
 		cb(dsi, handle, pTable->para_list, pTable->count);
 	}
 
+	usleep_range(17 * 1000, 18 * 1000);
 	return 0;
 }
 
@@ -1299,9 +1317,7 @@ static int panel_doze_enable(struct drm_panel *panel, void *dsi, dcs_write_gce c
 }
 
 static struct mtk_panel_para_table aod_disable_cmd[] = {
-		{1, {0x38}},
-		{2, {0x6f, 0x01}},
-		//{5, {0x2B, 0x00, 0x00, 0x05, 0x87}},
+		{2, {0xa6, 0x01}},
 	};
 
 static int panel_doze_disable(struct drm_panel *panel, void *dsi, dcs_write_gce cb,
@@ -1325,13 +1341,12 @@ static int panel_doze_disable(struct drm_panel *panel, void *dsi, dcs_write_gce 
 		pTable = &aod_disable_cmd[i];
 		pr_info("%s: para: 0x%x , count %d\n", __func__, pTable->para_list[0], pTable->count);
 		cb(dsi, handle, pTable->para_list, pTable->count);
-		if (i==0) usleep_range(50 * 1000, 51 * 1000);
 	}
 
 	atomic_set(&ctx->doze_enable, 0);
 	//atomic_set(&ctx->current_aod_y_start, AOD_Y_START_MIN);
 
-	usleep_range(40 * 1000, 41 * 1000);
+	usleep_range(90 * 1000, 91 * 1000);
 
 	return 0;
 }
