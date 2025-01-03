@@ -216,8 +216,6 @@
 		batt_versions = /bits/ 16 <03>,
 				/bits/ 16 <02>;
 		nfg,support_ifc;
-		/*<MMI_STOPSHIP>: NFG1000: enable user upgrade battery parameter*/
-		nfg,enable_user_upgrade_batt;
 	};
 
 	nu2115_master:nu2115-master@6e {
