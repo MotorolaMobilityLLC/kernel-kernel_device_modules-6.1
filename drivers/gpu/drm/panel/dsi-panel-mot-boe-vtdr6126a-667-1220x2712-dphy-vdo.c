@@ -37,6 +37,7 @@
 #include "../mediatek/mediatek_v2/mtk_panel_ext.h"
 #include "../mediatek/mediatek_v2/mtk_drm_graphics_base.h"
 #endif
+#include "../mediatek/mediatek_v2/mtk_dsi.h"
 
 #include "include/dsi-panel-mot-boe-vtdr6126a-667-1220x2712-dphy-vdo-120hz-lhbm-alpha.h"
 //#include "../../../misc/mediatek/gate_ic/gate_i2c.h"
@@ -870,9 +871,17 @@ static int lcm_setbacklight_cmdq(void *dsi, dcs_write_gce cb, void *handle,
 			pr_info("%s: backlight_level %d aod_light_mode %d\n", __func__, level, aod_light_mode);
 	}
 
-	if (!(atomic_read(&ctx->current_bl) && level))
+	if (!(atomic_read(&ctx->current_bl) && level)) {
+		char *envp[2];
+		char brightness[36];
+		struct mtk_dsi * mtk_dsi = (struct mtk_dsi *) dsi;
+
+		snprintf(brightness, 36, "SOURCE=backlight-%u", level);
+		envp[0] = brightness;
+		envp[1] = NULL;
+		kobject_uevent_env(&mtk_dsi->dev->kobj, KOBJ_CHANGE, envp);
 		pr_info("backlight changed from %u to %u\n", atomic_read(&ctx->current_bl),level);
-	else
+	} else
 		pr_debug("backlight changed from %u to %u\n", atomic_read(&ctx->current_bl), level);
 
 	atomic_set(&ctx->current_bl, level);
