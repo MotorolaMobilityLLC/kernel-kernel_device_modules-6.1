@@ -177,8 +177,16 @@ void ufsf_exception_event_handler(struct ufs_hba *hba);
 
 /* Attribute idn for Query requests */
 #if defined(CONFIG_UFSHID)
+#if defined(CONFIG_MICRON_UFSHID)
+#define QUERY_FLAG_IDN_HID_EN_MICRON_UFSV4		0x83
+#endif
+
 #define QUERY_ATTR_IDN_HID_OPERATION			0x80
 #define QUERY_ATTR_IDN_HID_FRAG_LEVEL			0x81
+#if defined(CONFIG_MICRON_UFSHID)
+#define QUERY_ATTR_IDN_HID_FRAG_STATUS_MICRON_UFSV4	0x81
+#define QUERY_ATTR_IDN_HID_PROGRESS_MICRON_UFSV4	0x82
+#endif
 #define QUERY_ATTR_IDN_HID_SIZE				0x8A
 #define QUERY_ATTR_IDN_HID_AVAIL_SIZE			0x8B
 #define QUERY_ATTR_IDN_HID_PROGRESS_RATIO		0x8C
