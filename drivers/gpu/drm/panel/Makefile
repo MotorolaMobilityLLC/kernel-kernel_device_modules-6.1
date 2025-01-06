@@ -84,6 +84,7 @@ obj-$(CONFIG_DRM_PANEL_TM_NT37706_667_1220x2712_VDO_NICE) += dsi-panel-mot-tm-nt
 obj-$(CONFIG_DRM_PANEL_BOE_VTDR6126_667_1220x2712_VDO_NICE) += dsi-panel-mot-boe-vtdr6126-667-1220x2712-vdo-nice.o
 obj-$(CONFIG_DRM_PANEL_CSOT_VTDR6126_667_1220x2712_VDO_NICE) += dsi-panel-mot-csot-vtdr6126-667-1220x2712-vdo-nice.o
 obj-$(CONFIG_DRM_PANEL_CSOT_VTDR6130_636_FHDP_DPHY_CMD_FUJI) += dsi-panel-mot-csot-vtdr6130-636-fhdp-dphy-cmd-fuji.o
+obj-$(CONFIG_DRM_PANEL_CSOT_FT3683G_636_FHDP_DPHY_CMD_FUJI) += dsi-panel-mot-csot-ft3683g-636-fhdp-dphy-cmd-fuji.o
 
 mediatek-drm-gateic-y := mtk_drm_panel_i2c.o \
 		  mtk_drm_gateic_rt4801h.o \
