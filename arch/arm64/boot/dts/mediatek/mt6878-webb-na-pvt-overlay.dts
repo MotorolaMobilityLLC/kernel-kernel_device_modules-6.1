@@ -15,13 +15,15 @@
 
 #include "mediatek/mt6878-aito-common-overlay.dtsi"
 
+#define AITO_NA2_RADIO 6
+
 /* Board match root node */
 / {
 	fragment@model {
 		target-path = "/";
 		__overlay__ {
 			mot,model = "aito";
-			mot,board-id = <0x42 0xB200>;
+			mot,board-id = <(AITO_NA2_RADIO << 8 | 0x43) 0xB300>, <(AITO_NA2_RADIO << 8 | 0x46) 0xC000>;
 		};
 	};
 };
@@ -30,8 +32,20 @@
        mmi,support_CID;
 };
 
+&i2c0 {
+	wt6670f@35 {
+		status = "disabled";
+	};
+};
+
 &charger {
+	/*pe5 && pdc && wlc*/
+	fast_charging_indicator = <0x8014>;
 	mmi,wls-boost-using-otg;
+};
+
+&mmi_pehv {
+	status = "disabled";
 };
 
 &cps_wls_charger {
@@ -49,5 +63,5 @@
     support_1_8_V=<1>;
 };
 
-#include <aito_dvt2/cust.dtsi>
+#include <aito_pvt/cust.dtsi>
 /*End of this file, DO NOT ADD ANYTHING HERE*/

@@ -21,7 +21,7 @@
 		target-path = "/";
 		__overlay__ {
 			mot,model = "aito";
-			mot,board-id = <0x43 0xC000>, <0x43 0xB300>, <0x46 0xC000>;
+			mot,board-id = <0x43 0xC000>, <0x42 0xB200>;
 		};
 	};
 };

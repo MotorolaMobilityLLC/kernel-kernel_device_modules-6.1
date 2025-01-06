@@ -15,7 +15,7 @@
 
 #include "mediatek/mt6878-aito-common-overlay.dtsi"
 
-#define AITO_DOCOMO_RADIO 5
+#define AITO_DOCOMO2_RADIO 10
 
 /* Board match root node */
 / {
@@ -23,7 +23,7 @@
 		target-path = "/";
 		__overlay__ {
 			mot,model = "aito";
-			mot,board-id = <(AITO_DOCOMO_RADIO << 8 | 0x42) 0xB200>;
+			mot,board-id = <(AITO_DOCOMO2_RADIO << 8 | 0x43) 0xB300>, <(AITO_DOCOMO2_RADIO << 8 | 0x46) 0xC000>;
 		};
 	};
 };
@@ -183,5 +183,5 @@
 	lbat-limit-freq = <1200000 700000 600000>;
 };
 
-#include <aito_dvt2/cust.dtsi>
+#include <aito_pvt/cust.dtsi>
 /*End of this file, DO NOT ADD ANYTHING HERE*/
