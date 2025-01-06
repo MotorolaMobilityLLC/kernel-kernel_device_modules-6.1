@@ -83,7 +83,7 @@
 	ac-charger-current = <1000000>;
 	ac-charger-input-current = <2000000>;
 	non-std-ac-charger-current = <1000000>;
-	charging_host_input_current = <1500000>;
+	charging_host_input_current = <1000000>;
 	charging-host-charger-current = <1000000>;
 	pre_charge_current = <400>;
 
@@ -107,7 +107,7 @@
 	ac-charger-current = <3000000>;
 	usb-charger-current = <500000>;
 	ac-charger-input-current = <2000000>;
-	charging-host-charger-current = <1500000>;
+	charging-host-charger-current = <1000000>;
 
 	/*pe5 && pdc && pe2 && wlc*/
 	fast_charging_indicator = <0x8014>;
