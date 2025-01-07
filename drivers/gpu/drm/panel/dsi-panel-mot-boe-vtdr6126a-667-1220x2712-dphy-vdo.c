@@ -652,7 +652,7 @@ static struct mtk_panel_params ext_params_60hz = {
 		},
 	},
 
-	.data_rate = 882,
+	.data_rate = 898,
 	.lfr_enable = 0,
 	.lfr_minimum_fps = 60,
 
@@ -739,7 +739,7 @@ static struct mtk_panel_params ext_params_90hz = {
 			.range_bpg_ofs = vdo_range_bpg_ofs,
 		},
 	},
-	.data_rate = 882,
+	.data_rate = 898,
 	.lfr_enable = 0,
 	.lfr_minimum_fps = 60,
 
@@ -826,7 +826,7 @@ static struct mtk_panel_params ext_params_120hz = {
 			.range_bpg_ofs = vdo_range_bpg_ofs,
 		},
 	},
-	.data_rate = 882,
+	.data_rate = 898,
 	.lfr_enable = 0,
 	.lfr_minimum_fps = 60,
 
