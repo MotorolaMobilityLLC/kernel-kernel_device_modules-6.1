@@ -170,3 +170,8 @@ config TOUCHSCREEN_GOODIX_TIMING
 	bool "TP timing repair"
 	help
 		Say Y here  is TP timing repair.
+
+config ESWIN_GHOST_LOG_CAPTURE
+	bool "Support ghost touch log capture feature"
+	help
+		Say Y here if support ghost touch log capture feature.
