@@ -20,6 +20,8 @@
 #include "aw37004-regulator.h"
 
 static int ldo_chipid = -1;
+static int aw37004_debug = 0;
+module_param(aw37004_debug,int, 0644);
 
 enum aw37004_regulators {
 	AW37004_REGULATOR_LDO1 = 0,
@@ -89,21 +91,22 @@ static int aw37004_get_current_limit(struct regulator_dev *rdev)
 	uint8_t reg_dump[AW37004_REG_NUM];
 	uint8_t reg_idx;
 	unsigned int val = 0;
+	if(aw37004_debug)
+	{
+		dev_err(chip->dev, "************ start dump aw37004 register ************\n");
+		dev_err(chip->dev, "register name =%s \n",rdev->desc->name);
+		dev_err(chip->dev, "register 0x00:      chip version\n");
+		dev_err(chip->dev, "register 0x01:      LDO CL\n");
+		dev_err(chip->dev, "register 0x03~0x06: LDO1~LDO4 OUT Voltage\n");
+		dev_err(chip->dev, "register 0x0e:      Bit[3:0] LDO4~LDO1 EN\n");
 
-	dev_err(chip->dev, "************ start dump aw37004 register ************\n");
-	dev_err(chip->dev, "register name =%s \n",rdev->desc->name);
-	dev_err(chip->dev, "register 0x00:      chip version\n");
-	dev_err(chip->dev, "register 0x01:      LDO CL\n");
-	dev_err(chip->dev, "register 0x03~0x06: LDO1~LDO4 OUT Voltage\n");
-	dev_err(chip->dev, "register 0x0e:      Bit[3:0] LDO4~LDO1 EN\n");
-
-	for (reg_idx = 0; reg_idx < AW37004_REG_NUM; reg_idx++) {
-		regmap_read(chip->regmap, reg_idx, &val);
-		reg_dump[reg_idx] = val;
-		dev_err(chip->dev, "Reg[0x%02x] = 0x%x", reg_idx, reg_dump[reg_idx]);
+		for (reg_idx = 0; reg_idx < AW37004_REG_NUM; reg_idx++) {
+			regmap_read(chip->regmap, reg_idx, &val);
+			reg_dump[reg_idx] = val;
+			dev_err(chip->dev, "Reg[0x%02x] = 0x%x", reg_idx, reg_dump[reg_idx]);
+		}
+		dev_err(chip->dev, "************ end dump aw37004 register ************\n");
 	}
-	dev_err(chip->dev, "************ end dump aw37004 register ************\n");
-
 	return 0;
 }
 
