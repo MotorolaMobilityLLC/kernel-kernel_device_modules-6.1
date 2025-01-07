@@ -41,3 +41,5 @@ obj-$(CONFIG_MTK_DEVMPU) += devmpu/
 obj-$(CONFIG_MTK_MMDVFS) += mtk-mmdvfs.o mtk-mmdvfs-v3.o
 obj-$(CONFIG_DEVICE_MODULES_MTK_MMSYS) += mtk-mutex.o
 obj-$(CONFIG_MTK_SOCINFO) += mtk-socinfo.o
+obj-$(CONFIG_PERF_TRACE_CTRS) += mtk-perfcounters.o
+mtk-perfcounters-y += perf_trace_counters.o

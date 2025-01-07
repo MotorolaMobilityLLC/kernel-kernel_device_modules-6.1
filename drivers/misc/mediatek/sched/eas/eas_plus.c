@@ -22,6 +22,9 @@
 #include "vip.h"
 #endif
 #include <mt-plat/mtk_irq_mon.h>
+#if IS_ENABLED(CONFIG_MEMLAT_MON)
+#include <performance/mot_perf_mon/mot_perf_mon.h>
+#endif
 
 MODULE_LICENSE("GPL");
 
@@ -746,6 +749,10 @@ void hook_scheduler_tick(void *data, struct rq *rq)
 
 	if (rq->curr->policy == SCHED_NORMAL)
 		check_for_migration(rq->curr);
+
+#if IS_ENABLED(CONFIG_MEMLAT_MON)
+	mot_perf_mon_tick_update_counters();
+#endif
 }
 
 void mtk_hook_after_enqueue_task(void *data, struct rq *rq,

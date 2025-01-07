@@ -167,3 +167,10 @@ config MTK_CORE_CTL
 	  utilizations from scheduler information automatically.
 	  If you are not sure about whether to enable it or not,
 	  please set n.
+
+config MEMLAT_MON
+	tristate "Memory latency monitor module"
+	help
+	  This config is for memory latency monitoring.
+	  If you are not sure about whether to enable it or not,
+	  please set n.

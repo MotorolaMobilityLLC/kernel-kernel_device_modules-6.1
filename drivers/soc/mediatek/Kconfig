@@ -108,4 +108,11 @@ config MTK_SOCINFO
 	  platforms to provide information about the SoC family and
 	  variant to user space.
 
+config PERF_TRACE_CTRS
+	tristate "perf_trace_counters support"
+	depends on MEMLAT_MON
+	default n
+	help
+	  Support perf_trace_counters
+
 endmenu

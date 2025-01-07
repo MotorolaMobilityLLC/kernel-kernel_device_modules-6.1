@@ -1205,6 +1205,8 @@ def get_overlay_modules_list():
         mgk_64_k61_device_modules.append("drivers/power/supply/moto_wlc_alg.ko")
         mgk_64_k61_device_modules.append("drivers/regulator/hl7603-regulator.ko")
         mgk_64_k61_device_modules.append("drivers/regulator/sgm62110-regulator.ko")
+        mgk_64_k61_device_modules.append("drivers/misc/mediatek/sched/memlat_mon.ko")
+        mgk_64_k61_device_modules.append("drivers/soc/mediatek/mtk-perfcounters.ko")
 
         mgk_64_k61_device_modules.remove("sound/soc/codecs/tfa98xx/snd-soc-tfa98xx.ko")
 

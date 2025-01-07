@@ -82,6 +82,14 @@ struct sugov_tunables {
 	struct gov_attr_set	attr_set;
 	unsigned int		up_rate_limit_us;
 	unsigned int		down_rate_limit_us;
+
+#if IS_ENABLED(CONFIG_MEMLAT_MON)
+	/* The field below for PMU poll */
+	unsigned int		lcpi_threshold;
+	unsigned int		spc_threshold;
+	unsigned int		limit_frequency;
+	bool			pmu_limit_enable;
+#endif
 };
 
 struct sugov_policy {
@@ -108,6 +116,13 @@ struct sugov_policy {
 
 	bool			limits_changed;
 	bool			need_freq_update;
+
+#if IS_ENABLED(CONFIG_MEMLAT_MON)
+	struct freq_qos_request	pmu_max_freq_req;
+	cpumask_t		pmu_ignored_mask;
+	bool			under_pmu_throttle;
+	bool			relax_pmu_throttle;
+#endif
 };
 
 struct dsu_state {
