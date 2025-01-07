@@ -260,7 +260,7 @@ static void lcm_panel_init(struct lcm *ctx)
 	lcm_dcs_write_seq_static(ctx, 0x51, 0x00, 0x00);
 	//DBV_IDLE
 	lcm_dcs_write_seq_static(ctx, 0x6F, 0x04);
-	lcm_dcs_write_seq_static(ctx, 0x51, 0x3F, 0xFC);
+	lcm_dcs_write_seq_static(ctx, 0x51, 0x00, 0x00);
 
 	//3D LUT OFF
 	lcm_dcs_write_seq_static(ctx, 0x57, 0x00);
