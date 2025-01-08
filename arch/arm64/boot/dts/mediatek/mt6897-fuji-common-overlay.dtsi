@@ -377,3 +377,8 @@
         soc-reduce-tx-lv1 = <6>;
 };
 
+&ssusb {
+        /delete-property/ maximum-speed;
+        maximum-speed = "super-speed";
+};
+
