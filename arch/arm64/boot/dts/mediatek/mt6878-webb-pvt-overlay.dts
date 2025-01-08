@@ -52,5 +52,27 @@
     support_1_8_V=<1>;
 };
 
+&low_battery_throttling {
+	thd-volts-l = <
+		3259 3159 2924
+		3819 3423 3273
+		4171 3685 3500>;
+	thd-volts-h = <
+		3359 3259 3159
+		3919 3819 3423
+		4271 4171 3685>;
+	lvsys-thd-volt-l = <2924>;
+	lvsys-thd-volt-h = <3159>;
+};
+
+&cpu_power_throttling {
+	lbat-limit-freq-lv2 = < 1800000  1800000 1800000>;
+	lbat-limit-freq-lv3 = < 1200000  1200000 1200000>;
+};
+
+&gpu_power_throttling {
+	lbat-limit-freq = <1200000 700000 600000>;
+};
+
 #include <aito_pvt/cust.dtsi>
 /*End of this file, DO NOT ADD ANYTHING HERE*/
