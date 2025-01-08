@@ -106,6 +106,7 @@
 	mmi,mux_wls_boost_en = <&pio 25 0x0>;*/
 	/* dynamic mivr */
 	enable-dynamic-mivr;
+	enable-pdtest-mode = <1>;
 
 	/*mmi config*/
 	mmi,typec-rp-max-current = <2000000>;
@@ -167,6 +168,10 @@
 	status = "okay";
 	compatible = "mmi,smart-battery";
 	mmi,ui_full_soc = <97>;
+};
+
+&i2c5 {
+	mediatek,fifo-use-polling;
 };
 
 &i2c10 {
