@@ -278,6 +278,9 @@ static inline bool tcpci_check_hard_reset_complete(
 	if (*alert_status & TCPC_REG_ALERT_TX_DISCARDED) {
 		*alert_status &= ~TCPC_REG_ALERT_TX_DISCARDED;
 		TCPC_INFO("HResetFailed\n");
+		mutex_lock(&tcpc->access_lock);
+		tcpc->pd_transmit_state = PD_TX_STATE_DISCARD;
+		mutex_unlock(&tcpc->access_lock);
 		pd_put_hw_event(tcpc, PD_HW_TX_FAILED);
 		return true;
 	}
