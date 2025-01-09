@@ -477,6 +477,7 @@ struct mmi_params {
 	int			target_usb;
 	struct notifier_block	chg_reboot;
 	int			min_therm_current_limit;
+	bool			cp_on_sub_board;
 	bool			enable_mux;
 	struct			mmi_mux_chan mux_channel;
 	bool			typec_mos_only; //only have typec_mos but don't have wls_mos
