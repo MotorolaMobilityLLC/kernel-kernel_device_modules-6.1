@@ -174,7 +174,7 @@
 	mmi,enable-charging-limit;
 	mmi,upper-limit-capacity = <75>;
 	mmi,lower-limit-capacity = <70>;
-	mmi,min-cp-therm-current-ua = <1500000>;
+	mmi,min-cp-therm-current-ua = <1000000>;
 
 	mmi,pd-pmax-mw = <30000>;
 	mmi,pd_vbus_low_bound = <5000000>;
