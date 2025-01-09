@@ -1,0 +1,110 @@
+// SPDX-License-Identifier: GPL-2.0-only
+/*
+ * Copyright (C) 2025 Motorola Mobility Inc.
+ *
+ */
+/* perf monitor start */
+&mot_perf_mon {
+	compatible = "mot,perf_mon";
+	param_ticks_per_counter_update = <2>;
+	client_update_backup_us = <10000>;
+	client_update_interval_us = <8000>;
+	mot_perf_cpu: mot_perf_cpu {
+		cpu0 {
+			cpu_idx = <0>;
+			pmu_events {
+				l2-cachemiss-ev = <0x2D>;
+				l3-cachemiss-ev = <0x2A>;
+			};
+			amu_events {
+				inst-ev = <0x0008>;
+				cyc-ev = <0x0011>;
+				stall-backend-mem-ev = <0x4005>;
+			};
+		};
+		cpu1 {
+			cpu_idx = <1>;
+			pmu_events {
+				l2-cachemiss-ev = <0x2D>;
+				l3-cachemiss-ev = <0x2A>;
+			};
+			amu_events {
+				inst-ev = <0x0008>;
+				cyc-ev = <0x0011>;
+				stall-backend-mem-ev = <0x4005>;
+			};
+		};
+		cpu2 {
+			cpu_idx = <2>;
+			pmu_events {
+				l2-cachemiss-ev = <0x2D>;
+				l3-cachemiss-ev = <0x2A>;
+			};
+			amu_events {
+				inst-ev = <0x0008>;
+				cyc-ev = <0x0011>;
+				stall-backend-mem-ev = <0x4005>;
+			};
+		};
+		cpu3 {
+			cpu_idx = <3>;
+			pmu_events {
+				l2-cachemiss-ev = <0x2D>;
+				l3-cachemiss-ev = <0x2A>;
+			};
+			amu_events {
+				inst-ev = <0x0008>;
+				cyc-ev = <0x0011>;
+				stall-backend-mem-ev = <0x4005>;
+			};
+		};
+		cpu4 {
+			cpu_idx = <4>;
+			pmu_events {
+				l2-cachemiss-ev = <0x2D>;
+				l3-cachemiss-ev = <0x2A>;
+			};
+			amu_events {
+				inst-ev = <0x0008>;
+				cyc-ev = <0x0011>;
+				stall-backend-mem-ev = <0x4005>;
+			};
+		};
+		cpu5 {
+			cpu_idx = <5>;
+			pmu_events {
+				l2-cachemiss-ev = <0x2D>;
+				l3-cachemiss-ev = <0x2A>;
+			};
+			amu_events {
+				inst-ev = <0x0008>;
+				cyc-ev = <0x0011>;
+				stall-backend-mem-ev = <0x4005>;
+			};
+		};
+		cpu6 {
+			cpu_idx = <6>;
+			pmu_events {
+				l2-cachemiss-ev = <0x2D>;
+				l3-cachemiss-ev = <0x2A>;
+			};
+			amu_events {
+				inst-ev = <0x0008>;
+				cyc-ev = <0x0011>;
+				stall-backend-mem-ev = <0x4005>;
+			};
+		};
+		cpu7 {
+			cpu_idx = <7>;
+			pmu_events {
+				l2-cachemiss-ev = <0x2D>;
+				l3-cachemiss-ev = <0x2A>;
+			};
+			amu_events {
+				inst-ev = <0x0008>;
+				cyc-ev = <0x0011>;
+				stall-backend-mem-ev = <0x4005>;
+			};
+		};
+	};
+};

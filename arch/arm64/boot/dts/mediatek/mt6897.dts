@@ -849,6 +849,10 @@
 
 	};
 
+	mot_perf_mon: mot_perf_mon {
+
+	};
+
 	odm: odm {
 		compatible = "simple-bus";
 		/* reserved for overlay by odm */

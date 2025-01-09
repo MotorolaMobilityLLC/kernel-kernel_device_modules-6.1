@@ -18,6 +18,7 @@
 #include "mediatek/cybert-display.dtsi"
 #include "mediatek/cybert-touch.dtsi"
 #include "mediatek/cybert-audio.dtsi"
+#include "mediatek/cybert_perf_mon.dtsi"
 
 &rt5133 {
 	status = "disabled";
