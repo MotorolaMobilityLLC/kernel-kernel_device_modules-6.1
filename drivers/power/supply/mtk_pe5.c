@@ -2860,6 +2860,7 @@ static int mmi_thermal_ratio(struct pe50_algo_info *info, int ibat, int vbat)
 	return ratio;
 }
 
+#define MIN(a, b)			((a) >= (b) ? (b) : (a))
 static int pe50_algo_cc_cv_with_ta_cv(struct pe50_algo_info *info)
 {
 	int ret, vbat, ibat, vsys, fcc_min, ratio;
@@ -2874,6 +2875,7 @@ static int pe50_algo_cc_cv_with_ta_cv(struct pe50_algo_info *info)
 		.reset_ta = true,
 		.hardreset_ta = false,
 	};
+	int slave_ibus;
 
 	PE50_DBG("++\n");
 
@@ -2884,20 +2886,30 @@ static int pe50_algo_cc_cv_with_ta_cv(struct pe50_algo_info *info)
 		sinfo.hardreset_ta = auth_data->support_meas_cap;
 		goto out;
 	}
-	if (data->ita_measure < data->idvchg_term &&
-	    data->is_dvchg_en[PE50_DVCHG_SLAVE]) {
-		ret = pe50_check_slave_dvchg_off(info);
+
+	if (data->is_dvchg_en[PE50_DVCHG_SLAVE]) {
+		ret = pe50_hal_get_adc(info->alg, to_chgidx(PE50_DVCHG_SLAVE),
+				       PE50_ADCCHAN_IBUS, &slave_ibus);
 		if (ret < 0) {
-			PE50_INFO("slave off fail(%d)\n", ret);
+			PE50_ERR("get slave dvchg ibus fail(%d)\n", ret);
 			goto out;
 		}
-		ret = pe50_get_ta_cap_by_supportive(info,
-						    &data->vta_measure,
-						    &data->ita_measure);
-		if (ret < 0) {
-			PE50_ERR("get ta cap fail(%d)\n", ret);
-			sinfo.hardreset_ta = auth_data->support_meas_cap;
-			goto out;
+
+		if ((data->ita_measure < data->idvchg_term)
+			|| (MIN((data->ita_measure - slave_ibus), slave_ibus) < data->idvchg_term / 2)) {
+			ret = pe50_check_slave_dvchg_off(info);
+			if (ret < 0) {
+				PE50_INFO("slave off fail(%d)\n", ret);
+				goto out;
+			}
+			ret = pe50_get_ta_cap_by_supportive(info,
+							    &data->vta_measure,
+							    &data->ita_measure);
+			if (ret < 0) {
+				PE50_ERR("get ta cap fail(%d)\n", ret);
+				sinfo.hardreset_ta = auth_data->support_meas_cap;
+				goto out;
+			}
 		}
 	}
 
