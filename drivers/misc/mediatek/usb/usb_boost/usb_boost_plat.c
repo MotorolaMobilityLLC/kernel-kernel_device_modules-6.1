@@ -27,6 +27,7 @@ struct usb_policy {
 	struct list_head           list;
 };
 
+static bool customization = false;
 static struct icc_path *usb_icc_path;
 unsigned int peak_bw;
 struct device *gdev;
@@ -35,6 +36,7 @@ struct regulator *reg;
 static int freq_hold(struct act_arg_obj *arg)
 {
 
+	int cpu_freq[3];
 	struct usb_policy *req_policy;
 	struct cpufreq_policy *policy;
 	int cpu, ret;
@@ -66,11 +68,30 @@ static int freq_hold(struct act_arg_obj *arg)
 			list_add_tail(&req_policy->list, &usb_policy_list);
 		}
 	}
-
-	list_for_each_entry(req_policy, &usb_policy_list, list) {
-		USB_BOOST_NOTICE("%s: update request cpu(%x)\n", __func__,
+        if (!customization) {
+		list_for_each_entry(req_policy, &usb_policy_list, list) {
+			USB_BOOST_NOTICE("%s: update request cpu(%x)\n", __func__,
 			req_policy->policy->cpu);
-		freq_qos_update_request(&req_policy->qos_req, req_policy->policy->max);
+			freq_qos_update_request(&req_policy->qos_req, req_policy->policy->max);
+		}
+	} else {
+		device_property_read_u32(gdev, "small-core-f", &(cpu_freq[0]));
+		device_property_read_u32(gdev, "middle-core-f", &(cpu_freq[1]));
+		device_property_read_u32(gdev, "big-core-f", &(cpu_freq[2]));
+
+		list_for_each_entry(req_policy, &usb_policy_list, list) {
+			USB_BOOST_NOTICE("%s: update request cpu(%x)\n", __func__,
+					req_policy->policy->cpu);
+			if (req_policy->policy->cpu == 0)
+				freq_qos_update_request(&req_policy->qos_req,
+					(cpu_freq[0] > 0) ? cpu_freq[0] : 1000000);
+			if (req_policy->policy->cpu == 4)
+				freq_qos_update_request(&req_policy->qos_req,
+					(cpu_freq[1] > 0) ? cpu_freq[1] : 1600000);
+			if (req_policy->policy->cpu == 7)
+				freq_qos_update_request(&req_policy->qos_req,
+					(cpu_freq[2] > 0) ? cpu_freq[2] : 1600000);
+		}
 	}
 
 	return 0;
@@ -211,6 +232,7 @@ static int usb_boost_probe(struct platform_device *pdev)
 
 	cpu_latency_qos_add_request(&pm_qos_req, PM_QOS_DEFAULT_VALUE);
 
+	customization = of_property_read_bool(node, "customization-boost");
 	usb_icc_path = of_icc_get(&pdev->dev, "icc-bw");
 	if (!usb_icc_path)
 		USB_BOOST_NOTICE("%s: can't get icc path\n", __func__);

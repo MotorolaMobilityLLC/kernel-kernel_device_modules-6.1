@@ -329,6 +329,13 @@
         mediatek,rev6-host = <0x2>;
 };
 
+&usb_boost{
+        customization-boost;
+        small-core-f = <1250000>;
+        middle-core-f = <1600000>;
+        big-core-f = <1600000>;
+};
+
 /*vol+/- keys swap*/
 &mt6363keys {
 	home {
