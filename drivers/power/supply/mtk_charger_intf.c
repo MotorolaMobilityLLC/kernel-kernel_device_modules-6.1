@@ -299,7 +299,7 @@ bool is_charger_exist(struct mtk_charger *info)
 		ret = prop.intval;
 	}
 
-	if (ret <= 0) {
+	if (ret <= 0 && (info->fast_charging_indicator & WLC_ID)) {
 		wl_psy = power_supply_get_by_name("wireless");
 		if (wl_psy == NULL || IS_ERR(wl_psy)) {
 			chr_err("%s Couldn't get wl_psy\n", __func__);
