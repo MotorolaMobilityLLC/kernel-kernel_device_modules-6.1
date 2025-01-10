@@ -48,8 +48,15 @@
 	};
 };
 
+&i2c3 {
+	wt6670f@35 {
+		status = "okay";
+	};
+};
+
 &mt6375_chg {
 	mmi,otp-mos-regulator-name = "mt6369_mos_con1";
+	mmi,hvdcp-support;
 };
 
 &stk501xx {
