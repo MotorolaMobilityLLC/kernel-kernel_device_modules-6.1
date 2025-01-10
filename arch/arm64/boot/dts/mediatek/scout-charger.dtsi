@@ -482,7 +482,7 @@
 	allow_not_check_ta_status;
 	vbat-threshold = <4150>;
 	min-charger-voltage = <4600000>;
-	mmi_therm_cur_thres = <500>;
+	mmi_therm_cur_thres = <1000>;
 	mmi_therm_vol_thres = <80>;
 	mmi_therm_step = <3>;
 	mmi_max_ibat = <12000>;
@@ -523,7 +523,7 @@
 	ita-cap-min = <1000>;
 	vbat-threshold = <4150>;
 	min-charger-voltage = <4600000>;
-	mmi_therm_cur_thres = <500>;
+	mmi_therm_cur_thres = <1000>;
 	mmi_therm_vol_thres = <80>;
 	mmi_therm_step = <3>;
 	mmi_max_ibat = <6000>;
