@@ -105,7 +105,7 @@
 	dcp15w-time-step = <300>; //ms
 	dcp15w-time-plug = <800>; //ms
 
-	mmi,hvdcp-support;
+	/*mmi,hvdcp-support;*/
 };
 
 &lk_charger {
