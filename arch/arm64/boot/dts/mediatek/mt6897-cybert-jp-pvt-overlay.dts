@@ -1,0 +1,137 @@
+/* Copyright (c) 2023, Motorola Mobility Inc. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
+/dts-v1/;
+/plugin/;
+
+#include "mediatek/mt6897-cybert-common-overlay.dtsi"
+
+#define CYBERT_JP_RADIO 3
+
+/* Board match root node */
+/ {
+	fragment@model {
+		target-path = "/";
+		__overlay__ {
+			mot,model = "cybert";
+			mot,board-id = <(CYBERT_JP_RADIO << 8 | 0x43) 0xC000>;
+		};
+	};
+};
+
+&moto_chg_tcmd {
+        mmi,batt-ids-map = "1", "ATLRE50NVT";
+};
+
+&pe5 {
+	ita-level-dual = <6200 3000 2000 1500>;//125w
+	mmi_max_ibat = <23000>;
+};
+
+&charger {
+	mmi,pd-pmax-mw = <125000>;//125w
+        mmi,mmi-temp-zones = <0 4200 1000 0>,
+                                <10 4530 7300 7300>,
+                                <15 4530 14700 14700>,
+                                <45 4080 23000 20000>,
+                                <45 4140 20000 17100>,
+                                <45 4350 17100 14700>,
+                                <45 4450 14700 9800>,
+                                <45 4560 9800 9800>,
+                                <60 4200 14700 0>;
+        mmi,mmi-ffc-zones = <0 4200 243>,
+                                <10 4530 243>,
+                                <15 4530 243>,
+                                <25 4560 3620>,
+                                <35 4560 3900>,
+                                <45 4560 6120>,
+                                <60 4200 243>;
+        mmi,mmi-normal-zones = <0 4200 243>,
+                                <10 4530 243>,
+                                <15 4530 243>,
+                                <25 4530 243>,
+                                <35 4530 243>,
+                                <45 4530 487>,
+                                <60 4200 243>;
+};
+
+&charger_cooler {
+        mmi,thermal-mitigation = <(-1) 22000000 20000000 16000000 14000000
+                                12000000 10000000 8000000 6000000 5000000
+                                4000000 3000000 2000000 1000000 500000>;
+};
+
+&charger {
+	/*typec_otp*/
+	mmi,typecotp-charger;
+};
+
+&spmi {
+	second_pmic@5 {
+		regulators {
+			mt6368_mos_con1: mos-con1 {
+				regulator-name = "mt6368_mos_con1";
+			};
+		};
+	};
+};
+
+&mt6375_chg {
+	mmi,otp-mos-regulator-name = "mt6368_mos_con1";
+};
+
+&mt6375_typec {
+	mmi,en-moto-typec-otp;
+};
+
+&thermal_zones {
+	conn_ntc: conn_ntc {
+		polling-delay = <0>; /* milliseconds */
+		polling-delay-passive = <0>; /* milliseconds */
+		thermal-sensors = <&mt6375_thermistor>;
+
+		trips {
+			conn_ntc_crit: conn-ntc-crit {
+				temperature = <119000>;
+				hysteresis = <2000>;
+				type = "passive";
+			};
+		};
+	};
+};
+
+&low_battery_throttling {
+        thd-volts-l = <
+                3099 2863 2797
+                3301 3044 2950
+                3947 3518 3355>;
+        thd-volts-h = <
+                3199 3099 2863
+                3401 3301 3044
+                4047 3947 3518>;
+        lvsys-thd-volt-l = <2797>;
+        lvsys-thd-volt-h = <2863>;
+};
+
+&wls_cps4041_int_default {
+    wls_det_int {
+        pinmux = <PINMUX_GPIO82__FUNC_GPIO82>;
+    };
+};
+
+&cps_wls_charger {
+    cps_det_int = <&pio 82 0x0>;
+};
+
+#include <cybert_evb/cust.dtsi>
+#include "mediatek/cust_cybert_camera_v4l2_flash_compatible.dtsi"
+/*End of this file, DO NOT ADD ANYTHING HERE*/

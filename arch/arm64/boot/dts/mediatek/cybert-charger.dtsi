@@ -246,7 +246,7 @@
         config-otg-iout = <1800000>;
      };*/
 
-	cps_wls_charger@38 {
+	cps_wls_charger:cps_wls_charger@38 {
                 compatible = "cps,wls-charger-cps4038";
                 wireless-fw-name = "cps4038.bin";
                 enable_stop_epp = <1>;
