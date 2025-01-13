@@ -7222,7 +7222,10 @@ static int psy_charger_get_property(struct power_supply *psy,
 			info->chg_data[idx].thermal_input_current_limit;
 		break;
 	case POWER_SUPPLY_PROP_VOLTAGE_BOOT:
-		val->intval = get_charger_zcv(info, chg);
+		if (!(IS_ERR_OR_NULL(chg) ||
+				IS_ERR_OR_NULL(chg->ops) ||
+				IS_ERR_OR_NULL(chg->ops->get_zcv)))
+			val->intval = get_charger_zcv(info, chg);
 		break;
 	case POWER_SUPPLY_PROP_USB_TYPE:
 		switch (info->pd_type) {
