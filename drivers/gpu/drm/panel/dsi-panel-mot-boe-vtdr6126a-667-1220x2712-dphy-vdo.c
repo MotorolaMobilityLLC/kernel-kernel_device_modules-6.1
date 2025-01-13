@@ -268,13 +268,12 @@ static void lcm_panel_init(struct lcm *ctx)
 	lcm_dcs_write_seq_static(ctx, 0xFF, 0x5A, 0x80);
 	lcm_dcs_write_seq_static(ctx, 0x65, 0x25);
 	lcm_dcs_write_seq_static(ctx, 0xfd, 0x01);
-	lcm_dcs_write_seq_static(ctx, 0x65, 0x0d);
-	lcm_dcs_write_seq_static(ctx, 0xf9, 0x1c);
+	lcm_dcs_write_seq_static(ctx, 0xf9, 0x10);
+	lcm_dcs_write_seq_static(ctx, 0x65, 0x0A);
+	lcm_dcs_write_seq_static(ctx, 0xf9, 0x1e);
 
 	lcm_dcs_write_seq_static(ctx, 0xf0, 0xaa, 0x00);
 	lcm_dcs_write_seq_static(ctx, 0xff, 0x5a, 0x00);
-
-
 
 	lcm_dcs_write_seq_static(ctx, 0x11);
 	usleep_range(120 * 1000, 121 * 1000);
@@ -611,6 +610,7 @@ static struct mtk_panel_params ext_params_60hz = {
 		.para_list[0] = 0x9C,
 		.para_list_aod[0] = 0xDC,
 		.esd_check_aod_enable = 1,
+		.esd_read_use_hs = 1,
 	},
 	.lcm_color_mode = MTK_DRM_COLOR_MODE_DISPLAY_P3,
 	.physical_width_um = 69540,
@@ -696,6 +696,7 @@ static struct mtk_panel_params ext_params_90hz = {
 		.para_list[0] = 0x9C,
 		.para_list_aod[0] = 0xDC,
 		.esd_check_aod_enable = 1,
+		.esd_read_use_hs = 1,
 	},
 	.lcm_color_mode = MTK_DRM_COLOR_MODE_DISPLAY_P3,
 	.physical_width_um = 69540,
@@ -780,6 +781,7 @@ static struct mtk_panel_params ext_params_120hz = {
 		.para_list[0] = 0x9C,
 		.para_list_aod[0] = 0xDC,
 		.esd_check_aod_enable = 1,
+		.esd_read_use_hs = 1,
 	},
 	.lcm_color_mode = MTK_DRM_COLOR_MODE_DISPLAY_P3,
 	.physical_width_um = 69540,
