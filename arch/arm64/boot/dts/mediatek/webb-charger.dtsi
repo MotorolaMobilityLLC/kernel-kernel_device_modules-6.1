@@ -1,0 +1,92 @@
+/*
+ * Copyright (c) 2021 MediaTek Inc.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 as
+ * published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
+&charger {
+	mmi,mmi-normal-zones = <0 4200 160>,
+			<10 4530 160>,
+			<15 4530 160>,
+			<25 4530 160>,
+			<35 4530 320>,
+			<45 4530 800>,
+			<60 4200 160>;
+	mmi,mmi-temp-zones = <0 4200 640 0>,
+			<10 4250 2560 1600>,
+			<15 0 2560 2560>,
+			<45 4150 4200 3840>,
+			<45 4300 3840 3200>,
+			<45 4400 3200 2560>,
+			<60 4200 2560 0>;
+	mmi,mmi-ffc-zones = <0 4200 160>,
+			<10 4530 160>,
+			<15 4530 160>,
+			<25 4560 501>,
+			<35 4560 779>,
+			<45 4560 1099>,
+			<60 4200 160>;
+
+	mmi,main-batt-psy = "main_battery";
+	mmi,mmi-normal-zones-main = <0 4200 160>,
+			<10 4530 160>,
+			<15 4530 160>,
+			<25 4530 160>,
+			<35 4530 320>,
+			<45 4530 800>,
+			<60 4200 160>;
+	mmi,mmi-temp-zones-main = <0 4200 640 0>,
+			<10 4250 2560 1600>,
+			<15 0 2560 2560>,
+			<45 4150 4200 3840>,
+			<45 4300 3840 3200>,
+			<45 4400 3200 2560>,
+			<60 4200 2560 0>;
+	mmi,mmi-ffc-zones-main = <0 4200 160>,
+			<10 4530 160>,
+			<15 4530 160>,
+			<25 4560 501>,
+			<35 4560 779>,
+			<45 4560 1099>,
+			<60 4200 160>;
+
+	mmi,flip-batt-psy = "flip_battery";
+	mmi,mmi-normal-zones-flip = <0 4200 55>,
+			<10 4530 55>,
+			<15 4530 55>,
+			<25 4530 55>,
+			<35 4530 111>,
+			<45 4530 276>,
+			<60 4200 55>;
+	mmi,mmi-temp-zones-flip = <0 4200 221 0>,
+			<10 4250 884 553>,
+			<15 0 884 884>,
+			<45 4150 1350 1236>,
+			<45 4300 1236 1105>,
+			<45 4400 1105 884>,
+			<60 4200 884 0>;
+	mmi,mmi-ffc-zones-flip = <0 4200 55>,
+			<10 4530 55>,
+			<15 4530 55>,
+			<25 4560 204>,
+			<35 4560 319>,
+			<45 4560 520>,
+			<60 4200 55>;
+};
+
+&pe5 {
+	vbat-cv = <4560>;
+};
+
+&mmi_pehv {
+	vbat-cv = <4560>;
+};
+
+
