@@ -23,7 +23,6 @@
 #include <linux/of_graph.h>
 #include <linux/platform_device.h>
 
-#define DIC_COMMAND_MODE_AOD
 
 #if 0
 #define AOD_AREA_IZE 1080
@@ -238,7 +237,23 @@ static void lcm_panel_init(struct lcm *ctx)
 	lcm_dcs_write_seq_static(ctx, 0x91, 0xAB, 0x28, 0x00, 0x0C, 0xC2, 0x00, 0x02, 0x32, 0x01, 0x31, 0x00, 0x08, 0x08, 0xBB, 0x07, 0x7B, 0x10, 0xF0);
 
 	//DFC_MODE_SEL[2:0]=0,FCON[2:0]=0
-	lcm_dcs_write_seq_static(ctx, 0x2F, 0x00);
+	pr_info("%s current_fps:%d\n", __func__, atomic_read(&ctx->current_fps));
+	switch (atomic_read(&ctx->current_fps)) {
+		case 120:
+			lcm_dcs_write_seq_static(ctx, 0x2F, 0x00);
+			break;
+		case 90:
+			lcm_dcs_write_seq_static(ctx, 0x2F, 0x01);
+			break;
+		case 60:
+			lcm_dcs_write_seq_static(ctx, 0x2F, 0x02);
+			break;
+		default:
+			lcm_dcs_write_seq_static(ctx, 0x2F, 0x00);
+			pr_info("%s current_fps :%d, set default 120\n", __func__,atomic_read(&ctx->current_fps));
+			atomic_set(&ctx->current_fps, 120);
+			break;
+	}
 	lcm_dcs_write_seq_static(ctx, 0x26, 0x00);
 
 	if (ctx->version < 3)
@@ -289,7 +304,6 @@ static void lcm_panel_init(struct lcm *ctx)
 	atomic_set(&ctx->dc_mode, 0);
 	atomic_set(&ctx->apl_mode, 0);
 	atomic_set(&ctx->current_bl, 0);
-	atomic_set(&ctx->current_fps, 120);
 	//atomic_set(&ctx->current_aod_y_start, AOD_Y_START_MIN);
 
 	pr_info("%s-\n", __func__);
@@ -403,7 +417,6 @@ static int lcm_prepare(struct drm_panel *panel)
 	atomic_set(&ctx->dc_mode, 0);
 	atomic_set(&ctx->apl_mode, 0);
 	atomic_set(&ctx->current_bl, 0);
-	atomic_set(&ctx->current_fps, 120);
 	atomic_set(&ctx->pcd_mode, 0);
 	atomic_set(&ctx->doze_enable, 0);
 	//atomic_set(&ctx->current_aod_y_start, AOD_Y_START_MIN);
@@ -998,7 +1011,6 @@ static int mtk_panel_ext_param_get(struct drm_panel *panel,
 {
 	int ret = 0;
 	struct drm_display_mode *m = get_mode_by_id(connector, mode);
-	struct lcm *ctx = panel_to_lcm(panel);
 
 	if (drm_mode_vrefresh(m) == 120)
 		*ext_param = &ext_params_120hz;
@@ -1010,10 +1022,6 @@ static int mtk_panel_ext_param_get(struct drm_panel *panel,
 		*ext_param = &ext_params_48hz;*/
 	else
 		ret = 1;
-
-	if (!ret)
-		atomic_set(&ctx->current_fps, drm_mode_vrefresh(m));
-		
 
 	return ret;
 }
@@ -1069,11 +1077,10 @@ static void set_lhbm_alpha(struct lcm *ctx, unsigned int bl_level, struct mtk_pa
 	pr_info("%s: backlight %d alpha %d(0x%x, 0x%x)\n", __func__, bl_level, alpha, pTable->para_list[42], pTable->para_list[43]);
 }
 
-static int panel_lhbm_set_cmdq(void *dsi, dcs_grp_write_gce cb, void *handle, uint32_t on, uint32_t bl_level, uint32_t fps)
+static int panel_lhbm_set_cmdq(struct lcm *ctx, void *dsi, dcs_grp_write_gce cb, void *handle, uint32_t on, uint32_t bl_level, uint32_t fps)
 {
 	struct mtk_panel_para_table *pTable = NULL;
 	unsigned int para_count = 0;
-	struct lcm *ctx = g_ctx;
 
 	if (on)
 	{
@@ -1121,19 +1128,19 @@ static int panel_hbm_set_cmdq(struct lcm *ctx, void *dsi, dcs_grp_write_gce cb, 
 	{
 		case 0:
 			if (ctx->lhbm_en){
-				panel_lhbm_set_cmdq(dsi, cb, handle, 0, level, fps);
+				panel_lhbm_set_cmdq(ctx, dsi, cb, handle, 0, level, fps);
 			}
 			break;
 		case 1:
 			if (ctx->lhbm_en) {
-				panel_lhbm_set_cmdq(dsi, cb, handle, 0, level, fps);
+				panel_lhbm_set_cmdq(ctx, dsi, cb, handle, 0, level, fps);
 			} else {
 				cb(dsi, handle, &hbm_on_table, 1);
 			}
 			break;
 		case 2:
 			if (ctx->lhbm_en){
-				panel_lhbm_set_cmdq(dsi, cb, handle, 1, level, fps);
+				panel_lhbm_set_cmdq(ctx, dsi, cb, handle, 1, level, fps);
 			} else {
 				cb(dsi, handle, &hbm_on_table, 1);
 			}
@@ -1276,7 +1283,7 @@ static int panel_ext_init_power(struct drm_panel *panel)
 	int ret;
 	struct lcm *ctx = panel_to_lcm(panel);
 
-	ctx->reset_gpio = devm_gpiod_get(ctx->dev, "reset", GPIOD_OUT_HIGH);
+	ctx->reset_gpio = devm_gpiod_get(ctx->dev, "reset", GPIOD_OUT_LOW);
 	gpiod_set_value(ctx->reset_gpio, 0);
 	devm_gpiod_put(ctx->dev, ctx->reset_gpio);
 
@@ -1292,7 +1299,7 @@ static int panel_ext_powerdown(struct drm_panel *panel)
 	if (ctx->prepared)
 	    return 0;
 
-	ctx->reset_gpio = devm_gpiod_get(ctx->dev, "reset", GPIOD_OUT_HIGH);
+	ctx->reset_gpio = devm_gpiod_get(ctx->dev, "reset", GPIOD_OUT_LOW);
 	gpiod_set_value(ctx->reset_gpio, 0);
 	devm_gpiod_put(ctx->dev, ctx->reset_gpio);
 
@@ -1391,7 +1398,6 @@ static int panel_doze_disable(struct drm_panel *panel, void *dsi, dcs_write_gce 
 	return 0;
 }
 
-#if defined(DIC_COMMAND_MODE_AOD)
 static unsigned long panel_doze_get_mode_flags(struct drm_panel *panel,
 	int doze_en)
 {
@@ -1410,7 +1416,6 @@ static unsigned long panel_doze_get_mode_flags(struct drm_panel *panel,
 	pr_info("%s: mode_flags %ld\n", __func__, mode_flags);
 	return mode_flags;
 }
-#endif
 
 static struct mtk_panel_funcs ext_funcs = {
 	.reset = panel_ext_reset,
@@ -1424,9 +1429,7 @@ static struct mtk_panel_funcs ext_funcs = {
 	.panel_feature_set = panel_feature_set,
 	.panel_feature_get = panel_feature_get,
 	.scaling_mode_mapping = mtk_scaling_mode_mapping,
-#if defined(DIC_COMMAND_MODE_AOD)
 	.doze_get_mode_flags = panel_doze_get_mode_flags,
-#endif
 	.doze_disable = panel_doze_disable,
 	.doze_enable = panel_doze_enable,
 	//.doze_area = panel_doze_area,

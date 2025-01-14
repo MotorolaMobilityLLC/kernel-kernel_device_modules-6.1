@@ -23,7 +23,6 @@
 #include <linux/of_graph.h>
 #include <linux/platform_device.h>
 
-#define DIC_COMMAND_MODE_AOD
 
 #if 0
 #define AOD_AREA_IZE 1416
@@ -75,7 +74,7 @@ struct lcm {
 	atomic_t current_fps;
 	atomic_t pcd_mode;
 	atomic_t doze_enable;
-	//atomic_t current_aod_y_start;
+	atomic_t current_aod_y_start;
 	enum panel_version version;
 };
 
@@ -176,8 +175,23 @@ static void lcm_panel_init(struct lcm *ctx)
 	lcm_dcs_write_seq_static(ctx, 0x59, 0x09);
 //5Eh 0x00 BC mode 0x01 DC mode
 	lcm_dcs_write_seq_static(ctx, 0x5e, 0x00);
-//120hz 6c=00 ,90hz 6c=01 ,60hz 6c=02 ,48hz 6c=03
-	lcm_dcs_write_seq_static(ctx, 0x6c, 0x00);
+	pr_info("%s current_fps:%d\n", __func__, atomic_read(&ctx->current_fps));
+	switch (atomic_read(&ctx->current_fps)) {
+		case 120:
+			lcm_dcs_write_seq_static(ctx, 0x6C, 0x00);
+			break;
+		case 90:
+			lcm_dcs_write_seq_static(ctx, 0x6C, 0x01);
+			break;
+		case 60:
+			lcm_dcs_write_seq_static(ctx, 0x6C, 0x02);
+			break;
+		default:
+			lcm_dcs_write_seq_static(ctx, 0x6C, 0x00);
+			pr_info("%s current_fps :%d, set default 120\n", __func__,atomic_read(&ctx->current_fps));
+			atomic_set(&ctx->current_fps, 120);
+			break;
+	}
 //AOD1 5nit 6D=00 ,AOD2 60nit 6D=01 ,AOD3 160nit 6D=02
 	lcm_dcs_write_seq_static(ctx, 0x6d, 0x00);
 //CMD mode 6F=02, Video mode 6F=01
@@ -270,7 +284,6 @@ static void lcm_panel_init(struct lcm *ctx)
 	atomic_set(&ctx->dc_mode, 0);
 	atomic_set(&ctx->apl_mode, 0);
 	atomic_set(&ctx->current_bl, 0);
-	atomic_set(&ctx->current_fps, 120);
 
 	pr_info("%s-\n", __func__);
 }
@@ -384,7 +397,6 @@ static int lcm_prepare(struct drm_panel *panel)
 	atomic_set(&ctx->dc_mode, 0);
 	atomic_set(&ctx->apl_mode, 0);
 	atomic_set(&ctx->current_bl, 0);
-	atomic_set(&ctx->current_fps, 120);
 	atomic_set(&ctx->pcd_mode, 0);
 	atomic_set(&ctx->doze_enable, 0);
 
@@ -963,7 +975,6 @@ static int mtk_panel_ext_param_get(struct drm_panel *panel,
 {
 	int ret = 0;
 	struct drm_display_mode *m = get_mode_by_id(connector, mode);
-	struct lcm *ctx = panel_to_lcm(panel);
 
 	if (drm_mode_vrefresh(m) == 120)
 		*ext_param = &ext_params_120hz;
@@ -975,9 +986,6 @@ static int mtk_panel_ext_param_get(struct drm_panel *panel,
 		*ext_param = &ext_params_48hz;*/
 	else
 		ret = 1;
-
-	if (!ret)
-		atomic_set(&ctx->current_fps, drm_mode_vrefresh(m));
 
 	return ret;
 }
@@ -1026,7 +1034,7 @@ static void set_lhbm_alpha(unsigned int bl_level)
 	pr_info("%s: backlight 0x%x, 0x%x,0x%x,0x%x,0x%x,0x%x\n", __func__, bl_level, pTable->para_list[1],pTable->para_list[2], pTable->para_list[3],pTable->para_list[4],pTable->para_list[5]);
 }
 
-static int panel_lhbm_set_cmdq(void *dsi, dcs_grp_write_gce cb, void *handle, uint32_t on, uint32_t bl_level, uint32_t fps)
+static int panel_lhbm_set_cmdq(struct lcm *ctx, void *dsi, dcs_grp_write_gce cb, void *handle, uint32_t on, uint32_t bl_level, uint32_t fps)
 {
 	struct mtk_panel_para_table *pTable = NULL;
 	unsigned int para_count = 0;
@@ -1074,19 +1082,19 @@ static int panel_hbm_set_cmdq(struct lcm *ctx, void *dsi, dcs_grp_write_gce cb, 
 	{
 		case 0:
 			if (ctx->lhbm_en){
-				panel_lhbm_set_cmdq(dsi, cb, handle, 0, level, fps);
+				panel_lhbm_set_cmdq(ctx, dsi, cb, handle, 0, level, fps);
 			}
 			break;
 		case 1:
 			if (ctx->lhbm_en) {
-				panel_lhbm_set_cmdq(dsi, cb, handle, 0, level, fps);
+				panel_lhbm_set_cmdq(ctx, dsi, cb, handle, 0, level, fps);
 			} else {
 				cb(dsi, handle, &hbm_on_table, 1);
 			}
 			break;
 		case 2:
 			if (ctx->lhbm_en){
-				panel_lhbm_set_cmdq(dsi, cb, handle, 1, level, fps);
+				panel_lhbm_set_cmdq(ctx, dsi, cb, handle, 1, level, fps);
 			} else {
 				cb(dsi, handle, &hbm_on_table, 1);
 			}
@@ -1238,7 +1246,7 @@ static int panel_doze_area(struct drm_panel *panel,
 
 		cb(dsi, handle, aod_area_cmd, ARRAY_SIZE(aod_area_cmd));
 
-		atomic_set(&ctx->current_aod_y_start, current_y_start);
+		//atomic_set(&ctx->current_aod_y_start, current_y_start);
 	} else {
 		pr_info("%s: skip update doze area because of  doze_enable = %d\n", __func__, atomic_read(&ctx->doze_enable));
 	}
@@ -1344,7 +1352,6 @@ static int panel_doze_disable(struct drm_panel *panel, void *dsi, dcs_write_gce 
 	return 0;
 }
 
-#if defined(DIC_COMMAND_MODE_AOD)
 static unsigned long panel_doze_get_mode_flags(struct drm_panel *panel,
 	int doze_en)
 {
@@ -1363,7 +1370,6 @@ static unsigned long panel_doze_get_mode_flags(struct drm_panel *panel,
 	pr_info("%s: mode_flags %ld\n", __func__, mode_flags);
 	return mode_flags;
 }
-#endif
 
 static struct mtk_panel_funcs ext_funcs = {
 	.reset = panel_ext_reset,
@@ -1377,9 +1383,7 @@ static struct mtk_panel_funcs ext_funcs = {
 	.panel_feature_set = panel_feature_set,
 	.panel_feature_get = panel_feature_get,
 	.scaling_mode_mapping = mtk_scaling_mode_mapping,
-#if defined(DIC_COMMAND_MODE_AOD)
 	.doze_get_mode_flags = panel_doze_get_mode_flags,
-#endif
 	.doze_enable_start = panel_doze_enable_start,
 	.doze_disable = panel_doze_disable,
 	.doze_enable = panel_doze_enable,
