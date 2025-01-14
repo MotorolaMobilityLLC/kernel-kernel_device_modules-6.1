@@ -5151,6 +5151,11 @@ int mtk_dsi_esd_read(struct mtk_ddp_comp *comp, void *handle, void *ptr)
 				     : DSI_GERNERIC_READ_LONG_PACKET_ID;
 		t1.Data1 = 0;
 
+		if (params->lcm_esd_check_table[i].esd_read_use_hs) {
+			t0.CONFG |= HSTX;
+			t1.CONFG |= HSTX;
+		}
+
 		mtk_dsi_read_gce(comp, handle, &t0, &t1, i, ptr);
 	}
 
