@@ -99,6 +99,30 @@
 		};
 	};
 
+	panel5@4 {
+		/delete-property/ compatible;
+		/delete-property/ pm-enable-gpios;
+		/delete-property/ reset-gpios;
+		/delete-property/ gate-ic;
+		/delete-property/ swap-from-dts;
+		/delete-property/ lane-swap-setting;
+		/delete-property/ pn-swap-setting;
+
+		compatible = "boe,vtdr6126a,eph8611,vdo,667";
+		reg = <4>;
+
+                pm-enable-gpios = <&pio 188 0>,
+                          <&pio 185 0>,
+                          <&pio 28 0>;
+                reset-gpios = <&pio 90 0>;
+		pinctrl-names = "default";
+		port {
+			panel_in4: endpoint {
+				remote-endpoint = <&dsi_out4>;
+			};
+		};
+	};
+
 	ports {
 		port {
 			dsi_out2: endpoint2 {
@@ -106,6 +130,9 @@
 			};
 			dsi_out3: endpoint3 {
 				remote-endpoint = <&panel_in3>;
+			};
+			dsi_out4: endpoint4 {
+				remote-endpoint = <&panel_in4>;
 			};
 		};
 	};
