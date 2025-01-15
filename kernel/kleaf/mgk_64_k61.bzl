@@ -947,6 +947,7 @@ def get_overlay_modules_list():
         mgk_64_k61_device_modules.append("drivers/gpu/drm/panel/dsi-panel-mot-csot-nt37706-667-1220x2712-dphy-vdo-120hz.ko")
         mgk_64_k61_device_modules.append("drivers/gpu/drm/panel/dsi-panel-mot-tianma-nt37706-667-1220x2712-dphy-vdo.ko")
         mgk_64_k61_device_modules.append("drivers/gpu/drm/panel/dsi-panel-mot-boe-vtdr6126a-667-1220x2712-dphy-vdo.ko")
+        mgk_64_k61_device_modules.append("drivers/gpu/drm/panel/dsi-panel-mot-boe-vtdr6126a-667-1220x2712-eph8611.ko")
         mgk_64_k61_device_modules.append("drivers/misc/mediatek/flashlight/v4l2/sgm37864.ko")
         mgk_64_k61_device_modules.append("drivers/misc/mediatek/lens/ois/mot_tele_dw9784/mot_tele_dw9784.ko")
         mgk_64_k61_device_modules.append("drivers/regulator/aw37004-regulator.ko")
