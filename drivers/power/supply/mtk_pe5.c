@@ -2087,8 +2087,7 @@ static int pe50_select_ita_lmt_by_r(struct pe50_algo_info *info, bool dual)
 #else
 	PE50_INFO("data->mmi_hardreset_cnt = %d, max cnt = %d\n",
 		data->mmi_hardreset_cnt, data->mmi_hardreset_max_cnt);
-	if ((data->mmi_hardreset_cnt < data->mmi_hardreset_max_cnt)
-		&& (data->r_cable_by_swchg <= rcable_level[PE50_RCABLE_BAD2])) {
+	if (data->mmi_hardreset_cnt < data->mmi_hardreset_max_cnt) {
 		ita_lmt_by_r = ita_level[PE50_RCABLE_NORMAL];
 		goto out;
 	}
