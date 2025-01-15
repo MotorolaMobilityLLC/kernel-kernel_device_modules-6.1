@@ -512,6 +512,9 @@ static void deactivate_vip_task(struct task_struct *p, struct rq *rq)
 	struct list_head *prev = vts->vip_list.prev;
 	struct list_head *next = vts->vip_list.next;
 
+        if (vts->vip_list.next == NULL || list_empty(&vts->vip_list))
+            return;
+
 	list_del_init(&vts->vip_list);
 	if (vts->vip_prio == VVIP)
 		vrq->num_vvip_tasks -= 1;
