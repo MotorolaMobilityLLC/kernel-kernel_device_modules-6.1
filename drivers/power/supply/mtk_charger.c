@@ -6570,8 +6570,8 @@ static const struct thermal_cooling_device_ops mmi_typec_otp_tcd_ops = {
 	.set_cur_state = mmi_typec_otp_set_cur_state,
 };
 
-#define TYPEC_OTP_THRES 750
-#define TYPEC_RECOVER_THRES 650
+#define TYPEC_OTP_THRES 700
+#define TYPEC_RECOVER_THRES 600
 #define VBUS_THRES 4000
 static void mmi_check_typec_conn_temp(struct mtk_charger *info)
 {
