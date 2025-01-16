@@ -30,28 +30,9 @@
 	mmi,support_CID;
 };
 
-&charger {
-	/*typec_otp*/
-	mmi,typecotp-charger;
-};
-
-&spmi {
-	second_pmic@5 {
-		regulators {
-			mt6369_mos_con1: mos-con1 {
-				regulator-name = "mt6369_mos_con1";
-			};
-		};
-	};
-};
-
 &haptic_nv {
 		pinctrl-names = "default";
 		pinctrl-0 = <&i2c12_mode_default>;
-};
-
-&mt6375_chg {
-	mmi,otp-mos-regulator-name = "mt6369_mos_con1";
 };
 
 &stk501xx {
