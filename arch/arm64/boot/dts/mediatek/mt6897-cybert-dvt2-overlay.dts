@@ -16,15 +16,13 @@
 #include "mediatek/mt6897-cybert-common-overlay.dtsi"
 #include "cybert-sar-dvt2.dtsi"
 
-#define CYBERT_PRC_RADIO 2
-
 /* Board match root node */
 / {
 	fragment@model {
 		target-path = "/";
 		__overlay__ {
 			mot,model = "cybert";
-			mot,board-id = <(CYBERT_PRC_RADIO << 8 | 0x43) 0xC000>;
+			mot,board-id = <0x43 0xB200>;
 		};
 	};
 };
@@ -33,16 +31,6 @@
        mmi,support_CID;
 };
 
-&wls_cps4041_int_default {
-    wls_det_int {
-        pinmux = <PINMUX_GPIO82__FUNC_GPIO82>;
-    };
-};
-
-&cps_wls_charger {
-    cps_det_int = <&pio 82 0x0>;
-};
-
 #include <cybert_evb/cust.dtsi>
-#include "mediatek/cust_cybert_camera_v4l2.dtsi"
+#include "mediatek/cust_cybert_camera_v4l2_flash_compatible.dtsi"
 /*End of this file, DO NOT ADD ANYTHING HERE*/
