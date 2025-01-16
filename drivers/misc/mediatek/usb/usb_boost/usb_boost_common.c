@@ -861,7 +861,6 @@ static void boost_gadget_queue(void *unused, struct mtu3_request *mreq)
 		case USB_TYPE_ACCESSORY:
 			//if (req->length >= 8192)
 			usb_boost();
-			pr_info("USB_TYPE_MTP/USB_TYPE_ACCESSORY boost!");
 			break;
 		case USB_TYPE_RNDIS:
 			if (mep->type == USB_ENDPOINT_XFER_BULK)
