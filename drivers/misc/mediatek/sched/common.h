@@ -144,6 +144,13 @@ struct mig_task_struct {
 	unsigned long pending_rec;
 };
 
+/* moto stats*/
+struct moto_stats_task_struct {
+	unsigned long	runnable_start_ns;
+	unsigned long	stats_private_ts;
+	unsigned long	direct_reclaim_ts;
+};
+
 struct mtk_task {
 	struct vip_task_struct	vip_task;
 	struct soft_affinity_task sa_task;
@@ -157,6 +164,7 @@ struct mtk_task {
 	struct flt_task_struct flt_task;
 	struct cpuqos_task_struct cpuqos_task;
 	struct mig_task_struct mig_task;
+	struct moto_stats_task_struct moto_stats_task;
 };
 
 struct soft_affinity_tg {
@@ -220,6 +228,11 @@ struct util_rq {
 	unsigned long bw_dl_util;
 	bool base;
 };
+
+static inline struct moto_stats_task_struct *get_moto_stats_task_struct(struct task_struct *p)
+{
+	return  &((struct mtk_task *)p->android_vendor_data1)->moto_stats_task;
+}
 
 #if IS_ENABLED(CONFIG_NONLINEAR_FREQ_CTL)
 extern void mtk_map_util_freq(void *data, unsigned long util, unsigned long freq,
