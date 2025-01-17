@@ -286,6 +286,11 @@
                 uirbat_pull_up_r_full = <24000>;/*24k*/
 
                 latest_fw_version = [01 02 08 52 32];
+		mmi,batt-ids-map = "ATLRE60NVT","03",
+                                   "LWNRE60SWD","02",
+                                   "ATLRE50NVT","02";
+		nfg,enable_user_upgrade_batt;
+		nfg,support_update_partial_config;
         };
 
 	sc858x_slave:sc858x-slave@6e{
