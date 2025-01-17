@@ -3151,6 +3151,7 @@ void dcp15w_exit_dwork(struct work_struct *work)
 	ddata->dcp15w.online = false;
 	ddata->dcp15w.icl_target = -1;
 	charger_dev_notify(ddata->chgdev, CHARGER_DEV_NOTIFY_INFO_SYNC);
+	power_supply_changed(ddata->psy);
 
 	pr_info("%s:dcp15w exit work time out:%lldms\n", __func__,
 			ktime_to_ms(ktime_get_boottime()));
