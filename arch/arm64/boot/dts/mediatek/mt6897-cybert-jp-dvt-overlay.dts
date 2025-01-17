@@ -111,15 +111,15 @@
 
 &low_battery_throttling {
         thd-volts-l = <
-                3099 2863 2797
-                3301 3044 2950
-                3947 3518 3355>;
+                3099 2885 2815
+                3328 3064 2966
+                3967 3533 3368>;
         thd-volts-h = <
-                3199 3099 2863
-                3401 3301 3044
-                4047 3947 3518>;
-        lvsys-thd-volt-l = <2797>;
-        lvsys-thd-volt-h = <2863>;
+                3199 3099 2885
+                3428 3328 3064
+                4067 3967 3533>;
+        lvsys-thd-volt-l = <2815>;
+        lvsys-thd-volt-h = <2885>;
 };
 
 #include <cybert_evb/cust.dtsi>
