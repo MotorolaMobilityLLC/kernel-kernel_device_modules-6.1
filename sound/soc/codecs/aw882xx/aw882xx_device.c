@@ -910,9 +910,11 @@ int aw882xx_device_start(struct aw_device *aw_dev)
 	ret = aw_dev_syspll_check(aw_dev);
 	if (ret < 0) {
 		aw_dev_reg_dump(aw_dev);
-		aw_dev_switch(aw_dev, &aw_dev->pwd_desc, true);
-		aw_dev_dbg(aw_dev->dev, "pll check failed cannot start");
-		return ret;
+		//aw_dev_switch(aw_dev, &aw_dev->pwd_desc, true);
+		//aw_dev_dbg(aw_dev->dev, "pll check failed cannot start");
+		//return ret;
+
+		aw_dev_dbg(aw_dev->dev, "pll check failed");
 	}
 
 	/*amppd on*/
@@ -922,6 +924,8 @@ int aw882xx_device_start(struct aw_device *aw_dev)
 	/*check i2s status*/
 	ret = aw_dev_sysst_check(aw_dev);
 	if (ret < 0) {
+		aw_dev_dbg(aw_dev->dev, "sysst_check failed");
+#if 0
 		aw_dev_reg_dump(aw_dev);
 		/*close tx feedback*/
 		aw_dev_i2s_enable(aw_dev, false);
@@ -932,6 +936,7 @@ int aw882xx_device_start(struct aw_device *aw_dev)
 		/*power down*/
 		aw_dev_switch(aw_dev, &aw_dev->pwd_desc, true);
 		return -EINVAL;
+#endif
 	}
 
 	/*boost type recover*/
