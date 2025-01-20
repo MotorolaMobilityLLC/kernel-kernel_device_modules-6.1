@@ -26,12 +26,8 @@
 		/delete-property/ lane-swap-setting;
 		/delete-property/ pn-swap-setting;
 
-		compatible = "csot,nt37706,vdo,667";
-		reg = <0>;
-
-                pm-enable-gpios = <&pio 188 0>,
-                          <&pio 28 0>,
-                          <&pio 185 0>;
+                compatible = "mot,dummy,vdo,60hz";
+                reg = <0>;
                 reset-gpios = <&pio 90 0>;
 		pinctrl-names = "default";
 	};
@@ -45,7 +41,7 @@
 		/delete-property/ lane-swap-setting;
 		/delete-property/ pn-swap-setting;
 
-		compatible = "tianma,nt37706,vdo,667";
+		compatible = "csot,nt37706,vdo,667";
 		reg = <1>;
 
                 pm-enable-gpios = <&pio 188 0>,
@@ -64,14 +60,15 @@
 		/delete-property/ lane-swap-setting;
 		/delete-property/ pn-swap-setting;
 
-		compatible = "boe,vtdr6126a,vdo,667";
+		compatible = "tianma,nt37706,vdo,667";
 		reg = <2>;
 
                 pm-enable-gpios = <&pio 188 0>,
-                          <&pio 185 0>,
-                          <&pio 28 0>;
+                          <&pio 28 0>,
+                          <&pio 185 0>;
                 reset-gpios = <&pio 90 0>;
 		pinctrl-names = "default";
+
 		port {
 			panel_in2: endpoint {
 				remote-endpoint = <&dsi_out2>;
@@ -88,8 +85,12 @@
 		/delete-property/ lane-swap-setting;
 		/delete-property/ pn-swap-setting;
 
-                compatible = "mot,dummy,vdo,60hz";
-                reg = <3>;
+		compatible = "boe,vtdr6126a,vdo,667";
+		reg = <3>;
+
+                pm-enable-gpios = <&pio 188 0>,
+                          <&pio 185 0>,
+                          <&pio 28 0>;
                 reset-gpios = <&pio 90 0>;
 		pinctrl-names = "default";
 		port {
