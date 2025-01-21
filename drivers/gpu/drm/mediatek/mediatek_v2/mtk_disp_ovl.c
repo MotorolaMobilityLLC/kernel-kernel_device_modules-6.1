@@ -1807,6 +1807,7 @@ static s32 *mtk_get_ovl_csc(enum mtk_ovl_colorspace in,
 	if (mtk_crtc_WCG_by_color_mode(crtc)) {
 		/* WCG by color mode */
 		unsigned int color_mode = mtk_crtc_get_color_mode(crtc);
+		struct mtk_panel_params *params = mtk_drm_get_lcm_ext_params(crtc);
 
 		if (inited == color_mode)
 			goto done;
@@ -1830,6 +1831,11 @@ static s32 *mtk_get_ovl_csc(enum mtk_ovl_colorspace in,
 		case HAL_COLOR_MODE_NATIVE:
 		default:
 			DDPDBG("WCG by color mode[%d], NATIVE mode\n", color_mode);
+			if(params->ovl_wcg_for_moto_colormode) {
+				ovl_csc[OVL_P3][OVL_SRGB] = DCI_P3_to_sRGB;
+				ovl_csc[OVL_P3][OVL_P3] = DCI_P3_to_sRGB;
+				DDPINFO("%s:WCG by color mode[%d], NATIVE mode, in[%d], out[%d]\n", __func__, color_mode, in, out);
+			}
 			/* default: HAL_COLOR_MODE_NATIVE */
 			/* csc do nothing */
 			break;

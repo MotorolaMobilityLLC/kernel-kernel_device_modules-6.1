@@ -613,6 +613,8 @@ struct mtk_panel_params {
 	bool lcm_support_ce;
 	int panel_pcd_reg;
 	int panel_pcd_reg_mask;
+
+	int ovl_wcg_for_moto_colormode;
 };
 
 struct mtk_panel_ext {
