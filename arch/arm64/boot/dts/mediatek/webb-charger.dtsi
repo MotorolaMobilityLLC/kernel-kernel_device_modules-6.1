@@ -11,6 +11,18 @@
  * GNU General Public License for more details.
  */
 
+&cw2217_flip {
+	df-serialnum = "SB18E56671";
+	#include "bat_setting/CW_WEBB-atl-1160mah.dtsi"
+	#include "bat_setting/CW_WEBB-CosMX-1160mah.dtsi"
+};
+
+&cw2217_master {
+	df-serialnum = "SB18E56671";
+	#include "bat_setting/CW_WEBB-atl-3340mah.dtsi"
+	#include "bat_setting/CW_WEBB-CosMX-3340mah.dtsi"
+};
+
 &charger {
 	mmi,mmi-normal-zones = <0 4200 160>,
 			<10 4530 160>,

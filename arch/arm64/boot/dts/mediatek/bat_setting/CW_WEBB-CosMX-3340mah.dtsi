@@ -1,0 +1,26 @@
+/*
+ * Copyright (C) 2025 Motorola Inc.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 as
+ * published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See http://www.gnu.org/licenses/gpl-2.0.html for more details.
+ */
+webb-cosmx-3340mah {
+	serialnum = "SB18E64743";
+	fcc_design = <3340>;
+	config_profile_info = [ 46 00 00 00 00 00 00 00
+				B3 BE C1 C2 AF A7 D0 B9
+				A4 E5 CA 9D 8D 6F 5C 50
+				49 48 45 87 69 E3 8E FF
+				D3 D1 CE D2 D8 DB E2 DA
+				D0 D7 CA C4 C5 C4 BC B6
+				CE D0 D4 CD EB FF FF FD
+				20 00 AB 10 00 A2 AF 00
+				00 00 64 31 B1 9B 00 00
+				00 00 00 00 00 00 00 87];
+};
