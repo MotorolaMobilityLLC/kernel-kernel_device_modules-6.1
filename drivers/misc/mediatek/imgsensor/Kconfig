@@ -65,4 +65,10 @@ config MTK_EEPROM_PROJECT
 	  This config is set as sensor eeprom name
 	  which project sensor used for.
 
+
+config MOTO_IMX896_SHDR
+	bool "moto imx896 shdr feature"
+	help
+	  This is for moto shdr feature.
+
 source "$(KCONFIG_EXT_PREFIX)drivers/misc/mediatek/imgsensor/src/Kconfig"
