@@ -867,8 +867,6 @@ def get_overlay_modules_list():
         mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/moto_sched:moto_sched")
         mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/moto_binder:moto_binder")
         mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/moto_mmap_fault:moto_mmap_fault")
-        mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/moto_mm/stat/mm:moto_mm_stat_mm")
-        mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/moto_mm/vh/kernel/metrics:moto_metrics")
         mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/moto_f_usbnet:moto_f_usbnet")
         mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/moto_netopt/con_dfpar:con_dfpar")
 
@@ -1200,6 +1198,8 @@ def get_overlay_modules_list():
         mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/input/misc/ets_fod_mmi_u:ets_fod_mmi_u")
         mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/mm_iosched:mm_iosched")
         mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/moto_netopt/skb_latency:skb_latency")
+        mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/moto_mm/stat/mm:moto_mm_stat_mm")
+        mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/moto_mm/vh/kernel/metrics:moto_metrics")
 
         mgk_64_k61_device_modules.append("drivers/gpu/drm/panel/dsi-panel-mot-dummy-vdo-60hz.ko")
         mgk_64_k61_device_modules.append("drivers/gpu/drm/panel/dsi-panel-mot-dummy-cmd-60hz.ko")
