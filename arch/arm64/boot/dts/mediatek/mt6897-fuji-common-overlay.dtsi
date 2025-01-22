@@ -303,6 +303,8 @@
 
 /*vol+/- keys swap*/
 &mt6363keys {
+	mediatek,long-press-mode = <2>;
+	power-off-time-sec = <0>;
 	home {
 		linux,keycodes = <114>;
 	};
