@@ -69,4 +69,11 @@ config UWB_USES_MTK_RESERVED_CLOCK
 	default n
 	help
 	  Use mtk reserved clock PMIC_RFCK_BUF2B for qorvo uwb
+
+config CAPSENSE_HALL_CAL
+	tristate "Moto capsense cal about hall"
+	default n
+	help
+	  This feature will enable hal cal in sarsensor
+
 endmenu
