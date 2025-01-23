@@ -3693,6 +3693,13 @@ static void mtk_output_dsi_enable(struct mtk_dsi *dsi,
 			}
 		}
 
+		if (priv->data && (priv->data->mmsys_id == MMSYS_MT6897) &&
+			!(dsi->mode_flags & MIPI_DSI_MODE_LPM)) {
+			mtk_dsi_clk_hs_mode(dsi, 1);
+			if (dsi->slave_dsi)
+				mtk_dsi_clk_hs_mode(dsi->slave_dsi, 1);
+		}
+
 		if (new_doze_state && !dsi->doze_enabled) {
 			if (ext && ext->funcs &&
 				ext->funcs->doze_enable_start)
@@ -4986,6 +4993,7 @@ int mtk_dsi_read_gce(struct mtk_ddp_comp *comp, void *handle,
 	struct mtk_dsi *dsi = container_of(comp, struct mtk_dsi, ddp_comp);
 	struct mtk_drm_crtc *mtk_crtc = (struct mtk_drm_crtc *)ptr;
 	struct mtk_panel_params *params = NULL;
+	struct mtk_drm_private *priv = NULL;
 	int index = 0;
 
 	if (mtk_crtc == NULL) {
@@ -4995,6 +5003,9 @@ int mtk_dsi_read_gce(struct mtk_ddp_comp *comp, void *handle,
 
 	if (dsi->ext && dsi->ext->params)
 		params = dsi->ext->params;
+
+	if (mtk_crtc->base.dev)
+		priv = mtk_crtc->base.dev->dev_private;
 
 	mtk_dsi_power_keep_gce(dsi, handle, true);
 
@@ -5011,12 +5022,27 @@ int mtk_dsi_read_gce(struct mtk_ddp_comp *comp, void *handle,
 		mtk_ddp_write_mask(comp, 0, DSI_TXRX_CTRL, HSTX_CKLP_EN, handle);
 	}
 
-	cmdq_pkt_write(handle, comp->cmdq_base, comp->regs_pa + dsi->driver_data->reg_cmdq0_ofs,
-		AS_UINT32(t0), ~0);
-	cmdq_pkt_write(handle, comp->cmdq_base, comp->regs_pa + dsi->driver_data->reg_cmdq1_ofs,
-		AS_UINT32(t1), ~0);
-	cmdq_pkt_write(handle, comp->cmdq_base, comp->regs_pa + DSI_CMDQ_SIZE,
-		0x2, CMDQ_SIZE);
+	if (priv && priv->data && (priv->data->mmsys_id == MMSYS_MT6897) &&
+			!(dsi->mode_flags & MIPI_DSI_MODE_LPM)) {
+		/* disable eotp */
+		mtk_ddp_write_mask(comp, DIS_EOT, DSI_TXRX_CTRL, DIS_EOT, handle);
+
+		cmdq_pkt_write(handle, comp->cmdq_base, comp->regs_pa + dsi->driver_data->reg_cmdq0_ofs,
+			AS_UINT32(t0), ~0);
+		cmdq_pkt_write(handle, comp->cmdq_base, comp->regs_pa + dsi->driver_data->reg_cmdq0_ofs + 4 * 1,
+			AS_UINT32(t0), ~0);
+		cmdq_pkt_write(handle, comp->cmdq_base, comp->regs_pa + dsi->driver_data->reg_cmdq0_ofs + 4 * 2,
+			AS_UINT32(t1), ~0);
+		cmdq_pkt_write(handle, comp->cmdq_base, comp->regs_pa + DSI_CMDQ_SIZE,
+			0x03, CMDQ_SIZE);
+	} else {
+		cmdq_pkt_write(handle, comp->cmdq_base, comp->regs_pa + dsi->driver_data->reg_cmdq0_ofs,
+			AS_UINT32(t0), ~0);
+		cmdq_pkt_write(handle, comp->cmdq_base, comp->regs_pa + dsi->driver_data->reg_cmdq1_ofs,
+			AS_UINT32(t1), ~0);
+		cmdq_pkt_write(handle, comp->cmdq_base, comp->regs_pa + DSI_CMDQ_SIZE,
+			0x2, CMDQ_SIZE);
+	}
 
 	if (mtk_dsi_is_cmd_mode(comp) && dsi->driver_data->require_phy_reset)
 		mtk_dsi_runtime_phy_reset_gce(dsi, handle);
@@ -5058,6 +5084,11 @@ int mtk_dsi_read_gce(struct mtk_ddp_comp *comp, void *handle,
 		mtk_ddp_write_mask(comp, HSTX_CKLP_EN, DSI_TXRX_CTRL, HSTX_CKLP_EN, handle);
 	}
 
+	if (priv && priv->data && (priv->data->mmsys_id == MMSYS_MT6897) &&
+			!(dsi->mode_flags & MIPI_DSI_MODE_LPM)) {
+		/* enable eotp */
+		mtk_ddp_write_mask(comp, 0, DSI_TXRX_CTRL, DIS_EOT, handle);
+	}
 	mtk_dsi_power_keep_gce(dsi, handle, false);
 
 	return 0;
@@ -6259,11 +6290,23 @@ static void mtk_dsi_cmdq(struct mtk_dsi *dsi, const struct mipi_dsi_msg *msg)
 	u8 config, cmdq_size, cmdq_off, type = msg->type;
 	u32 reg_val, cmdq_mask, i;
 	unsigned long goto_addr;
+	struct mtk_ddp_comp *comp = &dsi->ddp_comp;
+	struct mtk_drm_crtc *mtk_crtc = comp->mtk_crtc;
+	struct mtk_drm_private *priv = NULL;
+
+	if (mtk_crtc->base.dev)
+		priv = mtk_crtc->base.dev->dev_private;
 
 	if (MTK_DSI_HOST_IS_READ(type))
 		config = BTA;
-	else
+	else {
 		config = (msg->tx_len > 2) ? LONG_PACKET : SHORT_PACKET;
+		/* only 0x28 0x10 use hs mode, init code still keep lp mode */
+		if (priv && priv->data && (priv->data->mmsys_id == MMSYS_MT6897) &&
+			!(dsi->mode_flags & MIPI_DSI_MODE_LPM) &&
+			((tx_buf[0] == 0x28 || tx_buf[0] == 0x10) && msg->tx_len == 1))
+			config |= HSTX;
+	}
 
 	if (msg->tx_len > 2) {
 		cmdq_size = 1 + (msg->tx_len + 3) / 4;
@@ -6366,11 +6409,21 @@ static void mtk_dsi_cmdq_gce(struct mtk_dsi *dsi, struct cmdq_pkt *handle,
 	u8 config, cmdq_size, cmdq_off, type = msg->type;
 	u32 reg_val, cmdq_mask, i;
 	unsigned long goto_addr;
+	struct mtk_ddp_comp *comp = &dsi->ddp_comp;
+	struct mtk_drm_crtc *mtk_crtc = comp->mtk_crtc;
+	struct mtk_drm_private *priv = NULL;
+
+	if (mtk_crtc->base.dev)
+		priv = mtk_crtc->base.dev->dev_private;
 
 	if (MTK_DSI_HOST_IS_READ(type))
 		config = BTA;
-	else
+	else {
 		config = (msg->tx_len > 2) ? LONG_PACKET : SHORT_PACKET;
+		if (priv && priv->data && (priv->data->mmsys_id == MMSYS_MT6897) &&
+			!(dsi->mode_flags & MIPI_DSI_MODE_LPM))
+			config |= HSTX;
+	}
 
 	if (msg->tx_len > 2) {
 		cmdq_size = 1 + (msg->tx_len + 3) / 4;
@@ -6856,7 +6909,11 @@ void mipi_dsi_dcs_write_gce2(struct mtk_dsi *dsi, struct cmdq_pkt *dummy,
 
 	struct cmdq_pkt *handle;
 	struct mtk_drm_crtc *mtk_crtc = to_mtk_crtc(dsi->encoder.crtc);
+	struct mtk_drm_private *priv = NULL;
 	int dsi_mode = readl(dsi->regs + DSI_MODE_CTRL);
+
+	if (mtk_crtc->base.dev)
+		priv = mtk_crtc->base.dev->dev_private;
 
 	struct mipi_dsi_msg msg = {
 		.tx_buf = data,
@@ -6900,6 +6957,11 @@ void mipi_dsi_dcs_write_gce2(struct mtk_dsi *dsi, struct cmdq_pkt *dummy,
 			dsi->ddp_comp.regs_pa + DSI_START, 0x1, ~0);
 		cmdq_pkt_write(handle, dsi->ddp_comp.cmdq_base,
 			dsi->ddp_comp.regs_pa + DSI_START, 0x0, ~0);
+
+		if (priv && priv->data && (priv->data->mmsys_id == MMSYS_MT6897) &&
+			!(dsi->mode_flags & MIPI_DSI_MODE_LPM) &&
+			(msg.type != MIPI_DSI_DCS_LONG_WRITE))
+				cmdq_pkt_sleep(handle, CMDQ_US_TO_TICK(1), mtk_get_gpr(&dsi->ddp_comp, handle));
 
 		mtk_dsi_poll_for_idle(dsi, handle);
 		mtk_dsi_power_keep_gce(dsi, handle, false);
