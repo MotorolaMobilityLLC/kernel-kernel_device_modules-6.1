@@ -57,6 +57,7 @@ static bool g_force_2lane;
 static bool g_hdcp_on = 1;
 static bool aux_swap;
 static BYTE MAX_LANECOUNT = DP_LANECOUNT_4;
+int last_hpd_status = -1;
 
 static const struct drm_display_mode dptx_est_modes[] = {
 	/* 2160x3840@60Hz */
@@ -4227,20 +4228,27 @@ void mtk_dp_SWInterruptSet(int bstatus)
 
 	mutex_lock(&dp_lock);
 
-	if ((bstatus == HPD_DISCONNECT && g_mtk_dp->bPowerOn)
-		|| (bstatus == HPD_CONNECT && !g_mtk_dp->bPowerOn))
-		g_mtk_dp->bUeventToHwc = true;
+	if (bstatus != last_hpd_status || bstatus == HPD_INT_EVNET) {
+		if ((bstatus == HPD_DISCONNECT && g_mtk_dp->bPowerOn)
+			|| (bstatus == HPD_CONNECT && !g_mtk_dp->bPowerOn))
+			g_mtk_dp->bUeventToHwc = true;
 
-	if (!g_mtk_dp->bPowerOn && bstatus == HPD_DISCONNECT
-		&& g_mtk_dp->disp_status == DPTX_DISP_SUSPEND) {
-		DPTXMSG("System is sleeping, Plug Out\n");
-		mtk_dp_hotplug_uevent(0);
-		g_mtk_dp->disp_status = DPTX_DISP_NONE;
-		mutex_unlock(&dp_lock);
-		return;
-	}
+		if (!g_mtk_dp->bPowerOn && bstatus == HPD_DISCONNECT
+			&& g_mtk_dp->disp_status == DPTX_DISP_SUSPEND) {
+			DPTXMSG("System is sleeping, Plug Out\n");
+			mtk_dp_hotplug_uevent(0);
+			g_mtk_dp->disp_status = DPTX_DISP_NONE;
+			mutex_unlock(&dp_lock);
+			if (bstatus != HPD_INT_EVNET)
+				last_hpd_status = bstatus;
 
-	mtk_dp_HPDInterruptSet(bstatus);
+			return;
+		}
+		mtk_dp_HPDInterruptSet(bstatus);
+		if (bstatus != HPD_INT_EVNET)
+			last_hpd_status = bstatus;
+	} else if (bstatus == last_hpd_status)
+		DPTXMSG("Screen repeat HPD event\n");
 
 	mutex_unlock(&dp_lock);
 }

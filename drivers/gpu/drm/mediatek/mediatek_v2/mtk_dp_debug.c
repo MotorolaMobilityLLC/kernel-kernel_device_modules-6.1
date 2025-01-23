@@ -146,6 +146,22 @@ void mtk_dp_debug(const char *opt)
 		mtk_dp_SWInterruptSet(2);
 		mdelay(100);
 		mtk_dp_SWInterruptSet(4);
+
+	} else if (strncmp(opt, "test_setpowermode:", 18) == 0) {
+		int ret = 0;
+		int delay_time;
+
+		ret = sscanf(opt, "test_setpowermode:%d\n", &delay_time);
+		if (ret != 1) {
+			DPTXMSG("ret = %d\n", ret);
+			return;
+		}
+		mtk_dp_SWInterruptSet(2);
+		mdelay(500);
+		mtk_dp_SWInterruptSet(4);
+		mdelay(delay_time);
+		mtk_dp_SWInterruptSet(4);
+
 	} else if (strncmp(opt, "pattern:", 8) == 0) {
 		int ret = 0;
 		int enable, resolution;
