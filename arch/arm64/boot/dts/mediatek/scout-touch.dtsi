@@ -57,8 +57,8 @@
 		status = "okay";
 		compatible = "focaltech,fts";
 		reg = <0x1>;
-		mmi,status = "/chosen","mmi,panel_name","contains","csot_nt37706";
-		focaltech,panel-supplier = "csot";
+		mmi,status = "/chosen","mmi,panel_name","contains","csot_nt37706","boe_vtdr6126a";
+		focaltech,panel-supplier = "csot","boe";
 		spi-max-frequency = <9600000>;
 		focaltech,vdd-gpio = <&pio 184 0x0>;
 		focaltech,reset-gpio = <&pio 152 0x0>;
@@ -83,7 +83,7 @@
 	};
 
 	eswin_eph861x@2 {
-		status = "okay";
+		status = "disabled";
 		compatible = "eswin,eph861x";
 		reg = <0x2>;
 		mmi,status = "/chosen","mmi,panel_name","contains","boe_vtdr6126a";
