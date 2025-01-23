@@ -263,7 +263,7 @@ static void lcm_panel_init(struct lcm *ctx)
 	lcm_dcs_write_seq_static(ctx, 0x53, 0x20);
 
 	//the vertical back porch lines for external video mode input (ref. 120Hz
-	lcm_dcs_write_seq_static(ctx, 0x3B, 0x00, 0x0F, 0x00, 0x39, 0x00, 0x0F, 0x03, 0xD9, 0x00, 0x0F, 0x0B, 0x19, 0x00, 0x0F, 0x10, 0x89);
+	lcm_dcs_write_seq_static(ctx, 0x3B, 0x00, 0x14, 0x00, 0x34, 0x00, 0x14, 0x03, 0xD4, 0x00, 0x14, 0x0B, 0x14, 0x00, 0x14, 0x10, 0x84);
 
 	//VFP_EXT_IDLE, VBP_EXT_IDLE (ref. 120Hz
 	lcm_dcs_write_seq_static(ctx, 0x6F, 0x10);
@@ -446,17 +446,17 @@ static int lcm_enable(struct drm_panel *panel)
 }
 
 #define FHDP_FRAME_WIDTH    (1220)
-#define FHDP_HFP            (21)
-#define FHDP_HSA            (6)
-#define FHDP_HBP            (6)
+#define FHDP_HFP            (24)
+#define FHDP_HSA            (4)
+#define FHDP_HBP            (4)
 #define FHDP_HTOTAL         (FHDP_FRAME_WIDTH + FHDP_HFP + FHDP_HSA + FHDP_HBP)
 #define FHDP_FRAME_HEIGHT   (2712)
-#define FHDP_VFP_120        (57)
-#define FHDP_VFP_90         (985)
-#define FHDP_VFP_60         (2841)
-#define FHDP_VFP_48         (4233)
+#define FHDP_VFP_120        (52)
+#define FHDP_VFP_90         (980)
+#define FHDP_VFP_60         (2836)
+#define FHDP_VFP_48         (4228)
 #define FHDP_VSA            (2)
-#define FHDP_VBP            (13)
+#define FHDP_VBP            (18)
 #define FHDP_VTOTAL_120     (FHDP_FRAME_HEIGHT + FHDP_VFP_120 + FHDP_VSA + FHDP_VBP)
 #define FHDP_VTOTAL_90      (FHDP_FRAME_HEIGHT + FHDP_VFP_90 + FHDP_VSA + FHDP_VBP)
 #define FHDP_VTOTAL_60      (FHDP_FRAME_HEIGHT + FHDP_VFP_60 + FHDP_VSA + FHDP_VBP)

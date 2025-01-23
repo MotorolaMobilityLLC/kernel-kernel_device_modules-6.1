@@ -200,7 +200,7 @@ static void lcm_panel_init(struct lcm *ctx)
 	//BC_CTRLDBV[13:0]isactive
 	lcm_dcs_write_seq_static(ctx, 0x53, 0x20);
 	//VideoModeExt_VFP,VBPFSET0~2,IDLE
-	lcm_dcs_write_seq_static(ctx, 0x3B, 0x00, 0x10, 0x00, 0x38, 0x00, 0x10, 0x03, 0xD8, 0x00, 0x10, 0x0B, 0x18, 0x00, 0x10, 0x10, 0x88);
+	lcm_dcs_write_seq_static(ctx, 0x3B, 0x00, 0x14, 0x00, 0x34, 0x00, 0x14, 0x03, 0xD4, 0x00, 0x14, 0x0B, 0x14, 0x00, 0x14, 0x10, 0x84);
 	lcm_dcs_write_seq_static(ctx, 0x6F, 0x10);
 	lcm_dcs_write_seq_static(ctx, 0x3B, 0x00, 0x10, 0x00, 0x38);
 	//TEon
@@ -481,17 +481,17 @@ static int lcm_enable(struct drm_panel *panel)
 }
 
 #define FHDP_FRAME_WIDTH    (1220)
-#define FHDP_HFP            (21)
-#define FHDP_HSA            (6)
-#define FHDP_HBP            (6)
+#define FHDP_HFP            (24)
+#define FHDP_HSA            (4)
+#define FHDP_HBP            (4)
 #define FHDP_HTOTAL         (FHDP_FRAME_WIDTH + FHDP_HFP + FHDP_HSA + FHDP_HBP)
 #define FHDP_FRAME_HEIGHT   (2712)
-#define FHDP_VFP_120        (56)
-#define FHDP_VFP_90         (984)
-#define FHDP_VFP_60         (2840)
-#define FHDP_VFP_48         (4232)
+#define FHDP_VFP_120        (52)
+#define FHDP_VFP_90         (980)
+#define FHDP_VFP_60         (2836)
+#define FHDP_VFP_48         (4228)
 #define FHDP_VSA            (2)
-#define FHDP_VBP            (14)
+#define FHDP_VBP            (18)
 #define FHDP_VTOTAL_120     (FHDP_FRAME_HEIGHT + FHDP_VFP_120 + FHDP_VSA + FHDP_VBP)
 #define FHDP_VTOTAL_90      (FHDP_FRAME_HEIGHT + FHDP_VFP_90 + FHDP_VSA + FHDP_VBP)
 #define FHDP_VTOTAL_60      (FHDP_FRAME_HEIGHT + FHDP_VFP_60 + FHDP_VSA + FHDP_VBP)
