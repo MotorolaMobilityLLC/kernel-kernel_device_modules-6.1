@@ -82,7 +82,7 @@
 	mmi,enable-charging-limit;
 	mmi,upper-limit-capacity = <65>;
 	mmi,lower-limit-capacity = <60>;
-	mmi,min-cp-therm-current-ua = <2000000>;
+	mmi,min-cp-therm-current-ua = <1600000>;
 
 	mmi,pd-pmax-mw = <90000>;//90w
 	mmi,pd_vbus_low_bound = <5000000>;
@@ -407,7 +407,7 @@
 
 &charger_cooler {
 	mmi,thermal-mitigation = <(-1) 18000000 17000000 16000000 14000000
-				12000000 10000000 9000000 6000000 5000000
+				12000000 10000000 8000000 6000000 5000000
 				4000000 3000000 2000000 1500000 1000000>;
 };
 
