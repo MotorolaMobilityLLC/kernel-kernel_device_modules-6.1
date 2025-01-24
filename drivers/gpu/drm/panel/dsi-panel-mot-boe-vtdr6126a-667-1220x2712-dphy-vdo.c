@@ -237,6 +237,20 @@ static void lcm_panel_init(struct lcm *ctx)
 	lcm_dcs_write_seq_static(ctx, 0xF0, 0xaa, 0x10);
 	lcm_dcs_write_seq_static(ctx, 0xB0, 0x05, 0x4C, 0x01, 0x31, 0x01, 0x04, 0xC4, 0x05, 0x4C);
 
+	lcm_dcs_write_seq_static(ctx, 0xF0, 0xaa, 0x10);
+	lcm_dcs_write_seq_static(ctx, 0xB1, 0x01, 0x9e, 0x00, 0x14, 0x00, 0x34, 0x00);
+	lcm_dcs_write_seq_static(ctx, 0x65, 0x07);
+	lcm_dcs_write_seq_static(ctx, 0xB1, 0x01, 0x9e, 0x00, 0x14, 0x03, 0xd4, 0x00);
+	lcm_dcs_write_seq_static(ctx, 0x65, 0x0e);
+	lcm_dcs_write_seq_static(ctx, 0xB1, 0x01, 0x9e, 0x00, 0x14, 0x0b, 0x14, 0x00);
+	lcm_dcs_write_seq_static(ctx, 0x65, 0x15);
+	lcm_dcs_write_seq_static(ctx, 0xB1, 0x01, 0x9e, 0x00, 0x14, 0x10, 0x84, 0x00);
+	lcm_dcs_write_seq_static(ctx, 0xB2, 0x01, 0x9e, 0x00, 0x14, 0x00, 0x34, 0x03);
+	lcm_dcs_write_seq_static(ctx, 0x65, 0x07);
+	lcm_dcs_write_seq_static(ctx, 0xB2, 0x01, 0x9e, 0x00, 0x14, 0x00, 0x34, 0x03);
+	lcm_dcs_write_seq_static(ctx, 0x65, 0x0e);
+	lcm_dcs_write_seq_static(ctx, 0xB2, 0x01, 0x9e, 0x00, 0x14, 0x00, 0x34, 0x03);
+
 	if (ctx->version < 3)
 		lcm_dcs_write_seq_static(ctx, 0xBE, 0x3E, 0x78);
 
@@ -429,12 +443,12 @@ static int lcm_enable(struct drm_panel *panel)
 #define FHDP_HBP            (8)
 #define FHDP_HTOTAL         (FHDP_FRAME_WIDTH + FHDP_HFP + FHDP_HSA + FHDP_HBP)
 #define FHDP_FRAME_HEIGHT   (2712)
-#define FHDP_VFP_120        (56)
-#define FHDP_VFP_90         (984)
-#define FHDP_VFP_60         (2840)
-#define FHDP_VFP_48         (4232)
-#define FHDP_VSA            (4)
-#define FHDP_VBP            (12)
+#define FHDP_VFP_120        (52)
+#define FHDP_VFP_90         (980)
+#define FHDP_VFP_60         (2836)
+#define FHDP_VFP_48         (4228)
+#define FHDP_VSA            (2)
+#define FHDP_VBP            (18)
 #define FHDP_VTOTAL_120     (FHDP_FRAME_HEIGHT + FHDP_VFP_120 + FHDP_VSA + FHDP_VBP)
 #define FHDP_VTOTAL_90      (FHDP_FRAME_HEIGHT + FHDP_VFP_90 + FHDP_VSA + FHDP_VBP)
 #define FHDP_VTOTAL_60      (FHDP_FRAME_HEIGHT + FHDP_VFP_60 + FHDP_VSA + FHDP_VBP)
