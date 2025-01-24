@@ -4985,12 +4985,16 @@ int mtk_dsi_read_gce(struct mtk_ddp_comp *comp, void *handle,
 {
 	struct mtk_dsi *dsi = container_of(comp, struct mtk_dsi, ddp_comp);
 	struct mtk_drm_crtc *mtk_crtc = (struct mtk_drm_crtc *)ptr;
+	struct mtk_panel_params *params = NULL;
 	int index = 0;
 
 	if (mtk_crtc == NULL) {
 		DDPPR_ERR("%s dsi comp not configure CRTC yet", __func__);
 		return -EAGAIN;
 	}
+
+	if (dsi->ext && dsi->ext->params)
+		params = dsi->ext->params;
 
 	mtk_dsi_power_keep_gce(dsi, handle, true);
 
@@ -5001,6 +5005,11 @@ int mtk_dsi_read_gce(struct mtk_ddp_comp *comp, void *handle,
 	}
 
 	index = drm_crtc_index(&mtk_crtc->base);
+
+	if (params && params->hs_read_bta_with_hsclk) {
+		// clk hs
+		mtk_ddp_write_mask(comp, 0, DSI_TXRX_CTRL, HSTX_CKLP_EN, handle);
+	}
 
 	cmdq_pkt_write(handle, comp->cmdq_base, comp->regs_pa + dsi->driver_data->reg_cmdq0_ofs,
 		AS_UINT32(t0), ~0);
@@ -5042,6 +5051,11 @@ int mtk_dsi_read_gce(struct mtk_ddp_comp *comp, void *handle,
 		cmdq_pkt_write(handle, dsi->slave_dsi->ddp_comp.cmdq_base,
 				dsi->slave_dsi->ddp_comp.regs_pa + DSI_CON_CTRL,
 				DSI_DUAL_EN, DSI_DUAL_EN);
+	}
+
+	if (params && params->hs_read_bta_with_hsclk) {
+		// clk LP
+		mtk_ddp_write_mask(comp, HSTX_CKLP_EN, DSI_TXRX_CTRL, HSTX_CKLP_EN, handle);
 	}
 
 	mtk_dsi_power_keep_gce(dsi, handle, false);

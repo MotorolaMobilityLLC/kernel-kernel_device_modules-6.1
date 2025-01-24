@@ -613,6 +613,8 @@ struct mtk_panel_params {
 	bool lcm_support_ce;
 	int panel_pcd_reg;
 	int panel_pcd_reg_mask;
+
+	bool hs_read_bta_with_hsclk;
 };
 
 struct mtk_panel_ext {
