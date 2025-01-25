@@ -445,7 +445,7 @@
     #address-cells = <1>;
     #size-cells = <0>;
     ocp81373:ocp81373@63 {
-        compatible = "mediatek,ocp81373";
+        compatible = "mediatek,ocp81373","mediatek,aw36514e";
         #address-cells = <1>;
         #size-cells = <0>;
         reg = <0x63>;

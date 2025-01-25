@@ -63,6 +63,19 @@ config MTK_VIDEO_OCP81373
 	  Select this only if your board has this IC.
 	  Say M here if you want to compile this driver as a module.
 
+config MTK_VIDEO_AW36514E
+	tristate "AW36514E flash driver support"
+	depends on I2C && VIDEO_DEV && MEDIA_CONTROLLER
+	depends on MEDIA_CAMERA_SUPPORT
+	select REGMAP_I2C
+	help
+	  This is a driver for the aw36514e dual flash controllers. It controls
+	  flash, torch LEDs.
+
+	  Say Y here if you want a flashlight driver IC AW36514E.
+	  Select this only if your board has this IC.
+	  Say M here if you want to compile this driver as a module.
+
 config MTK_VIDEO_SGM37864
 	tristate "SGM37864 flash driver support"
 	depends on I2C && VIDEO_DEV && MEDIA_CONTROLLER

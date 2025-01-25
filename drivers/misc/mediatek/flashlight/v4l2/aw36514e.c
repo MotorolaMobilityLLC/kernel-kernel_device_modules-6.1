@@ -21,10 +21,10 @@
 #include <linux/power_supply.h>
 #endif
 
-#define OCP81373_NAME	"ocp81373"
-#define OCP81373_I2C_ADDR	(0x63)
+#define AW36514E_NAME	"aw36514e"
+#define AW36514E_I2C_ADDR	(0x63)
 
-#define OCP81373_DUAL_LED	FALSE
+#define AW36514E_DUAL_LED	FALSE
 
 /* registers definitions */
 #define REG_ENABLE		0x01
@@ -41,9 +41,9 @@
 #define REG_DEVICE_ID		0x0C
 #define REG_LAST_FLASH		0x0D
 
-#define OCP81373_BIT_SOFT_RST_MASK       (0x80)
-#define OCP81373_BIT_SOFT_RST_ENABLE     (1<<7)
-#define OCP81373_BIT_SOFT_RST_DISABLE    (0<<7)
+#define AW36514E_BIT_SOFT_RST_MASK       (0x80)
+#define AW36514E_BIT_SOFT_RST_ENABLE     (1<<7)
+#define AW36514E_BIT_SOFT_RST_DISABLE    (0<<7)
 
 /* fault mask */
 #define FAULT_TIMEOUT	(1<<0)
@@ -51,79 +51,79 @@
 #define FAULT_LED0_SHORT_CIRCUIT	(1<<5)
 
 /* VALUE DEFINE*/
-#define OCP81373_DEVICE_ID 				(0x3A)
-#define OCP81373_ENABLE_LED_TORCH 		(0x08)
-#define OCP81373_ENABLE_LED_FLASH 		(0x0C)
-#define OCP81373_FLASH_TIMEOUT 			(0x0A)
-#define OCP81373_TORCH_RAMP_TIME   		(0x10)
+#define AW36514E_DEVICE_ID 				(0x0A)
+#define AW36514E_ENABLE_LED_TORCH 		(0x08)
+#define AW36514E_ENABLE_LED_FLASH 		(0x0C)
+#define AW36514E_FLASH_TIMEOUT 			(0x0A)
+#define AW36514E_TORCH_RAMP_TIME   		(0x10)
 
 /*  FLASH Brightness
- *	min 11720uA, step 11720uA, max 1500000uA
+ *	min 2940uA, step 5870uA, max 1500000uA
  */
-#define OCP81373_FLASH_BRT_MIN 11720
-#define OCP81373_FLASH_BRT_STEP 11720
-#define OCP81373_FLASH_BRT_MAX 1500000
-#define OCP81373_FLASH_BRT_uA_TO_REG(a)	\
-	((a) < OCP81373_FLASH_BRT_MIN ? 0 :	\
-	 (((a) - OCP81373_FLASH_BRT_MIN) / OCP81373_FLASH_BRT_STEP))
-#define OCP81373_FLASH_BRT_REG_TO_uA(a)		\
-	((a) * OCP81373_FLASH_BRT_STEP + OCP81373_FLASH_BRT_MIN)
+#define AW36514E_FLASH_BRT_MIN 2940
+#define AW36514E_FLASH_BRT_STEP 5870
+#define AW36514E_FLASH_BRT_MAX 1500000
+#define AW36514E_FLASH_BRT_uA_TO_REG(a)	\
+	((a) < AW36514E_FLASH_BRT_MIN ? 0 :	\
+	 (((a) - AW36514E_FLASH_BRT_MIN) / AW36514E_FLASH_BRT_STEP))
+#define AW36514E_FLASH_BRT_REG_TO_uA(a)		\
+	((a) * AW36514E_FLASH_BRT_STEP + AW36514E_FLASH_BRT_MIN)
 
 /*  FLASH TIMEOUT DURATION
  *	min 40ms, step 40ms, max 1600ms
  */
-#define OCP81373_FLASH_TOUT_MIN 40
-#define OCP81373_FLASH_TOUT_STEP 40
-#define OCP81373_FLASH_TOUT_MAX 400
+#define AW36514E_FLASH_TOUT_MIN 40
+#define AW36514E_FLASH_TOUT_STEP 40
+#define AW36514E_FLASH_TOUT_MAX 400
 
 /*  TORCH BRT
- *	min 2920uA, step 2920uA, max 374000uA
+ *	min 730uA, step 1470uA, max 375000uA
  */
-#define OCP81373_TORCH_BRT_MIN 2920
-#define OCP81373_TORCH_BRT_STEP 2920
-#define OCP81373_TORCH_BRT_MAX 374000
-#define OCP81373_TORCH_BRT_uA_TO_REG(a)	\
-	((a) < OCP81373_TORCH_BRT_MIN ? 0 :	\
-	 (((a) - OCP81373_TORCH_BRT_MIN) / OCP81373_TORCH_BRT_STEP))
-#define OCP81373_TORCH_BRT_REG_TO_uA(a)		\
-	((a) * OCP81373_TORCH_BRT_STEP + OCP81373_TORCH_BRT_MIN)
+#define AW36514E_TORCH_BRT_MIN 730
+#define AW36514E_TORCH_BRT_STEP 1470
+#define AW36514E_TORCH_BRT_MAX 375000
+#define AW36514E_TORCH_BRT_uA_TO_REG(a)	\
+	((a) < AW36514E_TORCH_BRT_MIN ? 0 :	\
+	 (((a) - AW36514E_TORCH_BRT_MIN) / AW36514E_TORCH_BRT_STEP))
+#define AW36514E_TORCH_BRT_REG_TO_uA(a)		\
+	((a) * AW36514E_TORCH_BRT_STEP + AW36514E_TORCH_BRT_MIN)
 
-#define OCP81373_COOLER_MAX_STATE 5
-static const int flash_state_to_current_limit[OCP81373_COOLER_MAX_STATE] = {
+#define AW36514E_COOLER_MAX_STATE 5
+static const int flash_state_to_current_limit[AW36514E_COOLER_MAX_STATE] = {
 	100000, 80000, 60000, 40000, 20000
 };
 
-enum ocp81373_led_id {
-	OCP81373_LED0 = 0,
-#if OCP81373_DUAL_LED
-	OCP81373_LED1,
+enum aw36514e_led_id {
+	AW36514E_LED0 = 0,
+#if AW36514E_DUAL_LED
+	AW36514E_LED1,
 #endif
-	OCP81373_LED_MAX
+	AW36514E_LED_MAX
 };
 
-static int ocp81373_chip_id = -1;
+static int aw36514e_chip_id = -1;
 
-/* struct ocp81373_platform_data
+/* struct aw36514e_platform_data
  *
  * @max_flash_timeout: flash timeout
  * @max_flash_brt: flash mode led brightness
  * @max_torch_brt: torch mode led brightness
  */
-struct ocp81373_platform_data {
+struct aw36514e_platform_data {
 	u32 max_flash_timeout;
-	u32 max_flash_brt[OCP81373_LED_MAX];
-	u32 max_torch_brt[OCP81373_LED_MAX];
+	u32 max_flash_brt[AW36514E_LED_MAX];
+	u32 max_torch_brt[AW36514E_LED_MAX];
 };
 
 
 enum led_enable {
 	MODE_SHDN = 0x0,
-	MODE_TORCH = OCP81373_ENABLE_LED_TORCH,
-	MODE_FLASH = OCP81373_ENABLE_LED_FLASH,
+	MODE_TORCH = AW36514E_ENABLE_LED_TORCH,
+	MODE_FLASH = AW36514E_ENABLE_LED_FLASH,
 };
 
 /**
- * struct ocp81373_flash
+ * struct aw36514e_flash
  *
  * @dev: pointer to &struct device
  * @pdata: platform data
@@ -133,100 +133,100 @@ enum led_enable {
  * @ctrls_led: V4L2 controls
  * @subdev_led: V4L2 subdev
  */
-struct ocp81373_flash {
+struct aw36514e_flash {
 	struct device *dev;
-	struct ocp81373_platform_data *pdata;
+	struct aw36514e_platform_data *pdata;
 	struct regmap *regmap;
 	struct mutex lock;
 
 	enum v4l2_flash_led_mode led_mode;
-	struct v4l2_ctrl_handler ctrls_led[OCP81373_LED_MAX];
-	struct v4l2_subdev subdev_led[OCP81373_LED_MAX];
-	struct device_node *dnode[OCP81373_LED_MAX];
-	struct pinctrl *ocp81373_hwen_pinctrl;
-	struct pinctrl_state *ocp81373_hwen_high;
-	struct pinctrl_state *ocp81373_hwen_low;
+	struct v4l2_ctrl_handler ctrls_led[AW36514E_LED_MAX];
+	struct v4l2_subdev subdev_led[AW36514E_LED_MAX];
+	struct device_node *dnode[AW36514E_LED_MAX];
+	struct pinctrl *aw36514e_hwen_pinctrl;
+	struct pinctrl_state *aw36514e_hwen_high;
+	struct pinctrl_state *aw36514e_hwen_low;
 #if IS_ENABLED(CONFIG_MTK_FLASHLIGHT)
-	struct flashlight_device_id flash_dev_id[OCP81373_LED_MAX];
+	struct flashlight_device_id flash_dev_id[AW36514E_LED_MAX];
 #endif
 	struct thermal_cooling_device *cdev;
 	int need_cooler;
 	unsigned long max_state;
 	unsigned long target_state;
-	unsigned long target_current[OCP81373_LED_MAX];
-	unsigned long ori_current[OCP81373_LED_MAX];
+	unsigned long target_current[AW36514E_LED_MAX];
+	unsigned long ori_current[AW36514E_LED_MAX];
 };
 
 /* define usage count */
 static int use_count;
 
-static struct ocp81373_flash *ocp81373_flash_data;
+static struct aw36514e_flash *aw36514e_flash_data;
 
-#define to_ocp81373_flash(_ctrl, _no)	\
-	container_of(_ctrl->handler, struct ocp81373_flash, ctrls_led[_no])
+#define to_aw36514e_flash(_ctrl, _no)	\
+	container_of(_ctrl->handler, struct aw36514e_flash, ctrls_led[_no])
 
-static int ocp81373_set_driver(int set);
+static int aw36514e_set_driver(int set);
 
 /* define pinctrl */
-#define OCP81373_PINCTRL_PIN_HWEN 0
-#define OCP81373_PINCTRL_PINSTATE_LOW 0
-#define OCP81373_PINCTRL_PINSTATE_HIGH 1
-#define OCP81373_PINCTRL_STATE_HWEN_HIGH "hwen-high"
-#define OCP81373_PINCTRL_STATE_HWEN_LOW  "hwen-low"
+#define AW36514E_PINCTRL_PIN_HWEN 0
+#define AW36514E_PINCTRL_PINSTATE_LOW 0
+#define AW36514E_PINCTRL_PINSTATE_HIGH 1
+#define AW36514E_PINCTRL_STATE_HWEN_HIGH "hwen-high"
+#define AW36514E_PINCTRL_STATE_HWEN_LOW  "hwen-low"
 /******************************************************************************
  * Pinctrl configuration
  *****************************************************************************/
-static int ocp81373_pinctrl_init(struct ocp81373_flash *flash)
+static int aw36514e_pinctrl_init(struct aw36514e_flash *flash)
 {
 	int ret = 0;
 
 	/* get pinctrl */
-	flash->ocp81373_hwen_pinctrl = devm_pinctrl_get(flash->dev);
-	if (IS_ERR(flash->ocp81373_hwen_pinctrl)) {
+	flash->aw36514e_hwen_pinctrl = devm_pinctrl_get(flash->dev);
+	if (IS_ERR(flash->aw36514e_hwen_pinctrl)) {
 		pr_info("Failed to get flashlight pinctrl.\n");
-		ret = PTR_ERR(flash->ocp81373_hwen_pinctrl);
+		ret = PTR_ERR(flash->aw36514e_hwen_pinctrl);
 		return ret;
 	}
 
 	/* Flashlight HWEN pin initialization */
-	flash->ocp81373_hwen_high = pinctrl_lookup_state(
-			flash->ocp81373_hwen_pinctrl,
-			OCP81373_PINCTRL_STATE_HWEN_HIGH);
-	if (IS_ERR(flash->ocp81373_hwen_high)) {
+	flash->aw36514e_hwen_high = pinctrl_lookup_state(
+			flash->aw36514e_hwen_pinctrl,
+			AW36514E_PINCTRL_STATE_HWEN_HIGH);
+	if (IS_ERR(flash->aw36514e_hwen_high)) {
 		pr_info("Failed to init (%s)\n",
-			OCP81373_PINCTRL_STATE_HWEN_HIGH);
-		ret = PTR_ERR(flash->ocp81373_hwen_high);
+			AW36514E_PINCTRL_STATE_HWEN_HIGH);
+		ret = PTR_ERR(flash->aw36514e_hwen_high);
 	}
-	flash->ocp81373_hwen_low = pinctrl_lookup_state(
-			flash->ocp81373_hwen_pinctrl,
-			OCP81373_PINCTRL_STATE_HWEN_LOW);
-	if (IS_ERR(flash->ocp81373_hwen_low)) {
-		pr_info("Failed to init (%s)\n", OCP81373_PINCTRL_STATE_HWEN_LOW);
-		ret = PTR_ERR(flash->ocp81373_hwen_low);
+	flash->aw36514e_hwen_low = pinctrl_lookup_state(
+			flash->aw36514e_hwen_pinctrl,
+			AW36514E_PINCTRL_STATE_HWEN_LOW);
+	if (IS_ERR(flash->aw36514e_hwen_low)) {
+		pr_info("Failed to init (%s)\n", AW36514E_PINCTRL_STATE_HWEN_LOW);
+		ret = PTR_ERR(flash->aw36514e_hwen_low);
 	}
 
 	return ret;
 }
 
-static int ocp81373_pinctrl_set(struct ocp81373_flash *flash, int pin, int state)
+static int aw36514e_pinctrl_set(struct aw36514e_flash *flash, int pin, int state)
 {
 	int ret = 0;
 
-	if (IS_ERR(flash->ocp81373_hwen_pinctrl)) {
+	if (IS_ERR(flash->aw36514e_hwen_pinctrl)) {
 		pr_info("pinctrl is not available\n");
 		return -1;
 	}
 
 	switch (pin) {
-	case OCP81373_PINCTRL_PIN_HWEN:
-		if (state == OCP81373_PINCTRL_PINSTATE_LOW &&
-				!IS_ERR(flash->ocp81373_hwen_low))
-			pinctrl_select_state(flash->ocp81373_hwen_pinctrl,
-					flash->ocp81373_hwen_low);
-		else if (state == OCP81373_PINCTRL_PINSTATE_HIGH &&
-				!IS_ERR(flash->ocp81373_hwen_high))
-			pinctrl_select_state(flash->ocp81373_hwen_pinctrl,
-					flash->ocp81373_hwen_high);
+	case AW36514E_PINCTRL_PIN_HWEN:
+		if (state == AW36514E_PINCTRL_PINSTATE_LOW &&
+				!IS_ERR(flash->aw36514e_hwen_low))
+			pinctrl_select_state(flash->aw36514e_hwen_pinctrl,
+					flash->aw36514e_hwen_low);
+		else if (state == AW36514E_PINCTRL_PINSTATE_HIGH &&
+				!IS_ERR(flash->aw36514e_hwen_high))
+			pinctrl_select_state(flash->aw36514e_hwen_pinctrl,
+					flash->aw36514e_hwen_high);
 		else
 			pr_info("set err, pin(%d) state(%d)\n", pin, state);
 		break;
@@ -239,7 +239,7 @@ static int ocp81373_pinctrl_set(struct ocp81373_flash *flash, int pin, int state
 }
 
 /* enable mode control */
-static int ocp81373_mode_ctrl(struct ocp81373_flash *flash)
+static int aw36514e_mode_ctrl(struct aw36514e_flash *flash)
 {
 	int rval = -EINVAL;
 
@@ -262,8 +262,8 @@ static int ocp81373_mode_ctrl(struct ocp81373_flash *flash)
 }
 
 /* led1 enable/disable */
-static int ocp81373_enable_ctrl(struct ocp81373_flash *flash,
-			      enum ocp81373_led_id led_no, bool on)
+static int aw36514e_enable_ctrl(struct aw36514e_flash *flash,
+			      enum aw36514e_led_id led_no, bool on)
 {
 	int rval;
 
@@ -277,7 +277,7 @@ static int ocp81373_enable_ctrl(struct ocp81373_flash *flash,
 	}
 #endif
 
-	if (led_no == OCP81373_LED0) {
+	if (led_no == AW36514E_LED0) {
 		if (on)
 			rval = regmap_update_bits(flash->regmap,
 						  REG_ENABLE, 0x01, 0x01);
@@ -297,15 +297,15 @@ static int ocp81373_enable_ctrl(struct ocp81373_flash *flash,
 }
 
 /* torch1/2 brightness control */
-static int ocp81373_torch_brt_ctrl(struct ocp81373_flash *flash,
-				 enum ocp81373_led_id led_no, unsigned int brt)
+static int aw36514e_torch_brt_ctrl(struct aw36514e_flash *flash,
+				 enum aw36514e_led_id led_no, unsigned int brt)
 {
 	int rval;
 	u8 br_bits;
 
 	pr_info_ratelimited("%s %d brt:%u\n", __func__, led_no, brt);
-	if (brt < OCP81373_TORCH_BRT_MIN)
-		return ocp81373_enable_ctrl(flash, led_no, false);
+	if (brt < AW36514E_TORCH_BRT_MIN)
+		return aw36514e_enable_ctrl(flash, led_no, false);
 
 	if (flash->need_cooler == 0) {
 		flash->ori_current[led_no] = brt;
@@ -316,10 +316,10 @@ static int ocp81373_torch_brt_ctrl(struct ocp81373_flash *flash,
 		}
 	}
 
-	br_bits = OCP81373_TORCH_BRT_uA_TO_REG(brt);
+	br_bits = AW36514E_TORCH_BRT_uA_TO_REG(brt);
 
-#if OCP81373_DUAL_LED
-	if (led_no == OCP81373_LED0)
+#if AW36514E_DUAL_LED
+	if (led_no == AW36514E_LED0)
 		rval = regmap_update_bits(flash->regmap,
 					  REG_LED0_TORCH_BR, 0x7f, br_bits);
 	else
@@ -334,25 +334,25 @@ static int ocp81373_torch_brt_ctrl(struct ocp81373_flash *flash,
 }
 
 /* flash1/2 brightness control */
-static int ocp81373_flash_brt_ctrl(struct ocp81373_flash *flash,
-				 enum ocp81373_led_id led_no, unsigned int brt)
+static int aw36514e_flash_brt_ctrl(struct aw36514e_flash *flash,
+				 enum aw36514e_led_id led_no, unsigned int brt)
 {
 	int rval;
 	u8 br_bits;
 
 	pr_info_ratelimited("%s %d brt:%u", __func__, led_no, brt);
-	if (brt < OCP81373_FLASH_BRT_MIN)
-		return ocp81373_enable_ctrl(flash, led_no, false);
+	if (brt < AW36514E_FLASH_BRT_MIN)
+		return aw36514e_enable_ctrl(flash, led_no, false);
 
 	if (flash->need_cooler == 1 && brt > flash->target_current[led_no]) {
 		brt = flash->target_current[led_no];
 		pr_info("thermal limit current:%d\n", brt);
 	}
 
-	br_bits = OCP81373_FLASH_BRT_uA_TO_REG(brt);
+	br_bits = AW36514E_FLASH_BRT_uA_TO_REG(brt);
 
-#if OCP81373_DUAL_LED
-	if (led_no == OCP81373_LED0)
+#if AW36514E_DUAL_LED
+	if (led_no == AW36514E_LED0)
 		rval = regmap_update_bits(flash->regmap,
 					  REG_LED0_FLASH_BR, 0x7f, br_bits);
 	else
@@ -367,19 +367,19 @@ static int ocp81373_flash_brt_ctrl(struct ocp81373_flash *flash,
 }
 
 /* flash1 timeout control */
-static int ocp81373_flash_tout_ctrl(struct ocp81373_flash *flash,
+static int aw36514e_flash_tout_ctrl(struct aw36514e_flash *flash,
 				unsigned int tout)
 {
 	int rval;
 	u8 tout_bits;
 	pr_info_ratelimited("%s timeout=%d", __func__, tout);
-  if (tout <= OCP81373_FLASH_TOUT_MIN)
+  if (tout <= AW36514E_FLASH_TOUT_MIN)
   {
 		tout_bits = 0x00;   //The register value represents 40ms
 	}
-	else if (tout <= OCP81373_FLASH_TOUT_MAX)
+	else if (tout <= AW36514E_FLASH_TOUT_MAX)
 	{
-		tout_bits = (tout / OCP81373_FLASH_TOUT_STEP)-1;
+		tout_bits = (tout / AW36514E_FLASH_TOUT_STEP)-1;
 	}
 	else
 	{
@@ -392,9 +392,9 @@ static int ocp81373_flash_tout_ctrl(struct ocp81373_flash *flash,
 }
 
 /* v4l2 controls  */
-static int ocp81373_get_ctrl(struct v4l2_ctrl *ctrl, enum ocp81373_led_id led_no)
+static int aw36514e_get_ctrl(struct v4l2_ctrl *ctrl, enum aw36514e_led_id led_no)
 {
-	struct ocp81373_flash *flash = to_ocp81373_flash(ctrl, led_no);
+	struct aw36514e_flash *flash = to_aw36514e_flash(ctrl, led_no);
 	int rval = -EINVAL;
 
 	mutex_lock(&flash->lock);
@@ -420,9 +420,9 @@ out:
 	return rval;
 }
 
-static int ocp81373_set_ctrl(struct v4l2_ctrl *ctrl, enum ocp81373_led_id led_no)
+static int aw36514e_set_ctrl(struct v4l2_ctrl *ctrl, enum aw36514e_led_id led_no)
 {
-	struct ocp81373_flash *flash = to_ocp81373_flash(ctrl, led_no);
+	struct aw36514e_flash *flash = to_aw36514e_flash(ctrl, led_no);
 	int rval = -EINVAL;
 
 	pr_info("%s led:%d ID:%d", __func__, led_no, ctrl->id);
@@ -432,13 +432,13 @@ static int ocp81373_set_ctrl(struct v4l2_ctrl *ctrl, enum ocp81373_led_id led_no
 	case V4L2_CID_FLASH_LED_MODE:
 		flash->led_mode = ctrl->val;
 		if (flash->led_mode != V4L2_FLASH_LED_MODE_FLASH)
-			rval = ocp81373_mode_ctrl(flash);
+			rval = aw36514e_mode_ctrl(flash);
 		else
 			rval = 0;
 		if (flash->led_mode == V4L2_FLASH_LED_MODE_NONE)
-			ocp81373_enable_ctrl(flash, led_no, false);
+			aw36514e_enable_ctrl(flash, led_no, false);
 		else if (flash->led_mode == V4L2_FLASH_LED_MODE_TORCH)
-			rval = ocp81373_enable_ctrl(flash, led_no, true);
+			rval = aw36514e_enable_ctrl(flash, led_no, true);
 		break;
 
 	case V4L2_CID_FLASH_STROBE_SOURCE:
@@ -450,7 +450,7 @@ static int ocp81373_set_ctrl(struct v4l2_ctrl *ctrl, enum ocp81373_led_id led_no
 			pr_info("hw trigger\n");
 			rval = regmap_update_bits(flash->regmap,
 					REG_ENABLE, 0x2C, 0x24);
-			rval = ocp81373_enable_ctrl(flash, led_no, true);
+			rval = aw36514e_enable_ctrl(flash, led_no, true);
 		}
 		if (rval < 0)
 			goto err_out;
@@ -462,8 +462,8 @@ static int ocp81373_set_ctrl(struct v4l2_ctrl *ctrl, enum ocp81373_led_id led_no
 			goto err_out;
 		}
 		flash->led_mode = V4L2_FLASH_LED_MODE_FLASH;
-		rval = ocp81373_mode_ctrl(flash);
-		rval = ocp81373_enable_ctrl(flash, led_no, true);
+		rval = aw36514e_mode_ctrl(flash);
+		rval = aw36514e_enable_ctrl(flash, led_no, true);
 		break;
 
 	case V4L2_CID_FLASH_STROBE_STOP:
@@ -471,21 +471,21 @@ static int ocp81373_set_ctrl(struct v4l2_ctrl *ctrl, enum ocp81373_led_id led_no
 			rval = -EBUSY;
 			goto err_out;
 		}
-		ocp81373_enable_ctrl(flash, led_no, false);
+		aw36514e_enable_ctrl(flash, led_no, false);
 		flash->led_mode = V4L2_FLASH_LED_MODE_NONE;
-		rval = ocp81373_mode_ctrl(flash);
+		rval = aw36514e_mode_ctrl(flash);
 		break;
 
 	case V4L2_CID_FLASH_TIMEOUT:
-		rval = ocp81373_flash_tout_ctrl(flash, ctrl->val);
+		rval = aw36514e_flash_tout_ctrl(flash, ctrl->val);
 		break;
 
 	case V4L2_CID_FLASH_INTENSITY:
-		rval = ocp81373_flash_brt_ctrl(flash, led_no, ctrl->val);
+		rval = aw36514e_flash_brt_ctrl(flash, led_no, ctrl->val);
 		break;
 
 	case V4L2_CID_FLASH_TORCH_INTENSITY:
-		rval = ocp81373_torch_brt_ctrl(flash, led_no, ctrl->val);
+		rval = aw36514e_torch_brt_ctrl(flash, led_no, ctrl->val);
 		break;
 	}
 
@@ -494,49 +494,49 @@ err_out:
 	return rval;
 }
 
-#if OCP81373_DUAL_LED
-static int ocp81373_led1_get_ctrl(struct v4l2_ctrl *ctrl)
+#if AW36514E_DUAL_LED
+static int aw36514e_led1_get_ctrl(struct v4l2_ctrl *ctrl)
 {
-	return ocp81373_get_ctrl(ctrl, OCP81373_LED1);
+	return aw36514e_get_ctrl(ctrl, AW36514E_LED1);
 }
 
-static int ocp81373_led1_set_ctrl(struct v4l2_ctrl *ctrl)
+static int aw36514e_led1_set_ctrl(struct v4l2_ctrl *ctrl)
 {
-	return ocp81373_set_ctrl(ctrl, OCP81373_LED1);
+	return aw36514e_set_ctrl(ctrl, AW36514E_LED1);
 }
 #endif
 
-static int ocp81373_led0_get_ctrl(struct v4l2_ctrl *ctrl)
+static int aw36514e_led0_get_ctrl(struct v4l2_ctrl *ctrl)
 {
-	return ocp81373_get_ctrl(ctrl, OCP81373_LED0);
+	return aw36514e_get_ctrl(ctrl, AW36514E_LED0);
 }
 
-static int ocp81373_led0_set_ctrl(struct v4l2_ctrl *ctrl)
+static int aw36514e_led0_set_ctrl(struct v4l2_ctrl *ctrl)
 {
-	return ocp81373_set_ctrl(ctrl, OCP81373_LED0);
+	return aw36514e_set_ctrl(ctrl, AW36514E_LED0);
 }
 
-static const struct v4l2_ctrl_ops ocp81373_led_ctrl_ops[OCP81373_LED_MAX] = {
-	[OCP81373_LED0] = {
-			.g_volatile_ctrl = ocp81373_led0_get_ctrl,
-			.s_ctrl = ocp81373_led0_set_ctrl,
+static const struct v4l2_ctrl_ops aw36514e_led_ctrl_ops[AW36514E_LED_MAX] = {
+	[AW36514E_LED0] = {
+			.g_volatile_ctrl = aw36514e_led0_get_ctrl,
+			.s_ctrl = aw36514e_led0_set_ctrl,
 			},
-#if OCP81373_DUAL_LED
-	[OCP81373_LED1] = {
-			.g_volatile_ctrl = ocp81373_led1_get_ctrl,
-			.s_ctrl = ocp81373_led1_set_ctrl,
+#if AW36514E_DUAL_LED
+	[AW36514E_LED1] = {
+			.g_volatile_ctrl = aw36514e_led1_get_ctrl,
+			.s_ctrl = aw36514e_led1_set_ctrl,
 			},
 #endif
 };
 
-static int ocp81373_init_controls(struct ocp81373_flash *flash,
-				enum ocp81373_led_id led_no)
+static int aw36514e_init_controls(struct aw36514e_flash *flash,
+				enum aw36514e_led_id led_no)
 {
 	struct v4l2_ctrl *fault;
 	u32 max_flash_brt = flash->pdata->max_flash_brt[led_no];
 	u32 max_torch_brt = flash->pdata->max_torch_brt[led_no];
 	struct v4l2_ctrl_handler *hdl = &flash->ctrls_led[led_no];
-	const struct v4l2_ctrl_ops *ops = &ocp81373_led_ctrl_ops[led_no];
+	const struct v4l2_ctrl_ops *ops = &aw36514e_led_ctrl_ops[led_no];
 
 	v4l2_ctrl_handler_init(hdl, 8);
 
@@ -558,20 +558,20 @@ static int ocp81373_init_controls(struct ocp81373_flash *flash,
 
 	/* flash strobe timeout */
 	v4l2_ctrl_new_std(hdl, ops, V4L2_CID_FLASH_TIMEOUT,
-			  OCP81373_FLASH_TOUT_MIN,
+			  AW36514E_FLASH_TOUT_MIN,
 			  flash->pdata->max_flash_timeout,
-			  OCP81373_FLASH_TOUT_STEP,
+			  AW36514E_FLASH_TOUT_STEP,
 			  flash->pdata->max_flash_timeout);
 
 	/* flash brt */
 	v4l2_ctrl_new_std(hdl, ops, V4L2_CID_FLASH_INTENSITY,
-			  OCP81373_FLASH_BRT_MIN, max_flash_brt,
-			  OCP81373_FLASH_BRT_STEP, max_flash_brt);
+			  AW36514E_FLASH_BRT_MIN, max_flash_brt,
+			  AW36514E_FLASH_BRT_STEP, max_flash_brt);
 
 	/* torch brt */
 	v4l2_ctrl_new_std(hdl, ops, V4L2_CID_FLASH_TORCH_INTENSITY,
-			  OCP81373_TORCH_BRT_MIN, max_torch_brt,
-			  OCP81373_TORCH_BRT_STEP, max_torch_brt);
+			  AW36514E_TORCH_BRT_MIN, max_torch_brt,
+			  AW36514E_TORCH_BRT_STEP, max_torch_brt);
 
 	/* fault */
 	fault = v4l2_ctrl_new_std(hdl, ops, V4L2_CID_FLASH_FAULT, 0,
@@ -590,17 +590,17 @@ static int ocp81373_init_controls(struct ocp81373_flash *flash,
 }
 
 /* initialize device */
-static const struct v4l2_subdev_ops ocp81373_ops = {
+static const struct v4l2_subdev_ops aw36514e_ops = {
 	.core = NULL,
 };
 
-static const struct regmap_config ocp81373_regmap = {
+static const struct regmap_config aw36514e_regmap = {
 	.reg_bits = 8,
 	.val_bits = 8,
 	.max_register = 0xFF,
 };
 
-static void ocp81373_v4l2_i2c_subdev_init(struct v4l2_subdev *sd,
+static void aw36514e_v4l2_i2c_subdev_init(struct v4l2_subdev *sd,
 		struct i2c_client *client,
 		const struct v4l2_subdev_ops *ops)
 {
@@ -619,34 +619,34 @@ static void ocp81373_v4l2_i2c_subdev_init(struct v4l2_subdev *sd,
 }
 
 /* flashlight init */
-static int ocp81373_init(struct ocp81373_flash *flash)
+static int aw36514e_init(struct aw36514e_flash *flash)
 {
 	int rval = 0;
 	unsigned int reg_val;
 
-	ocp81373_pinctrl_set(flash, OCP81373_PINCTRL_PIN_HWEN, OCP81373_PINCTRL_PINSTATE_HIGH);
+	aw36514e_pinctrl_set(flash, AW36514E_PINCTRL_PIN_HWEN, AW36514E_PINCTRL_PINSTATE_HIGH);
   mdelay(1);
 
 	/* set timeout */
-	rval = ocp81373_flash_tout_ctrl(flash, OCP81373_FLASH_TOUT_MAX);
+	rval = aw36514e_flash_tout_ctrl(flash, AW36514E_FLASH_TOUT_MAX);
 	if (rval < 0)
 		return rval;
 
 	/* output disable */
 	flash->led_mode = V4L2_FLASH_LED_MODE_NONE;
-	rval = ocp81373_mode_ctrl(flash);
+	rval = aw36514e_mode_ctrl(flash);
 	if (rval < 0)
 		return rval;
 
-	ocp81373_torch_brt_ctrl(flash, OCP81373_LED0,
-				flash->ori_current[OCP81373_LED0]);
-	ocp81373_flash_brt_ctrl(flash, OCP81373_LED0,
-				flash->ori_current[OCP81373_LED0]);
-#if OCP81373_DUAL_LED
-	ocp81373_flash_brt_ctrl(flash, OCP81373_LED1,
-				flash->ori_current[OCP81373_LED1]);
-	ocp81373_torch_brt_ctrl(flash, OCP81373_LED1,
-				flash->ori_current[OCP81373_LED1]);
+	aw36514e_torch_brt_ctrl(flash, AW36514E_LED0,
+				flash->ori_current[AW36514E_LED0]);
+	aw36514e_flash_brt_ctrl(flash, AW36514E_LED0,
+				flash->ori_current[AW36514E_LED0]);
+#if AW36514E_DUAL_LED
+	aw36514e_flash_brt_ctrl(flash, AW36514E_LED1,
+				flash->ori_current[AW36514E_LED1]);
+	aw36514e_torch_brt_ctrl(flash, AW36514E_LED1,
+				flash->ori_current[AW36514E_LED1]);
 #endif
 
 	/* reset faults */
@@ -655,18 +655,18 @@ static int ocp81373_init(struct ocp81373_flash *flash)
 }
 
 /* flashlight uninit */
-static int ocp81373_uninit(struct ocp81373_flash *flash)
+static int aw36514e_uninit(struct aw36514e_flash *flash)
 {
-	ocp81373_pinctrl_set(flash, OCP81373_PINCTRL_PIN_HWEN, OCP81373_PINCTRL_PINSTATE_LOW);
+	aw36514e_pinctrl_set(flash, AW36514E_PINCTRL_PIN_HWEN, AW36514E_PINCTRL_PINSTATE_LOW);
 	return 0;
 }
 
-static int ocp81373_open(struct v4l2_subdev *sd, struct v4l2_subdev_fh *fh)
+static int aw36514e_open(struct v4l2_subdev *sd, struct v4l2_subdev_fh *fh)
 {
 	int ret;
 	pr_info("%s\n", __func__);
 
-	ocp81373_init(ocp81373_flash_data);
+	aw36514e_init(aw36514e_flash_data);
 
 	ret = pm_runtime_get_sync(sd->dev);
 	if (ret < 0) {
@@ -677,25 +677,25 @@ static int ocp81373_open(struct v4l2_subdev *sd, struct v4l2_subdev_fh *fh)
 	return 0;
 }
 
-static int ocp81373_close(struct v4l2_subdev *sd, struct v4l2_subdev_fh *fh)
+static int aw36514e_close(struct v4l2_subdev *sd, struct v4l2_subdev_fh *fh)
 {
-	regmap_update_bits(ocp81373_flash_data->regmap, REG_FLAG2, 0x0f, 0x00);
+	regmap_update_bits(aw36514e_flash_data->regmap, REG_FLAG2, 0x0f, 0x00);
 	pr_info("%s\n", __func__);
 
-	ocp81373_uninit(ocp81373_flash_data);
+	aw36514e_uninit(aw36514e_flash_data);
 
 	pm_runtime_put(sd->dev);
 
 	return 0;
 }
 
-static const struct v4l2_subdev_internal_ops ocp81373_int_ops = {
-	.open = ocp81373_open,
-	.close = ocp81373_close,
+static const struct v4l2_subdev_internal_ops aw36514e_int_ops = {
+	.open = aw36514e_open,
+	.close = aw36514e_close,
 };
 
-static int ocp81373_subdev_init(struct ocp81373_flash *flash,
-			      enum ocp81373_led_id led_no, char *led_name)
+static int aw36514e_subdev_init(struct aw36514e_flash *flash,
+			      enum aw36514e_led_id led_no, char *led_name)
 {
 	struct i2c_client *client = to_i2c_client(flash->dev);
 	struct device_node *np = flash->dev->of_node, *child;
@@ -704,10 +704,10 @@ static int ocp81373_subdev_init(struct ocp81373_flash *flash,
 
 	// pr_info("%s %d", __func__, led_no);
 
-	ocp81373_v4l2_i2c_subdev_init(&flash->subdev_led[led_no],
-				client, &ocp81373_ops);
+	aw36514e_v4l2_i2c_subdev_init(&flash->subdev_led[led_no],
+				client, &aw36514e_ops);
 	flash->subdev_led[led_no].flags |= V4L2_SUBDEV_FL_HAS_DEVNODE;
-	flash->subdev_led[led_no].internal_ops = &ocp81373_int_ops;
+	flash->subdev_led[led_no].internal_ops = &aw36514e_int_ops;
 	strscpy(flash->subdev_led[led_no].name, led_name,
 		sizeof(flash->subdev_led[led_no].name));
 
@@ -727,7 +727,7 @@ static int ocp81373_subdev_init(struct ocp81373_flash *flash,
 		}
 	}
 
-	rval = ocp81373_init_controls(flash, led_no);
+	rval = aw36514e_init_controls(flash, led_no);
 	if (rval)
 		goto err_out;
 	rval = media_entity_pads_init(&flash->subdev_led[led_no].entity, 0, NULL);
@@ -746,17 +746,17 @@ err_out:
 	return rval;
 }
 
-static int ocp81373_flash_open(void)
+static int aw36514e_flash_open(void)
 {
 	return 0;
 }
 
-static int ocp81373_flash_release(void)
+static int aw36514e_flash_release(void)
 {
 	return 0;
 }
 
-static int ocp81373_ioctl(unsigned int cmd, unsigned long arg)
+static int aw36514e_ioctl(unsigned int cmd, unsigned long arg)
 {
 	struct flashlight_dev_arg *fl_arg;
 	int channel;
@@ -769,15 +769,15 @@ static int ocp81373_ioctl(unsigned int cmd, unsigned long arg)
 		pr_info_ratelimited("FLASH_IOC_SET_ONOFF(%d): %d\n",
 				channel, (int)fl_arg->arg);
 		if ((int)fl_arg->arg) {
-			ocp81373_torch_brt_ctrl(ocp81373_flash_data, channel, 25000);
-			ocp81373_flash_data->led_mode = V4L2_FLASH_LED_MODE_TORCH;
-			ocp81373_mode_ctrl(ocp81373_flash_data);
-			ocp81373_enable_ctrl(ocp81373_flash_data, channel, true);
+			aw36514e_torch_brt_ctrl(aw36514e_flash_data, channel, 25000);
+			aw36514e_flash_data->led_mode = V4L2_FLASH_LED_MODE_TORCH;
+			aw36514e_mode_ctrl(aw36514e_flash_data);
+			aw36514e_enable_ctrl(aw36514e_flash_data, channel, true);
 		} else {
-			if (ocp81373_flash_data->led_mode != V4L2_FLASH_LED_MODE_NONE) {
-				ocp81373_flash_data->led_mode = V4L2_FLASH_LED_MODE_NONE;
-				ocp81373_mode_ctrl(ocp81373_flash_data);
-				ocp81373_enable_ctrl(ocp81373_flash_data, channel, false);
+			if (aw36514e_flash_data->led_mode != V4L2_FLASH_LED_MODE_NONE) {
+				aw36514e_flash_data->led_mode = V4L2_FLASH_LED_MODE_NONE;
+				aw36514e_mode_ctrl(aw36514e_flash_data);
+				aw36514e_enable_ctrl(aw36514e_flash_data, channel, false);
 			}
 		}
 		break;
@@ -790,76 +790,76 @@ static int ocp81373_ioctl(unsigned int cmd, unsigned long arg)
 	return 0;
 }
 
-static int ocp81373_set_driver(int set)
+static int aw36514e_set_driver(int set)
 {
 	int ret = 0;
 
 	/* set chip and usage count */
-	//mutex_lock(&ocp81373_mutex);
+	//mutex_lock(&aw36514e_mutex);
 	if (set) {
 		if (!use_count)
-			ret = ocp81373_init(ocp81373_flash_data);
+			ret = aw36514e_init(aw36514e_flash_data);
 		use_count++;
 		pr_debug("Set driver: %d\n", use_count);
 	} else {
 		use_count--;
 		if (!use_count)
-			ret = ocp81373_uninit(ocp81373_flash_data);
+			ret = aw36514e_uninit(aw36514e_flash_data);
 		if (use_count < 0)
 			use_count = 0;
 		pr_debug("Unset driver: %d\n", use_count);
 	}
-	//mutex_unlock(&ocp81373_mutex);
+	//mutex_unlock(&aw36514e_mutex);
 
 	return 0;
 }
 
-static ssize_t ocp81373_strobe_store(struct flashlight_arg arg)
+static ssize_t aw36514e_strobe_store(struct flashlight_arg arg)
 {
 	pr_info("%s:%d", __func__, __LINE__);
-	ocp81373_set_driver(1);
-	//ocp81373_set_level(arg.channel, arg.level);
-	//ocp81373_timeout_ms[arg.channel] = 0;
-	//ocp81373_enable(arg.channel);
-	ocp81373_torch_brt_ctrl(ocp81373_flash_data, arg.channel,
+	aw36514e_set_driver(1);
+	//aw36514e_set_level(arg.channel, arg.level);
+	//aw36514e_timeout_ms[arg.channel] = 0;
+	//aw36514e_enable(arg.channel);
+	aw36514e_torch_brt_ctrl(aw36514e_flash_data, arg.channel,
 				arg.level * 25000);
-	ocp81373_enable_ctrl(ocp81373_flash_data, arg.channel, true);
-	ocp81373_flash_data->led_mode = V4L2_FLASH_LED_MODE_TORCH;
-	ocp81373_mode_ctrl(ocp81373_flash_data);
+	aw36514e_enable_ctrl(aw36514e_flash_data, arg.channel, true);
+	aw36514e_flash_data->led_mode = V4L2_FLASH_LED_MODE_TORCH;
+	aw36514e_mode_ctrl(aw36514e_flash_data);
 	msleep(arg.dur);
-	//ocp81373_disable(arg.channel);
-	ocp81373_flash_data->led_mode = V4L2_FLASH_LED_MODE_NONE;
-	ocp81373_mode_ctrl(ocp81373_flash_data);
-	ocp81373_enable_ctrl(ocp81373_flash_data, arg.channel, false);
-	ocp81373_set_driver(0);
+	//aw36514e_disable(arg.channel);
+	aw36514e_flash_data->led_mode = V4L2_FLASH_LED_MODE_NONE;
+	aw36514e_mode_ctrl(aw36514e_flash_data);
+	aw36514e_enable_ctrl(aw36514e_flash_data, arg.channel, false);
+	aw36514e_set_driver(0);
 	pr_info("%s:%d", __func__, __LINE__);
 	return 0;
 }
 
-static int ocp81373_cooling_get_max_state(struct thermal_cooling_device *cdev,
+static int aw36514e_cooling_get_max_state(struct thermal_cooling_device *cdev,
 					unsigned long *state)
 {
-	struct ocp81373_flash *flash = cdev->devdata;
+	struct aw36514e_flash *flash = cdev->devdata;
 
 	*state = flash->max_state;
 
 	return 0;
 }
 
-static int ocp81373_cooling_get_cur_state(struct thermal_cooling_device *cdev,
+static int aw36514e_cooling_get_cur_state(struct thermal_cooling_device *cdev,
 					unsigned long *state)
 {
-	struct ocp81373_flash *flash = cdev->devdata;
+	struct aw36514e_flash *flash = cdev->devdata;
 
 	*state = flash->target_state;
 
 	return 0;
 }
 
-static int ocp81373_cooling_set_cur_state(struct thermal_cooling_device *cdev,
+static int aw36514e_cooling_set_cur_state(struct thermal_cooling_device *cdev,
 					unsigned long state)
 {
-	struct ocp81373_flash *flash = cdev->devdata;
+	struct aw36514e_flash *flash = cdev->devdata;
 	int ret = 0;
 
 	/* Request state should be less than max_state */
@@ -876,49 +876,49 @@ static int ocp81373_cooling_set_cur_state(struct thermal_cooling_device *cdev,
 
 	if (flash->target_state == 0) {
 		flash->need_cooler = 0;
-		flash->target_current[OCP81373_LED0] = OCP81373_FLASH_BRT_MAX;
-#if OCP81373_DUAL_LED
-		flash->target_current[OCP81373_LED1] = OCP81373_FLASH_BRT_MAX;
+		flash->target_current[AW36514E_LED0] = AW36514E_FLASH_BRT_MAX;
+#if AW36514E_DUAL_LED
+		flash->target_current[AW36514E_LED1] = AW36514E_FLASH_BRT_MAX;
 #endif
-		ret = ocp81373_torch_brt_ctrl(flash, OCP81373_LED0,
-						flash->ori_current[OCP81373_LED0]);
-#if OCP81373_DUAL_LED
-		ret = ocp81373_torch_brt_ctrl(flash, OCP81373_LED1,
-						flash->ori_current[OCP81373_LED1]);
+		ret = aw36514e_torch_brt_ctrl(flash, AW36514E_LED0,
+						flash->ori_current[AW36514E_LED0]);
+#if AW36514E_DUAL_LED
+		ret = aw36514e_torch_brt_ctrl(flash, AW36514E_LED1,
+						flash->ori_current[AW36514E_LED1]);
 #endif
 	} else {
 		flash->need_cooler = 1;
-		flash->target_current[OCP81373_LED0] =
+		flash->target_current[AW36514E_LED0] =
 			flash_state_to_current_limit[flash->target_state - 1];
-#if OCP81373_DUAL_LED
-		flash->target_current[OCP81373_LED1] =
+#if AW36514E_DUAL_LED
+		flash->target_current[AW36514E_LED1] =
 			flash_state_to_current_limit[flash->target_state - 1];
 #endif
-		ret = ocp81373_torch_brt_ctrl(flash, OCP81373_LED0,
-					flash->target_current[OCP81373_LED0]);
-#if OCP81373_DUAL_LED
-		ret = ocp81373_torch_brt_ctrl(flash, OCP81373_LED1,
-					flash->target_current[OCP81373_LED1]);
+		ret = aw36514e_torch_brt_ctrl(flash, AW36514E_LED0,
+					flash->target_current[AW36514E_LED0]);
+#if AW36514E_DUAL_LED
+		ret = aw36514e_torch_brt_ctrl(flash, AW36514E_LED1,
+					flash->target_current[AW36514E_LED1]);
 #endif
 	}
 	return ret;
 }
 
-static struct thermal_cooling_device_ops ocp81373_cooling_ops = {
-	.get_max_state		= ocp81373_cooling_get_max_state,
-	.get_cur_state		= ocp81373_cooling_get_cur_state,
-	.set_cur_state		= ocp81373_cooling_set_cur_state,
+static struct thermal_cooling_device_ops aw36514e_cooling_ops = {
+	.get_max_state		= aw36514e_cooling_get_max_state,
+	.get_cur_state		= aw36514e_cooling_get_cur_state,
+	.set_cur_state		= aw36514e_cooling_set_cur_state,
 };
 
-static struct flashlight_operations ocp81373_flash_ops = {
-	ocp81373_flash_open,
-	ocp81373_flash_release,
-	ocp81373_ioctl,
-	ocp81373_strobe_store,
-	ocp81373_set_driver
+static struct flashlight_operations aw36514e_flash_ops = {
+	aw36514e_flash_open,
+	aw36514e_flash_release,
+	aw36514e_ioctl,
+	aw36514e_strobe_store,
+	aw36514e_set_driver
 };
 
-static int ocp81373_parse_dt(struct ocp81373_flash *flash)
+static int aw36514e_parse_dt(struct aw36514e_flash *flash)
 {
 	struct device_node *np, *cnp;
 	struct device *dev = flash->dev;
@@ -952,7 +952,7 @@ static int ocp81373_parse_dt(struct ocp81373_flash *flash)
 				flash->flash_dev_id[i].channel,
 				flash->flash_dev_id[i].decouple);
 		if (flashlight_dev_register_by_device_id(&flash->flash_dev_id[i],
-			&ocp81373_flash_ops))
+			&aw36514e_flash_ops))
 			return -EFAULT;
 		i++;
 	}
@@ -964,11 +964,11 @@ err_node_put:
 	return -EINVAL;
 }
 
-static int ocp81373_probe(struct i2c_client *client,
+static int aw36514e_probe(struct i2c_client *client,
 			const struct i2c_device_id *devid)
 {
-	struct ocp81373_flash *flash;
-	struct ocp81373_platform_data *pdata = dev_get_platdata(&client->dev);
+	struct aw36514e_flash *flash;
+	struct aw36514e_platform_data *pdata = dev_get_platdata(&client->dev);
 	int rval;
 
 	pr_info("%s:%d", __func__, __LINE__);
@@ -982,72 +982,72 @@ static int ocp81373_probe(struct i2c_client *client,
 		pdata = devm_kzalloc(&client->dev, sizeof(*pdata), GFP_KERNEL);
 		if (pdata == NULL)
 			return -ENODEV;
-		pdata->max_flash_timeout = OCP81373_FLASH_TOUT_MAX;
+		pdata->max_flash_timeout = AW36514E_FLASH_TOUT_MAX;
 		/* led 1 */
-		pdata->max_flash_brt[OCP81373_LED0] = OCP81373_FLASH_BRT_MAX;
-		pdata->max_torch_brt[OCP81373_LED0] = OCP81373_TORCH_BRT_MAX;
-#if OCP81373_DUAL_LED
+		pdata->max_flash_brt[AW36514E_LED0] = AW36514E_FLASH_BRT_MAX;
+		pdata->max_torch_brt[AW36514E_LED0] = AW36514E_TORCH_BRT_MAX;
+#if AW36514E_DUAL_LED
 		/* led 2 */
-		pdata->max_flash_brt[OCP81373_LED1] = OCP81373_FLASH_BRT_MAX;
-		pdata->max_torch_brt[OCP81373_LED1] = OCP81373_TORCH_BRT_MAX;
+		pdata->max_flash_brt[AW36514E_LED1] = AW36514E_FLASH_BRT_MAX;
+		pdata->max_torch_brt[AW36514E_LED1] = AW36514E_TORCH_BRT_MAX;
 #endif
 	}
 	flash->pdata = pdata;
 	flash->dev = &client->dev;
 
-	rval = ocp81373_pinctrl_init(flash);
+	rval = aw36514e_pinctrl_init(flash);
 	if (rval < 0)
 		return rval;
 
-	flash->regmap = devm_regmap_init_i2c(client, &ocp81373_regmap);
+	flash->regmap = devm_regmap_init_i2c(client, &aw36514e_regmap);
 	if (IS_ERR(flash->regmap)) {
 		rval = PTR_ERR(flash->regmap);
 		return rval;
 	}
 
-	ocp81373_pinctrl_set(flash, OCP81373_PINCTRL_PIN_HWEN, OCP81373_PINCTRL_PINSTATE_HIGH);
+	aw36514e_pinctrl_set(flash, AW36514E_PINCTRL_PIN_HWEN, AW36514E_PINCTRL_PINSTATE_HIGH);
 	mdelay(1);
 
-	rval = regmap_read(flash->regmap, REG_DEVICE_ID, &ocp81373_chip_id);
-	if (OCP81373_DEVICE_ID == ocp81373_chip_id) {
-		dev_info(flash->dev, "OCP81373 chip id matched!\n");
+	rval = regmap_read(flash->regmap, REG_DEVICE_ID, &aw36514e_chip_id);
+	if (AW36514E_DEVICE_ID == aw36514e_chip_id) {
+		dev_info(flash->dev, "aw36514e chip id matched!\n");
 	} else {
-		dev_err(flash->dev, "OCP81373 read chip id error...chipid=:0x%x, ret:%d\n", ocp81373_chip_id, rval);
+		dev_err(flash->dev, "aw36514e read chip id error...chipid=:0x%x, ret:%d\n", aw36514e_chip_id, rval);
 		return -1;
 	}
 
 	mutex_init(&flash->lock);
-	ocp81373_flash_data = flash;
+	aw36514e_flash_data = flash;
 
-	rval = ocp81373_subdev_init(flash, OCP81373_LED0, "ocp81373-led0");
+	rval = aw36514e_subdev_init(flash, AW36514E_LED0, "aw36514e-led0");
 	if (rval < 0)
 		return rval;
 
-#if OCP81373_DUAL_LED
-	rval = ocp81373_subdev_init(flash, OCP81373_LED1, "ocp81373-led1");
+#if AW36514E_DUAL_LED
+	rval = aw36514e_subdev_init(flash, AW36514E_LED1, "aw36514e-led1");
 	if (rval < 0)
 		return rval;
 #endif
 
 	pm_runtime_enable(flash->dev);
 
-	rval = ocp81373_parse_dt(flash);
+	rval = aw36514e_parse_dt(flash);
 
 	i2c_set_clientdata(client, flash);
 
-	flash->max_state = OCP81373_COOLER_MAX_STATE;
+	flash->max_state = AW36514E_COOLER_MAX_STATE;
 	flash->target_state = 0;
 	flash->need_cooler = 0;
-	flash->target_current[OCP81373_LED0] = OCP81373_FLASH_BRT_MAX;
-#if OCP81373_DUAL_LED
-	flash->target_current[OCP81373_LED1] = OCP81373_FLASH_BRT_MAX;
+	flash->target_current[AW36514E_LED0] = AW36514E_FLASH_BRT_MAX;
+#if AW36514E_DUAL_LED
+	flash->target_current[AW36514E_LED1] = AW36514E_FLASH_BRT_MAX;
 #endif
-	flash->ori_current[OCP81373_LED0] = OCP81373_TORCH_BRT_MIN;
-#if OCP81373_DUAL_LED
-	flash->ori_current[OCP81373_LED1] = OCP81373_TORCH_BRT_MIN;
+	flash->ori_current[AW36514E_LED0] = AW36514E_TORCH_BRT_MIN;
+#if AW36514E_DUAL_LED
+	flash->ori_current[AW36514E_LED1] = AW36514E_TORCH_BRT_MIN;
 #endif
 	flash->cdev = thermal_of_cooling_device_register(client->dev.of_node,
-			"flashlight_cooler", flash, &ocp81373_cooling_ops);
+			"flashlight_cooler", flash, &aw36514e_cooling_ops);
 	if (IS_ERR(flash->cdev))
 		pr_info("register thermal failed\n");
 
@@ -1055,13 +1055,13 @@ static int ocp81373_probe(struct i2c_client *client,
 	return 0;
 }
 
-static void ocp81373_remove(struct i2c_client *client)
+static void aw36514e_remove(struct i2c_client *client)
 {
-	struct ocp81373_flash *flash = i2c_get_clientdata(client);
+	struct aw36514e_flash *flash = i2c_get_clientdata(client);
 	unsigned int i;
 
 	thermal_cooling_device_unregister(flash->cdev);
-	for (i = OCP81373_LED0; i < OCP81373_LED_MAX; i++) {
+	for (i = AW36514E_LED0; i < AW36514E_LED_MAX; i++) {
 		v4l2_device_unregister_subdev(&flash->subdev_led[i]);
 		v4l2_ctrl_handler_free(&flash->ctrls_led[i]);
 		media_entity_cleanup(&flash->subdev_led[i].entity);
@@ -1072,58 +1072,58 @@ static void ocp81373_remove(struct i2c_client *client)
 	pm_runtime_set_suspended(&client->dev);
 	return;
 }
-static void ocp81373_shutdown(struct i2c_client *client)
+static void aw36514e_shutdown(struct i2c_client *client)
 {
-	regmap_update_bits(ocp81373_flash_data->regmap, REG_FLAG2, 0x1f, 0x00);
+	regmap_update_bits(aw36514e_flash_data->regmap, REG_FLAG2, 0x1f, 0x00);
 	pr_info_ratelimited("%s", __func__);
 	return;
 }
 
-static int __maybe_unused ocp81373_suspend(struct device *dev)
+static int __maybe_unused aw36514e_suspend(struct device *dev)
 {
 	// pr_info("%s %d", __func__, __LINE__);
 	return 0;
 }
 
-static int __maybe_unused ocp81373_resume(struct device *dev)
+static int __maybe_unused aw36514e_resume(struct device *dev)
 {
 	// pr_info("%s %d", __func__, __LINE__);
 	return 0;
 }
 
-static const struct i2c_device_id ocp81373_id_table[] = {
-	{OCP81373_NAME, 0},
+static const struct i2c_device_id aw36514e_id_table[] = {
+	{AW36514E_NAME, 0},
 	{}
 };
 
-MODULE_DEVICE_TABLE(i2c, ocp81373_id_table);
+MODULE_DEVICE_TABLE(i2c, aw36514e_id_table);
 
-static const struct of_device_id ocp81373_of_table[] = {
-	{ .compatible = "mediatek,ocp81373" },
+static const struct of_device_id aw36514e_of_table[] = {
+	{ .compatible = "mediatek,aw36514e" },
 	{ },
 };
-MODULE_DEVICE_TABLE(of, ocp81373_of_table);
+MODULE_DEVICE_TABLE(of, aw36514e_of_table);
 
-static const struct dev_pm_ops ocp81373_pm_ops = {
+static const struct dev_pm_ops aw36514e_pm_ops = {
 	SET_SYSTEM_SLEEP_PM_OPS(pm_runtime_force_suspend,
 				pm_runtime_force_resume)
-	SET_RUNTIME_PM_OPS(ocp81373_suspend, ocp81373_resume, NULL)
+	SET_RUNTIME_PM_OPS(aw36514e_suspend, aw36514e_resume, NULL)
 };
 
-static struct i2c_driver ocp81373_i2c_driver = {
+static struct i2c_driver aw36514e_i2c_driver = {
 	.driver = {
-		   .name = OCP81373_NAME,
-		   .pm = &ocp81373_pm_ops,
-		   .of_match_table = ocp81373_of_table,
+		   .name = AW36514E_NAME,
+		   .pm = &aw36514e_pm_ops,
+		   .of_match_table = aw36514e_of_table,
 		   },
-	.probe = ocp81373_probe,
-	.remove = ocp81373_remove,
-	.shutdown = ocp81373_shutdown,
-	.id_table = ocp81373_id_table,
+	.probe = aw36514e_probe,
+	.remove = aw36514e_remove,
+	.shutdown = aw36514e_shutdown,
+	.id_table = aw36514e_id_table,
 };
 
-module_i2c_driver(ocp81373_i2c_driver);
+module_i2c_driver(aw36514e_i2c_driver);
 
 MODULE_AUTHOR("Chen Zhiming <chenzm8@lenovo.com>");
-MODULE_DESCRIPTION("MOTO ocp81373 LED flash driver");
+MODULE_DESCRIPTION("MOTO aw36514e LED flash driver");
 MODULE_LICENSE("GPL");
