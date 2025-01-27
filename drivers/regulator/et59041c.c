@@ -46,7 +46,7 @@ module_param_named(dbg_level, dbg_enable, int, 0644);
 static const struct regmap_config et59041c_regmap_config = {
 	.reg_bits = 8,
 	.val_bits = 8,
-	.max_register = ET59041C_REG_CONTROL,
+	.max_register = ET59041C_REG_CHIPID2,
 	// .cache_type	= REGCACHE_NONE,
 	// .rd_table	= &et59041c_no_reg_table,
 	// .wr_table	= &et59041c_no_reg_table,
@@ -913,10 +913,22 @@ static int et59041c_i2c_probe(struct i2c_client *i2c,
 		dev_err(chip->dev, "Failed to read DEVICE_ID reg: %d\n", ret);
 		return ret;
 	}
-
+	dev_info(chip->dev, "Success to read DEVICE_ID data : %d\n", data);
 	switch (data) {
 	case ET59041C_DEVICE_ID:
 		chip->chip_id = ET59041C;
+		ret = regmap_read(chip->regmap, ET59041C_REG_CHIPID2, &data);
+		if (ret < 0) {
+			dev_info(chip->dev, "Failed to read DEVICE_ID2 reg: %d\n", ret);
+			return ret;
+		}
+		dev_info(chip->dev, "Success to read DEVICE_ID2 data : %d\n", data);
+		if (data == AW370041C_DEVICE_ID) {
+			chip->chip_id = AW370041C;
+		} else {
+			dev_info(chip->dev, " device id = 0x%x.\n", data);
+			//return -ENODEV;
+		}
 		break;
 	case DIO80151C_DEVICE_ID:
 		chip->chip_id = DIO80151C;

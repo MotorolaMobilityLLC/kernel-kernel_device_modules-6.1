@@ -46,6 +46,7 @@ enum {
 enum et5904_chip_id {
 	ET5904,
 	DIO8015 = 0x4,
+	AW37004,
 	CPS5054A = 0x33,
 };
 
@@ -94,6 +95,7 @@ struct et5904_regulator {
 };
 
 #define	ET5904_REG_CHIPID			0x00
+#define	ET5904_REG_CHIPID2		0x19
 #define	ET5904_REG_ILIMIT			0x01
 #define	ET5904_REG_RDIS			0x02
 #define	ET5904_REG_DVO1			0x03
@@ -111,6 +113,7 @@ struct et5904_regulator {
 #define ET5904_DEVICE_ID	0x00
 #define DIO8015_DEVICE_ID   0x04
 #define CPS5054A_DEVICE_ID  0x33
+#define AW37004_DEVICE_ID  0x04
 
 #define ET5904_BIT_0		(1 << 0)
 #define ET5904_BIT_1		(1 << 1)
