@@ -394,8 +394,6 @@
 				<435 5>,
 				<455 6>,
 				<470 7>;
-	wlc-mc-support;
-	wlc-phone-case-support;
 };
 
 &pdc {
