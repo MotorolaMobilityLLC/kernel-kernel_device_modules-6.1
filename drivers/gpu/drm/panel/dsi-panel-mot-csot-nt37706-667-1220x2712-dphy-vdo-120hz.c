@@ -208,6 +208,12 @@ static void lcm_panel_init(struct lcm *ctx)
 		lcm_dcs_write_seq_static(ctx, 0XDF, 0X2F, 0x0C, 0X2F, 0X0C, 0X2F, 0X0C);
 	}
 
+	lcm_dcs_write_seq_static(ctx, 0xF0, 0x55, 0xAA, 0x52, 0x08, 0x01);
+	lcm_dcs_write_seq_static(ctx, 0x6F, 0x0A);
+	lcm_dcs_write_seq_static(ctx, 0xE4, 0x90);
+	lcm_dcs_write_seq_static(ctx, 0x6F, 0x00);
+	lcm_dcs_write_seq_static(ctx, 0xE4, 0x90);
+
 	lcm_dcs_write_seq_static(ctx, 0x17, 0x21);
 	lcm_dcs_write_seq_static(ctx, 0x71, 0x11);
 	lcm_dcs_write_seq_static(ctx, 0x8D, 0x00, 0x00, 0x04, 0xC3, 0x00, 0x00, 0x05, 0x87);
@@ -221,10 +227,6 @@ static void lcm_panel_init(struct lcm *ctx)
 		lcm_dcs_write_seq_static(ctx, 0xF0, 0x55, 0xAA, 0x52, 0x08, 0x00);
 		lcm_dcs_write_seq_static(ctx, 0xC0, 0x20, 0x00);
 	}
-
-	lcm_dcs_write_seq_static(ctx, 0xF0, 0x55, 0xAA, 0x52, 0x08, 0x00);
-	lcm_dcs_write_seq_static(ctx, 0x6F, 0x1A);
-	lcm_dcs_write_seq_static(ctx, 0xC2, 0x24);
 
 	lcm_dcs_write_seq_static(ctx, 0x2A, 0x00, 0x00, 0x04, 0xC3);
 	lcm_dcs_write_seq_static(ctx, 0x2B, 0x00, 0x00, 0x0A, 0x97);
@@ -267,7 +269,7 @@ static void lcm_panel_init(struct lcm *ctx)
 
 	//VFP_EXT_IDLE, VBP_EXT_IDLE (ref. 120Hz
 	lcm_dcs_write_seq_static(ctx, 0x6F, 0x10);
-	lcm_dcs_write_seq_static(ctx, 0x3B, 0x00, 0x18, 0x00, 0x30);
+	lcm_dcs_write_seq_static(ctx, 0x3B, 0x00, 0x14, 0x00, 0x34);
 
 	//TE on
 	lcm_dcs_write_seq_static(ctx, 0x35, 0x00);
@@ -289,12 +291,6 @@ static void lcm_panel_init(struct lcm *ctx)
 		lcm_dcs_write_seq_static(ctx, 0x5F, 0x00, 0x04);
 	else
 		lcm_dcs_write_seq_static(ctx, 0x5F, 0x00, 0x00);
-
-	lcm_dcs_write_seq_static(ctx, 0xF0, 0x55, 0xAA, 0x52, 0x08, 0x01);
-	lcm_dcs_write_seq_static(ctx, 0x6F, 0x0A);
-	lcm_dcs_write_seq_static(ctx, 0xE4, 0x90);
-	lcm_dcs_write_seq_static(ctx, 0x6F, 0x00);
-	lcm_dcs_write_seq_static(ctx, 0xE4, 0x90);
 
 	lcm_dcs_write_seq_static(ctx, 0x11);
 	usleep_range(120 * 1000, 121 * 1000);
