@@ -263,3 +263,9 @@ config MOTO_FACTORY_LPD
         default n
         help
           This is to enable MOTO supports of factory lpd feature.
+
+config MOTO_PHONE_CASE_SUPPORT
+        bool "moto phone case support"
+        default n
+        help
+          This is to enable MOTO supports of phone case feature.
