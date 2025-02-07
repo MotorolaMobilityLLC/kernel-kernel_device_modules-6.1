@@ -300,6 +300,8 @@
 
 		pinctrl-names = "default";
 		pinctrl-0 = <&bq25960_int_default_slave>;
+
+		mmi,cp_standalone;
 	};
 
 	nu2115_master:nu2115-master@6e {
