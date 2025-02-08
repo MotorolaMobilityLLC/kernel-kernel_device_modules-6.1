@@ -410,7 +410,6 @@ static int lcm_prepare(struct drm_panel *panel)
 	atomic_set(&ctx->dc_mode, 0);
 	atomic_set(&ctx->apl_mode, 0);
 	atomic_set(&ctx->current_bl, 0);
-	atomic_set(&ctx->current_fps, 120);
 	atomic_set(&ctx->pcd_mode, 0);
 	atomic_set(&ctx->doze_enable, 0);
 
