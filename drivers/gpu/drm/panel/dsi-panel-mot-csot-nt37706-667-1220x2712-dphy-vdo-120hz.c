@@ -443,8 +443,8 @@ static int lcm_enable(struct drm_panel *panel)
 
 #define FHDP_FRAME_WIDTH    (1220)
 #define FHDP_HFP            (24)
-#define FHDP_HSA            (4)
-#define FHDP_HBP            (4)
+#define FHDP_HSA            (8)
+#define FHDP_HBP            (8)
 #define FHDP_HTOTAL         (FHDP_FRAME_WIDTH + FHDP_HFP + FHDP_HSA + FHDP_HBP)
 #define FHDP_FRAME_HEIGHT   (2712)
 #define FHDP_VFP_120        (52)
@@ -530,7 +530,7 @@ static const struct drm_display_mode mode_120hz = {
 #if defined(CONFIG_MTK_PANEL_EXT)
 #if 0
 static struct mtk_panel_params ext_params_48hz = {
-	.pll_clk = 441,
+	.pll_clk = 449,
 	//.vfp_low_power = 4180,
 	.cust_esd_check = 1,
 	.esd_check_enable = 1,
@@ -592,7 +592,7 @@ static struct mtk_panel_params ext_params_48hz = {
 		},
 	},
 
-	.data_rate = 882,
+	.data_rate = 898,
 	.lfr_enable = 0,
 	.lfr_minimum_fps = 60,
 
@@ -617,7 +617,7 @@ static struct mtk_panel_params ext_params_48hz = {
 #endif
 
 static struct mtk_panel_params ext_params_60hz = {
-	.pll_clk = 441,
+	.pll_clk = 449,
 	//.vfp_low_power = 4180,
 	.cust_esd_check = 1,
 	.esd_check_enable = 1,
@@ -679,7 +679,7 @@ static struct mtk_panel_params ext_params_60hz = {
 		},
 	},
 
-	.data_rate = 882,
+	.data_rate = 898,
 	.lfr_enable = 0,
 	.lfr_minimum_fps = 60,
 
@@ -703,7 +703,7 @@ static struct mtk_panel_params ext_params_60hz = {
 };
 
 static struct mtk_panel_params ext_params_90hz = {
-	.pll_clk = 441,
+	.pll_clk = 449,
 	//.vfp_low_power = 2578,
 	.cust_esd_check = 1,
 	.esd_check_enable = 1,
@@ -764,7 +764,7 @@ static struct mtk_panel_params ext_params_90hz = {
 			.range_bpg_ofs = nt37706_vdo_range_bpg_ofs,
 		},
 	},
-	.data_rate = 882,
+	.data_rate = 898,
 	.lfr_enable = 0,
 	.lfr_minimum_fps = 60,
 
@@ -788,7 +788,7 @@ static struct mtk_panel_params ext_params_90hz = {
 };
 
 static struct mtk_panel_params ext_params_120hz = {
-	.pll_clk = 441,
+	.pll_clk = 449,
 	//.vfp_low_power = 2578,
 	.cust_esd_check = 1,
 	.esd_check_enable = 1,
@@ -849,7 +849,7 @@ static struct mtk_panel_params ext_params_120hz = {
 			.range_bpg_ofs = nt37706_vdo_range_bpg_ofs,
 		},
 	},
-	.data_rate = 882,
+	.data_rate = 898,
 	.lfr_enable = 0,
 	.lfr_minimum_fps = 60,
 
