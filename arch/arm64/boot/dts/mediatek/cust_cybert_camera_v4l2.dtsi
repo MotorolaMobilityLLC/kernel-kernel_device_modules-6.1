@@ -558,6 +558,8 @@
     camera-af-tele@74 {
         compatible = "mediatek,main3_vcm";
         reg = <0x74>;
+        rst-supply = <&cam_iovdd_ldo>;
+        vdd-supply = <&cam_rt_oisvdd_ldo>;
         vin-supply = <&cam_rt_afvdd_ldo>;
         port {
             tele_af: endpoint {
@@ -569,9 +571,9 @@
     camera-ois-tele@2a {
         compatible = "mediatek,mot_tele_dw9784";
         reg = <0x2a>;
-        vdd-supply = <&cam_rt_afvdd_ldo>;
-        vin-supply = <&cam_rt_oisvdd_ldo>;
         rst-supply = <&cam_iovdd_ldo>;
+        vdd-supply = <&cam_rt_oisvdd_ldo>;
+        vin-supply = <&cam_rt_afvdd_ldo>;
 
         status = "okay";
         port {
