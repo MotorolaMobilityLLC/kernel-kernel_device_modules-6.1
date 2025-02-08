@@ -736,6 +736,9 @@ struct mtk_charger {
 #ifdef CONFIG_MOTO_WLS_OTG_SWITCH
 	bool wls_tcmd_test;
 #endif
+
+	bool fcnt_charge_support;
+	bool fcnt_schedule_chg;
 };
 
 static inline int mtk_chg_alg_notify_call(struct mtk_charger *info,

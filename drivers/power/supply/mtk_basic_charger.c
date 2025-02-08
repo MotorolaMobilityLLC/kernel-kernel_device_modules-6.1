@@ -308,6 +308,9 @@ static bool select_charging_current_limit(struct mtk_charger *info,
 		is_basic = true;
 	}
 
+	if (info->fcnt_schedule_chg)
+		is_basic = true;
+
 	/* AICL */
 	if (!info->disable_aicl)
 		charger_dev_run_aicl(info->chg1_dev,
@@ -783,7 +786,8 @@ static int do_algorithm(struct mtk_charger *info)
 		if (!(ret == ALG_READY || ret == ALG_RUNNING) &&
 			!(ret2 == ALG_READY || ret2 == ALG_RUNNING) &&
 			!(ret3 == ALG_READY || ret3 == ALG_RUNNING) &&
-			!(ret4 == ALG_READY || ret4 == ALG_RUNNING))
+			!(ret4 == ALG_READY || ret4 == ALG_RUNNING) &&
+			!info->fcnt_schedule_chg)
 			charger_dev_enable(info->chg1_dev, true);
 	}
 

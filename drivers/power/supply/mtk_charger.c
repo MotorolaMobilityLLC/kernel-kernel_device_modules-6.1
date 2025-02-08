@@ -2591,6 +2591,8 @@ static void charger_check_status(struct mtk_charger *info)
 		charging = false;
 	if (info->sc.disable_charger == true)
 		charging = false;
+	if (info->fcnt_schedule_chg)
+		charging = false;
 
 	if (info->mmi.sm_param[BASE_BATT].pres_chrg_step == STEP_STOP)
 		charging = false;
@@ -2614,13 +2616,13 @@ stop_charging:
 		info->stop_6pin_re_en = false;
 	}
 
-	chr_err("tmp:%d (jeita:%d sm:%d cv:%d en:%d) (sm:%d) en:%d c:%d s:%d ov:%d %d sc:%d %d %d saf_cmd:%d bat_mon:%d %d\n",
+	chr_err("tmp:%d (jeita:%d sm:%d cv:%d en:%d) (sm:%d) en:%d c:%d s:%d ov:%d %d sc:%d %d %d saf_cmd:%d bat_mon:%d %d fcnt_dis_chg:%d\n",
 		temperature, info->enable_sw_jeita, info->sw_jeita.sm,
 		info->sw_jeita.cv, info->sw_jeita.charging, thermal->sm,
 		charging, info->cmd_discharging, info->safety_timeout,
 		info->vbusov_stat, info->dpdmov_stat, info->sc.disable_charger,
 		info->can_charging, charging, info->safety_timer_cmd,
-		info->enable_vbat_mon, info->batpro_done);
+		info->enable_vbat_mon, info->batpro_done, info->fcnt_schedule_chg);
 
 	charger_dev_is_enabled(info->chg1_dev, &chg_dev_chgen);
 
@@ -6300,6 +6302,79 @@ void mmi_init(struct mtk_charger *info)
 	info->mmi.init_done = true;
 }
 
+
+static ssize_t schedule_chg_store(struct class *c, struct class_attribute *attr,
+                    const char *buf, size_t count)
+{
+	int val;
+
+	if (!mmi_info) {
+		pr_err("[%s]mmi_info not valid\n", __func__);
+		return -ENODEV;
+	}
+
+	sscanf(buf, "%d", &val);
+	mmi_info->fcnt_schedule_chg = !!val;
+	_wake_up_charger(mmi_info);
+
+	pr_info("%s:%d store successful, current_status:%s. input val = %d\n", __func__,
+			__LINE__, mmi_info->fcnt_schedule_chg ? "Stop charging" : "Allow charging", val);
+	return count;
+}
+
+static ssize_t schedule_chg_show(struct class *c, struct class_attribute *attr, char *buf)
+{
+	if (!mmi_info) {
+		pr_err("[%s]mmi_info not valid\n", __func__);
+		return -ENODEV;
+	}
+
+	pr_info("%s:%d read successful, current_status:%s\n", __func__,__LINE__,
+		 mmi_info->fcnt_schedule_chg ? "Stop charging" : "Allow charging");
+
+	return scnprintf(buf, PAGE_SIZE, "%d\n", mmi_info->fcnt_schedule_chg);
+}
+static CLASS_ATTR_RW(schedule_chg);
+
+static struct attribute *fcnt_oem_battery_class_attrs[] = {
+	&class_attr_schedule_chg.attr,
+	NULL,
+};
+
+ATTRIBUTE_GROUPS(fcnt_oem_battery_class);
+
+static struct class fcnt_oem_battery_class = {
+	.name			= "oem-battery",
+	.owner			= THIS_MODULE,
+	.class_groups 		= fcnt_oem_battery_class_groups
+};
+
+void fcnt_init(struct mtk_charger *info)
+{
+	struct device_node *node;
+	struct device *dev;
+
+	if (!info) {
+		pr_info("[%s]Error info not exist\n",__func__);
+		return;
+	}
+	info->fcnt_charge_support = false;
+	info->fcnt_schedule_chg = false;
+	dev = &info->pdev->dev;
+	node = dev->of_node;
+	if (!node) {
+		pr_info("[%s]Error node not exist\n",__func__);
+		return;
+	}
+
+	info->fcnt_charge_support =
+		of_property_read_bool(node, "fcnt,charger-feature-support");
+
+	if (info->fcnt_charge_support)
+		class_register(&fcnt_oem_battery_class);
+
+}
+
 #ifdef MTK_BASE
 static void kpoc_power_off_check(struct mtk_charger *info)
 {
@@ -6749,7 +6824,7 @@ static int charger_routine_thread(void *arg)
 
 		if (is_disable_charger(info) == false &&
 			is_charger_on == true &&
-			info->can_charging == true) {
+			(info->can_charging == true || info->fcnt_schedule_chg)) {
 			if (info->algo.do_algorithm)
 				info->algo.do_algorithm(info);
 			charger_status_check(info);
@@ -8067,6 +8142,7 @@ static int mtk_charger_probe(struct platform_device *pdev)
 	mtk_charger_tcmd_register(info);
 	mmi_info = info;
 	mmi_init(info);
+	fcnt_init(info);
 	kthread_run(charger_routine_thread, info, "charger_thread");
 
 	mutex_init(&info->typec_otp_lock);

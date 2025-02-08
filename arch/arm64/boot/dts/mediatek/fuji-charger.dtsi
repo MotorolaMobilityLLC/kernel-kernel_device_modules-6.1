@@ -113,6 +113,9 @@
 				<60 4200 293>;
 	/*typec_otp*/
 	mmi,typecotp-charger;
+
+	/*fcnt charge feature*/
+	fcnt,charger-feature-support;
 };
 
 &moto_chg_tcmd {
