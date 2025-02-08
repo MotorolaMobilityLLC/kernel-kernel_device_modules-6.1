@@ -202,7 +202,7 @@ static void lcm_panel_init(struct lcm *ctx)
 	//VideoModeExt_VFP,VBPFSET0~2,IDLE
 	lcm_dcs_write_seq_static(ctx, 0x3B, 0x00, 0x14, 0x00, 0x34, 0x00, 0x14, 0x03, 0xD4, 0x00, 0x14, 0x0B, 0x14, 0x00, 0x14, 0x10, 0x84);
 	lcm_dcs_write_seq_static(ctx, 0x6F, 0x10);
-	lcm_dcs_write_seq_static(ctx, 0x3B, 0x00, 0x10, 0x00, 0x38);
+	lcm_dcs_write_seq_static(ctx, 0x3B, 0x00, 0x14, 0x00, 0x34);
 	//TEon
 	lcm_dcs_write_seq_static(ctx, 0x35, 0x00);
 	//VDC GIR off
@@ -221,19 +221,19 @@ static void lcm_panel_init(struct lcm *ctx)
 		//for clk abnormal power off to GND
 		lcm_dcs_write_seq_static(ctx, 0xF0, 0x55, 0xAA, 0x52, 0x08, 0x05);
 		lcm_dcs_write_seq_static(ctx, 0xCB, 0x33, 0x33, 0x33, 0x33, 0x33, 0x33, 0x33);
-		lcm_dcs_write_seq_static(ctx, 0XF0, 0X55, 0XAA, 0X52, 0X08, 0X00);
-		lcm_dcs_write_seq_static(ctx, 0X6F, 0X07);
-		lcm_dcs_write_seq_static(ctx, 0XCA, 0x07,0x07,0x36);
-		lcm_dcs_write_seq_static(ctx, 0XF0, 0X55, 0XAA, 0X52, 0X08, 0X01);
-		lcm_dcs_write_seq_static(ctx, 0XCD, 0X60);
-		lcm_dcs_write_seq_static(ctx, 0X6F, 0X21);
-		lcm_dcs_write_seq_static(ctx, 0XD8, 0x40,0x40,0x40);
-		lcm_dcs_write_seq_static(ctx, 0X6F, 0X24);
-		lcm_dcs_write_seq_static(ctx, 0XD8, 0x30,0x30,0x30,0x30);
-		lcm_dcs_write_seq_static(ctx, 0X6F, 0X06);
-		lcm_dcs_write_seq_static(ctx, 0XD8, 0x52,0x57,0x20,0x00);
-		lcm_dcs_write_seq_static(ctx, 0X6F, 0X0C);
-		lcm_dcs_write_seq_static(ctx, 0XD8, 0x32,0x37,0x30,0x00);
+		lcm_dcs_write_seq_static(ctx, 0xF0, 0x55, 0xAA, 0x52, 0x08, 0x00);
+		lcm_dcs_write_seq_static(ctx, 0x6F, 0x07);
+		lcm_dcs_write_seq_static(ctx, 0xCA, 0x07,0x07,0x36);
+		lcm_dcs_write_seq_static(ctx, 0xF0, 0x55, 0xAA, 0x52, 0x08, 0x01);
+		lcm_dcs_write_seq_static(ctx, 0xCD, 0x60);
+		lcm_dcs_write_seq_static(ctx, 0x6F, 0x21);
+		lcm_dcs_write_seq_static(ctx, 0xD8, 0x40,0x40,0x40);
+		lcm_dcs_write_seq_static(ctx, 0x6F, 0x24);
+		lcm_dcs_write_seq_static(ctx, 0xD8, 0x30,0x30,0x30,0x30);
+		lcm_dcs_write_seq_static(ctx, 0x6F, 0x06);
+		lcm_dcs_write_seq_static(ctx, 0xD8, 0x52,0x57,0x20,0x00);
+		lcm_dcs_write_seq_static(ctx, 0x6F, 0x0C);
+		lcm_dcs_write_seq_static(ctx, 0xD8, 0x32,0x37,0x30,0x00);
 	}
 	pr_info("%s current_fps:%d\n", __func__, atomic_read(&ctx->current_fps));
 	switch (atomic_read(&ctx->current_fps)) {
@@ -262,9 +262,26 @@ static void lcm_panel_init(struct lcm *ctx)
 	//LHBM loaction
 	lcm_dcs_write_seq_static(ctx, 0x88, 0x01, 0x02, 0x62, 0x09, 0x88, 0x00, 0x00, 0x00, 0x00);
 
-	lcm_dcs_write_seq_static(ctx, 0XF0, 0X55, 0XAA, 0X52, 0X08, 0X00);
-	lcm_dcs_write_seq_static(ctx, 0X6F, 0X01);
-	lcm_dcs_write_seq_static(ctx, 0XDF, 0X40);
+	lcm_dcs_write_seq_static(ctx, 0xF0, 0x55, 0xAA, 0x52, 0x08, 0x00);
+	//TIA_FSET0,VBP_FSET0,VFP_FSET0(120Hz)20+52+2712=2784
+	lcm_dcs_write_seq_static(ctx, 0x6F, 0x00);
+	lcm_dcs_write_seq_static(ctx, 0xBA, 0x00, 0x51, 0x00, 0x14, 0xC0, 0x34, 0x10);
+	//TIA_FSET1,VBP_FSET1,VFP_FSET1(90Hz)20+980+2712
+	lcm_dcs_write_seq_static(ctx, 0x6F, 0x07);
+	lcm_dcs_write_seq_static(ctx, 0xBA, 0x00, 0x51, 0x00, 0x14, 0x03, 0xD4, 0x10);
+	//VBP_FSET2,VFP_FSET2(60Hz)20+2836+2712=5568
+	lcm_dcs_write_seq_static(ctx, 0x6F, 0x10);
+	lcm_dcs_write_seq_static(ctx, 0xBA, 0x00, 0x14, 0x0B, 0x14);
+	//VBP_FSET3,VFP_FSET3(48Hz)VFP20+4228+2712=6960
+	lcm_dcs_write_seq_static(ctx, 0x6F, 0x17);
+	lcm_dcs_write_seq_static(ctx, 0xBA, 0x00, 0x14, 0x10, 0x84);
+	//TIB_IDLE,VBP_IDLE,VFP_IDLE20+52+2712=2784
+	lcm_dcs_write_seq_static(ctx, 0x6F, 0x00);
+	lcm_dcs_write_seq_static(ctx, 0xBB, 0x00, 0x51, 0x00, 0x14, 0x00, 0x34, 0x70);
+
+	lcm_dcs_write_seq_static(ctx, 0xF0, 0x55, 0xAA, 0x52, 0x08, 0x00);
+	lcm_dcs_write_seq_static(ctx, 0x6F, 0x01);
+	lcm_dcs_write_seq_static(ctx, 0xDF, 0x40);
 	if ((ctx->version == 1) || (ctx->version == 2)) {
 		lcm_dcs_write_seq_static(ctx, 0x6F, 0x8B);
 		lcm_dcs_write_seq_static(ctx, 0xDF, 0x36, 0x2C, 0x36, 0x2C, 0x36, 0x2C);
@@ -325,11 +342,6 @@ static void lcm_panel_init(struct lcm *ctx)
 	lcm_dcs_write_seq_static(ctx, 0xF0, 0x55, 0xAA, 0x52, 0x08, 0x04);
 	lcm_dcs_write_seq_static(ctx, 0x6F, 0x08);
 	lcm_dcs_write_seq_static(ctx, 0xB5, 0x04);
-
-	lcm_dcs_write_seq_static(ctx, 0xF0, 0x55, 0xAA, 0x52, 0x08, 0x00);
-	lcm_dcs_write_seq_static(ctx, 0x6F, 0x1A);
-	lcm_dcs_write_seq_static(ctx, 0xC2, 0x24);
-
 
 	lcm_dcs_write_seq_static(ctx, 0x11);
 	usleep_range(120 * 1000, 121 * 1000);
