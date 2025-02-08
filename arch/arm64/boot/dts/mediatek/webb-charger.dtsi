@@ -101,4 +101,11 @@
 	vbat-cv = <4560>;
 };
 
+&lk_charger {
+	boot-battery-voltage = <3300000>;
+	boot-battery-voltage-max = <3300000>;
+	/*boot battery voltage when using AC charger*/
+	ac_charger_boot_battery_voltage = <3200000>;
+};
+
 
