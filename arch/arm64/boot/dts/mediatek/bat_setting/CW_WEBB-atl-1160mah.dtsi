@@ -13,7 +13,7 @@
 webb-atl-1160mah {
 	serialnum = "SB18E56671";
 	fcc_design = <1160>;
-	config_profile_info = [ 46 00 00 00 00 00 00 00
+	config_profile_info = [ 3C 00 00 00 00 00 00 00
 				B7 B3 C2 C8 BC B2 BC 96
 				7D FF F9 AF 96 7B 63 51
 				47 45 42 83 4F E3 54 FF
@@ -22,5 +22,5 @@ webb-atl-1160mah {
 				CF D9 CE DA F7 FF FF FF
 				20 00 AB 10 00 80 B9 00
 				00 00 64 25 A3 ED 00 00
-				00 00 00 00 00 00 00 73];
+				00 00 00 00 00 00 00 BE];
 };
