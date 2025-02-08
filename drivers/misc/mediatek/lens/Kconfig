@@ -307,3 +307,13 @@ config AF_NOISE_ELIMINATION
 	default n
 	help
 	  Enable it only for product that suffering AF resonance noise
+
+config MOTO_AK7377AAF
+        bool "For MOT AK7377AAF power off delay"
+        help
+          MOT AK7377AAF power off delay
+
+config MOTO_DW9800WAF
+        bool "For MOT DW9800WAF power off delay"
+        help
+          MOT DW9800WAF power off delay

@@ -383,7 +383,9 @@ static int main_vcm_power_off(struct main_vcm_device *main_vcm)
 	if (main_vcm->vcamaf_pinctrl && main_vcm->vcamaf_off)
 		ret = pinctrl_select_state(main_vcm->vcamaf_pinctrl,
 					main_vcm->vcamaf_off);
-
+#ifdef CONFIG_MOTO_AK7377AAF
+	mdelay(6);
+#endif
 	LOG_INF("-\n");
 
 	return ret;
