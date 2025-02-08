@@ -294,6 +294,14 @@ config MOT_AK7377_HALL_TEST
 	  lens driver for the camera sensor module
 	  Set as y if the driver is used in this project
 
+config MOT_TELE_DW9784_OIS
+	bool "MOT TELE DW9784 OIS"
+	help
+	  MOT TELE DW9784 OIS
+	  This config is used to enable the corresponding
+	  power of ois/af driver for the camera sensor module
+	  Set as y if the driver is used in this project
+
 config MOT_DW9784_AF_DRIFT
         bool "MOT DW9784 AF DRIFT"
         help

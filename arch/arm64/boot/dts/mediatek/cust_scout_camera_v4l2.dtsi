@@ -522,8 +522,9 @@
     camera-af-tele@a {
         compatible = "mediatek,main3_vcm";
         reg = <0xa>;
-        vdd-supply = <&mt6369_vibr>;
-        vin-supply = <&cam_rt_oisvdd_ldo>;
+        rst-supply = <&cam_iovdd_ldo>;
+        vdd-supply = <&cam_rt_oisvdd_ldo>;
+        vin-supply = <&mt6369_vibr>;
         port {
             tele_af: endpoint {
                 remote-endpoint = <&tele_af_endpoint>;
@@ -534,9 +535,9 @@
     camera-ois-tele@2a {
         compatible = "mediatek,mot_tele_dw9784";
         reg = <0x2a>;
-        vdd-supply = <&mt6369_vibr>;
-        vin-supply = <&cam_rt_oisvdd_ldo>;
         rst-supply = <&cam_iovdd_ldo>;
+        vdd-supply = <&cam_rt_oisvdd_ldo>;
+        vin-supply = <&mt6369_vibr>;
         port {
             tele_ois: endpoint {
                 remote-endpoint = <&tele_ois_endpoint>;

@@ -28,8 +28,14 @@
 #define REGULATOR_MAXSIZE			16
 
 static const char * const ldo_names[] = {
+#if IS_ENABLED(CONFIG_MOT_TELE_DW9784_OIS)
+	"rst",
+	"vdd",
+	"vin",
+#else
 	"vin",
 	"vdd",
+#endif
 };
 
 /* main3_vcm device structure */
@@ -39,6 +45,9 @@ struct main3_vcm_device {
 	struct v4l2_ctrl *focus;
 	struct regulator *vin;
 	struct regulator *vdd;
+#if IS_ENABLED(CONFIG_MOT_TELE_DW9784_OIS)
+	struct regulator *rst;
+#endif
 	struct pinctrl *vcamaf_pinctrl;
 	struct pinctrl_state *vcamaf_on;
 	struct pinctrl_state *oisen_on;
@@ -362,6 +371,16 @@ static int main3_vcm_power_off(struct main3_vcm_device *main3_vcm)
 	ldo_num = ARRAY_SIZE(ldo_names);
 	if (ldo_num > REGULATOR_MAXSIZE)
 		ldo_num = REGULATOR_MAXSIZE;
+#if IS_ENABLED(CONFIG_MOT_TELE_DW9784_OIS)
+	for (i = ldo_num - 1; i >= 0; i--) {
+		if (main3_vcm->ldo[i]) {
+			ret = regulator_disable(main3_vcm->ldo[i]);
+			if (ret < 0)
+				LOG_INF("cannot disable %d regulator\n", i);
+			usleep_range(3000, 3100);
+		}
+	}
+#else
 	for (i = 0; i < ldo_num; i++) {
 		if (main3_vcm->ldo[i]) {
 			ret = regulator_disable(main3_vcm->ldo[i]);
@@ -369,6 +388,7 @@ static int main3_vcm_power_off(struct main3_vcm_device *main3_vcm)
 				LOG_INF("cannot disable %d regulator\n", i);
 		}
 	}
+#endif
 
 	if (main3_vcm->vcamaf_pinctrl && main3_vcm->vcamaf_off)
 		ret = pinctrl_select_state(main3_vcm->vcamaf_pinctrl,
@@ -377,7 +397,6 @@ static int main3_vcm_power_off(struct main3_vcm_device *main3_vcm)
 	if (main3_vcm->vcamaf_pinctrl && main3_vcm->oisen_off)
 		ret = pinctrl_select_state(main3_vcm->vcamaf_pinctrl,
 					main3_vcm->oisen_off);
-
 
 	return ret;
 }
@@ -393,6 +412,16 @@ static int main3_vcm_power_on(struct main3_vcm_device *main3_vcm)
 	ldo_num = ARRAY_SIZE(ldo_names);
 	if (ldo_num > REGULATOR_MAXSIZE)
 		ldo_num = REGULATOR_MAXSIZE;
+#if IS_ENABLED(CONFIG_MOT_TELE_DW9784_OIS)
+	for (i = 0; i < ldo_num; i++) {
+		if (main3_vcm->ldo[i]) {
+			ret = regulator_enable(main3_vcm->ldo[i]);
+			if (ret < 0)
+				LOG_INF("cannot enable %d regulator\n", i);
+			usleep_range(3000, 3100);
+		}
+	}
+#else
 	for (i = 0; i < ldo_num; i++) {
 		if (main3_vcm->ldo[i]) {
 			ret = regulator_enable(main3_vcm->ldo[i]);
@@ -400,6 +429,7 @@ static int main3_vcm_power_on(struct main3_vcm_device *main3_vcm)
 				LOG_INF("cannot enable %d regulator\n", i);
 		}
 	}
+#endif
 
 	if (main3_vcm->vcamaf_pinctrl && main3_vcm->vcamaf_on)
 		ret = pinctrl_select_state(main3_vcm->vcamaf_pinctrl,

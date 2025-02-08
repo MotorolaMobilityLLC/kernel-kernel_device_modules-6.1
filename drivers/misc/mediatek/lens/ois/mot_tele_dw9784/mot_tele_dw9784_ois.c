@@ -94,9 +94,15 @@ u32 DW9784_OIS_I2C_SLAVE_ADDR = 0;
 #define CLK_MAXSIZE				16
 
 static const char * const ldo_names[] = {
-	 "vin",
-	 "vdd",
-	 "rst",
+#if IS_ENABLED(CONFIG_MOT_TELE_DW9784_OIS)
+	"rst",
+	"vdd",
+	"vin",
+#else
+	"vin",
+	"vdd",
+	"rst",
+#endif
 };
 
 /* power  on stage : idx = 0, 2, 4, ... */
@@ -1336,6 +1342,16 @@ static int dw9784_power_off(struct dw9784_device *dw9784)
 	hw_nums = ARRAY_SIZE(ldo_names);
 	if (hw_nums > REGULATOR_MAXSIZE)
 		hw_nums = REGULATOR_MAXSIZE;
+#if IS_ENABLED(CONFIG_MOT_TELE_DW9784_OIS)
+	for (i = hw_nums - 1; i >= 0; i--) {
+		if (dw9784->ldo[i]) {
+			ret = regulator_disable(dw9784->ldo[i]);
+			if (ret < 0)
+				LOG_INF("cannot enable %d regulator\n", i);
+			usleep_range(3000, 3100);
+		}
+	}
+#else
 	for (i = 0; i < hw_nums; i++) {
 		if (dw9784->ldo[i]) {
 			ret = regulator_disable(dw9784->ldo[i]);
@@ -1343,6 +1359,7 @@ static int dw9784_power_off(struct dw9784_device *dw9784)
 				LOG_INF("cannot enable %d regulator\n", i);
 		}
 	}
+#endif
 
 	hw_nums = ARRAY_SIZE(clk_names);
 	if (hw_nums > CLK_MAXSIZE)
@@ -1397,6 +1414,16 @@ static int dw9784_power_on(struct dw9784_device *dw9784)
 	hw_nums = ARRAY_SIZE(ldo_names);
 	if (hw_nums > REGULATOR_MAXSIZE)
 		hw_nums = REGULATOR_MAXSIZE;
+#if IS_ENABLED(CONFIG_MOT_TELE_DW9784_OIS)
+	for (i = 0; i < hw_nums; i++) {
+		if (dw9784->ldo[i]) {
+			ret = regulator_enable(dw9784->ldo[i]);
+			if (ret < 0)
+				LOG_INF("cannot enable %d regulator\n", i);
+			usleep_range(3000, 3100);
+		}
+	}
+#else
 	for (i = 0; i < hw_nums; i++) {
 		if (dw9784->ldo[i]) {
 			ret = regulator_enable(dw9784->ldo[i]);
@@ -1404,6 +1431,7 @@ static int dw9784_power_on(struct dw9784_device *dw9784)
 				LOG_INF("cannot enable %d regulator\n", i);
 		}
 	}
+#endif
 	usleep_range(1000, 1100);
 
 	hw_nums = ARRAY_SIZE(pio_names);
