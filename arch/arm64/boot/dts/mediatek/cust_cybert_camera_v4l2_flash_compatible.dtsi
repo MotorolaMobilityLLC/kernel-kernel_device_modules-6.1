@@ -530,6 +530,7 @@
         avdd-supply = <&cam_rw_avdd_ldo>;
         dvdd-supply = <&cam_rw_dvdd_ldo>;
         dovdd-supply = <&cam_iovdd_ldo>;
+        afvdd-supply = <&cam_rw_afvdd_ldo>;
 
         clocks = <&topckgen_clk CLK_TOP_UNIVPLL_192M_D32>,
             <&topckgen_clk CLK_TOP_UNIVPLL_192M_D16>,
