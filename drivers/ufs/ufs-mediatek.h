@@ -109,6 +109,7 @@ extern char storage_mfrid[32];
 #define IS_SAMSUNG_DEVICE(mfrid)   (0 == strcmp(mfrid,"SAMSUNG"))
 #define IS_SKHYNIX_DEVICE(mfrid)   (0 == strcmp(mfrid,"SKHYNIX"))
 #define IS_MICRON_DEVICE(mfrid)   (0 == strcmp(mfrid,"MICRON"))
+#define IS_TOSHIBA_DEVICE(mfrid)   (0 == strcmp(mfrid,"TOSHIBA"))
 #define IS_RAM_SIZE_GREATER_THAN_4G(ram_size) (ram_size > 4)
 #endif
 

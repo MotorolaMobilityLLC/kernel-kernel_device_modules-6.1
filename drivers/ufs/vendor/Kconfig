@@ -22,6 +22,12 @@ config MICRON_UFSHID
 	help
 	  Micron UFS HID Feature Enable
 
+config KIOXIA_UFSHID
+	bool "Kioxia UFS Host Initiated Defrag support"
+	depends on SCSI_UFSHCD && UFSFEATURE
+	help
+	  Kioxia UFS HID Feature Enable
+
 config SCSI_SKHID
 	bool "UFS Host Initiated Defrag supportr"
 	depends on (SCSI_UFSHCD || SCSI_UFSHCD_QTI)

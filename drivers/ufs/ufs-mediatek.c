@@ -1744,7 +1744,11 @@ ufs_mtk_query_ioctl(struct ufs_hba *hba, u8 lun, void __user *buffer)
 	}
 
 #if defined(CONFIG_UFSFEATURE)
-	if (IS_SAMSUNG_DEVICE(storage_mfrid) || IS_MICRON_DEVICE(storage_mfrid)) {
+	if (IS_SAMSUNG_DEVICE(storage_mfrid) || IS_MICRON_DEVICE(storage_mfrid)
+#if defined(CONFIG_KIOXIA_UFSHID)
+		|| IS_TOSHIBA_DEVICE(storage_mfrid)
+#endif
+	) {
 		if (ufsf_check_query(ioctl_data->opcode)) {
 			err = ufsf_query_ioctl(ufs_mtk_get_ufsf(hba), lun, buffer,
 #if defined(CONFIG_UFSHID_V3)
@@ -2435,7 +2439,11 @@ static int ufs_mtk_device_reset(struct ufs_hba *hba)
 	ufs_mtk_device_reset_ctrl(0, res);
 
 #if defined(CONFIG_UFSFEATURE)
-	if (IS_SAMSUNG_DEVICE(storage_mfrid) || IS_MICRON_DEVICE(storage_mfrid))
+	if (IS_SAMSUNG_DEVICE(storage_mfrid) || IS_MICRON_DEVICE(storage_mfrid)
+#if defined(CONFIG_KIOXIA_UFSHID)
+		|| IS_TOSHIBA_DEVICE(storage_mfrid)
+#endif
+	)
 		ufsf_reset_host(ufs_mtk_get_ufsf(hba));
 #endif
 
@@ -2861,7 +2869,11 @@ static int ufs_mtk_suspend(struct ufs_hba *hba, enum ufs_pm_op pm_op,
 
 	if (status == PRE_CHANGE) {
 #if defined(CONFIG_UFSFEATURE)
-		if (IS_SAMSUNG_DEVICE(storage_mfrid) || IS_MICRON_DEVICE(storage_mfrid))
+		if (IS_SAMSUNG_DEVICE(storage_mfrid) || IS_MICRON_DEVICE(storage_mfrid)
+#if defined(CONFIG_KIOXIA_UFSHID)
+			|| IS_TOSHIBA_DEVICE(storage_mfrid)
+#endif
+	)
 #if defined(CONFIG_UFSHID_V3)
 			ufsf_suspend(ufs_mtk_get_ufsf(hba), pm_op == UFS_SYSTEM_PM);
 #else
@@ -2926,7 +2938,12 @@ static int ufs_mtk_resume(struct ufs_hba *hba, enum ufs_pm_op pm_op)
 	struct ufs_mtk_host *host = ufshcd_get_variant(hba);
 
 #if defined(CONFIG_UFSFEATURE)
-	if (IS_SAMSUNG_DEVICE(storage_mfrid) || IS_MICRON_DEVICE(storage_mfrid)) {
+	if (IS_SAMSUNG_DEVICE(storage_mfrid) || IS_MICRON_DEVICE(storage_mfrid)
+#if defined(CONFIG_KIOXIA_UFSHID)
+		|| IS_TOSHIBA_DEVICE(storage_mfrid)
+#endif
+	)
+	{
 		struct ufsf_feature *ufsf = ufs_mtk_get_ufsf(hba);
 		schedule_work(&ufsf->resume_work);
 	}
@@ -3127,7 +3144,11 @@ static void ufs_mtk_fixup_dev_quirks(struct ufs_hba *hba)
 	ufs_mtk_vreg_fix_vccqx(hba);
 
 #if defined(CONFIG_UFSFEATURE)
-	if (IS_SAMSUNG_DEVICE(storage_mfrid) || IS_MICRON_DEVICE(storage_mfrid))
+	if (IS_SAMSUNG_DEVICE(storage_mfrid) || IS_MICRON_DEVICE(storage_mfrid)
+#if defined(CONFIG_KIOXIA_UFSHID)
+		|| IS_TOSHIBA_DEVICE(storage_mfrid)
+#endif
+	)
 		ufsf_set_init_state(hba);
 #endif
 
@@ -3148,7 +3169,11 @@ static void ufs_mtk_event_notify(struct ufs_hba *hba,
 	trace_ufs_mtk_event(evt, val);
 
 #if defined(CONFIG_UFSFEATURE)
-	if (IS_SAMSUNG_DEVICE(storage_mfrid) || IS_MICRON_DEVICE(storage_mfrid)) {
+	if (IS_SAMSUNG_DEVICE(storage_mfrid) || IS_MICRON_DEVICE(storage_mfrid)
+#if defined(CONFIG_KIOXIA_UFSHID)
+		|| IS_TOSHIBA_DEVICE(storage_mfrid)
+#endif
+	) {
 		if (evt == UFS_EVT_WL_SUSP_ERR)
 			ufsf_resume(ufs_mtk_get_ufsf(hba), true);
 	}
@@ -3690,7 +3715,11 @@ out:
 
 #if defined(CONFIG_UFSFEATURE)
 	/* Register hook for Samsung feature */
-	if (IS_SAMSUNG_DEVICE(storage_mfrid) || IS_MICRON_DEVICE(storage_mfrid))
+	if (IS_SAMSUNG_DEVICE(storage_mfrid) || IS_MICRON_DEVICE(storage_mfrid)
+#if defined(CONFIG_KIOXIA_UFSHID)
+		|| IS_TOSHIBA_DEVICE(storage_mfrid)
+#endif
+	)
 		ufs_samsung_register_hooks();
 #endif
 
@@ -3713,7 +3742,11 @@ static int ufs_mtk_remove(struct platform_device *pdev)
 	ufs_mtk_remove_sysfs(hba);
 
 #if defined(CONFIG_UFSFEATURE)
-	if (IS_SAMSUNG_DEVICE(storage_mfrid) || IS_MICRON_DEVICE(storage_mfrid))
+	if (IS_SAMSUNG_DEVICE(storage_mfrid) || IS_MICRON_DEVICE(storage_mfrid)
+#if defined(CONFIG_KIOXIA_UFSHID)
+		|| IS_TOSHIBA_DEVICE(storage_mfrid)
+#endif
+	)
 		ufsf_remove(ufs_mtk_get_ufsf(hba));
 #endif
 

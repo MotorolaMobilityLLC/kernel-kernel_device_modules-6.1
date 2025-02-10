@@ -211,6 +211,28 @@ void ufsf_exception_event_handler(struct ufs_hba *hba);
 #define GEOMETRY_DESC_HID_MAX_LBA_RANGE_SIZE		0xF9
 #endif
 
+
+#if defined(CONFIG_KIOXIA_UFSHID)
+enum {
+   HID_KIOXIA_LEV_GRAY = 0,
+   HID_KIOXIA_LEV_GREEN    = 1,
+   HID_KIOXIA_LEV_YELLOW   = 2,
+   HID_KIOXIA_LEV_RED  = 3,
+};
+
+enum {
+   HID_KIOXIA_LEV_GREEN_KIOXIA = 0,
+   HID_KIOXIA_LEV_YELLOW_KIOXIA    = 1,
+   HID_KIOXIA_LEV_RED_KIOXIA   = 2,
+};
+
+enum {
+   HID_KIOXIA_EXE_IDLE     = 0,
+   HID_KIOXIA_EXE_OPERATION    = 1,
+   HID_KIOXIA_EXE_COMPLETE = 3,
+};
+#endif /* CONFIG_KIOXIA_UFSHID */
+
 /**
  * struct utp_upiu_task_req - Task request UPIU structure
  * @header - UPIU header structure DW0 to DW-2

@@ -113,7 +113,7 @@ err_out:
 	return ret;
 }
 
-#if defined(CONFIG_MICRON_UFSHID)
+#if defined(CONFIG_MICRON_UFSHID) || defined(CONFIG_KIOXIA_UFSHID)
 static int ufshid_set_flag(struct ufshid_dev *hid, u8 idn)
 {
 	struct ufs_hba *hba = hid->ufsf->hba;
@@ -156,6 +156,24 @@ err_out:
 
 	return ret;
 }
+#if defined(CONFIG_KIOXIA_UFSHID)
+static int ufshid_read_flag(struct ufshid_dev *hid, u8 idn,bool *flag_val)
+{
+	struct ufs_hba *hba = hid->ufsf->hba;
+	int ret = 0;
+	ufshcd_rpm_get_sync(hba);
+	ret = ufshcd_query_flag(hba, UPIU_QUERY_OPCODE_READ_FLAG, idn, 0,
+			flag_val );
+	if (ret) {
+		ERR_MSG("read flag [0x%.2X] fail. (%d)", idn, ret);
+		goto err_out;
+	}
+	INFO_MSG("hid_flag set [0x%.2X] ", idn);
+err_out:
+	ufsf_rpm_put_noidle(hba);
+	return ret;
+}
+#endif /* CONFIG_KIOXIA_UFSHID */
 #endif
 
 static inline int ufshid_version_check(int spec_version)
@@ -208,14 +226,18 @@ void ufshid_get_dev_info(struct ufsf_feature *ufsf, u8 *desc_buf)
 	if (ret)
 		goto err_out;
 	}
-#ifndef CONFIG_MICRON_UFSHID
+#if defined(CONFIG_MICRON_UFSHID)
 	else if (hba->dev_info.wmanufacturerid == UFS_VENDOR_MICRON) {
 		INFO_MSG(" ufshid support Micron HID");
+#endif
+#if defined(CONFIG_KIOXIA_UFSHID)
+	}else if (hba->dev_info.wmanufacturerid == UFS_VENDOR_TOSHIBA) {
+		INFO_MSG(" ufshid support Kioxia HID");
+#endif
 	} else {
 		INFO_MSG("ufshid can not support this ufs !!!");
 		goto err_out;
 	}
-#endif
 
 	ufsf->hid_dev = kzalloc(sizeof(struct ufshid_dev), GFP_KERNEL);
 	if (!ufsf->hid_dev) {
@@ -316,6 +338,37 @@ static int ufshid_get_analyze_and_issue_execute(struct ufshid_dev *hid)
 	return -EINVAL;
 }
 #endif
+#if defined(CONFIG_KIOXIA_UFSHID)
+static int ufshid_get_analyze_and_issue_execute_kioxia(struct ufshid_dev *hid)
+{
+	bool flag_val;
+	u32 attr_val;
+	int frag_level;
+
+	if (ufshid_read_flag(hid, QUERY_FLAG_IDN_WB_BUFF_FLUSH_EN,&flag_val))
+		return -EINVAL;
+	if (ufshid_read_attr(hid, QUERY_ATTR_IDN_BKOPS_STATUS, &attr_val))
+		return -EINVAL;
+	if ( flag_val == 1){
+		frag_level = attr_val;
+		if (ufshid_read_attr(hid, QUERY_ATTR_IDN_WB_FLUSH_STATUS, &attr_val))
+			return -EINVAL;
+		if ( frag_level == 0 && ( attr_val != 0x01 ) ){
+			return HID_NOT_REQUIRED;
+		} else{
+		return HID_REQUIRED;
+		}
+	} else {
+		if (attr_val > 0){
+			if (ufshid_set_flag(hid, QUERY_FLAG_IDN_WB_BUFF_FLUSH_EN))
+				return -EINVAL;
+			return HID_REQUIRED;
+		} else {
+			return HID_NOT_REQUIRED;
+		}
+	}
+}
+#endif /* CONFIG_KIOXIA_UFSHID */
 
 static inline void ufshid_init_lba_trigger_mode(struct ufshid_dev *hid)
 {
@@ -349,6 +402,12 @@ static inline void ufshid_issue_disable(struct ufshid_dev *hid)
 			if (ufshid_clear_flag(hid, QUERY_FLAG_IDN_HID_EN_MICRON_UFSV4))
 				return;
 		}
+		return;
+	}
+#endif
+#if defined(CONFIG_KIOXIA_UFSHID)
+	if(hba->dev_info.wmanufacturerid == UFS_VENDOR_TOSHIBA){
+		ufshid_clear_flag(hid, QUERY_FLAG_IDN_WB_BUFF_FLUSH_EN);
 		return;
 	}
 #endif
@@ -868,7 +927,7 @@ resched:
 	HID_DEBUG(hid, "end hid_trigger_work_fn");
 }
 
-#if defined(CONFIG_MICRON_UFSHID)
+#if defined(CONFIG_MICRON_UFSHID) || defined(CONFIG_KIOXIA_UFSHID)
 static void micron_ufshid_trigger_work_fn(struct work_struct *dwork)
 {
 	struct ufshid_dev *hid;
@@ -881,6 +940,11 @@ static void micron_ufshid_trigger_work_fn(struct work_struct *dwork)
 
 	HID_DEBUG(hid, "start hid_trigger_work_fn");
 
+#if defined(CONFIG_KIOXIA_UFSHID)
+	if (hid->ufsf->hba->dev_info.wmanufacturerid == UFS_VENDOR_TOSHIBA)
+		ret = ufshid_get_analyze_and_issue_execute_kioxia(hid);
+	else
+#endif /* CONFIG_KIOXIA_UFSHID  */
 	ret = ufshid_get_analyze_and_issue_execute(hid);
 
 	mutex_lock(&hid->sysfs_lock);
@@ -956,7 +1020,7 @@ void ufshid_init(struct ufsf_feature *ufsf)
 	hid->hid_trigger_delay = HID_TRIGGER_WORKER_DELAY_MS_DEFAULT;
 	if (hba->dev_info.wmanufacturerid == UFS_VENDOR_SAMSUNG) {
 		INIT_DELAYED_WORK(&hid->hid_trigger_work, ufshid_trigger_work_fn);
-	} else if (hba->dev_info.wmanufacturerid == UFS_VENDOR_MICRON) {
+	} else if (hba->dev_info.wmanufacturerid == UFS_VENDOR_MICRON || hba->dev_info.wmanufacturerid == UFS_VENDOR_TOSHIBA) {
 		INIT_DELAYED_WORK(&hid->hid_trigger_work, micron_ufshid_trigger_work_fn);
 	}
 
@@ -1383,6 +1447,29 @@ static ssize_t do_ufshid_sysfs_show_color_micron(struct ufshid_dev *hid, char *b
 	return -EINVAL;
 }
 #endif
+
+#if defined(CONFIG_KIOXIA_UFSHID)
+static ssize_t do_ufshid_sysfs_show_color_kioxia(struct ufshid_dev *hid, char *buf)
+{
+	u32 attr_val;
+	int frag_level;
+
+	if (ufshid_read_attr(hid, QUERY_ATTR_IDN_BKOPS_STATUS, &attr_val))
+		return -EINVAL;
+	frag_level = attr_val;
+	if (ufshid_read_attr(hid, QUERY_ATTR_IDN_WB_FLUSH_STATUS, &attr_val))
+		return -EINVAL;
+	HID_DEBUG(hid, "Frag_lv %d Freg_stat %d HID_need_exec %d", frag_level,
+			attr_val,
+			( attr_val == HID_KIOXIA_EXE_OPERATION ) );
+	return snprintf(buf, PAGE_SIZE, "%s\n",
+			((frag_level == HID_KIOXIA_LEV_RED_KIOXIA) && ( attr_val == HID_KIOXIA_EXE_OPERATION ) ) ? "RED" :
+			((frag_level != HID_KIOXIA_LEV_RED_KIOXIA) && ( attr_val == HID_KIOXIA_EXE_OPERATION ) ) ? "YELLOW" :
+			((frag_level == HID_KIOXIA_LEV_GREEN_KIOXIA) && ( ( attr_val == HID_KIOXIA_EXE_IDLE ) || ( attr_val == HID_KIOXIA_EXE_COMPLETE )) ) ? "GREEN" :
+			frag_level == HID_KIOXIA_LEV_GRAY ? "GRAY" : "UNKNOWN");
+}
+#endif
+
 static ssize_t ufshid_sysfs_show_color(struct ufshid_dev *hid, char *buf)
 {
 	struct ufs_hba *hba = hid->ufsf->hba;
@@ -1391,6 +1478,10 @@ static ssize_t ufshid_sysfs_show_color(struct ufshid_dev *hid, char *buf)
 		return do_ufshid_sysfs_show_color_samsung(hid, buf);
 	}else if (hba->dev_info.wmanufacturerid == UFS_VENDOR_MICRON) {
 		return do_ufshid_sysfs_show_color_micron(hid, buf);
+#if defined(CONFIG_KIOXIA_UFSHID)
+	}else if (hba->dev_info.wmanufacturerid == UFS_VENDOR_TOSHIBA) {
+		return do_ufshid_sysfs_show_color_kioxia(hid, buf);
+#endif /* 	CONFIG_KIOXIA_UFSHID */
 	}
 	return -EINVAL;
 }
@@ -1414,26 +1505,34 @@ static ssize_t ufshid_sysfs_show_progress_ratio(struct ufshid_dev *hid,
 						char *buf)
 {
 	u32 attr_val;
+	struct ufs_hba *hba = hid->ufsf->hba;
 
-	if (ufshid_read_attr(hid, QUERY_ATTR_IDN_HID_PROGRESS_RATIO, &attr_val))
-		return -EINVAL;
+	if (hba && hba->dev_info.wmanufacturerid == UFS_VENDOR_SAMSUNG) {
+		if (ufshid_read_attr(hid, QUERY_ATTR_IDN_HID_PROGRESS_RATIO, &attr_val))
+			return -EINVAL;
 
-	INFO_MSG("progress_ratio %u", attr_val);
+		INFO_MSG("progress_ratio %u", attr_val);
 
-	return snprintf(buf, PAGE_SIZE, "%u\n", attr_val);
+		return snprintf(buf, PAGE_SIZE, "%u\n", attr_val);
+	}
+	return -EINVAL;
 }
 
 static ssize_t ufshid_sysfs_show_available_size(struct ufshid_dev *hid,
 						char *buf)
 {
 	u32 attr_val;
+	struct ufs_hba *hba = hid->ufsf->hba;
 
-	if (ufshid_read_attr(hid, QUERY_ATTR_IDN_HID_AVAIL_SIZE, &attr_val))
-		return -EINVAL;
+	if (hba && hba->dev_info.wmanufacturerid == UFS_VENDOR_SAMSUNG) {
+		if (ufshid_read_attr(hid, QUERY_ATTR_IDN_HID_AVAIL_SIZE, &attr_val))
+			return -EINVAL;
 
-	INFO_MSG("available_size %u", attr_val);
+		INFO_MSG("available_size %u", attr_val);
 
-	return snprintf(buf, PAGE_SIZE, "%u\n", attr_val);
+		return snprintf(buf, PAGE_SIZE, "%u\n", attr_val);
+	}
+	return -EINVAL;
 }
 
 #if defined(CONFIG_UFSHID_POC)
