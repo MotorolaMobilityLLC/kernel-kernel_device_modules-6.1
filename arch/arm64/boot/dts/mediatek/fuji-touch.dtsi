@@ -72,15 +72,16 @@
 		focaltech,edge-ctrl;
 		focaltech,interpolation-ctrl;
 		focaltech,sample-ctrl;
-		//fts,pocket-mode-ctrl;
+		focaltech,stowed-mode-ctrl;
 		pinctrl-names = "pmx_ts_active", "pmx_ts_suspend", "pmx_ts_release";
 		pinctrl-0 = <&ctp_gt9896s_int_active &ctp_gt9896s_reset_active>;
 		pinctrl-1 = <&ctp_gt9896s_int_suspend &ctp_gt9896s_reset_suspend>;
 		//panel = <&mot_tm_icna3508_ft3683g_667_1080x2400_dsc_vid &mot_boe_vtdr6130a_ft3683g_667_1080x2400_dsc_cmd>;
-		//mmi,usb-charger-detection;
-		//mmi,enable-gestures;
-		//mmi,supported_gesture_type = <0x07>;
-		//focaltech,stowed-mode-ctrl;
+		mmi,usb-charger-detection;
+		mmi,enable-gestures;
+		mmi,supported_gesture_type = <0x07>;
+		mmi,resolution_boost = <16>;
+		mtk-charger = <&mt6375_chg>;
 	};
 };
 
