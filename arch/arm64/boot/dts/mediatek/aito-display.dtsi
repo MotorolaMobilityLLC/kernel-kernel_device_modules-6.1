@@ -71,7 +71,7 @@
 		reset-gpios = <&pio 90 0>;
 		pinctrl-names = "default";
 		port {
-			panel_in2: endpoint@2 {
+			panel_in2: endpoint {
 				remote-endpoint = <&dsi_out2>;
 			};
 		};
