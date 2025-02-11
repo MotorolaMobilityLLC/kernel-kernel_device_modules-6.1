@@ -325,3 +325,13 @@ config MOTO_DW9800WAF
         bool "For MOT DW9800WAF power off delay"
         help
           MOT DW9800WAF power off delay
+
+config NICE_RM_CAMERA_GT9764VAF
+        bool "For NICE RM camera GT9764V AF power off delay"
+        help
+          NICE RM camera GT9764V AF power off delay
+
+config NICE_RW_CAMERA_GT9764VAF
+        bool "For NICE RW camera GT9764V AF power off delay"
+        help
+          NICE RW camera GT9764V AF power off delay

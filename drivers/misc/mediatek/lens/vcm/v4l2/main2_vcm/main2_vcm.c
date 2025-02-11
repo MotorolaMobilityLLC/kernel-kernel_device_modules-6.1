@@ -404,7 +404,7 @@ static int main2_vcm_power_off(struct main2_vcm_device *main2_vcm)
 	if (main2_vcm->vcamaf_pinctrl && main2_vcm->vcamaf_off)
 		ret = pinctrl_select_state(main2_vcm->vcamaf_pinctrl,
 					main2_vcm->vcamaf_off);
-#ifdef CONFIG_MOTO_DW9800WAF
+#if defined(CONFIG_MOTO_DW9800WAF) || defined(CONFIG_NICE_RW_CAMERA_GT9764VAF)
 	mdelay(6);
 #endif
 	return ret;
