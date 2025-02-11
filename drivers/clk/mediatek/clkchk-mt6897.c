@@ -27,7 +27,7 @@
 #include "clk-fmeter.h"
 #include "clk-mt6897-fmeter.h"
 
-#define BUG_ON_CHK_ENABLE		0
+#define BUG_ON_CHK_ENABLE		1
 #define CHECK_VCORE_FREQ		0
 #define CG_CHK_PWRON_ENABLE		0
 
