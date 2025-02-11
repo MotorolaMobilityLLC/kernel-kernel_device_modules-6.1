@@ -3693,7 +3693,8 @@ static void mtk_output_dsi_enable(struct mtk_dsi *dsi,
 			}
 		}
 
-		if (priv->data && (priv->data->mmsys_id == MMSYS_MT6897) &&
+		if (priv->data && (priv->data->mmsys_id == MMSYS_MT6897 ||
+			priv->data->mmsys_id == MMSYS_MT6878) &&
 			!(dsi->mode_flags & MIPI_DSI_MODE_LPM)) {
 			mtk_dsi_clk_hs_mode(dsi, 1);
 			if (dsi->slave_dsi)
@@ -6302,7 +6303,8 @@ static void mtk_dsi_cmdq(struct mtk_dsi *dsi, const struct mipi_dsi_msg *msg)
 	else {
 		config = (msg->tx_len > 2) ? LONG_PACKET : SHORT_PACKET;
 		/* only 0x28 0x10 use hs mode, init code still keep lp mode */
-		if (priv && priv->data && (priv->data->mmsys_id == MMSYS_MT6897) &&
+		if (priv && priv->data && (priv->data->mmsys_id == MMSYS_MT6897 ||
+			priv->data->mmsys_id == MMSYS_MT6878) &&
 			!(dsi->mode_flags & MIPI_DSI_MODE_LPM) &&
 			((tx_buf[0] == 0x28 || tx_buf[0] == 0x10) && msg->tx_len == 1))
 			config |= HSTX;
@@ -6420,7 +6422,8 @@ static void mtk_dsi_cmdq_gce(struct mtk_dsi *dsi, struct cmdq_pkt *handle,
 		config = BTA;
 	else {
 		config = (msg->tx_len > 2) ? LONG_PACKET : SHORT_PACKET;
-		if (priv && priv->data && (priv->data->mmsys_id == MMSYS_MT6897) &&
+		if (priv && priv->data && (priv->data->mmsys_id == MMSYS_MT6897 ||
+			priv->data->mmsys_id == MMSYS_MT6878) &&
 			!(dsi->mode_flags & MIPI_DSI_MODE_LPM))
 			config |= HSTX;
 	}
