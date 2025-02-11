@@ -617,6 +617,7 @@ static struct mtk_panel_params ext_params_60hz = {
 	//.vfp_low_power = 4180,
 	.cust_esd_check = 1,
 	.esd_check_enable = 1,
+	.hs_read_bta_with_hsclk = 1,
 	.lcm_esd_check_table[0] = {
 		.cmd = 0x0A,
 		.count = 1,
@@ -702,6 +703,7 @@ static struct mtk_panel_params ext_params_90hz = {
 	//.vfp_low_power = 2578,
 	.cust_esd_check = 1,
 	.esd_check_enable = 1,
+	.hs_read_bta_with_hsclk = 1,
 	.lcm_esd_check_table[0] = {
 		.cmd = 0x0A,
 		.count = 1,
@@ -787,6 +789,7 @@ static struct mtk_panel_params ext_params_120hz = {
 	//.vfp_low_power = 2578,
 	.cust_esd_check = 1,
 	.esd_check_enable = 1,
+	.hs_read_bta_with_hsclk = 1,
 	.lcm_esd_check_table[0] = {
 		.cmd = 0x0A,
 		.count = 1,
@@ -1354,13 +1357,12 @@ static unsigned long panel_doze_get_mode_flags(struct drm_panel *panel,
 	unsigned long mode_flags;
 
 	if (doze_en) {
-		mode_flags = MIPI_DSI_MODE_LPM
-		       | MIPI_DSI_MODE_NO_EOT_PACKET
+		mode_flags = MIPI_DSI_MODE_NO_EOT_PACKET
 		       | MIPI_DSI_CLOCK_NON_CONTINUOUS;
 	} else {
 		mode_flags = MIPI_DSI_MODE_VIDEO
 		       | MIPI_DSI_MODE_VIDEO_SYNC_PULSE
-		       | MIPI_DSI_MODE_LPM | MIPI_DSI_MODE_NO_EOT_PACKET
+		       | MIPI_DSI_MODE_NO_EOT_PACKET
 		       | MIPI_DSI_CLOCK_NON_CONTINUOUS;
 	}
 	pr_info("%s: mode_flags %ld\n", __func__, mode_flags);
@@ -1497,7 +1499,7 @@ static int lcm_probe(struct mipi_dsi_device *dsi)
 	dsi->lanes = 4;
 	dsi->format = MIPI_DSI_FMT_RGB888;
 	dsi->mode_flags = MIPI_DSI_MODE_VIDEO | MIPI_DSI_MODE_VIDEO_SYNC_PULSE |
-			MIPI_DSI_MODE_LPM | MIPI_DSI_MODE_NO_EOT_PACKET |
+			MIPI_DSI_MODE_NO_EOT_PACKET |
 			MIPI_DSI_CLOCK_NON_CONTINUOUS;
 
 	backlight = of_parse_phandle(dev->of_node, "backlight", 0);
