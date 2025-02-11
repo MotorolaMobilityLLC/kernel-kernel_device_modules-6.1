@@ -37,10 +37,18 @@
     wls_det_int {
         pinmux = <PINMUX_GPIO82__FUNC_GPIO82>;
     };
+    wls_mc_det {
+        pinmux = <PINMUX_GPIO81__FUNC_GPIO81>;
+        output-low;
+    };
 };
 
 &cps_wls_charger {
     cps_det_int = <&pio 82 0x0>;
+    wireless-fw-name = "cps4038_cn.bin";
+    wls-mc-det = <&pio 81 0x0>;
+    wlc-mc-support;
+    wlc-phone-case-support;
 };
 
 #include <cybert_evb/cust.dtsi>
