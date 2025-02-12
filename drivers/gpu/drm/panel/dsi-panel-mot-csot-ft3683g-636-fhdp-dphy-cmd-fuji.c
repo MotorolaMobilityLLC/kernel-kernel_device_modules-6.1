@@ -784,7 +784,7 @@ static struct mtk_panel_params ext_params = {
 	.panel_cellid_offset_reg = 0x65,
 	.panel_cellid_len = 23,
 	.panel_ver = 1,
-	.panel_name = "csot_ft3683g_636_1200_2670",
+	.panel_name = "csot_ft3683g_ltpo_1200_2670",
 	.panel_supplier = "csot-ft3683g",
 };
 
@@ -863,7 +863,7 @@ static struct mtk_panel_params ext_params_90hz = {
 	.panel_cellid_offset_reg = 0x65,
 	.panel_cellid_len = 23,
 	.panel_ver = 1,
-	.panel_name = "csot_ft3683g_636_1200_2670",
+	.panel_name = "csot_ft3683g_ltpo_1200_2670",
 	.panel_supplier = "csot-ft3683g",
 };
 
@@ -942,7 +942,7 @@ static struct mtk_panel_params ext_params_60hz = {
 	.panel_cellid_offset_reg = 0x65,
 	.panel_cellid_len = 23,
 	.panel_ver = 1,
-	.panel_name = "csot_ft3683g_636_1200_2670",
+	.panel_name = "csot_ft3683g_ltpo_1200_2670",
 	.panel_supplier = "csot-ft3683g",
 };
 
@@ -1021,7 +1021,7 @@ static struct mtk_panel_params ext_params_30hz = {
 	.panel_cellid_offset_reg = 0x65,
 	.panel_cellid_len = 23,
 	.panel_ver = 1,
-	.panel_name = "csot_ft3683g_636_1200_2670",
+	.panel_name = "csot_ft3683g_ltpo_1200_2670",
 	.panel_supplier = "csot-ft3683g",
 };
 
@@ -1099,7 +1099,7 @@ static struct mtk_panel_params ext_params_24hz = {
 	.panel_cellid_offset_reg = 0x65,
 	.panel_cellid_len = 23,
 	.panel_ver = 1,
-	.panel_name = "csot_ft3683g_636_1200_2670",
+	.panel_name = "csot_ft3683g_ltpo_1200_2670",
 	.panel_supplier = "csot-ft3683g",
 };
 
@@ -1177,7 +1177,7 @@ static struct mtk_panel_params ext_params_10hz = {
 	.panel_cellid_offset_reg = 0x65,
 	.panel_cellid_len = 23,
 	.panel_ver = 1,
-	.panel_name = "csot_ft3683g_636_1200_2670",
+	.panel_name = "csot_ft3683g_ltpo_1200_2670",
 	.panel_supplier = "csot-ft3683g",
 };
 
@@ -1255,7 +1255,7 @@ static struct mtk_panel_params ext_params_1hz = {
 	.panel_cellid_offset_reg = 0x65,
 	.panel_cellid_len = 23,
 	.panel_ver = 1,
-	.panel_name = "csot_ft3683g_636_1200_2670",
+	.panel_name = "csot_ft3683g_ltpo_1200_2670",
 	.panel_supplier = "csot-ft3683g",
 };
 
