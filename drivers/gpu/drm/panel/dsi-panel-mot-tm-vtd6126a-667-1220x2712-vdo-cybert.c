@@ -439,9 +439,9 @@ static int lcm_enable(struct drm_panel *panel)
 }
 
 #define FHDP_FRAME_WIDTH    (1220)
-#define FHDP_HFP            (29)
-#define FHDP_HSA            (6)
-#define FHDP_HBP            (6)
+#define FHDP_HFP            (24)
+#define FHDP_HSA            (8)
+#define FHDP_HBP            (8)
 #define FHDP_HTOTAL         (FHDP_FRAME_WIDTH + FHDP_HFP + FHDP_HSA + FHDP_HBP)
 #define FHDP_FRAME_HEIGHT   (2712)
 #define FHDP_VFP_120        (52)
