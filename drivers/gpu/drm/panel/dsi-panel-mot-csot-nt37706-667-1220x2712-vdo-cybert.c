@@ -255,7 +255,7 @@ static void lcm_panel_init(struct lcm *ctx)
 
 	//VFP_EXT_IDLE, VBP_EXT_IDLE (ref. 120Hz
 	lcm_dcs_write_seq_static(ctx, 0x6F, 0x10);
-	lcm_dcs_write_seq_static(ctx, 0x3B, 0x00, 0x18, 0x00, 0x30);
+	lcm_dcs_write_seq_static(ctx, 0x3B, 0x00, 0x14, 0x00, 0x34);
 
 	//TE on
 	lcm_dcs_write_seq_static(ctx, 0x35, 0x00);
@@ -429,9 +429,9 @@ static int lcm_enable(struct drm_panel *panel)
 }
 
 #define FHDP_FRAME_WIDTH    (1220)
-#define FHDP_HFP            (29)
-#define FHDP_HSA            (6)
-#define FHDP_HBP            (6)
+#define FHDP_HFP            (24)
+#define FHDP_HSA            (8)
+#define FHDP_HBP            (8)
 #define FHDP_HTOTAL         (FHDP_FRAME_WIDTH + FHDP_HFP + FHDP_HSA + FHDP_HBP)
 #define FHDP_FRAME_HEIGHT   (2712)
 #define FHDP_VFP_120        (52)
