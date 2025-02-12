@@ -269,3 +269,9 @@ config MOTO_PHONE_CASE_SUPPORT
         default n
         help
           This is to enable MOTO supports of phone case feature.
+
+config ENABLE_QNOVO_CONTROL_CHARGE
+        bool "charge qnovo support"
+        default n
+        help
+          This is to enable MOTO supports of qnovo feature.
