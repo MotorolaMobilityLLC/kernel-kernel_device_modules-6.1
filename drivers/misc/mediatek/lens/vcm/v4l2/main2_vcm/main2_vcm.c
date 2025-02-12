@@ -406,7 +406,11 @@ static int main2_vcm_power_off(struct main2_vcm_device *main2_vcm)
 					main2_vcm->vcamaf_off);
 #if defined(CONFIG_MOTO_DW9800WAF) || defined(CONFIG_NICE_RW_CAMERA_GT9764VAF)
 	mdelay(6);
+#elif defined(CONFIG_VIENNA_RW_CAMERA_DW9800SAF)
+	mdelay(5);
 #endif
+	LOG_INF("-\n");
+
 	return ret;
 }
 

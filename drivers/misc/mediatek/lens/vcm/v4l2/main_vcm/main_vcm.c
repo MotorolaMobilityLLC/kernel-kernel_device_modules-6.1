@@ -385,6 +385,8 @@ static int main_vcm_power_off(struct main_vcm_device *main_vcm)
 					main_vcm->vcamaf_off);
 #if defined(CONFIG_MOTO_AK7377AAF) || defined(CONFIG_NICE_RM_CAMERA_GT9764VAF)
 	mdelay(6);
+#elif defined(CONFIG_VIENNA_RM_CAMERA_AK7377AF)
+	mdelay(7);
 #endif
 	LOG_INF("-\n");
 

@@ -343,3 +343,14 @@ config NICE_RW_CAMERA_GT9764VAF
         bool "For NICE RW camera GT9764V AF power off delay"
         help
           NICE RW camera GT9764V AF power off delay
+
+config VIENNA_RM_CAMERA_AK7377AF
+        bool "For VIENNA RM camera AK7377 AF power off delay"
+        help
+          VIENNA RM camera AK7377 AF power off delay
+
+config VIENNA_RW_CAMERA_DW9800SAF
+        bool "For VIENNA RW camera DW9800S AF power off delay"
+        help
+          VIENNA RW camera DW9800S AF power off delay
+
