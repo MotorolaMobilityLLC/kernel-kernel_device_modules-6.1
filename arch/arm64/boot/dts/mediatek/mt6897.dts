@@ -14374,6 +14374,7 @@
 		secure-dump-size = <0x4c8000>;
 		scp-pm-notify = "disable";
 		scp-thermal-wq = "disable";
+		scp-low-pwr-dbg = "enable";
 
 		//scp_aovmem_key = "mediatek,scp_aov_reserved";
 		scp-mem-key = "mediatek,reserve-memory-scp_share";
@@ -14395,7 +14396,8 @@
 				  //<13 0x480000 0x0>; /* aov */
 				  <15 0x10000 0x0>, /* aod */
 				  <17 0x8000 0x0>, /* scp chre from */
-				  <18 0x8000 0x0>; /* scp chre to */
+				  <18 0x8000 0x0>, /* scp chre to */
+				  <19 0x200 0x0>; /*low power debug*/
 
 		memorydump = <0x200000>, /* l2tcm */
 				 <0x0c4000>, /* cache : l1c 0x3c000 + l2c 0x88000 */
