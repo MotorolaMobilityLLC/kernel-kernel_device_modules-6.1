@@ -302,6 +302,14 @@ config MOT_TELE_DW9784_OIS
 	  power of ois/af driver for the camera sensor module
 	  Set as y if the driver is used in this project
 
+config MOT_TELE_DW9784_OIS_ALWAYS_IOVDD
+	bool "MOT TELE DW9784 OIS ALWAYS IOVDD"
+	help
+	  MOT TELE DW9784 OIS ALWAYS IOVDD
+	  This config is used to enable the corresponding
+	  power of ois/af driver for the camera sensor module
+	  Set as y if the driver is used in this project
+
 config MOT_DW9784_AF_DRIFT
         bool "MOT DW9784 AF DRIFT"
         help

@@ -98,6 +98,9 @@ static const char * const ldo_names[] = {
 	"rst",
 	"vdd",
 	"vin",
+#elif IS_ENABLED(CONFIG_MOT_TELE_DW9784_OIS_ALWAYS_IOVDD)
+	"vdd",
+	"vin",
 #else
 	"vin",
 	"vdd",
@@ -1342,7 +1345,7 @@ static int dw9784_power_off(struct dw9784_device *dw9784)
 	hw_nums = ARRAY_SIZE(ldo_names);
 	if (hw_nums > REGULATOR_MAXSIZE)
 		hw_nums = REGULATOR_MAXSIZE;
-#if IS_ENABLED(CONFIG_MOT_TELE_DW9784_OIS)
+#if IS_ENABLED(CONFIG_MOT_TELE_DW9784_OIS) || IS_ENABLED(CONFIG_MOT_TELE_DW9784_OIS_ALWAYS_IOVDD)
 	for (i = hw_nums - 1; i >= 0; i--) {
 		if (dw9784->ldo[i]) {
 			ret = regulator_disable(dw9784->ldo[i]);
@@ -1414,7 +1417,7 @@ static int dw9784_power_on(struct dw9784_device *dw9784)
 	hw_nums = ARRAY_SIZE(ldo_names);
 	if (hw_nums > REGULATOR_MAXSIZE)
 		hw_nums = REGULATOR_MAXSIZE;
-#if IS_ENABLED(CONFIG_MOT_TELE_DW9784_OIS)
+#if IS_ENABLED(CONFIG_MOT_TELE_DW9784_OIS) || IS_ENABLED(CONFIG_MOT_TELE_DW9784_OIS_ALWAYS_IOVDD)
 	for (i = 0; i < hw_nums; i++) {
 		if (dw9784->ldo[i]) {
 			ret = regulator_enable(dw9784->ldo[i]);
