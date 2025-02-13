@@ -267,7 +267,7 @@ static void lcm_panel_init(struct lcm *ctx)
 	gpiod_set_value(ctx->reset_gpio, 0);
 	udelay(2 * 1000);
 	gpiod_set_value(ctx->reset_gpio, 1);
-	msleep(20);
+	msleep(25);
 	devm_gpiod_put(ctx->dev, ctx->reset_gpio);
 
 	//read panel original gamma code for lhbm
