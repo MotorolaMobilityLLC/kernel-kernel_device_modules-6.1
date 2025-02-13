@@ -5102,6 +5102,24 @@ static void mtk_crtc_update_hrt_state(struct drm_crtc *crtc,
 		return;
 	}
 
+	if (priv->data->mmsys_id == MMSYS_MT6878 && lyeblob_ids) {
+		ovl0_2l_no_compress_num = HRT_GET_NO_COMPRESS_FLAG(lyeblob_ids->hrt_num);
+		if (crtc_idx == 0 && ovl0_2l_no_compress_num > 0) {
+			output_comp = mtk_ddp_comp_request_output(mtk_crtc);
+			if (ovl0_2l_no_compress_num>=2 && (frame_weight *10 /lyeblob_ids->frame_weight_of_bwm>=12)) {
+				/* Avoid bw limit of no compress layer with video in one channal */
+				bw = overlap_to_bw(crtc, frame_weight + 400, lyeblob_ids);
+				DDPINFO("%s recalcute bw:%d, weight:%d max_fps:%d no_compr:%d\n",
+					__func__, bw, frame_weight, max_fps,
+					ovl0_2l_no_compress_num);
+				bw = (bw * 400 * frame_weight/(lyeblob_ids->frame_weight_of_bwm))/400;
+				DDPINFO("%s recalcute bw:%d, weight:%d max_fps:%d no_compr:%d\n",
+					__func__, bw, frame_weight, max_fps,
+					ovl0_2l_no_compress_num);
+			}
+		}
+	}
+
 	/* can't access backup slot since top clk off */
 	if (priv->power_state == false)
 		return;
