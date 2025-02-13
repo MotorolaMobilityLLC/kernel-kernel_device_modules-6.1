@@ -170,7 +170,9 @@ static void lcm_panel_init(struct lcm *ctx)
 //DBV =0x00 0x00
 	lcm_dcs_write_seq_static(ctx, 0x51, 0x00, 0x00);
 	lcm_dcs_write_seq_static(ctx, 0x53, 0x20);
-	lcm_dcs_write_seq_static(ctx, 0x55, 0x10);
+	lcm_dcs_write_seq_static(ctx, 0x55, 0x00);
+	if (ctx->version < 3)
+		lcm_dcs_write_seq_static(ctx, 0x55, 0x10);
 //59h=09 demura on   59h=00 demura off
 	lcm_dcs_write_seq_static(ctx, 0x59, 0x09);
 //5Eh 0x00 BC mode 0x01 DC mode
@@ -285,6 +287,10 @@ static void lcm_panel_init(struct lcm *ctx)
 	lcm_dcs_write_seq_static(ctx, 0xf9, 0x10);
 	lcm_dcs_write_seq_static(ctx, 0x65, 0x0A);
 	lcm_dcs_write_seq_static(ctx, 0xf9, 0x1e);
+
+	lcm_dcs_write_seq_static(ctx, 0xFF, 0x5A, 0x83);
+	lcm_dcs_write_seq_static(ctx, 0x65, 0x0B);
+	lcm_dcs_write_seq_static(ctx, 0xf7, 0x03);
 
 	lcm_dcs_write_seq_static(ctx, 0xf0, 0xaa, 0x00);
 	lcm_dcs_write_seq_static(ctx, 0xff, 0x5a, 0x00);
