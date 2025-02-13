@@ -93,9 +93,9 @@ static motOISGOffsetResult dw9784GyroOffsetResult;
 #define CLK_MAXSIZE				16
 
 static const char * const ldo_names[] = {
-	"vin",
-	"vdd",
 	"rst",
+	"vdd",
+	"vin",
 };
 
 /* power  on stage : idx = 0, 2, 4, ... */
@@ -1329,11 +1329,12 @@ static int dw9784_power_off(struct dw9784_device *dw9784)
 	hw_nums = ARRAY_SIZE(ldo_names);
 	if (hw_nums > REGULATOR_MAXSIZE)
 		hw_nums = REGULATOR_MAXSIZE;
-	for (i = 0; i < hw_nums; i++) {
+	for (i = hw_nums - 1; i >= 0; i--) {
 		if (dw9784->ldo[i]) {
 			ret = regulator_disable(dw9784->ldo[i]);
 			if (ret < 0)
 				LOG_INF("cannot enable %d regulator\n", i);
+			usleep_range(6000, 6100);
 		}
 	}
 
@@ -1395,6 +1396,7 @@ static int dw9784_power_on(struct dw9784_device *dw9784)
 			ret = regulator_enable(dw9784->ldo[i]);
 			if (ret < 0)
 				LOG_INF("cannot enable %d regulator\n", i);
+			usleep_range(6000, 6100);
 		}
 	}
 	usleep_range(1000, 1100);
