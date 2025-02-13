@@ -26,9 +26,6 @@
 	};
 };
 
-&mt6375_typec {
-       mmi,support_CID;
-};
 
 #include <fuji_evb/cust.dtsi>
 #include "mediatek/cust_fuji_camera_v4l2.dtsi"
