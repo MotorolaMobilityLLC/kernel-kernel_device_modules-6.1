@@ -310,7 +310,7 @@ static void lcm_panel_init(struct lcm *ctx)
 
 if(ctx->version == 1){
 	lcm_dcs_write_seq_static(ctx, 0xf0,0xaa,0x10);
-	lcm_dcs_write_seq_static(ctx, 0xc1,0x80);
+	// lcm_dcs_write_seq_static(ctx, 0xc1,0x80);
 }
 
 	lcm_dcs_write_seq_static(ctx, 0xFF,0x5A,0x81);
@@ -327,6 +327,16 @@ if(ctx->version == 1){
 
 	pr_info("%s current_fps:%d\n", __func__, atomic_read(&ctx->current_fps));
 	switch (atomic_read(&ctx->current_fps)) {
+	case 144:
+		lcm_dcs_write_seq_static(ctx, 0x6c,0x00);
+		lcm_dcs_write_seq_static(ctx, 0x71,0x00);
+		msleep(10);
+		lcm_dcs_write_seq_static(ctx, 0x75,0x00);
+		lcm_dcs_write_seq_static(ctx, 0xF0,0xAA,0x1B);
+		lcm_dcs_write_seq_static(ctx, 0xD0,0x00);
+		lcm_dcs_write_seq_static(ctx, 0xF0,0xAA,0x10);
+		lcm_dcs_write_seq_static(ctx, 0xCF,0x09);
+		break;
 	case 120:
 		lcm_dcs_write_seq_static(ctx, 0x6c,0x01);
 		lcm_dcs_write_seq_static(ctx, 0x71,0x00);
