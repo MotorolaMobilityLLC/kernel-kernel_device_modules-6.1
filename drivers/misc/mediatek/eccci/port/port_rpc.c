@@ -40,6 +40,8 @@
 #include "ccci_bm.h"
 #include "ccci_modem.h"
 #include "port_rpc.h"
+#include "ccci_fsm.h"
+
 #define MAX_QUEUE_LENGTH 16
 #ifdef CONFIG_MOTO_DRDI_SUPPORT
 #include "mt-plat/mtk_ccci_common.h"
@@ -1274,6 +1276,36 @@ static void ccci_rpc_work_helper(struct port_t *port, struct rpc_pkt *pkt,
 			break;
 
 		}
+
+#if IS_ENABLED(CONFIG_SCSI_UFS_MEDIATEK_DBG)
+	case IPC_RPC_AFC_UFC_IO_BLOCK_OP:
+		{
+			unsigned int op_id = 0;
+
+			if (pkt_num != 1) {
+				CCCI_ERROR_LOG(0, RPC,
+					"invalid parameter for [0x%X]: pkt_num=%d!\n",
+					p_rpc_buf->op_id, pkt_num);
+				pkt_num = 0;
+				pkt[pkt_num].len = sizeof(unsigned int);
+				pkt[pkt_num++].buf = (void *)&tmp_data[0];
+				pkt[pkt_num].len = sizeof(unsigned int);
+				pkt[pkt_num++].buf = (void *)&tmp_data[0];
+				break;
+			}
+			op_id = *(unsigned int *)(pkt[0].buf);
+			tmp_data[1] = ccci_ufs_io_operate(op_id);
+			CCCI_DEBUG_LOG(0, RPC, "[0x%X]: op_id=%d, tmp_data=%d!\n",
+				p_rpc_buf->op_id, op_id, tmp_data[1]);
+			tmp_data[0] = 0;
+			pkt_num = 0;
+			pkt[pkt_num].len = sizeof(unsigned int);
+			pkt[pkt_num++].buf = (void *)&tmp_data[0];
+			pkt[pkt_num].len = sizeof(unsigned int);
+			pkt[pkt_num++].buf = (void *)&tmp_data[1];
+			break;
+		}
+#endif
 	case IPC_RPC_IT_OP:
 		{
 			int i;
