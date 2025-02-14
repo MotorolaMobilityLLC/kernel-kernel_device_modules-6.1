@@ -354,3 +354,9 @@ config VIENNA_RW_CAMERA_DW9800SAF
         help
           VIENNA RW camera DW9800S AF power off delay
 
+
+config FUJI_RW_CAMERA_DW9800SAF
+        bool "For FUJI RW camera DW9800S AF power off delay"
+        help
+          FUJI RW camera DW9800S AF power off delay
+
