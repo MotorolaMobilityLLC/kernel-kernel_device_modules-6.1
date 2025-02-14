@@ -30,31 +30,56 @@
 #endif
 #define FRAME_WIDTH				(1220)
 #define FRAME_HEIGHT			(2712)
-#define PLL_CLOCK				(615)
+#define PLL_CLOCK				(495)
 #define REAL_MODE_NUM           (6)
 #define FHD_FRAME_WIDTH    (1220)
-#define FHD_HFP            (86)
+#define FHD_HFP            (24)
 #define FHD_HSA            (8)
-#define FHD_HBP            (24)
+#define FHD_HBP            (8)
 #define FHD_HTOTAL         (FHD_FRAME_WIDTH + FHD_HFP + FHD_HSA + FHD_HBP)
 #define FHD_FRAME_HEIGHT   (2712)
-#define FHD_VFP            (56)
+#define FHD_VFP            (52)
 #define FHD_VSA            (2)
-#define FHD_VBP            (14)
+#define FHD_VBP            (18)
 #define FHD_VTOTAL         (FHD_FRAME_HEIGHT + FHD_VFP + FHD_VSA + FHD_VBP)
 #define MODE_SWITCH_CMDQ_ENABLE 1
-#define FHD_HFP_90            (86)
+#define FHD_HFP_90            (24)
 #define FHD_HSA_90            (8)
-#define FHD_HBP_90            (24)
-#define FHD_VFP_90            (984)
+#define FHD_HBP_90            (8)
+#define FHD_VFP_90            (980)
 #define FHD_VSA_90            (2)
-#define FHD_VBP_90            (14)
-#define FHD_HFP_60            (86)
+#define FHD_VBP_90            (18)
+#define FHD_HFP_60            (24)
 #define FHD_HSA_60            (8)
-#define FHD_HBP_60            (24)
-#define FHD_VFP_60            (2840)
+#define FHD_HBP_60            (8)
+#define FHD_VFP_60            (2836)
 #define FHD_VSA_60            (2)
-#define FHD_VBP_60            (14)
+#define FHD_VBP_60            (18)
+
+#define FHD_VTOTAL_120     (FHD_FRAME_HEIGHT + FHD_VFP + FHD_VSA + FHD_VBP)
+#define FHD_VTOTAL_90      (FHD_FRAME_HEIGHT + FHD_VFP_90 + FHD_VSA + FHD_VBP)
+#define FHD_VTOTAL_60      (FHD_FRAME_HEIGHT + FHD_VFP_60 + FHD_VSA + FHD_VBP)
+#define FHD_VTOTAL_48      (FHD_FRAME_HEIGHT + FHD_VFP_48 + FHD_VSA + FHD_VBP)
+#define FHD_FRAME_TOTAL_120 (FHD_VTOTAL_120 * FHD_HTOTAL)
+#define FHD_FRAME_TOTAL_90  (FHD_VTOTAL_90 * FHD_HTOTAL)
+#define FHD_FRAME_TOTAL_60  (FHD_VTOTAL_60 * FHD_HTOTAL)
+#define FHD_FRAME_TOTAL_48  (FHD_VTOTAL_48 * FHD_HTOTAL)
+#define FHD_VREFRESH_120   (120)
+#define FHD_VREFRESH_90    (90)
+#define FHD_VREFRESH_60    (60)
+#define FHD_VREFRESH_48    (48)
+#define FHD_CLK_120_X10    ((FHD_FRAME_TOTAL_120 * FHD_VREFRESH_120) / 100)
+#define FHD_CLK_90_X10     ((FHD_FRAME_TOTAL_90 * FHD_VREFRESH_90) / 100)
+#define FHD_CLK_60_X10     ((FHD_FRAME_TOTAL_60 * FHD_VREFRESH_60) / 100)
+#define FHD_CLK_48_X10     ((FHD_FRAME_TOTAL_48 * FHD_VREFRESH_48) / 100)
+#define FHD_CLK_120		   (((FHD_CLK_120_X10 % 10) != 0) ?             \
+			(FHD_CLK_120_X10 / 10 + 1) : (FHD_CLK_120_X10 / 10))
+#define FHD_CLK_90		   (((FHD_CLK_90_X10 % 10) != 0) ?             \
+				(FHD_CLK_90_X10 / 10 + 1) : (FHD_CLK_90_X10 / 10))
+#define FHD_CLK_60		   (((FHD_CLK_60_X10 % 10) != 0) ?             \
+				(FHD_CLK_60_X10 / 10 + 1) : (FHD_CLK_60_X10 / 10))
+#define FHD_CLK_48		   (((FHD_CLK_48_X10 % 10) != 0) ?             \
+				(FHD_CLK_48_X10 / 10 + 1) : (FHD_CLK_48_X10 / 10))
 //extern int _lcm_i2c_write_bytes(unsigned char addr, unsigned char value);
 struct mtk_mode_switch_cmd cmd_table_120fps[] = {
 	{2, {0x2F,0x00}}
@@ -216,35 +241,73 @@ static void lcm_panel_init(struct lcm *ctx)
 	lcm_dcs_write_seq_static(ctx, 0xF4,0x08);
 	lcm_dcs_write_seq_static(ctx, 0x6F,0x32);
 	lcm_dcs_write_seq_static(ctx, 0xF2,0x00);
-	lcm_dcs_write_seq_static(ctx, 0xFF,0xAA,0x55,0xA5,0x81);
-	lcm_dcs_write_seq_static(ctx, 0x17,0x03);
-	lcm_dcs_write_seq_static(ctx, 0x71,0x00);
-	lcm_dcs_write_seq_static(ctx, 0x8D,0x00,0x00,0x04,0xC3,0x00,0x00,0x0A,0x97);
+
+	//CMD1
+
 	lcm_dcs_write_seq_static(ctx, 0x2A,0x00,0x00,0x04,0xC3);
 	lcm_dcs_write_seq_static(ctx, 0x2B,0x00,0x00,0x0A,0x97);
 	lcm_dcs_write_seq_static(ctx, 0x03,0x00);
-	lcm_dcs_write_seq_static(ctx, 0x90,0x03);
+	lcm_dcs_write_seq_static(ctx, 0x90,0x03 );
 	lcm_dcs_write_seq_static(ctx, 0x6F,0x01);
 	lcm_dcs_write_seq_static(ctx, 0x90,0x43);
 	lcm_dcs_write_seq_static(ctx, 0x91,0xAB,0x28,0x00,0x0C,0xC2,0x00,0x02,0x32,0x01,0x31,0x00,0x08,0x08,0xBB,0x07,0x7B,0x10,0xF0);
 	lcm_dcs_write_seq_static(ctx, 0x53,0x20);
-	lcm_dcs_write_seq_static(ctx, 0x3B,0x00,0x10,0x00,0x38,0x00,0x10,0x03,0xD8,0x00,0x10,0x0B,0x18,0x00,0x10,0x10,0x88);
+	lcm_dcs_write_seq_static(ctx, 0x3B,0x00,0x14,0x00,0x34,0x00,0x14,0x03,0xD4,0x00,0x14,0x0B,0x14,0x00,0x14,0x10,0X84);
 	lcm_dcs_write_seq_static(ctx, 0x6F,0x10);
-	lcm_dcs_write_seq_static(ctx, 0x3B,0x00,0x10,0x00,0x38);
+	lcm_dcs_write_seq_static(ctx, 0x3B,0x00,0x14,0x00,0x34);
+
 	lcm_dcs_write_seq_static(ctx, 0x35,0x00);
-	lcm_dcs_write_seq_static(ctx, 0x5F,0x01,0x00);
+	lcm_dcs_write_seq_static(ctx, 0x5F,0x00,0x00);
 	lcm_dcs_write_seq_static(ctx, 0xF0,0x55,0xAA,0x52,0x08,0x01);
 	lcm_dcs_write_seq_static(ctx, 0x6F,0x03);
 	lcm_dcs_write_seq_static(ctx, 0xC7,0x47);
+	//120Hz
 	lcm_dcs_write_seq_static(ctx, 0x2F,0x00);
 	lcm_dcs_write_seq_static(ctx, 0x81,0x01,0x19);
-	lcm_dcs_write_seq_static(ctx, 0x51,0x00,0x00);
+	lcm_dcs_write_seq_static(ctx, 0x51,0x36,0xE8 );
 	lcm_dcs_write_seq_static(ctx, 0x6F,0x04);
 	lcm_dcs_write_seq_static(ctx, 0x51,0x3F,0xFC);
-        lcm_dcs_write_seq_static(ctx, 0x88,0x01,0x02,0x62,0x09,0x84,0x00,0x00,0x00,0x00);
+	//LHBM loaction
+	lcm_dcs_write_seq_static(ctx, 0x88,0x01,0x02,0x62,0x09,0x84,0x00,0x00,0x00,0x00);
 	lcm_dcs_write_seq_static(ctx, 0xF0,0x55,0xAA,0x52,0x08,0x00);
-	lcm_dcs_write_seq_static(ctx, 0x6F,0x8B);
-	lcm_dcs_write_seq_static(ctx, 0xDF,0x36,0x2C,0x36,0x2C,0x36,0x2C);
+	lcm_dcs_write_seq_static(ctx, 0x6F,0x00);
+	lcm_dcs_write_seq_static(ctx, 0xBA,0x00,0x51,0x00,0x14,0xC0,0x34,0x10);
+	lcm_dcs_write_seq_static(ctx, 0x6F,0x07);
+	lcm_dcs_write_seq_static(ctx, 0xBA,0x00,0x51,0x00,0x14,0x03,0xD4,0x10);
+	lcm_dcs_write_seq_static(ctx, 0x6F,0x10);
+	lcm_dcs_write_seq_static(ctx, 0xBA,0x00,0x14,0x0B,0x14);
+	lcm_dcs_write_seq_static(ctx, 0x6F,0x17);
+	lcm_dcs_write_seq_static(ctx, 0xBA,0x00,0x14,0x10,0x84);
+	lcm_dcs_write_seq_static(ctx, 0x6F,0x00);
+	lcm_dcs_write_seq_static(ctx, 0xBB,0x00,0x51,0x00,0x14,0x00,0x34,0x70);
+
+	lcm_dcs_write_seq_static(ctx, 0xF0,0x55,0xAA,0x52,0x08,0x00);
+	lcm_dcs_write_seq_static(ctx, 0x6F,0x01);
+	lcm_dcs_write_seq_static(ctx, 0xDF,0x40);
+	//PMIC NT50380
+	lcm_dcs_write_seq_static(ctx, 0xF0,0x55,0xAA,0x52,0x08,0x01);
+	lcm_dcs_write_seq_static(ctx, 0x6F,0x0A);
+	lcm_dcs_write_seq_static(ctx, 0xE4,0x90);
+	lcm_dcs_write_seq_static(ctx, 0x6F,0x00);
+	lcm_dcs_write_seq_static(ctx, 0xE4,0x90);
+	//VDC preset dimming
+	lcm_dcs_write_seq_static(ctx, 0xF0,0x55,0xAA,0x52,0x08,0x08);
+	lcm_dcs_write_seq_static(ctx, 0x6F,0xCE);
+	lcm_dcs_write_seq_static(ctx, 0xBC,0x01);
+	lcm_dcs_write_seq_static(ctx, 0x6F,0xCF);
+	lcm_dcs_write_seq_static(ctx, 0xBC,0x00,0x44,0x00,0x5B,0x00,0x88,0x00,0xAA,0x00,0x44,0x00,0x44);
+	// CMD AOD mode
+	lcm_dcs_write_seq_static(ctx, 0xF0,0x55,0xAA,0x52,0x08,0x00);
+	lcm_dcs_write_seq_static(ctx, 0xC0,0x20,0x00);
+	lcm_dcs_write_seq_static(ctx, 0x8D,0x00,0x00,0x04,0xC3,0x00,0x00,0x05,0x87);
+	lcm_dcs_write_seq_static(ctx, 0x17,0x21);
+	lcm_dcs_write_seq_static(ctx, 0x71,0x11);
+	lcm_dcs_write_seq_static(ctx, 0xF0,0x55,0xAA,0x52,0x08,0x01);
+	lcm_dcs_write_seq_static(ctx, 0x6F,0x0B);
+	lcm_dcs_write_seq_static(ctx, 0xD2,0x03);
+	lcm_dcs_write_seq_static(ctx, 0xF0,0x55,0xAA,0x52,0x08,0x04);
+	lcm_dcs_write_seq_static(ctx, 0x6F,0x08);
+	lcm_dcs_write_seq_static(ctx, 0xB5,0x04);
 
 	pr_info("%s current_fps:%d\n", __func__, current_fps);
 	current_fps = 120;
@@ -419,7 +482,7 @@ static int lcm_enable(struct drm_panel *panel)
 	return 0;
 }
 static const struct drm_display_mode mode_120hz = {
-	.clock = 446999,
+	.clock = FHD_CLK_120,
 	.hdisplay = FRAME_WIDTH,//1200
 	.hsync_start = FRAME_WIDTH + FHD_HFP,//1215
 	.hsync_end = FRAME_WIDTH + FHD_HFP + FHD_HSA,//1230
@@ -430,7 +493,7 @@ static const struct drm_display_mode mode_120hz = {
 	.vtotal = FRAME_HEIGHT + FHD_VFP + FHD_VSA + FHD_VBP,//2752
 };
 static const struct drm_display_mode mode_90hz = {
-	.clock = 446999,
+	.clock = FHD_CLK_90,
 	.hdisplay = FRAME_WIDTH,
 	.hsync_start = FRAME_WIDTH + FHD_HFP_90,
 	.hsync_end = FRAME_WIDTH + FHD_HFP_90 + FHD_HSA_90,
@@ -441,7 +504,7 @@ static const struct drm_display_mode mode_90hz = {
 	.vtotal = FRAME_HEIGHT + FHD_VFP_90 + FHD_VSA_90 + FHD_VBP_90,
 };
 static const struct drm_display_mode mode_60hz = {
-	.clock = 446999,
+	.clock = FHD_CLK_60,
 	.hdisplay = FRAME_WIDTH,//1200
 	.hsync_start = FRAME_WIDTH + FHD_HFP_60,//1215
 	.hsync_end = FRAME_WIDTH + FHD_HFP_60 + FHD_HSA_60,//1230
@@ -544,6 +607,7 @@ static int lcm_setbacklight_cmdq(void *dsi, dcs_write_gce cb,
 	return 0;
 }
 static struct mtk_panel_params ext_params = {
+	.pll_clk = PLL_CLOCK,
 	.cust_esd_check = 1,
 	.esd_check_enable = 1,
 	.lcm_esd_check_table[0] = {
@@ -628,6 +692,7 @@ static struct mtk_panel_params ext_params = {
 	.panel_supplier = "tianma-nt37706",
 };
 static struct mtk_panel_params ext_params_90hz = {
+	.pll_clk = PLL_CLOCK,
 	.cust_esd_check = 1,
 	.esd_check_enable = 1,
 	.lcm_esd_check_table[0] = {
@@ -685,7 +750,7 @@ static struct mtk_panel_params ext_params_90hz = {
 			.range_bpg_ofs = nt37801_wqhs_dsi_cmd_120hz_dphy_range_bpg_ofs,
 			},
 		},
-	.data_rate = 1230,
+	.data_rate = PLL_CLOCK * 2,
 	/* following MIPI hopping parameter might cause screen mess */
 /* 	.dyn = {
 		.switch_en = 1,
@@ -712,6 +777,7 @@ static struct mtk_panel_params ext_params_90hz = {
 	.panel_supplier = "tianma-nt37706",
 };
 static struct mtk_panel_params ext_params_60hz = {
+	.pll_clk = PLL_CLOCK,
 	.cust_esd_check = 1,
 	.esd_check_enable = 1,
 	.lcm_esd_check_table[0] = {
@@ -769,7 +835,7 @@ static struct mtk_panel_params ext_params_60hz = {
 			.range_bpg_ofs = nt37801_wqhs_dsi_cmd_120hz_dphy_range_bpg_ofs,
 			},
 		},
-	.data_rate = 1230,
+	.data_rate = PLL_CLOCK * 2,
 	/* following MIPI hopping parameter might cause screen mess */
 /* 	.dyn = {
 		.switch_en = 1,
