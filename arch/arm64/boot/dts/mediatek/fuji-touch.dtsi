@@ -36,8 +36,8 @@
 		goodix,iovdd-name = "vtp";
 		goodix,irq-flags = <0x2002>; /* 1:trigger rising, 2:trigger falling;*/
 		goodix,panel-max-id = <10>;
-		goodix,panel-max-x = <19520>;
-		goodix,panel-max-y = <43392>;
+		goodix,panel-max-x = <19200>;
+		goodix,panel-max-y = <42720>;
 		goodix,panel-max-w = <256>;
 		goodix,panel-max-p = <256>;
 		goodix,edge-ctrl;
@@ -68,7 +68,7 @@
 		vcc_i2c-supply = <&mt6368_vtp>;
 		//vcc_i2c-supply = <&L13A>;
 		focaltech,max-touch-number = <10>;
-		focaltech,display-coords =  <0 0 19520 43392>;
+		focaltech,display-coords =  <0 0 19200 42720>;
 		focaltech,edge-ctrl;
 		focaltech,interpolation-ctrl;
 		focaltech,sample-ctrl;
