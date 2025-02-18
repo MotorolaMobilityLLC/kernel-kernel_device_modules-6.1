@@ -35,6 +35,11 @@
 	ac_charger_boot_battery_voltage = <3500000>;
 };
 
+&smart_battery {
+	mmi,vbatt-empty-mv = <2900>;
+	mmi,vbatt-empty-cold-mv = <2900>;
+};
+
 &cw2217_master {
 	df-serialnum = "SB18E39389";
 	#include "bat_setting/CW_AITO-atl-2910mah-DCM.dtsi"

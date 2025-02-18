@@ -11,6 +11,11 @@
  * GNU General Public License for more details.
  */
 
+&smart_battery {
+	mmi,vbatt-empty-mv = <2900>;
+	mmi,vbatt-empty-cold-mv = <2900>;
+};
+
 &cw2217_flip {
 	df-serialnum = "SB18E56671";
 	#include "bat_setting/CW_WEBB-atl-1160mah.dtsi"
