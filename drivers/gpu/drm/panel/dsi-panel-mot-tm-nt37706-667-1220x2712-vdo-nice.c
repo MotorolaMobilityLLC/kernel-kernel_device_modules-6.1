@@ -1278,8 +1278,7 @@ static int lcm_probe(struct mipi_dsi_device *dsi)
 	//dsi->mode_flags = MIPI_DSI_MODE_LPM | MIPI_DSI_MODE_NO_EOT_PACKET
 			// | MIPI_DSI_CLOCK_NON_CONTINUOUS;
 	dsi->mode_flags = MIPI_DSI_MODE_VIDEO | MIPI_DSI_MODE_VIDEO_SYNC_PULSE |
-			  MIPI_DSI_MODE_LPM | MIPI_DSI_MODE_NO_EOT_PACKET |
-			  MIPI_DSI_CLOCK_NON_CONTINUOUS;
+			  MIPI_DSI_MODE_LPM | MIPI_DSI_MODE_NO_EOT_PACKET;
 	ret = of_property_read_u32(dev->of_node, "res-switch", &res_switch);
 	if (ret < 0)
 		res_switch = 0;
