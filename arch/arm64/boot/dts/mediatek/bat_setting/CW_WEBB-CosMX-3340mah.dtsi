@@ -13,7 +13,7 @@
 webb-cosmx-3340mah {
 	serialnum = "SB18E64743";
 	fcc_design = <3340>;
-	config_profile_info = [ 46 00 00 00 00 00 00 00
+	config_profile_info = [ 3C 00 00 00 00 00 00 00
 				B3 BE C1 C2 AF A7 D0 B9
 				A4 E5 CA 9D 8D 6F 5C 50
 				49 48 45 87 69 E3 8E FF
@@ -22,5 +22,5 @@ webb-cosmx-3340mah {
 				CE D0 D4 CD EB FF FF FD
 				20 00 AB 10 00 A2 AF 00
 				00 00 64 31 B1 9B 00 00
-				00 00 00 00 00 00 00 87];
+				00 00 00 00 00 00 00 4A];
 };
