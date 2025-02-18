@@ -404,6 +404,9 @@ static int main2_vcm_power_off(struct main2_vcm_device *main2_vcm)
 	if (main2_vcm->vcamaf_pinctrl && main2_vcm->vcamaf_off)
 		ret = pinctrl_select_state(main2_vcm->vcamaf_pinctrl,
 					main2_vcm->vcamaf_off);
+#if defined(CONFIG_VIENNA_RW_CAMERA_DW9800SAF)
+	mdelay(6);
+#endif
 
 	return ret;
 }
