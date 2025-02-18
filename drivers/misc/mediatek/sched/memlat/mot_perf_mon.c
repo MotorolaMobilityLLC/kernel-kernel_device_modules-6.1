@@ -871,9 +871,10 @@ err_client_data:
 	return ret;
 }
 
-static const struct of_device_id mot_perf_mon_root_match[] = { {
-	.compatible = "mot,perf_mon",
-} };
+static const struct of_device_id mot_perf_mon_root_match[] = {
+	{.compatible = "mot,perf_mon",},
+	{}
+};
 
 static struct platform_driver mot_perf_mon_platform_driver = {
 	.probe = mot_perf_mon_driver_probe,
