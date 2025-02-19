@@ -618,6 +618,7 @@ struct mtk_panel_params {
 
 	int ovl_wcg_for_moto_colormode;
 	bool hs_read_bta_with_hsclk;
+	unsigned int fps_switch_cmd_to_vdo_data_delay_us;
 };
 
 struct mtk_panel_ext {
