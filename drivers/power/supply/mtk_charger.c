@@ -3585,7 +3585,7 @@ static void mmi_find_temp_zone(struct mtk_charger *info, struct mmi_sm_params *p
 	if (!prm->temp_zones) {
 		zones = NULL;
 		num_zones = 0;
-		max_temp = MAX_TEMP_C;
+		max_temp = info->mmi.batt_max_chg_temp;
 	} else {
 		zones = prm->temp_zones;
 		if (info->mmi.max_chrg_temp >= MIN_MAX_TEMP_C)
@@ -3605,7 +3605,7 @@ static void mmi_find_temp_zone(struct mtk_charger *info, struct mmi_sm_params *p
 				return;
 			}
 		}
-		if (temp_c <= MIN_TEMP_C)
+		if (temp_c <= info->mmi.batt_min_chg_temp)
 			prm->pres_temp_zone = ZONE_COLD;
 		else
 			prm->pres_temp_zone =
@@ -3617,7 +3617,7 @@ static void mmi_find_temp_zone(struct mtk_charger *info, struct mmi_sm_params *p
 	}
 
 	if (prev_zone == ZONE_COLD) {
-		if (temp_c >= MIN_TEMP_C + HYSTERISIS_DEGC) {
+		if (temp_c >= info->mmi.batt_min_chg_temp + HYSTERISIS_DEGC) {
 			if (!num_zones)
 				prm->pres_temp_zone = ZONE_FIRST;
 			else
@@ -3657,7 +3657,7 @@ static void mmi_find_temp_zone(struct mtk_charger *info, struct mmi_sm_params *p
 
 		if (colder_zone == ZONE_COLD) {
 			colder_fcc = 0;
-			colder_t = MIN_TEMP_C;
+			colder_t = info->mmi.batt_min_chg_temp;
 		} else {
 			colder_fcc = zones[colder_zone].fcc_max_ma;
 			colder_t = zones[colder_zone].temp_c;
@@ -3669,7 +3669,7 @@ static void mmi_find_temp_zone(struct mtk_charger *info, struct mmi_sm_params *p
 		if (zones[prev_zone].fcc_max_ma < colder_fcc)
 			colder_t -= HYSTERISIS_DEGC;
 
-		if (temp_c <= MIN_TEMP_C)
+		if (temp_c <= info->mmi.batt_min_chg_temp)
 			prm->pres_temp_zone = ZONE_COLD;
 		else if (temp_c >= max_temp)
 			prm->pres_temp_zone = ZONE_HOT;
@@ -3684,7 +3684,7 @@ static void mmi_find_temp_zone(struct mtk_charger *info, struct mmi_sm_params *p
 							zones,
 							num_zones);
 	} else {
-		if (temp_c <= MIN_TEMP_C)
+		if (temp_c <= info->mmi.batt_min_chg_temp)
 			prm->pres_temp_zone = ZONE_COLD;
 		else if (temp_c >= max_temp)
 			prm->pres_temp_zone = ZONE_HOT;
@@ -5892,6 +5892,19 @@ static int parse_mmi_dt(struct mtk_charger *info, struct device *dev)
 	if (rc)
 		info->mmi.wireless_rechg_soc = 95;
 
+	rc = of_property_read_u32(node, "mmi,batt-max-temp",
+				  &info->mmi.batt_max_chg_temp);
+	if (rc)
+		info->mmi.batt_max_chg_temp = MAX_TEMP_C;
+
+	rc = of_property_read_u32(node, "mmi,batt-min-temp",
+				  &info->mmi.batt_min_chg_temp);
+	if (rc)
+		info->mmi.batt_min_chg_temp = MIN_TEMP_C;
+	pr_info("%s battery charge max temp %d, min temp %d \n", __func__,
+		info->mmi.batt_max_chg_temp, info->mmi.batt_min_chg_temp);
+
+
 	return rc;
 }
 
@@ -6070,10 +6083,10 @@ static ssize_t force_max_chrg_temp_store(struct device *dev,
 		return -ENODEV;
 	}
 
-	if ((mode >= MIN_MAX_TEMP_C) && (mode <= MAX_TEMP_C))
+	if ((mode >= MIN_MAX_TEMP_C) && (mode <= mmi_info->mmi.batt_max_chg_temp))
 		mmi_info->mmi.max_chrg_temp = mode;
 	else
-		mmi_info->mmi.max_chrg_temp = MAX_TEMP_C;
+		mmi_info->mmi.max_chrg_temp = mmi_info->mmi.batt_max_chg_temp;
 
 	return r ? r : count;
 }

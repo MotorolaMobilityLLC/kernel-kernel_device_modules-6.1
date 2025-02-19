@@ -469,6 +469,8 @@ struct mmi_params {
 	int			max_chrg_temp;
 	int			force_pmic_icl_ma;
 	int			force_cp_fcc_ma;
+	int			batt_max_chg_temp;
+	int			batt_min_chg_temp;
 
 	/*target parameter*/
 	int			target_fv;
