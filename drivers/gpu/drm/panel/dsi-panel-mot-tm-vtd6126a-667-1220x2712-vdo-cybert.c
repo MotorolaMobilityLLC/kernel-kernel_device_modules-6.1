@@ -682,11 +682,11 @@ static struct mtk_panel_params ext_params_60hz = {
 	.lfr_enable = 0,
 	.lfr_minimum_fps = 60,
 	.change_fps_by_vfp_send_cmd = 1,
+	.fps_switch_cmd_to_vdo_data_delay_us = 10,
 	.dyn_fps = {
 		.switch_en = 0,
 		.vact_timing_fps = 120,
-		.dfps_cmd_grp_table[0] = {2, {0x6c, 0x02} },
-		.dfps_cmd_grp_size = 1,
+		.dfps_cmd_table[0] = {0, 2, {0x6C, 0x02} },
 	},
 
 	.panel_cellid_reg = 0x5A,
@@ -769,11 +769,11 @@ static struct mtk_panel_params ext_params_90hz = {
 	.lfr_minimum_fps = 60,
 
 	.change_fps_by_vfp_send_cmd = 1,
+	.fps_switch_cmd_to_vdo_data_delay_us = 10,
 	.dyn_fps = {
 		.switch_en = 0,
 		.vact_timing_fps = 120,
-		.dfps_cmd_grp_table[0] = {2, {0x6c, 0x01} },
-		.dfps_cmd_grp_size = 1,
+		.dfps_cmd_table[0] = {0, 2, {0x6C, 0x01} },
 	},
 
 	.panel_cellid_reg = 0x5A,
@@ -855,11 +855,11 @@ static struct mtk_panel_params ext_params_120hz = {
 	.lfr_enable = 0,
 	.lfr_minimum_fps = 60,
 	.change_fps_by_vfp_send_cmd = 1,
+	.fps_switch_cmd_to_vdo_data_delay_us = 10,
 	.dyn_fps = {
 		.switch_en = 0,
 		.vact_timing_fps = 120,
-		.dfps_cmd_grp_table[0] = {2, {0x6c, 0x00} },
-		.dfps_cmd_grp_size = 1,
+		.dfps_cmd_table[0] = {0, 2, {0x6C, 0x00} },
 	},
 
 	.panel_cellid_reg = 0x5A,
