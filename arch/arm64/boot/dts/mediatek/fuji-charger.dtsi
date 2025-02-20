@@ -41,7 +41,10 @@
 	charging-host-charger-current = <1000000>;
 	pre_charge_current = <400>;
 
-	temp-t4-threshold = <60>;
+	temp-t4-threshold = <45>;
+	temp-t3-threshold = <44>;
+	temp-t1-threshold = <2>;
+	temp_t0_threshold = <1>;
 	boot-battery-voltage = <3500000>;
 	boot-battery-voltage-max = <3500000>;
 	/*boot battery voltage when using AC charger*/
