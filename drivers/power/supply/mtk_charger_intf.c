@@ -198,6 +198,9 @@ static int get_pmic_vbus(struct mtk_charger *info, int *vchr)
 	return ret;
 }
 
+
+#define VBUS_THR_MV 4000
+#define DEFAULT_VBUS_SW_OVP 15000000
 int get_vbus(struct mtk_charger *info)
 {
 	int ret = 0;
@@ -212,6 +215,16 @@ int get_vbus(struct mtk_charger *info)
 			chr_err("%s: get vbus failed: %d\n", __func__, ret);
 	} else
 		vchr /= 1000;
+
+	if ((info->data.vbus_sw_ovp_voltage > DEFAULT_VBUS_SW_OVP) && (vchr < VBUS_THR_MV)) {
+		if (info->chr_type != POWER_SUPPLY_TYPE_UNKNOWN) {
+			ret = charger_dev_get_adc(info->dvchg1_dev, ADC_CHANNEL_VBUS, &vchr, &vchr);
+			if (ret < 0)
+				chr_err("%s: get cp vbus failed: %d\n", __func__, ret);
+			else
+				vchr /= 1000;
+		}
+	}
 
 	return vchr;
 }
