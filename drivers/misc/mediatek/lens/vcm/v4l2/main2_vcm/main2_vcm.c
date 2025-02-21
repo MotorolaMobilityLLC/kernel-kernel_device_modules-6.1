@@ -408,6 +408,8 @@ static int main2_vcm_power_off(struct main2_vcm_device *main2_vcm)
 	mdelay(6);
 #elif defined(CONFIG_VIENNA_RW_CAMERA_DW9800SAF)
 	mdelay(5);
+#elif defined(CONFIG_MOTO_AF_POWER_OFF_DELAY_OULU)
+	mdelay(5);
 #endif
 	LOG_INF("-\n");
 

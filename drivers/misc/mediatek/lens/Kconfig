@@ -334,6 +334,11 @@ config MOTO_DW9800WAF
         help
           MOT DW9800WAF power off delay
 
+config MOTO_AF_POWER_OFF_DELAY_OULU
+        bool "For MOT AF power off delay of OULU"
+        help
+          MOT AF power off delay of OULU
+
 config NICE_RM_CAMERA_GT9764VAF
         bool "For NICE RM camera GT9764V AF power off delay"
         help

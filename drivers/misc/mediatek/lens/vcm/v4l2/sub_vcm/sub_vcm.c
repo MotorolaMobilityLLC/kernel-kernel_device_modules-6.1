@@ -343,6 +343,10 @@ static int sub_vcm_power_off(struct sub_vcm_device *sub_vcm)
 		ret = pinctrl_select_state(sub_vcm->vcamaf_pinctrl,
 					sub_vcm->vcamaf_off);
 
+#if defined(CONFIG_MOTO_AF_POWER_OFF_DELAY_OULU)
+	mdelay(24);
+#endif
+
 	return ret;
 }
 
