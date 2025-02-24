@@ -88,6 +88,7 @@
 	gauge = <&smart_battery>;
 	battery-cv = <4530000>;
 	max-charger-voltage = <22000000>;
+	vbus-sw-ovp-voltage = <22000000>;
 	ac-charger-current = <3000000>;
 	usb-charger-current = <500000>;
 	ac-charger-input-current = <2000000>;
