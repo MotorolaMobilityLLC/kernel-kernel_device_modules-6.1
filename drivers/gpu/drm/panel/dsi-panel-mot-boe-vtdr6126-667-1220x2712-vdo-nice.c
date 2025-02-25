@@ -20,6 +20,7 @@
 #include <linux/platform_device.h>
 #include "../mediatek/mediatek_v2/mtk_corner_pattern/nt37801_cmd_120hz_rc.h"
 #include "dsi-panel-mot-boe-vtdr6126-667-1220x2712-vdo-lhbm-alpha.h"
+#define DIC_COMMAND_MODE_AOD
 #define CONFIG_MTK_PANEL_EXT
 #if defined(CONFIG_MTK_PANEL_EXT)
 #include "../mediatek/mediatek_v2/mtk_panel_ext.h"
@@ -30,31 +31,55 @@
 #endif
 #define FRAME_WIDTH				(1220)
 #define FRAME_HEIGHT			(2712)
-#define PLL_CLOCK				(505)
+#define PLL_CLOCK				(449)
 #define REAL_MODE_NUM           (6)
 #define FHD_FRAME_WIDTH    (1220)
-#define FHD_HFP            (44)
-#define FHD_HSA            (4)
-#define FHD_HBP            (24)
+#define FHD_HFP            (24)
+#define FHD_HSA            (8)
+#define FHD_HBP            (8)
 #define FHD_HTOTAL         (FHD_FRAME_WIDTH + FHD_HFP + FHD_HSA + FHD_HBP)
 #define FHD_FRAME_HEIGHT   (2712)
-#define FHD_VFP            (56)
-#define FHD_VSA            (4)
-#define FHD_VBP            (12)
+#define FHD_VFP            (52)
+#define FHD_VSA            (2)
+#define FHD_VBP            (18)
 #define FHD_VTOTAL         (FHD_FRAME_HEIGHT + FHD_VFP + FHD_VSA + FHD_VBP)
 #define MODE_SWITCH_CMDQ_ENABLE 1
-#define FHD_HFP_90            (44)
-#define FHD_HSA_90            (4)
-#define FHD_HBP_90            (24)
+#define FHD_HFP_90            (24)
+#define FHD_HSA_90            (8)
+#define FHD_HBP_90            (8)
 #define FHD_VFP_90            (984)
-#define FHD_VSA_90            (4)
-#define FHD_VBP_90            (12)
-#define FHD_HFP_60            (44)
-#define FHD_HSA_60            (4)
-#define FHD_HBP_60            (24)
+#define FHD_VSA_90            (2)
+#define FHD_VBP_90            (18)
+#define FHD_HFP_60            (24)
+#define FHD_HSA_60            (8)
+#define FHD_HBP_60            (8)
 #define FHD_VFP_60            (2840)
-#define FHD_VSA_60            (4)
-#define FHD_VBP_60            (12)
+#define FHD_VSA_60            (2)
+#define FHD_VBP_60            (18)
+#define FHD_VTOTAL_120     (FHD_FRAME_HEIGHT + FHD_VFP + FHD_VSA + FHD_VBP)
+#define FHD_VTOTAL_90      (FHD_FRAME_HEIGHT + FHD_VFP_90 + FHD_VSA + FHD_VBP)
+#define FHD_VTOTAL_60      (FHD_FRAME_HEIGHT + FHD_VFP_60 + FHD_VSA + FHD_VBP)
+#define FHD_VTOTAL_48      (FHD_FRAME_HEIGHT + FHD_VFP_48 + FHD_VSA + FHD_VBP)
+#define FHD_FRAME_TOTAL_120 (FHD_VTOTAL_120 * FHD_HTOTAL)
+#define FHD_FRAME_TOTAL_90  (FHD_VTOTAL_90 * FHD_HTOTAL)
+#define FHD_FRAME_TOTAL_60  (FHD_VTOTAL_60 * FHD_HTOTAL)
+#define FHD_FRAME_TOTAL_48  (FHD_VTOTAL_48 * FHD_HTOTAL)
+#define FHD_VREFRESH_120   (120)
+#define FHD_VREFRESH_90    (90)
+#define FHD_VREFRESH_60    (60)
+#define FHD_VREFRESH_48    (48)
+#define FHD_CLK_120_X10    ((FHD_FRAME_TOTAL_120 * FHD_VREFRESH_120) / 100)
+#define FHD_CLK_90_X10     ((FHD_FRAME_TOTAL_90 * FHD_VREFRESH_90) / 100)
+#define FHD_CLK_60_X10     ((FHD_FRAME_TOTAL_60 * FHD_VREFRESH_60) / 100)
+#define FHD_CLK_48_X10     ((FHD_FRAME_TOTAL_48 * FHD_VREFRESH_48) / 100)
+#define FHD_CLK_120		   (((FHD_CLK_120_X10 % 10) != 0) ?             \
+			(FHD_CLK_120_X10 / 10 + 1) : (FHD_CLK_120_X10 / 10))
+#define FHD_CLK_90		   (((FHD_CLK_90_X10 % 10) != 0) ?             \
+				(FHD_CLK_90_X10 / 10 + 1) : (FHD_CLK_90_X10 / 10))
+#define FHD_CLK_60		   (((FHD_CLK_60_X10 % 10) != 0) ?             \
+				(FHD_CLK_60_X10 / 10 + 1) : (FHD_CLK_60_X10 / 10))
+#define FHD_CLK_48		   (((FHD_CLK_48_X10 % 10) != 0) ?             \
+				(FHD_CLK_48_X10 / 10 + 1) : (FHD_CLK_48_X10 / 10))
 //extern int _lcm_i2c_write_bytes(unsigned char addr, unsigned char value);
 struct mtk_mode_switch_cmd cmd_table_120fps[] = {
 	{2, {0x6C,0x00}}
@@ -105,6 +130,8 @@ struct lcm {
 	atomic_t current_bl;
 	atomic_t current_fps;
 	atomic_t pcd_mode;
+	atomic_t doze_enable;
+	//atomic_t current_aod_y_start;
 	enum panel_version version;
 };
 #define lcm_dcs_write_seq(ctx, seq...) \
@@ -204,45 +231,71 @@ static void lcm_panel_init(struct lcm *ctx)
 	msleep(25);
 	lcm_dcs_write_seq_static(ctx, 0x03,0x01);
 	lcm_dcs_write_seq_static(ctx, 0x35,0x00);
-	lcm_dcs_write_seq_static(ctx, 0x51,0x36,0xE8); //800nit
+	lcm_dcs_write_seq_static(ctx, 0x51,0x00,0x00); //800nit
 	lcm_dcs_write_seq_static(ctx, 0x53,0x20);
 	lcm_dcs_write_seq_static(ctx, 0x55,0x10);
 	lcm_dcs_write_seq_static(ctx, 0x59,0x09);
 	lcm_dcs_write_seq_static(ctx, 0x5e,0x00);
-	lcm_dcs_write_seq_static(ctx, 0x6c,0x00);
+	lcm_dcs_write_seq_static(ctx, 0x6c,0x00);//120hz
 	lcm_dcs_write_seq_static(ctx, 0x6d,0x00);
 	lcm_dcs_write_seq_static(ctx, 0x6f,0x01);
 	lcm_dcs_write_seq_static(ctx, 0x72,0x00);
+	lcm_dcs_write_seq_static(ctx, 0x2a,0x00,0x00,0x04,0xc3);
+	lcm_dcs_write_seq_static(ctx, 0x2b,0x00,0x00,0x05,0x87);
+	lcm_dcs_write_seq_static(ctx, 0xa4,0x01);
+	lcm_dcs_write_seq_static(ctx, 0x38);
+	lcm_dcs_write_seq_static(ctx, 0x6f,0x01);
+	lcm_dcs_write_seq_static(ctx, 0xa4,0x00);
     lcm_dcs_write_seq_static(ctx, 0x70,0x11,0x00,0x00,0xAB,0x30,0x80,0x0A,0x98,0x04,0xC4,0x00,0x0C,0x02,0x62,0x02,0x62,0x02,0x00,0x01,0x1A,0x00,0x20,0x02,0x5B,0x00,0x08,0x00,0x01,0x00,0xBB,0x07,0x7B,0x18,0x00,0x10,0xF0,0x07,0x10,0x20,0x00,0x06,0x0F,0x0F,0x33,0x0E,0x1C,0x2A,0x38,0x46,0x54,0x62,0x69,0x70,0x77,0x79,0x7B,0x7D,0x7E,0x02,0x02,0x22,0x00,0x2A,0x40,0x2A,0xBE,0x3A,0xFC,0x3A,0xFA,0x3A,0xF8,0x3B,0x38,0x3B,0x78,0x3B,0xB6,0x4B,0xB6,0x4B,0xF4,0x4B,0xF4,0x6C,0x34,0x84,0x74,0x00,0x00,0x00,0x00,0x00,0x00);
 	
 	lcm_dcs_write_seq_static(ctx, 0xf0,0xaa,0x12);
-	lcm_dcs_write_seq_static(ctx, 0xC7,0x5F,0x78,0x43,0x5A,0x33,0x33);
+	lcm_dcs_write_seq_static(ctx, 0xc7, 0xff);
+	lcm_dcs_write_seq_static(ctx, 0xd6, 0x04, 0x00);
 
-    lcm_dcs_write_seq_static(ctx, 0xF0,0xAA,0x10);
-    lcm_dcs_write_seq_static(ctx, 0xB0,0x05,0x4C,0x01,0x31,0x01,0x04,0xC4,0x05,0x4C);
+        lcm_dcs_write_seq_static(ctx, 0xF0,0xAA,0x10);
+        lcm_dcs_write_seq_static(ctx, 0xB0,0x05,0x4C,0x01,0x31,0x01,0x04,0xC4,0x05,0x4C);
+	lcm_dcs_write_seq_static(ctx, 0xB1, 0x01,0x9e,0x00,0x14,0x00,0x34,0x00);
+	lcm_dcs_write_seq_static(ctx, 0x65, 0x07);
+	lcm_dcs_write_seq_static(ctx, 0xB1, 0x01, 0x9e,0x00,0x14,0x03,0xd4,0x00);
+	lcm_dcs_write_seq_static(ctx, 0x65, 0x0e);
+	lcm_dcs_write_seq_static(ctx, 0xB1, 0x01, 0x9e,0x00,0x14,0x0b,0x14,0x00);
+	lcm_dcs_write_seq_static(ctx, 0x65, 0x15);
+	lcm_dcs_write_seq_static(ctx, 0xB1, 0x01, 0x9e, 0x00, 0x14, 0x10, 0x84, 0x00);
+	lcm_dcs_write_seq_static(ctx, 0xB2, 0x01, 0x9e, 0x00, 0x14, 0x00, 0x34, 0x03);
+	lcm_dcs_write_seq_static(ctx, 0x65, 0x07);
+	lcm_dcs_write_seq_static(ctx, 0xB2, 0x01, 0x9e, 0x00, 0x14, 0x00, 0x34, 0x03);
+	lcm_dcs_write_seq_static(ctx, 0x65, 0x0e);
+	lcm_dcs_write_seq_static(ctx, 0xB2, 0x01, 0x9e, 0x00, 0x14, 0x00, 0x34, 0x03);
 
-    lcm_dcs_write_seq_static(ctx, 0xF0,0xAA,0x16);	
+        lcm_dcs_write_seq_static(ctx, 0xF0,0xAA,0x16);
 	lcm_dcs_write_seq_static(ctx, 0xD1,0x00,0x00,0x00);
 	lcm_dcs_write_seq_static(ctx, 0x65,0x03);
    	lcm_dcs_write_seq_static(ctx, 0XD1,0x00,0x00,0x00);
 	lcm_dcs_write_seq_static(ctx, 0x65,0x06);
-    lcm_dcs_write_seq_static(ctx, 0XD1,0x00,0x00,0x00);
+        lcm_dcs_write_seq_static(ctx, 0XD1,0x00,0x00,0x00);
 	lcm_dcs_write_seq_static(ctx, 0x65,0x09);
-    lcm_dcs_write_seq_static(ctx, 0XD1,0x00,0x00,0x00);
+        lcm_dcs_write_seq_static(ctx, 0XD1,0x00,0x00,0x00);
 	lcm_dcs_write_seq_static(ctx, 0x65,0x0C);
-    lcm_dcs_write_seq_static(ctx, 0XD1,0x00,0x00,0x00);
-	
-	lcm_dcs_write_seq_static(ctx, 0xff,0x5a,0x81);
-	lcm_dcs_write_seq_static(ctx, 0x65,0x03);
-	lcm_dcs_write_seq_static(ctx, 0xf3,0x61);
-	lcm_dcs_write_seq_static(ctx, 0x65,0x0b);
-	lcm_dcs_write_seq_static(ctx, 0xf3,0x78);
+        lcm_dcs_write_seq_static(ctx, 0XD1,0x00,0x00,0x00);
 
-	lcm_dcs_write_seq_static(ctx, 0XFF,0x5A,0x80);
-	lcm_dcs_write_seq_static(ctx, 0x65,0x25);
-	lcm_dcs_write_seq_static(ctx, 0xFD,0x01);
-	lcm_dcs_write_seq_static(ctx, 0xff,0x5a,0x00);
-	lcm_dcs_write_seq_static(ctx, 0xf0,0xaa,0x00);
+	lcm_dcs_write_seq_static(ctx, 0xff, 0x5a, 0x81);
+	lcm_dcs_write_seq_static(ctx, 0x65, 0x03);
+	lcm_dcs_write_seq_static(ctx, 0xf3, 0x61);
+	lcm_dcs_write_seq_static(ctx, 0x65, 0x0b);
+	lcm_dcs_write_seq_static(ctx, 0xf3, 0x78);
+	lcm_dcs_write_seq_static(ctx, 0xFF, 0x5A, 0x80);
+	lcm_dcs_write_seq_static(ctx, 0x65, 0x25);
+	lcm_dcs_write_seq_static(ctx, 0xfd, 0x01);
+	lcm_dcs_write_seq_static(ctx, 0xf9, 0x10);
+	lcm_dcs_write_seq_static(ctx, 0x65, 0x0A);
+	lcm_dcs_write_seq_static(ctx, 0xf9, 0x1e);
+
+	lcm_dcs_write_seq_static(ctx, 0xFF, 0x5A, 0x83);
+	lcm_dcs_write_seq_static(ctx, 0x65, 0x0B);
+	lcm_dcs_write_seq_static(ctx, 0xf7, 0x03);
+
+	lcm_dcs_write_seq_static(ctx, 0xf0, 0xaa, 0x00);
+	lcm_dcs_write_seq_static(ctx, 0xff, 0x5a, 0x00);
 
 	pr_info("%s current_fps:%d\n", __func__, current_fps);
 	current_fps = 120;
@@ -265,6 +318,7 @@ static void lcm_panel_init(struct lcm *ctx)
 	msleep(100);
 	lcm_dcs_write_seq_static(ctx, 0x29);
 	msleep(20);
+
 	printk("%s exit  \n",__func__);
 }
 static int lcm_disable(struct drm_panel *panel)
@@ -400,7 +454,9 @@ static int lcm_prepare(struct drm_panel *panel)
 #ifdef PANEL_SUPPORT_READBACK
 	lcm_panel_get_data(ctx);
 #endif
-	printk("%s exit  \n",__func__);
+
+
+	pr_info("%s-\n", __func__);
 	return ret;
 }
 static int lcm_enable(struct drm_panel *panel)
@@ -418,7 +474,7 @@ static int lcm_enable(struct drm_panel *panel)
 	return 0;
 }
 static const struct drm_display_mode mode_120hz = {
-	.clock = 441653,
+	.clock = FHD_CLK_120,
 	.hdisplay = FRAME_WIDTH,//1200
 	.hsync_start = FRAME_WIDTH + FHD_HFP,//1215
 	.hsync_end = FRAME_WIDTH + FHD_HFP + FHD_HSA,//1230
@@ -429,7 +485,7 @@ static const struct drm_display_mode mode_120hz = {
 	.vtotal = FRAME_HEIGHT + FHD_VFP + FHD_VSA + FHD_VBP,//2752
 };
 static const struct drm_display_mode mode_90hz = {
-	.clock = 441653,
+	.clock = FHD_CLK_90,
 	.hdisplay = FRAME_WIDTH,
 	.hsync_start = FRAME_WIDTH + FHD_HFP_90,
 	.hsync_end = FRAME_WIDTH + FHD_HFP_90 + FHD_HSA_90,
@@ -440,7 +496,7 @@ static const struct drm_display_mode mode_90hz = {
 	.vtotal = FRAME_HEIGHT + FHD_VFP_90 + FHD_VSA_90 + FHD_VBP_90,
 };
 static const struct drm_display_mode mode_60hz = {
-	.clock = 441653,
+	.clock = FHD_CLK_60,
 	.hdisplay = FRAME_WIDTH,//1200
 	.hsync_start = FRAME_WIDTH + FHD_HFP_60,//1215
 	.hsync_end = FRAME_WIDTH + FHD_HFP_60 + FHD_HSA_60,//1230
@@ -531,17 +587,28 @@ static int lcm_setbacklight_cmdq(void *dsi, dcs_write_gce cb,
 	struct lcm *ctx = g_ctx;
 	char bl_tb[] = {0x51, 0x3F, 0xff};
 
+	/*if (atomic_read(&ctx->hbm_mode) && level) {
+		pr_info("hbm_mode = %d, skip backlight(%d)\n", atomic_read(&ctx->hbm_mode), level);
+		atomic_set(&ctx->current_backlight, level);
+		return 0;
+	}*/
+
+
 	printk("%s backlight level = %d  \n",__func__,level);
 	bl_tb[1] = (level >> 8) & 0x3F;
 	bl_tb[2] = level & 0xFF;
 	if (!cb)
 		return -1;
 	cb(dsi, handle, bl_tb, ARRAY_SIZE(bl_tb));
+
+
+
 	atomic_set(&ctx->current_bl, level);
 	if (!level)
 		atomic_set(&ctx->hbm_mode, 0);
 	return 0;
 }
+
 static struct mtk_panel_params ext_params = {
 	.cust_esd_check = 1,
 	.esd_check_enable = 1,
@@ -559,6 +626,11 @@ static struct mtk_panel_params ext_params = {
 	.output_mode = MTK_PANEL_DSC_SINGLE_PORT,
 	//.dsc_param_load_mode = 2, //0: default flow; 1: key param only; 2: full control
 	.lcm_color_mode = MTK_DRM_COLOR_MODE_DISPLAY_P3,
+	//AA size=69.54mm*154.584mm
+	.physical_width_um = 69540,
+	.physical_height_um = 154584,
+	.lp_perline_en = 1,
+	.vdo_per_frame_lp_enable = 1,
 	.dsc_params = {
 		.enable = 1,
 		.ver = 17,
@@ -626,6 +698,7 @@ static struct mtk_panel_params ext_params = {
 	.panel_ver = 1,
 	.panel_name = "boe_vtdr6126_667_vdo_1220_2712",
 	.panel_supplier = "boe-vtdr6126",
+	//.check_panel_feature = 1,
 };
 static struct mtk_panel_params ext_params_90hz = {
 	.cust_esd_check = 1,
@@ -644,6 +717,11 @@ static struct mtk_panel_params ext_params_90hz = {
 	.output_mode = MTK_PANEL_DSC_SINGLE_PORT,
 	//.dsc_param_load_mode = 2, //0: default flow; 1: key param only; 2: full control
 	.lcm_color_mode = MTK_DRM_COLOR_MODE_DISPLAY_P3,
+	//AA size=69.54mm*154.584mm
+	.physical_width_um = 69540,
+	.physical_height_um = 154584,
+	.lp_perline_en = 1,
+	.vdo_per_frame_lp_enable = 1,
 	.dsc_params = {
 		.enable = 1,
 		.ver = 17,
@@ -686,7 +764,7 @@ static struct mtk_panel_params ext_params_90hz = {
 			.range_bpg_ofs = nt37801_wqhs_dsi_cmd_120hz_dphy_range_bpg_ofs,
 			},
 		},
-	.data_rate = 1080,
+	.data_rate = PLL_CLOCK * 2,
 	/* following MIPI hopping parameter might cause screen mess */
 /* 	.dyn = {
 		.switch_en = 1,
@@ -711,6 +789,7 @@ static struct mtk_panel_params ext_params_90hz = {
 	.panel_ver = 1,
 	.panel_name = "boe_vtdr6126_667_vdo_1220_2712",
 	.panel_supplier = "boe-vtdr6126",
+    //.check_panel_feature = 1,
 };
 static struct mtk_panel_params ext_params_60hz = {
 	.cust_esd_check = 1,
@@ -729,6 +808,11 @@ static struct mtk_panel_params ext_params_60hz = {
 	.output_mode = MTK_PANEL_DSC_SINGLE_PORT,
 	//.dsc_param_load_mode = 2, //0: default flow; 1: key param only; 2: full control
 	.lcm_color_mode = MTK_DRM_COLOR_MODE_DISPLAY_P3,
+	//AA size=69.54mm*154.584mm
+	.physical_width_um = 69540,
+	.physical_height_um = 154584,
+	.lp_perline_en = 1,
+	.vdo_per_frame_lp_enable = 1,
 	.dsc_params = {
 		.enable = 1,
 		.ver = 17,
@@ -771,7 +855,7 @@ static struct mtk_panel_params ext_params_60hz = {
 			.range_bpg_ofs = nt37801_wqhs_dsi_cmd_120hz_dphy_range_bpg_ofs,
 			},
 		},
-	.data_rate = 1080,
+	.data_rate = PLL_CLOCK * 2,
 	/* following MIPI hopping parameter might cause screen mess */
 /* 	.dyn = {
 		.switch_en = 1,
@@ -796,6 +880,7 @@ static struct mtk_panel_params ext_params_60hz = {
 	.panel_ver = 1,
 	.panel_name = "boe_vtdr6126_667_vdo_1220_2712",
 	.panel_supplier = "boe-vtdr6126",
+	//.check_panel_feature = 1,
 };
 
 struct drm_display_mode *get_mode_by_id(struct drm_connector *connector,
@@ -986,8 +1071,8 @@ static int panel_lhbm_set_cmdq(void *dsi, dcs_grp_write_gce cb, void *handle, ui
 			pTable = panel_lhbm_off;
 			cb(dsi, handle, pTable, para_count);
 	}
-	return 0;
 
+	return 0;
 }
 
 static int panel_hbm_set_cmdq(struct lcm *ctx, void *dsi, dcs_grp_write_gce cb, void *handle, uint32_t hbm_state)
@@ -1107,6 +1192,129 @@ static int panel_feature_set(struct drm_panel *panel, void *dsi,
 	return ret;
 }
 
+#if 0
+
+static struct mtk_panel_para_table aod_en_start_cmd[] = {
+		{1, {0x28}},
+		{3, {0x44, 0x06,0x8c}},
+		{2, {0x6F, 0x02}},
+		{1, {0x39}},
+	};
+
+static int panel_doze_enable_start(struct drm_panel *panel, void *dsi, dcs_write_gce cb,
+	void *handle)
+{
+	unsigned int para_count = 0;
+	struct mtk_panel_para_table *pTable;
+	unsigned int i = 0;
+
+	if (!cb)
+		return -1;
+
+	para_count = sizeof(aod_en_start_cmd) / sizeof(struct mtk_panel_para_table);
+	pr_info("%s: para_count %d\n", __func__, para_count);
+
+	for(i = 0; i < para_count; i++) {
+		pTable = &aod_en_start_cmd[i];
+		pr_info("%s: para: 0x%x , count %d\n", __func__, pTable->para_list[0], pTable->count);
+		cb(dsi, handle, pTable->para_list, pTable->count);
+	}
+
+	usleep_range(17 * 1000, 18 * 1000);
+	return 0;
+}
+
+static struct mtk_panel_para_table aod_en_cmd[] = {
+		{1, {0x29}},
+	};
+
+static int panel_doze_enable(struct drm_panel *panel, void *dsi, dcs_write_gce cb,
+	void *handle)
+{
+	struct lcm *ctx = panel_to_lcm(panel);
+	unsigned int para_count = 0;
+	struct mtk_panel_para_table *pTable;
+	unsigned int i = 0;
+
+	pr_info("%s: %d -> %d\n", __func__, atomic_read(&ctx->doze_enable), 1);
+
+	if (!cb)
+		return -1;
+
+	para_count = sizeof(aod_en_cmd) / sizeof(struct mtk_panel_para_table);
+
+	pr_info("%s: para_count %d\n", __func__, para_count);
+
+	for(i = 0; i < para_count; i++) {
+		pTable = &aod_en_cmd[i];
+		pr_info("%s: para: 0x%x , count %d\n", __func__, pTable->para_list[0], pTable->count);
+		cb(dsi, handle, pTable->para_list, pTable->count);
+	}
+
+	atomic_set(&ctx->doze_enable, 1);
+
+	return 0;
+}
+
+static struct mtk_panel_para_table aod_disable_cmd[] = {
+		{2, {0xa6, 0x01}},
+		{3, {0x44, 0x00, 0x00 }},
+		{3, {0xf0, 0xaa,0x10}},
+		{2, {0xcf, 0x5b}},
+		{2, {0x65, 0x0d}},
+		{3, {0xcf, 0xfd, 0x79}},
+	};
+
+static int panel_doze_disable(struct drm_panel *panel, void *dsi, dcs_write_gce cb,
+	void *handle)
+{
+	struct lcm *ctx = panel_to_lcm(panel);
+	unsigned int para_count = 0;
+	struct mtk_panel_para_table *pTable;
+	unsigned int i = 0;
+
+	pr_info("%s: %d -> %d\n", __func__, atomic_read(&ctx->doze_enable), 0);
+
+	if (!cb)
+		return -1;
+
+	para_count = sizeof(aod_disable_cmd) / sizeof(struct mtk_panel_para_table);
+
+	pr_info("%s: para_count %d\n", __func__, para_count);
+
+	for(i = 0; i < para_count; i++) {
+		pTable = &aod_disable_cmd[i];
+		pr_info("%s: para: 0x%x , count %d\n", __func__, pTable->para_list[0], pTable->count);
+		cb(dsi, handle, pTable->para_list, pTable->count);
+	}
+
+	atomic_set(&ctx->doze_enable, 0);
+	//atomic_set(&ctx->current_aod_y_start, AOD_Y_START_MIN);
+
+	usleep_range(90 * 1000, 91 * 1000);
+
+	return 0;
+}
+
+static unsigned long panel_doze_get_mode_flags(struct drm_panel *panel,
+	int doze_en)
+{
+	unsigned long mode_flags;
+
+	if (doze_en) {
+		mode_flags = MIPI_DSI_MODE_NO_EOT_PACKET
+		       | MIPI_DSI_CLOCK_NON_CONTINUOUS;
+	} else {
+		mode_flags = MIPI_DSI_MODE_VIDEO
+		       | MIPI_DSI_MODE_VIDEO_SYNC_PULSE
+		       | MIPI_DSI_MODE_NO_EOT_PACKET
+		       | MIPI_DSI_CLOCK_NON_CONTINUOUS;
+	}
+	pr_info("%s: mode_flags %ld\n", __func__, mode_flags);
+	return mode_flags;
+}
+
+#endif
 static struct mtk_panel_funcs ext_funcs = {
 	.reset = panel_ext_reset,
 	.set_backlight_cmdq = lcm_setbacklight_cmdq,
@@ -1119,10 +1327,11 @@ static struct mtk_panel_funcs ext_funcs = {
 	.panel_feature_set = panel_feature_set,
 	.panel_feature_get = panel_feature_get,
 	.scaling_mode_mapping = mtk_scaling_mode_mapping,
-	//.lcm_update_roi = lcm_update_roi,
-	//.lcm_update_roi_cmdq = lcm_update_roi_cmdq,
-	//.get_lcm_power_state = lcm_panel_get_ab_data,
-//	.get_switch_mode_delay = get_switch_mode_delay,
+	//.doze_get_mode_flags = panel_doze_get_mode_flags,
+	//.doze_enable_start = panel_doze_enable_start,
+	//.doze_disable = panel_doze_disable,
+	//.doze_enable = panel_doze_enable,
+	//.doze_area = panel_doze_area,
 };
 
 struct panel_desc {
