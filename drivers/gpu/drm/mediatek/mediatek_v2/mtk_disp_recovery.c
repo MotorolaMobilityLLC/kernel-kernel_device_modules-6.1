@@ -673,7 +673,7 @@ static int mtk_drm_esd_check_worker_kthread(void *data)
 		index = drm_crtc_index(esd_ctx->crtc);
 
 	while (1) {
-		msleep(ESD_CHECK_PERIOD);
+		msleep(esd_ctx->chk_period);
 		if (esd_ctx->chk_en == 0)
 			continue;
 
@@ -823,6 +823,12 @@ static void mtk_disp_esd_chk_init(struct drm_crtc *crtc)
 		esd_ctx->chk_mode = READ_LCM;
 	else
 		esd_ctx->chk_mode = READ_EINT;
+
+	if (panel_ext->params->esd_check_period)
+		esd_ctx->chk_period = panel_ext->params->esd_check_period;
+	else
+		esd_ctx->chk_period = ESD_CHECK_PERIOD;
+
 	mtk_drm_request_eint(crtc);
 
 	wake_up_process(esd_ctx->disp_esd_chk_task);
