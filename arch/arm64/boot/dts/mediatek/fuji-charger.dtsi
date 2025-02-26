@@ -22,7 +22,23 @@
 
 &mt6375_typec {
        tcpc,en_wd;
-       //mmi_cid_int = <&pio 4 0x0>;
+
+       /*fcnt lpd configure*/
+       wd,sbu-ph-lbound = <947>;	/*sbu to gnd 1250K*/
+
+       /*SBU pin isr trigger voltage: lpd enter isr if < mmi-volcmpl. lpd isr eixt isr if > mmi-volcmpl */
+       mmi,wd-volcmpl = <11>;		/* 1540mv */
+
+       /*lpd polling periods: wd,mmi-tdet-after-1min * wd,mmi-tsleep-after-1min after lpd enter 1min*/
+       mmi,wd-tdet-after-1min = <6>;	/* 100ms*/
+       mmi,wd-tsleep-after-1min = <3>;	/* 1024x*/
+
+       /*lpd polling periods:  wd,mmi-tdet-before-1min * wd,mmi-tsleep-befroe-1min before lpd enter 1min*/
+       mmi,wd-tdet-before-1min = <6>;	/* 100ms*/
+       mmi,wd-tsleep-befroe-1min = <3>;	/* 1024x*/
+
+       /*after lpd enter isr. continue check Rsub < thres mmi-sbu-ph-retry times think lpd enter */
+       mmi,wd-sbu-ph-retry = <1>;	/* 1 times*/
 };
 
 &mt6375_chg {

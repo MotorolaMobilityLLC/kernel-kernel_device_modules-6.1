@@ -94,6 +94,14 @@ struct tcpc_desc {
 	u32 wd_sbu_ph_ubound1_c2c;
 	u32 wd_sbu_ph_ubound2_c2c;
 	u32 wd_sbu_aud_ubound;
+
+	u32 mmi_wd_volcmpl;
+	u32 mmi_wd_rpull;
+	u32 mmi_wd_tdet_after_1min;
+	u32 mmi_wd_tsleep_after_1min;
+	u32 mmi_wd_tdet_before_1min;
+	u32 mmi_wd_tsleep_befroe_1min;
+	u32 mmi_wd_sbu_ph_retry;
 };
 
 /*---------------------------------------------------------------------------*/
