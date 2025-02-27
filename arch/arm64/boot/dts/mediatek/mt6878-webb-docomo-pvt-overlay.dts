@@ -84,15 +84,15 @@
 
 &low_battery_throttling {
 	thd-volts-l = <
-		3369 3243 3133
-		3772 3412 3277
-		4231 3753 3570>;
+		3259 3159 2924
+		3819 3423 3273
+		4171 3685 3500>;
 	thd-volts-h = <
-		3469 3369 3243
-		3872 3772 3412
-		4331 4231 3753>;
-	lvsys-thd-volt-l = <3133>;
-	lvsys-thd-volt-h = <3243>;
+		3359 3259 3159
+		3919 3819 3423
+		4271 4171 3685>;
+	lvsys-thd-volt-l = <2924>;
+	lvsys-thd-volt-h = <3159>;
 };
 
 &cpu_power_throttling {
