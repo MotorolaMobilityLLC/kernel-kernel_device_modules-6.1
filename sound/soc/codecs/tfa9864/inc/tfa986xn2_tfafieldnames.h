@@ -154,7 +154,9 @@ typedef enum tfa986xn2BfEnumList {
     TFA986XN2_BF_BSSCLRST= 0x50d0,    /*!< Reset clipper  auto-clear                          */
     TFA986XN2_BF_BSSR  = 0x50e0,    /*!< Battery voltage read out                           */
     TFA986XN2_BF_BSSBY = 0x50f0,    /*!< Bypass battery safeguard                           */
+    TFA986XN2_BF_DCDITH= 0x5140,    /*!< DC dithering selection                             */
     TFA986XN2_BF_HPFBYP= 0x5150,    /*!< Bypass HPF                                         */
+    TFA986XN2_BF_PWMPH = 0x5203,    /*!< Select pwm phase wrt TDM_FS signal                 */
     TFA986XN2_BF_AMPGAIN= 0x5257,    /*!< Amplifier gain                                     */
     TFA986XN2_BF_BYPDLYLINE= 0x52f0,    /*!< Bypass the interpolator delay line                 */
     TFA986XN2_BF_AMPSLP= 0x5481,    /*!< amplifier slope control                            */
@@ -182,6 +184,8 @@ typedef enum tfa986xn2BfEnumList {
     TFA986XN2_BF_LDMSEG= 0x62b2,    /*!< Amplifier low drive   mode                         */
     TFA986XN2_BF_LDM   = 0x63c1,    /*!< Low drive mode detector control                    */
     TFA986XN2_BF_RCVM  = 0x63e1,    /*!< Handset/Receiver mode                              */
+    TFA986XN2_BF_VBATHOLD= 0x6555,    /*!< Select hold time for VBAT(min/max)                 */
+    TFA986XN2_BF_VBATMAX= 0x65b0,    /*!< Select between vbat minimum or maximum for Chip Sense output on TDM  VBAT(min/max) */
     TFA986XN2_BF_LPM   = 0x66e1,    /*!< Low power mode control                             */
     TFA986XN2_BF_TDMSRCMAP= 0x6802,    /*!< TDM source mapping                                 */
     TFA986XN2_BF_TDMSRCAS= 0x6842,    /*!< Sensed value A                                     */
@@ -207,6 +211,7 @@ typedef enum tfa986xn2BfEnumList {
     TFA986XN2_BF_LNM   = 0x7ce1,    /*!< Low Noise Mode control when in Music Mode          */
     TFA986XN2_BF_DCPTC = 0x8401,    /*!< Voltage sense dc protection time                   */
     TFA986XN2_BF_DCPL  = 0x842c,    /*!< Voltage sense dc protection level                  */
+    TFA986XN2_BF_DCPROT= 0x84f0,    /*!< Voltage sense dc speaker protection enable         */
     TFA986XN2_BF_EFUSEK= 0xa107,    /*!< EFUSE KEY2 register                                */
     TFA986XN2_BF_KEY1LOCKED= 0xa200,    /*!< Indicates KEY1 is locked                           */
     TFA986XN2_BF_KEY2LOCKED= 0xa210,    /*!< Indicates KEY2 is locked                           */
@@ -365,7 +370,9 @@ typedef enum tfa986xn2BfEnumList {
    { 0x50d0, "BSSCLRST"},    /* Reset clipper  auto-clear                         , */\
    { 0x50e0, "BSSR"},    /* Battery voltage read out                          , */\
    { 0x50f0, "BSSBY"},    /* Bypass battery safeguard                          , */\
+   { 0x5140, "DCDITH"},    /* DC dithering selection                            , */\
    { 0x5150, "HPFBYP"},    /* Bypass HPF                                        , */\
+   { 0x5203, "PWMPH"},    /* Select pwm phase wrt TDM_FS signal                , */\
    { 0x5257, "AMPGAIN"},    /* Amplifier gain                                    , */\
    { 0x52f0, "BYPDLYLINE"},    /* Bypass the interpolator delay line                , */\
    { 0x5481, "AMPSLP"},    /* amplifier slope control                           , */\
@@ -393,6 +400,8 @@ typedef enum tfa986xn2BfEnumList {
    { 0x62b2, "LDMSEG"},    /* Amplifier low drive   mode                        , */\
    { 0x63c1, "LDM"},    /* Low drive mode detector control                   , */\
    { 0x63e1, "RCVM"},    /* Handset/Receiver mode                             , */\
+   { 0x6555, "VBATHOLD"},    /* Select hold time for VBAT(min/max)                , */\
+   { 0x65b0, "VBATMAX"},    /* Select between vbat minimum or maximum for Chip Sense output on TDM  VBAT(min/max), */\
    { 0x66e1, "LPM"},    /* Low power mode control                            , */\
    { 0x6802, "TDMSRCMAP"},    /* TDM source mapping                                , */\
    { 0x6842, "TDMSRCAS"},    /* Sensed value A                                    , */\
@@ -418,6 +427,7 @@ typedef enum tfa986xn2BfEnumList {
    { 0x7ce1, "LNM"},    /* Low Noise Mode control when in Music Mode         , */\
    { 0x8401, "DCPTC"},    /* Voltage sense dc protection time                  , */\
    { 0x842c, "DCPL"},    /* Voltage sense dc protection level                 , */\
+   { 0x84f0, "DCPROT"},    /* Voltage sense dc speaker protection enable        , */\
    { 0xa107, "EFUSEK"},    /* EFUSE KEY2 register                               , */\
    { 0xa200, "KEY1LOCKED"},    /* Indicates KEY1 is locked                          , */\
    { 0xa210, "KEY2LOCKED"},    /* Indicates KEY2 is locked                          , */\
@@ -589,8 +599,10 @@ typedef enum tfa986xn2BfEnumList {
    { 0x50d0, "rst_min_vbat"},    /* Reset clipper  auto-clear                         , */\
    { 0x50e0, "sel_vbat"},    /* Battery voltage read out                          , */\
    { 0x50f0, "bypass_clipper"},    /* Bypass battery safeguard                          , */\
+   { 0x5140, "sel_dithering"},    /* DC dithering selection                            , */\
    { 0x5150, "bypass_hp"},    /* Bypass HPF                                        , */\
    { 0x5166, "audio_delay"},    /* Set the audio data delay time before send to spkr , */\
+   { 0x5203, "sel_pwm_phase"},    /* Select pwm phase wrt TDM_FS signal                , */\
    { 0x5257, "gain"},    /* Amplifier gain                                    , */\
    { 0x52f0, "bypass_dly_line"},    /* Bypass the interpolator delay line                , */\
    { 0x5452, "amp_drive"},    /* Drive setting of AMP powerstage when amp_use_direct_ctrls is set to 1, */\
@@ -696,6 +708,10 @@ typedef enum tfa986xn2BfEnumList {
    { 0x7c65, "low_noise_hold_time"},    /* Low noise mode detector   ctrl hold time before low audio is reckoned to be low audio, */\
    { 0x7cc0, "amp_gain_mode"},    /* Music Mode                                        , */\
    { 0x7ce1, "lownoisegain_mode"},    /* Low Noise Mode control when in Music Mode         , */\
+   { 0x8000, "cvs_bulk_hv_to_vddp"},    /* IITF 16V bulk                                     , */\
+   { 0x8010, "cvs_ibias_max"},    /* IITF  bias current                                , */\
+   { 0x8020, "cvs_iitf_chop_hs_dis"},    /* IITF  chop high side disable                      , */\
+   { 0x8030, "cvs_iitf_chop_ls_dis"},    /* IITF  chop low side disable                       , */\
    { 0x8050, "cs_gain_control"},    /* Current sense gain control                        , */\
    { 0x8060, "cs_bypass_gc"},    /* Bypasses the CS gain correction                   , */\
    { 0x8087, "cs_gain"},    /* Current sense gain                                , */\
@@ -704,6 +720,9 @@ typedef enum tfa986xn2BfEnumList {
    { 0x842c, "volsense_dc_prot_level"},    /* Voltage sense dc protection level                 , */\
    { 0x84f0, "enbl_dcprot"},    /* Voltage sense dc protection enable                , */\
    { 0x850c, "volsense_dc_level"},    /* voltage sense dc level                            , */\
+   { 0x8600, "cvs_iitf_chop_clk_en"},    /* IITF chop clock enable                            , */\
+   { 0x8610, "cvs_iitf_chop_clk_static"},    /* IITF chop clock static                            , */\
+   { 0x8622, "cvs_iitf_chop_clk_ratio"},    /* IITF chop clock Ration                            , */\
    { 0x8790, "enbl_dc_filter"},    /* Control for enabling the DC blocking filter for voltage and current sense, */\
    { 0x87a0, "enbl_ana_pre"},    /* Control for enabling the pre-empasis filter for voltage and current sense decimator, */\
    { 0x87b0, "enbl_dec_rst"},    /* Enble decimator reset in idle power mode          , */\
@@ -744,6 +763,7 @@ typedef enum tfa986xn2BfEnumList {
    { 0xc090, "ref_use_direct_ctrls"},    /* Direct control for references                     , */\
    { 0xc0a0, "atb_use_direct_ctrls"},    /* Direct control for analog test bus                , */\
    { 0xc0b0, "qpump_use_direct_ctrls"},    /* Direct control for charge pump                    , */\
+   { 0xc0c0, "enbl_qpump_clk"},    /* Enable qpump clock                                , */\
    { 0xc0d0, "enbl_ringo"},    /* Enable the ring oscillator for test purpose       , */\
    { 0xc0e0, "enbl_fro"},    /* Enables FRO8M when fro_use_direct_ctrls set to 1  , */\
    { 0xc0f0, "atb_trigger"},    /* Trigger ATB controller, auto-clear                , */\
@@ -770,6 +790,7 @@ typedef enum tfa986xn2BfEnumList {
    { 0xc6a0, "datao_out"},    /* DATAO output value, only effective in GPIO mode   , */\
    { 0xc6b0, "datao_ie"},    /* DATAO input control, only effective in GPIO mode  , */\
    { 0xc6c1, "datao_ds"},    /* DATAO pad output drive strength                   , */\
+   { 0xc6e1, "int_pupd"},    /* INT pad output drive strength                     , */\
    { 0xc700, "enbl_pll"},    /* Enables PLL when pll_use_direct_ctrls set to 1    , */\
    { 0xc712, "pll_dpll_clkref_div"},    /* DPLL prescaller  reference clock divider  when pll_use_direct_ctrls set to 1, */\
    { 0xc741, "pll_dpll_clkvco_div"},    /* DPLL VCO clock divider  when pll_use_direct_ctrls set to 1, */\
@@ -832,6 +853,7 @@ typedef enum tfa986xn2BfEnumList {
    { 0xd580, "cvs_vstress_polarity"},    /* change polarity of integrator capacitors during vstress (test), */\
    { 0xd590, "cvs_csls_polarity"},    /* swap polarity of low-side current sense inputs (test), */\
    { 0xd5a0, "minion_pu"},    /* power up biasing of minion when amp_use_direct_ctrls is set to 1, */\
+   { 0xd5b1, "chn_en_reg_mult"},    /* Cvs channels enable                               , */\
    { 0xd600, "amp_pst_pu"},    /* power up biasing of AMP powerstage when amp_use_direct_ctrls is set to 1, */\
    { 0xd610, "amp_apwm_pu"},    /* power up biasing of PWM generator when amp_use_direct_ctrls is set to 1, */\
    { 0xd620, "amp_ciff_pu"},    /* power up biasing of CIFF integrators when amp_use_direct_ctrls is set to 1, */\
@@ -978,6 +1000,18 @@ typedef enum tfa986xn2BfEnumList {
 };
 
 enum tfa986xn2_irq {
+	tfa986xn2_irq_stvdds = 0,
+	tfa986xn2_irq_stbstoc = 1,
+	tfa986xn2_irq_stotds = 2,
+	tfa986xn2_irq_stocpr = 3,
+	tfa986xn2_irq_stuvds = 4,
+	tfa986xn2_irq_sttdmer = 5,
+	tfa986xn2_irq_stnoclk = 6,
+	tfa986xn2_irq_stdcth = 7,
+	tfa986xn2_irq_stbodnok = 8,
+	tfa986xn2_irq_stcoor = 9,
+	tfa986xn2_irq_stovds = 10,
+	tfa986xn2_irq_stqpfail = 11,
 	tfa986xn2_irq_max = -1,
 	tfa986xn2_irq_all = -1 /* all irqs */};
 
