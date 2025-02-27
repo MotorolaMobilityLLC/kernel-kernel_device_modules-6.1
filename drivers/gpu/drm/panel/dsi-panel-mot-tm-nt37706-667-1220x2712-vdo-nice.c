@@ -30,7 +30,7 @@
 #endif
 #define FRAME_WIDTH				(1220)
 #define FRAME_HEIGHT			(2712)
-#define PLL_CLOCK				(495)
+#define PLL_CLOCK				(449)
 #define REAL_MODE_NUM           (6)
 #define FHD_FRAME_WIDTH    (1220)
 #define FHD_HFP            (24)
@@ -623,6 +623,11 @@ static struct mtk_panel_params ext_params = {
 	.output_mode = MTK_PANEL_DSC_SINGLE_PORT,
 	//.dsc_param_load_mode = 2, //0: default flow; 1: key param only; 2: full control
 	.lcm_color_mode = MTK_DRM_COLOR_MODE_DISPLAY_P3,
+	//AA size=69.54mm*154.584mm
+	.physical_width_um = 69540,
+	.physical_height_um = 154584,
+	.lp_perline_en = 1,
+	.vdo_per_frame_lp_enable = 1,
 	.dsc_params = {
 		.enable = 1,
 		.ver = 17,
@@ -708,6 +713,11 @@ static struct mtk_panel_params ext_params_90hz = {
 	.output_mode = MTK_PANEL_DSC_SINGLE_PORT,
 	//.dsc_param_load_mode = 2, //0: default flow; 1: key param only; 2: full control
 	.lcm_color_mode = MTK_DRM_COLOR_MODE_DISPLAY_P3,
+	//AA size=69.54mm*154.584mm
+	.physical_width_um = 69540,
+	.physical_height_um = 154584,
+	.lp_perline_en = 1,
+	.vdo_per_frame_lp_enable = 1,
 	.dsc_params = {
 		.enable = 1,
 		.ver = 17,
@@ -793,6 +803,11 @@ static struct mtk_panel_params ext_params_60hz = {
 	.output_mode = MTK_PANEL_DSC_SINGLE_PORT,
 	//.dsc_param_load_mode = 2, //0: default flow; 1: key param only; 2: full control
 	.lcm_color_mode = MTK_DRM_COLOR_MODE_DISPLAY_P3,
+	//AA size=69.54mm*154.584mm
+	.physical_width_um = 69540,
+	.physical_height_um = 154584,
+	.lp_perline_en = 1,
+	.vdo_per_frame_lp_enable = 1,
 	.dsc_params = {
 		.enable = 1,
 		.ver = 17,
