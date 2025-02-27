@@ -41,6 +41,7 @@
 void tfanone_ops(struct tfa_device_ops *ops);
 void tfa9865_ops(struct tfa_device_ops *ops);
 void tfa986x_ops(struct tfa_device_ops *ops);
+void tfa9867_ops(struct tfa_device_ops *ops);
 void tfa9872_ops(struct tfa_device_ops *ops);
 void tfa9873_ops(struct tfa_device_ops *ops);
 void tfa9874_ops(struct tfa_device_ops *ops);
@@ -397,6 +398,17 @@ void tfa_set_query_info(struct tfa_device *tfa)
        tfa->advance_keys_handling = 1; /*artf65038*/
        tfa->daimap = Tfa98xx_DAI_TDM;
        tfa986x_ops(&tfa->dev_ops); /* register device operations */
+		break;
+	case 0x67:
+		/* tfa9867 */
+		tfa->supportDrc = supportYes;
+		tfa->tfa_family = 2;
+		tfa->spkr_count = 1;
+		tfa->is_probus_device = 1;
+		tfa->is_otp_device = 1;
+		tfa->advance_keys_handling = 1; /*artf65038*/
+		tfa->daimap = Tfa98xx_DAI_TDM;
+		tfa9867_ops(&tfa->dev_ops); /* register device operations */
        break;
 	case 0x72:
 		/* tfa9872 */
@@ -3049,14 +3061,12 @@ enum Tfa98xx_Error tfaRunColdboot(struct tfa_device *tfa, int state)
 
 		if (tries-- == 0) {
 			pr_debug("coldboot (ACS) did not %s\n", state ? "set" : "clear");
-			return Tfa98xx_Error_Other;
+			err = Tfa98xx_Error_Other;
+			break;
 		}
 	}
-
 	return err;
 }
-
-
 
 /*
  * load the patch if any
@@ -3402,10 +3412,7 @@ enum tfa_error tfa_dev_start(struct tfa_device *tfa, int next_profile, int vstep
 
 			/* Go to the Operating state */
 			tfa_dev_set_state(tfa, TFA_STATE_OPERATING | TFA_STATE_MUTE, 0);
-			if ((tfa->revid & 0xffff) == 0x3a65 || (tfa->revid & 0xffff) == 0x3a64){
-				tfa_set_bf(tfa, 0xf090, 0);
-				pr_info("Info: 0xf090 = %d line:%d \n", tfa_get_bf(tfa, 0xf090), __LINE__);
-			}
+
 		}
 	}
 	active_profile = tfa_dev_get_swprof(tfa);
@@ -3453,6 +3460,10 @@ enum tfa_error tfa_dev_start(struct tfa_device *tfa, int next_profile, int vstep
 
 error_exit:
 	tfa_show_current_state(tfa);
+	if ((tfa->revid & 0xffff) == 0x3a65 || (tfa->revid & 0xffff) == 0x3a64){
+		tfa_set_bf(tfa, 0xf090, 0);
+		pr_info("Info: 0xf090 = %d line:%d \n", tfa_get_bf(tfa, 0xf090), __LINE__);
+	}
 
 	if (err != Tfa98xx_Error_Ok)
 		err = tfa_error_max;

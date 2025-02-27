@@ -2706,6 +2706,7 @@ static void tfa98xx_dsp_init(struct tfa98xx *tfa98xx)
 				tfa98xx->init_count);
 			/* cancel other pending init works */
 			cancel_delayed_work(&tfa98xx->init_work);
+			tfa98xx->tfa->ext_dsp = 2;
 			tfa98xx->init_count = 0;
 		}
 	}
@@ -2718,6 +2719,8 @@ static void tfa98xx_dsp_init(struct tfa98xx *tfa98xx)
 	}
 	if (reschedule) {
 		/* reschedule this init work for later */
+		pr_info("TFA98xx Setting ext_dsp as 1. \n");
+		tfa98xx->tfa->ext_dsp = 1;
 		queue_delayed_work(tfa98xx->tfa98xx_wq,
 			&tfa98xx->init_work,
 			msecs_to_jiffies(5));
@@ -3958,6 +3961,11 @@ static int tfa98xx_i2c_probe(struct i2c_client *i2c, const struct i2c_device_id 
 			tfa98xx->flags |= TFA98XX_FLAG_TDM_DEVICE;
 			tfa98xx->flags |= TFA98XX_FLAG_OTP_TYPE_DEVICE;
 			break;
+		case 0x67: /* tfa9867*/
+			pr_info("TFA9867 detected\n");
+			tfa98xx->flags |= TFA98XX_FLAG_TDM_DEVICE;
+			tfa98xx->flags |= TFA98XX_FLAG_OTP_TYPE_DEVICE;
+			break;
 		case 0x88: /* tfa9888 */
 			pr_info("TFA9888 detected\n");
 			tfa98xx->flags |= TFA98XX_FLAG_STEREO_DEVICE;
@@ -4170,6 +4178,7 @@ static struct of_device_id tfa98xx_dt_match[] = {
 	{.compatible = "tfa,tfa9897" },
 	{.compatible = "tfa,tfa9912" },
 	{.compatible = "tfa,tfa986x" },
+	{.compatible = "tfa,tfa9867" },
 	{ },
 };
 #endif
