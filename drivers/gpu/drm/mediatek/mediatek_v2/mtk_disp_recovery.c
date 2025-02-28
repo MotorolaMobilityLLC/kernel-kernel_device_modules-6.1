@@ -164,6 +164,7 @@ int _mtk_esd_check_read(struct drm_crtc *crtc)
 	struct cmdq_pkt *cmdq_handle, *cmdq_handle2;
 	struct mtk_drm_esd_ctx *esd_ctx;
 	int index = drm_crtc_index(crtc);
+	struct mtk_dsi *dsi = NULL;
 	int ret = 0;
 
 	DDPINFO("[ESD%u]%s\n", index, __func__);
@@ -173,6 +174,9 @@ int _mtk_esd_check_read(struct drm_crtc *crtc)
 		DDPPR_ERR("%s:invalid output comp\n", __func__);
 		return -EINVAL;
 	}
+
+	if (output_comp && mtk_ddp_comp_get_type(output_comp->id) == MTK_DSI)
+		dsi = container_of(output_comp, struct mtk_dsi, ddp_comp);
 
 	if (mtk_drm_is_idle(crtc) && mtk_dsi_is_cmd_mode(output_comp))
 		return 0;
@@ -207,6 +211,14 @@ int _mtk_esd_check_read(struct drm_crtc *crtc)
 
 		mtk_ddp_comp_io_cmd(output_comp, cmdq_handle, ESD_CHECK_READ,
 				    (void *)mtk_crtc);
+
+		if (dsi && dsi->ext && dsi->ext->funcs
+			&& dsi->ext->funcs->panel_pcd_check) {
+			if (dsi->panel && dsi->ext->params) {
+				if(dsi->ext->params->pcd_check_flag)
+					dsi->ext->params->pcd_check_flag = dsi->ext->funcs->panel_pcd_check(dsi->panel);
+			}
+		}
 
 		cmdq_pkt_set_event(cmdq_handle,
 				   mtk_crtc->gce_obj.event[EVENT_CABC_EOF]);
@@ -554,6 +566,8 @@ int mtk_drm_esd_testing_process(struct mtk_drm_esd_ctx *esd_ctx, bool need_lock)
 		struct mtk_drm_private *private = NULL;
 		struct drm_crtc *crtc = NULL;
 		struct mtk_drm_crtc *mtk_crtc = NULL;
+		struct mtk_ddp_comp *output_comp = NULL;
+		struct mtk_dsi *dsi = NULL;
 		int ret = 0;
 		int i = 0;
 		int recovery_flg = 0;
@@ -581,6 +595,11 @@ int mtk_drm_esd_testing_process(struct mtk_drm_esd_ctx *esd_ctx, bool need_lock)
 		crtc_idx = drm_crtc_index(crtc);
 
 		private = crtc->dev->dev_private;
+
+		output_comp = mtk_ddp_comp_request_output(mtk_crtc);
+		if (output_comp && mtk_ddp_comp_get_type(output_comp->id) == MTK_DSI)
+			dsi = container_of(output_comp, struct mtk_dsi, ddp_comp);
+
 		if (need_lock) {
 			DDP_MUTEX_LOCK(&mtk_crtc->lock, __func__, __LINE__);
 			CRTC_MMP_MARK(crtc_idx, esd_check, 0x10CF, 0);
@@ -590,6 +609,19 @@ int mtk_drm_esd_testing_process(struct mtk_drm_esd_ctx *esd_ctx, bool need_lock)
 		do {
 			mtk_drm_trace_begin("esd loop:%d", i);
 			ret = mtk_drm_esd_check(crtc);
+
+			if (dsi && dsi->ext && dsi->ext->params) {
+				if (2 == dsi->ext->params->pcd_check_flag) {
+					DDPPR_ERR("%s: pcd occurs, disable esd\n", __func__);
+					/* Stop ESD task */
+					mtk_disp_esd_check_switch(crtc, false);
+					if (need_lock) {
+						DDP_MUTEX_UNLOCK(&mtk_crtc->lock, __func__, __LINE__);
+					}
+					return 0;
+				}
+			}
+
 			if (!ret) /* success */
 				break;
 

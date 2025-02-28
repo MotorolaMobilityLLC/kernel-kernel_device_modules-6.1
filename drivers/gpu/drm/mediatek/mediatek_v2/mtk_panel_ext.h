@@ -614,6 +614,7 @@ struct mtk_panel_params {
 	bool lcm_support_ce;
 	int panel_pcd_reg;
 	int panel_pcd_reg_mask;
+	int pcd_check_flag;
 
 	int ovl_wcg_for_moto_colormode;
 };
@@ -659,6 +660,7 @@ struct mtk_panel_funcs {
 	int (*init_power)(struct drm_panel *panel);
 	int (*power_down)(struct drm_panel *panel);
 	int (*ata_check)(struct drm_panel *panel);
+	int (*panel_pcd_check)(struct drm_panel *panel);
 	int (*ext_param_set)(struct drm_panel *panel,
 		struct drm_connector *connector, unsigned int mode);
 	int (*ext_param_get)(struct drm_panel *panel,
