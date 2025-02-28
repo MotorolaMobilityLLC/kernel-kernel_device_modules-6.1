@@ -264,7 +264,7 @@ static void lcm_panel_init(struct lcm *ctx)
 	//120Hz
 	lcm_dcs_write_seq_static(ctx, 0x2F,0x00);
 	lcm_dcs_write_seq_static(ctx, 0x81,0x01,0x19);
-	lcm_dcs_write_seq_static(ctx, 0x51,0x36,0xE8 );
+	lcm_dcs_write_seq_static(ctx, 0x51,0x00,0x00 );
 	lcm_dcs_write_seq_static(ctx, 0x6F,0x04);
 	lcm_dcs_write_seq_static(ctx, 0x51,0x3F,0xFC);
 	//LHBM loaction
