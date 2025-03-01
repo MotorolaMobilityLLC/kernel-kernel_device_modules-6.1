@@ -413,7 +413,8 @@
         dpm-caps {
                 attempt-discover-id;
                 attempt-discover-svids;
-        mmi,en-moto-typec-otp;
+                mmi,en-moto-typec-otp;
+                attempt-enter-dp-mode;
         };
 };
 
