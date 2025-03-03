@@ -12,9 +12,10 @@
 
 &mtk_leds {
 	backlight {
-		led-mode = <4>;
-		max-brightness = <16380>;
-		max-hw-brightness = <16380>;
+		/delete-property/ max-brightness;
+		/delete-property/ max-hw-brightness;
+		max-brightness = <16180>;
+		max-hw-brightness = <16180>;
 	};
 };
 
