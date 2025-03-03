@@ -293,7 +293,7 @@
 };
 
 &u2port0{
-        mediatek,eye-vrt = <0x3>;
+        mediatek,eye-vrt = <0x6>;
         mediatek,eye-vrt-host = <0x3>;
         mediatek,eye-term = <0x4>;
         mediatek,eye-term-host = <0x4>;
