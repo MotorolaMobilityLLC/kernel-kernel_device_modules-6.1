@@ -1551,6 +1551,7 @@ void fg_custom_init_from_header(struct mtk_battery *gm)
 	fg_table_cust_data = &gm->fg_table_cust_data;
 #ifdef MTK_BASE
 	bat_id = fgauge_get_profile_id(gm);
+	gm->battery_id = bat_id;
 #endif
 	bm_debug("[%s] init form bat id %d\n", __func__, bat_id);
 
@@ -2208,6 +2209,7 @@ void fg_custom_init_from_dts(struct platform_device *dev,
 	bat_id = fgauge_get_profile_id(gm);
 	fg_cust_data = &gm->fg_cust_data;
 	fg_table_cust_data = &gm->fg_table_cust_data;
+	gm->battery_id = bat_id;
 
 	bm_err("%s\n", __func__);
 
