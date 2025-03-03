@@ -7751,10 +7751,14 @@ int notify_adapter_event(struct notifier_block *notifier,
 		if (pinfo->en_cts_mode) {
 			for (i = 0; i < CHGS_SETTING_MAX; i++)
 				pinfo->chg_data[i].pd_input_current_limit = *(int *)val * 1000;
-			charger_dev_set_input_current(pinfo->chg1_dev, *(int *)val * 1000);
+			//charger_dev_set_input_current(pinfo->chg1_dev, *(int *)val * 1000);
 			if ((*(int *)val) <= 100) {
 				mtk_charger_force_disable_power_path(pinfo, CHG1_SETTING, true);	// for pdtest, speed up job
 				pinfo->en_power_path = false;
+			} else {
+				if (!pinfo->mmi.adaptive_charging_disable_ichg && !pinfo->mmi.demo_discharging)
+					mtk_charger_force_disable_power_path(pinfo, CHG1_SETTING, false);
+				pinfo->en_power_path = true;
 			}
 			chr_err("mtk get sink vbus ma = %d, en_pp= %d\n", *(int *)val, pinfo->en_power_path);
 			_wake_up_charger(pinfo);

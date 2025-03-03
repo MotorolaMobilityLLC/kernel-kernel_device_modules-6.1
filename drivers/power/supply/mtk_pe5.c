@@ -1123,6 +1123,8 @@ static int pe50_send_notification(struct pe50_algo_info *info,
 	return srcu_notifier_call_chain(&info->alg->evt_nh, val, notify);
 }
 
+static int pe50_select_ita_lmt_by_r(struct pe50_algo_info *info, bool dual);
+
 /* Stop PE5.0 charging and reset parameter */
 static int pe50_stop(struct pe50_algo_info *info, struct pe50_stop_info *sinfo)
 {
@@ -1131,6 +1133,7 @@ static int pe50_stop(struct pe50_algo_info *info, struct pe50_stop_info *sinfo)
 		.evt = EVT_ALGO_STOP,
 	};
 	bool do_reset = false;
+	u32 ita_lmt;
 
 	if (data->state == PE50_ALGO_STOP) {
 		/*
@@ -1171,6 +1174,10 @@ static int pe50_stop(struct pe50_algo_info *info, struct pe50_stop_info *sinfo)
 
 	if (data->cv_limit > 0)
 		pe50_hal_set_cv(info->alg, CHG1, data->cv_limit * 1000);
+
+	pe50_select_ita_lmt_by_r(info, false);
+	ita_lmt = pe50_get_ita_lmt(info);
+	pe50_hal_set_aicr(info->alg, CHG1, ita_lmt > PE50_ITA_INIT ? PE50_ITA_INIT:ita_lmt);
 
 	pe50_enable_swchg_charging(info, true);
 	pe50_hal_enable_sw_vbusovp(info->alg, true);
@@ -3645,8 +3652,10 @@ static int pe50_notify_hardreset_hdlr(struct pe50_algo_info *info)
 		.reset_ta = false,
 		.hardreset_ta = false,
 	};
+	struct pe50_algo_data *data = info->data;
 
-	PE50_INFO("++\n");
+	data->mmi_hardreset_cnt++;
+	PE50_INFO("++ data->mmi_hardreset_cnt = %d \n", data->mmi_hardreset_cnt);
 	return __pe50_plugout_reset(info, &sinfo);
 }
 
