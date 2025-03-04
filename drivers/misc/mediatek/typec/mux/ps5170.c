@@ -25,6 +25,12 @@
 #include "mux_switch.h"
 #endif
 
+struct ps5169_reg_data
+{
+	unsigned int reg;
+	unsigned int val;
+};
+
 struct ps5170 {
 	struct device *dev;
 	struct i2c_client *i2c;
@@ -56,6 +62,8 @@ struct ps5170 {
 	uint8_t pin_assign;
 	u8 polarity;
 	bool is_dp;
+	int reg_num; /*reg number of ps5169 dt*/
+	struct ps5169_reg_data *pps5169_reg;
 };
 
 #define ps5170_ORIENTATION_NONE                 0x80
@@ -176,8 +184,41 @@ static int ps5170_vsvoter_of_property_parse(struct ps5170 *ps,
 	return PTR_ERR_OR_ZERO(ps->vsv);
 }
 
+static int ps5170_of_property_parse(struct ps5170 *ps,
+				struct device_node *dn)
+{
+	int ret = 0;
+
+	/* load in registers from device tree*/
+	ret = of_property_read_u32(dn,"ps5169,reg-num",&ps->reg_num);
+	/* layout is register, value, register, value.... */
+	dev_info(ps->dev, "size of elements %d \n", ps->reg_num);
+	if (ps->reg_num > 0)
+	{
+		/* initialize ps5169 reg data array */
+		ps->pps5169_reg = devm_kzalloc(ps->dev, sizeof(struct ps5169_reg_data)*ps->reg_num, GFP_KERNEL);
+		if (unlikely(ps->pps5169_reg == NULL))
+		{
+			dev_info(ps->dev, "%d of ps5169 regs alloc error\n", ps->reg_num);
+			return -ENOMEM;
+		}
+
+		/* initialize the array*/
+		ret = of_property_read_u32_array(dn,"ps5169,reg-init",(u32*)&(ps->pps5169_reg[0]),sizeof(struct ps5169_reg_data)*ps->reg_num/sizeof(u32));
+		if (ret < 0) {
+			kfree(ps->pps5169_reg);
+			ps->pps5169_reg = NULL;
+			dev_info(ps->dev, "read reg array failed\n");
+			return ret;
+		}
+	}
+
+	return ret;
+}
+
 static int ps5170_init(struct ps5170 *ps)
 {
+	int i = 0;
 	/* Configure PS5170 redriver */
 
 	i2c_smbus_write_byte_data(ps->i2c, 0x9d, 0x80);
@@ -192,28 +233,40 @@ static int ps5170_init(struct ps5170 *ps)
 	/* i2c_smbus_write_byte_data(ps->i2c, 0x8d, 0x01); */
 	/* Fine tune LFPS swing */
 	/* i2c_smbus_write_byte_data(ps->i2c, 0x90, 0x01); */
-	i2c_smbus_write_byte_data(ps->i2c, 0x51, 0x87);
-	i2c_smbus_write_byte_data(ps->i2c, 0x50, 0x20);
-	i2c_smbus_write_byte_data(ps->i2c, 0x54, 0x11);
-	i2c_smbus_write_byte_data(ps->i2c, 0x5d, 0x66);
-	i2c_smbus_write_byte_data(ps->i2c, 0x52, 0x20);
-	i2c_smbus_write_byte_data(ps->i2c, 0x55, 0x00);
-	i2c_smbus_write_byte_data(ps->i2c, 0x56, 0x00);
-	i2c_smbus_write_byte_data(ps->i2c, 0x57, 0x00);
-	i2c_smbus_write_byte_data(ps->i2c, 0x58, 0x00);
-	i2c_smbus_write_byte_data(ps->i2c, 0x59, 0x00);
-	i2c_smbus_write_byte_data(ps->i2c, 0x5a, 0x00);
-	i2c_smbus_write_byte_data(ps->i2c, 0x5b, 0x00);
-	i2c_smbus_write_byte_data(ps->i2c, 0x5e, 0x06);
-	i2c_smbus_write_byte_data(ps->i2c, 0x5f, 0x00);
-	i2c_smbus_write_byte_data(ps->i2c, 0x60, 0x00);
-	i2c_smbus_write_byte_data(ps->i2c, 0x61, 0x03);
-	i2c_smbus_write_byte_data(ps->i2c, 0x65, 0x40);
-	i2c_smbus_write_byte_data(ps->i2c, 0x66, 0x00);
-	i2c_smbus_write_byte_data(ps->i2c, 0x67, 0x03);
-	i2c_smbus_write_byte_data(ps->i2c, 0x75, 0x0C);
-	i2c_smbus_write_byte_data(ps->i2c, 0x77, 0x00);
-	i2c_smbus_write_byte_data(ps->i2c, 0x78, 0x7C);
+
+	/* the followiing regs will init with values from device tree */
+	if (ps->reg_num > 0) {
+		while ( i < ps->reg_num) {
+			/* Write all registers/values contained in ps5169_reg */
+			pr_info("Going to Write Reg from dts: 0x%x Value: 0x%x\n",
+				ps->pps5169_reg[i].reg,ps->pps5169_reg[i].val);
+			i2c_smbus_write_byte_data(ps->i2c, ps->pps5169_reg[i].reg,ps->pps5169_reg[i].val);
+			i++;
+			}
+	} else {
+		i2c_smbus_write_byte_data(ps->i2c, 0x51, 0x87);
+		i2c_smbus_write_byte_data(ps->i2c, 0x50, 0x20);
+		i2c_smbus_write_byte_data(ps->i2c, 0x54, 0x11);
+		i2c_smbus_write_byte_data(ps->i2c, 0x5d, 0x66);
+		i2c_smbus_write_byte_data(ps->i2c, 0x52, 0x20);
+		i2c_smbus_write_byte_data(ps->i2c, 0x55, 0x00);
+		i2c_smbus_write_byte_data(ps->i2c, 0x56, 0x00);
+		i2c_smbus_write_byte_data(ps->i2c, 0x57, 0x00);
+		i2c_smbus_write_byte_data(ps->i2c, 0x58, 0x00);
+		i2c_smbus_write_byte_data(ps->i2c, 0x59, 0x00);
+		i2c_smbus_write_byte_data(ps->i2c, 0x5a, 0x00);
+		i2c_smbus_write_byte_data(ps->i2c, 0x5b, 0x00);
+		i2c_smbus_write_byte_data(ps->i2c, 0x5e, 0x06);
+		i2c_smbus_write_byte_data(ps->i2c, 0x5f, 0x00);
+		i2c_smbus_write_byte_data(ps->i2c, 0x60, 0x00);
+		i2c_smbus_write_byte_data(ps->i2c, 0x61, 0x03);
+		i2c_smbus_write_byte_data(ps->i2c, 0x65, 0x40);
+		i2c_smbus_write_byte_data(ps->i2c, 0x66, 0x00);
+		i2c_smbus_write_byte_data(ps->i2c, 0x67, 0x03);
+		i2c_smbus_write_byte_data(ps->i2c, 0x75, 0x0C);
+		i2c_smbus_write_byte_data(ps->i2c, 0x77, 0x00);
+		i2c_smbus_write_byte_data(ps->i2c, 0x78, 0x7C);
+	}
 	return 0;
 }
 
@@ -560,6 +613,10 @@ static int ps5170_probe(struct i2c_client *client)
 #endif
 		return ret;
 	}
+
+	ret = ps5170_of_property_parse(ps, node);
+	if (!ret)
+		ps5170_init(ps);
 
 	INIT_WORK(&ps->set_usb_work, ps5170_switch_set_work);
 	INIT_WORK(&ps->set_dp_work, ps5170_mux_set_work);
