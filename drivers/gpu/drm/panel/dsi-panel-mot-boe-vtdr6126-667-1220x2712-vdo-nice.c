@@ -219,16 +219,6 @@ static int lcm_panel_get_ab_data(struct drm_panel *panel)
 
 static void lcm_panel_init(struct lcm *ctx)
 {
-	printk("%s enter  \n",__func__);
-	udelay(2000);
-	gpiod_set_value(ctx->reset_gpio, 0);
-	udelay(10 * 1000);
-	gpiod_set_value(ctx->reset_gpio, 1);
-	udelay(10 * 1000);
-	gpiod_set_value(ctx->reset_gpio, 0);
-	udelay(10 * 1000);
-	gpiod_set_value(ctx->reset_gpio, 1);
-	msleep(25);
 	lcm_dcs_write_seq_static(ctx, 0x03,0x01);
 	lcm_dcs_write_seq_static(ctx, 0x35,0x00);
 	lcm_dcs_write_seq_static(ctx, 0x51,0x00,0x00); //800nit
@@ -246,14 +236,14 @@ static void lcm_panel_init(struct lcm *ctx)
 	lcm_dcs_write_seq_static(ctx, 0x38);
 	lcm_dcs_write_seq_static(ctx, 0x6f,0x01);
 	lcm_dcs_write_seq_static(ctx, 0xa4,0x00);
-    lcm_dcs_write_seq_static(ctx, 0x70,0x11,0x00,0x00,0xAB,0x30,0x80,0x0A,0x98,0x04,0xC4,0x00,0x0C,0x02,0x62,0x02,0x62,0x02,0x00,0x01,0x1A,0x00,0x20,0x02,0x5B,0x00,0x08,0x00,0x01,0x00,0xBB,0x07,0x7B,0x18,0x00,0x10,0xF0,0x07,0x10,0x20,0x00,0x06,0x0F,0x0F,0x33,0x0E,0x1C,0x2A,0x38,0x46,0x54,0x62,0x69,0x70,0x77,0x79,0x7B,0x7D,0x7E,0x02,0x02,0x22,0x00,0x2A,0x40,0x2A,0xBE,0x3A,0xFC,0x3A,0xFA,0x3A,0xF8,0x3B,0x38,0x3B,0x78,0x3B,0xB6,0x4B,0xB6,0x4B,0xF4,0x4B,0xF4,0x6C,0x34,0x84,0x74,0x00,0x00,0x00,0x00,0x00,0x00);
-	
+	lcm_dcs_write_seq_static(ctx, 0x70,0x11,0x00,0x00,0xAB,0x30,0x80,0x0A,0x98,0x04,0xC4,0x00,0x0C,0x02,0x62,0x02,0x62,0x02,0x00,0x01,0x1A,0x00,0x20,0x02,0x5B,0x00,0x08,0x00,0x01,0x00,0xBB,0x07,0x7B,0x18,0x00,0x10,0xF0,0x07,0x10,0x20,0x00,0x06,0x0F,0x0F,0x33,0x0E,0x1C,0x2A,0x38,0x46,0x54,0x62,0x69,0x70,0x77,0x79,0x7B,0x7D,0x7E,0x02,0x02,0x22,0x00,0x2A,0x40,0x2A,0xBE,0x3A,0xFC,0x3A,0xFA,0x3A,0xF8,0x3B,0x38,0x3B,0x78,0x3B,0xB6,0x4B,0xB6,0x4B,0xF4,0x4B,0xF4,0x6C,0x34,0x84,0x74,0x00,0x00,0x00,0x00,0x00,0x00);
+
 	lcm_dcs_write_seq_static(ctx, 0xf0,0xaa,0x12);
 	lcm_dcs_write_seq_static(ctx, 0xc7, 0xff);
 	lcm_dcs_write_seq_static(ctx, 0xd6, 0x04, 0x00);
 
-        lcm_dcs_write_seq_static(ctx, 0xF0,0xAA,0x10);
-        lcm_dcs_write_seq_static(ctx, 0xB0,0x05,0x4C,0x01,0x31,0x01,0x04,0xC4,0x05,0x4C);
+	lcm_dcs_write_seq_static(ctx, 0xF0,0xAA,0x10);
+	lcm_dcs_write_seq_static(ctx, 0xB0,0x05,0x4C,0x01,0x31,0x01,0x04,0xC4,0x05,0x4C);
 	lcm_dcs_write_seq_static(ctx, 0xB1, 0x01,0x9e,0x00,0x14,0x00,0x34,0x00);
 	lcm_dcs_write_seq_static(ctx, 0x65, 0x07);
 	lcm_dcs_write_seq_static(ctx, 0xB1, 0x01, 0x9e,0x00,0x14,0x03,0xd4,0x00);
@@ -267,16 +257,16 @@ static void lcm_panel_init(struct lcm *ctx)
 	lcm_dcs_write_seq_static(ctx, 0x65, 0x0e);
 	lcm_dcs_write_seq_static(ctx, 0xB2, 0x01, 0x9e, 0x00, 0x14, 0x00, 0x34, 0x03);
 
-        lcm_dcs_write_seq_static(ctx, 0xF0,0xAA,0x16);
+	lcm_dcs_write_seq_static(ctx, 0xF0,0xAA,0x16);
 	lcm_dcs_write_seq_static(ctx, 0xD1,0x00,0x00,0x00);
 	lcm_dcs_write_seq_static(ctx, 0x65,0x03);
    	lcm_dcs_write_seq_static(ctx, 0XD1,0x00,0x00,0x00);
 	lcm_dcs_write_seq_static(ctx, 0x65,0x06);
-        lcm_dcs_write_seq_static(ctx, 0XD1,0x00,0x00,0x00);
+	lcm_dcs_write_seq_static(ctx, 0XD1,0x00,0x00,0x00);
 	lcm_dcs_write_seq_static(ctx, 0x65,0x09);
-        lcm_dcs_write_seq_static(ctx, 0XD1,0x00,0x00,0x00);
+	lcm_dcs_write_seq_static(ctx, 0XD1,0x00,0x00,0x00);
 	lcm_dcs_write_seq_static(ctx, 0x65,0x0C);
-        lcm_dcs_write_seq_static(ctx, 0XD1,0x00,0x00,0x00);
+	lcm_dcs_write_seq_static(ctx, 0XD1,0x00,0x00,0x00);
 
 	lcm_dcs_write_seq_static(ctx, 0xff, 0x5a, 0x81);
 	lcm_dcs_write_seq_static(ctx, 0x65, 0x03);
@@ -315,9 +305,9 @@ static void lcm_panel_init(struct lcm *ctx)
 	}
 
 	lcm_dcs_write_seq_static(ctx, 0x11);
-	msleep(100);
+	msleep(90);
 	lcm_dcs_write_seq_static(ctx, 0x29);
-	msleep(20);
+	msleep(10);
 
 	printk("%s exit  \n",__func__);
 }
@@ -339,61 +329,18 @@ static int lcm_disable(struct drm_panel *panel)
 static int lcm_unprepare(struct drm_panel *panel)
 {
 	struct lcm *ctx = panel_to_lcm(panel);
-	int ret;
 
 	if (!ctx->prepared)
 		return 0;
 	printk("%s enter  \n",__func__);
 	lcm_dcs_write_seq_static(ctx, 0x28);
-	msleep(50);
+	msleep(10);
 	lcm_dcs_write_seq_static(ctx, 0x10);
-	msleep(150);
+	msleep(90);
 	ctx->error = 0;
 	ctx->prepared = false;
-
-	ctx->reset_gpio =
-	devm_gpiod_get(ctx->dev, "reset", GPIOD_OUT_LOW);
-	if (IS_ERR(ctx->reset_gpio)) {
-		dev_err(ctx->dev, "%s: cannot get reset_gpio %ld\n",
-			__func__, PTR_ERR(ctx->reset_gpio));
-		return PTR_ERR(ctx->reset_gpio);
-	}
-	gpiod_set_value(ctx->reset_gpio, 0);
-	devm_gpiod_put(ctx->dev, ctx->reset_gpio);
-
-	msleep(30);
-	/* disable regulator */
-	ret = regulator_disable(ctx->oled_dvdd);
-	if (ret < 0)
-		pr_err("enable regulator ctx->oled_dvdd fail, ret = %d\n", ret);
-	devm_regulator_put(ctx->oled_dvdd);
-	/*devm_regulator_put(ctx->oled_dvdd);*/
-
-	udelay(6000);
-	ctx->vci_gpio =
-		devm_gpiod_get(ctx->dev, "vci", GPIOD_OUT_HIGH);
-	if (IS_ERR(ctx->vci_gpio)) {
-		dev_err(ctx->dev, "%s: cannot get vci_gpio %ld\n",
-			__func__, PTR_ERR(ctx->vci_gpio));
-		return PTR_ERR(ctx->vci_gpio);
-	}
-	gpiod_set_value(ctx->vci_gpio, 0);
-	devm_gpiod_put(ctx->dev, ctx->vci_gpio);
-	udelay(2000);
-
-	
-	ctx->vddi_gpio =
-		devm_gpiod_get(ctx->dev, "vddi", GPIOD_OUT_HIGH);
-	if (IS_ERR(ctx->vddi_gpio)) {
-		dev_err(ctx->dev, "%s: cannot get vddi_gpio %ld\n",
-			__func__, PTR_ERR(ctx->vddi_gpio));
-		return PTR_ERR(ctx->vddi_gpio);
-	}
-	gpiod_set_value(ctx->vddi_gpio, 0);
-	devm_gpiod_put(ctx->dev, ctx->vddi_gpio);
-
-	//_gate_ic_Power_off();
 	printk("%s exit  \n",__func__);
+
 	return 0;
 }
 
@@ -404,8 +351,46 @@ static int lcm_prepare(struct drm_panel *panel)
 	printk("%s enter  \n",__func__);
 	if (ctx->prepared)
 		return 0;
-	ctx->vddi_gpio =
-		devm_gpiod_get(ctx->dev, "vddi", GPIOD_OUT_HIGH);
+
+	// lcd reset L->H -> L -> L
+	ctx->reset_gpio = devm_gpiod_get(ctx->dev, "reset", GPIOD_OUT_LOW);
+	printk("%s enter  \n",__func__);
+	udelay(2000);
+	gpiod_set_value(ctx->reset_gpio, 0);
+	udelay(10 * 1000);
+	gpiod_set_value(ctx->reset_gpio, 1);
+	udelay(10 * 1000);
+	gpiod_set_value(ctx->reset_gpio, 0);
+	udelay(2 * 1000);
+	gpiod_set_value(ctx->reset_gpio, 1);
+	msleep(20);
+	devm_gpiod_put(ctx->dev,ctx->reset_gpio);
+
+	lcm_panel_init(ctx);
+	ret = ctx->error;
+	if (ret < 0)
+		lcm_unprepare(panel);
+	ctx->prepared = true;
+#if defined(CONFIG_MTK_PANEL_EXT)
+	mtk_panel_tch_rst(panel);
+#endif
+#ifdef PANEL_SUPPORT_READBACK
+	lcm_panel_get_data(ctx);
+#endif
+	printk("%s exit  \n",__func__);
+	return ret;
+}
+
+static int panel_ext_init_power(struct drm_panel *panel)
+{
+	int ret;
+	struct lcm *ctx = panel_to_lcm(panel);
+
+	ctx->reset_gpio = devm_gpiod_get(ctx->dev, "reset", GPIOD_OUT_LOW);
+	gpiod_set_value(ctx->reset_gpio, 0);
+	devm_gpiod_put(ctx->dev, ctx->reset_gpio);
+
+	ctx->vddi_gpio =devm_gpiod_get(ctx->dev, "vddi", GPIOD_OUT_HIGH);
 	if (IS_ERR(ctx->vddi_gpio)) {
 		dev_err(ctx->dev, "%s: cannot get vddi_gpio %ld\n",
 			__func__, PTR_ERR(ctx->vddi_gpio));
@@ -415,8 +400,7 @@ static int lcm_prepare(struct drm_panel *panel)
 	devm_gpiod_put(ctx->dev, ctx->vddi_gpio);
 	udelay(2000);
 
-	ctx->vci_gpio =
-		devm_gpiod_get(ctx->dev, "vci", GPIOD_OUT_HIGH);
+	ctx->vci_gpio =devm_gpiod_get(ctx->dev, "vci", GPIOD_OUT_HIGH);
 	if (IS_ERR(ctx->vci_gpio)) {
 		dev_err(ctx->dev, "%s: cannot get vci_gpio %ld\n",
 			__func__, PTR_ERR(ctx->vci_gpio));
@@ -442,23 +426,56 @@ static int lcm_prepare(struct drm_panel *panel)
 		pr_err("enable regulator ctx->oled_dvdd fail, ret = %d\n", ret);
 
 	udelay(2000);
-
-	lcm_panel_init(ctx);
-	ret = ctx->error;
-	if (ret < 0)
-		lcm_unprepare(panel);
-	ctx->prepared = true;
-#if defined(CONFIG_MTK_PANEL_EXT)
-	mtk_panel_tch_rst(panel);
-#endif
-#ifdef PANEL_SUPPORT_READBACK
-	lcm_panel_get_data(ctx);
-#endif
-
-
-	pr_info("%s-\n", __func__);
 	return ret;
 }
+
+static int panel_ext_powerdown(struct drm_panel *panel)
+{
+	struct lcm *ctx = panel_to_lcm(panel);
+	int ret;
+
+	pr_info("%s+\n", __func__);
+	if (ctx->prepared)
+	    return 0;
+
+	ctx->reset_gpio = devm_gpiod_get(ctx->dev, "reset", GPIOD_OUT_LOW);
+	gpiod_set_value(ctx->reset_gpio, 0);
+	devm_gpiod_put(ctx->dev, ctx->reset_gpio);
+	usleep_range(2000, 2001);
+
+	msleep(30);
+	/* disable regulator */
+	ret = regulator_disable(ctx->oled_dvdd);
+	if (ret < 0)
+		pr_err("enable regulator ctx->oled_dvdd fail, ret = %d\n", ret);
+	devm_regulator_put(ctx->oled_dvdd);
+	/*devm_regulator_put(ctx->oled_dvdd);*/
+
+	udelay(2000);
+	ctx->vci_gpio =
+		devm_gpiod_get(ctx->dev, "vci", GPIOD_OUT_HIGH);
+	if (IS_ERR(ctx->vci_gpio)) {
+		dev_err(ctx->dev, "%s: cannot get vci_gpio %ld\n",
+			__func__, PTR_ERR(ctx->vci_gpio));
+		return PTR_ERR(ctx->vci_gpio);
+	}
+	gpiod_set_value(ctx->vci_gpio, 0);
+	devm_gpiod_put(ctx->dev, ctx->vci_gpio);
+	udelay(2000);
+
+	ctx->vddi_gpio =
+		devm_gpiod_get(ctx->dev, "vddi", GPIOD_OUT_HIGH);
+	if (IS_ERR(ctx->vddi_gpio)) {
+		dev_err(ctx->dev, "%s: cannot get vddi_gpio %ld\n",
+			__func__, PTR_ERR(ctx->vddi_gpio));
+		return PTR_ERR(ctx->vddi_gpio);
+	}
+	gpiod_set_value(ctx->vddi_gpio, 0);
+	devm_gpiod_put(ctx->dev, ctx->vddi_gpio);
+
+	return 0;
+}
+
 static int lcm_enable(struct drm_panel *panel)
 {
 	struct lcm *ctx = panel_to_lcm(panel);
@@ -587,22 +604,12 @@ static int lcm_setbacklight_cmdq(void *dsi, dcs_write_gce cb,
 	struct lcm *ctx = g_ctx;
 	char bl_tb[] = {0x51, 0x3F, 0xff};
 
-	/*if (atomic_read(&ctx->hbm_mode) && level) {
-		pr_info("hbm_mode = %d, skip backlight(%d)\n", atomic_read(&ctx->hbm_mode), level);
-		atomic_set(&ctx->current_backlight, level);
-		return 0;
-	}*/
-
-
 	printk("%s backlight level = %d  \n",__func__,level);
 	bl_tb[1] = (level >> 8) & 0x3F;
 	bl_tb[2] = level & 0xFF;
 	if (!cb)
 		return -1;
 	cb(dsi, handle, bl_tb, ARRAY_SIZE(bl_tb));
-
-
-
 	atomic_set(&ctx->current_bl, level);
 	if (!level)
 		atomic_set(&ctx->hbm_mode, 0);
@@ -1318,6 +1325,8 @@ static unsigned long panel_doze_get_mode_flags(struct drm_panel *panel,
 static struct mtk_panel_funcs ext_funcs = {
 	.reset = panel_ext_reset,
 	.set_backlight_cmdq = lcm_setbacklight_cmdq,
+	.init_power = panel_ext_init_power,
+	.power_down = panel_ext_powerdown,
 	.ext_param_set = mtk_panel_ext_param_set,
 	.ext_param_get = mtk_panel_ext_param_get,
 	.mode_switch = mode_switch,
@@ -1437,8 +1446,6 @@ static int lcm_probe(struct mipi_dsi_device *dsi)
 	ctx->dev = dev;
 	dsi->lanes = 4;
 	dsi->format = MIPI_DSI_FMT_RGB888;
-	//dsi->mode_flags = MIPI_DSI_MODE_LPM | MIPI_DSI_MODE_NO_EOT_PACKET
-			// | MIPI_DSI_CLOCK_NON_CONTINUOUS;
 	dsi->mode_flags = MIPI_DSI_MODE_VIDEO | MIPI_DSI_MODE_VIDEO_SYNC_PULSE |
 			  MIPI_DSI_MODE_LPM | MIPI_DSI_MODE_NO_EOT_PACKET |
 			  MIPI_DSI_CLOCK_NON_CONTINUOUS;
