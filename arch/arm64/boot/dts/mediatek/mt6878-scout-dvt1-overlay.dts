@@ -35,9 +35,5 @@
 		pinctrl-0 = <&i2c12_mode_default>;
 };
 
-&stk501xx {
-	status = "okay";
-};
-
 #include <scout_evb/cust.dtsi>
 /*End of this file, DO NOT ADD ANYTHING HERE*/

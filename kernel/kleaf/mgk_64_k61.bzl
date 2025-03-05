@@ -940,7 +940,6 @@ def get_overlay_modules_list():
         #new product
         mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/misc/awinic/aw862xx:aw862xx")
         mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/misc/sx937x:sx937x_sar")
-        mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/misc/stk501xx:stk501xx_sar")
         mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/misc/awinic/sarsensor:awinic_sar")
         mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/power/qpnp_adaptive_charge:qpnp_adaptive_charge")
         mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/power/nfg1000_fg_mmi:nfg1000_fg_mmi")
