@@ -1831,7 +1831,7 @@ static s32 *mtk_get_ovl_csc(enum mtk_ovl_colorspace in,
 		case HAL_COLOR_MODE_NATIVE:
 		default:
 			DDPDBG("WCG by color mode[%d], NATIVE mode\n", color_mode);
-			if(params->ovl_wcg_for_moto_colormode) {
+			if(params && params->ovl_wcg_for_moto_colormode) {
 				ovl_csc[OVL_P3][OVL_SRGB] = DCI_P3_to_sRGB;
 				ovl_csc[OVL_P3][OVL_P3] = DCI_P3_to_sRGB;
 				DDPINFO("%s:WCG by color mode[%d], NATIVE mode, in[%d], out[%d]\n", __func__, color_mode, in, out);
