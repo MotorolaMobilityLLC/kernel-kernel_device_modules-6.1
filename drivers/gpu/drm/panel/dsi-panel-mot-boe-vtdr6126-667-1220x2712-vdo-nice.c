@@ -619,11 +619,14 @@ static int lcm_setbacklight_cmdq(void *dsi, dcs_write_gce cb,
 static struct mtk_panel_params ext_params = {
 	.cust_esd_check = 1,
 	.esd_check_enable = 1,
+	.hs_read_bta_with_hsclk = 1,
 	.lcm_esd_check_table[0] = {
-		.cmd = 0x66,
-		.count = 2,
-		.para_list[0] = 0x00,
-		.para_list[1] = 0x00,
+		.cmd = 0x0A,
+		.count = 1,
+		.para_list[0] = 0x9C,
+		.para_list_aod[0] = 0xDC,
+		.esd_check_aod_enable = 1,
+		.esd_read_use_hs = 1,
 	},
 	//.is_support_od = true,
 	//.is_support_dmr = true,
@@ -692,8 +695,7 @@ static struct mtk_panel_params ext_params = {
 	.dyn_fps = {
 		.switch_en = 0,
 		.vact_timing_fps = 120,
-		.dfps_cmd_grp_table[0] = {2, {0x6C, 0x00} },
-		.dfps_cmd_grp_size = 1,
+		.dfps_cmd_table[0] = {0, 2, {0x6C, 0x00} },
 	},
 	//.mode_switch_cmdq = MODE_SWITCH_CMDQ_ENABLE,
 	//.real_te_duration = 8333,
@@ -710,11 +712,14 @@ static struct mtk_panel_params ext_params = {
 static struct mtk_panel_params ext_params_90hz = {
 	.cust_esd_check = 1,
 	.esd_check_enable = 1,
+	.hs_read_bta_with_hsclk = 1,
 	.lcm_esd_check_table[0] = {
-		.cmd = 0x66,
-		.count = 2,
-		.para_list[0] = 0x00,
-		.para_list[1] = 0x00,
+		.cmd = 0x0A,
+		.count = 1,
+		.para_list[0] = 0x9C,
+		.para_list_aod[0] = 0xDC,
+		.esd_check_aod_enable = 1,
+		.esd_read_use_hs = 1,
 	},
 	//.is_support_od = true,
 	//.is_support_dmr = true,
@@ -783,8 +788,7 @@ static struct mtk_panel_params ext_params_90hz = {
 	.dyn_fps = {
 		.switch_en = 0,
 		.vact_timing_fps = 120,
-		.dfps_cmd_grp_table[0] = {2, {0x6C, 0x01} },
-		.dfps_cmd_grp_size = 1,
+		.dfps_cmd_table[0] = {0, 2, {0x6C, 0x01} },
 	},
 	//.mode_switch_cmdq = MODE_SWITCH_CMDQ_ENABLE,
 	//.real_te_duration = 8333,
@@ -801,11 +805,14 @@ static struct mtk_panel_params ext_params_90hz = {
 static struct mtk_panel_params ext_params_60hz = {
 	.cust_esd_check = 1,
 	.esd_check_enable = 1,
+	.hs_read_bta_with_hsclk = 1,
 	.lcm_esd_check_table[0] = {
-		.cmd = 0x66,
-		.count = 2,
-		.para_list[0] = 0x00,
-		.para_list[1] = 0x00,
+		.cmd = 0x0A,
+		.count = 1,
+		.para_list[0] = 0x9C,
+		.para_list_aod[0] = 0xDC,
+		.esd_check_aod_enable = 1,
+		.esd_read_use_hs = 1,
 	},
 	//.is_support_od = true,
 	//.is_support_dmr = true,
@@ -874,8 +881,7 @@ static struct mtk_panel_params ext_params_60hz = {
 	.dyn_fps = {
 		.switch_en = 0,
 		.vact_timing_fps = 120,
-		.dfps_cmd_grp_table[0] = {2, {0x6C, 0x02} },
-		.dfps_cmd_grp_size = 1,
+		.dfps_cmd_table[0] = {0, 2, {0x6C, 0x02} },
 	},
 	//.mode_switch_cmdq = MODE_SWITCH_CMDQ_ENABLE,
 	//.real_te_duration = 8333,
@@ -1447,8 +1453,7 @@ static int lcm_probe(struct mipi_dsi_device *dsi)
 	dsi->lanes = 4;
 	dsi->format = MIPI_DSI_FMT_RGB888;
 	dsi->mode_flags = MIPI_DSI_MODE_VIDEO | MIPI_DSI_MODE_VIDEO_SYNC_PULSE |
-			  MIPI_DSI_MODE_LPM | MIPI_DSI_MODE_NO_EOT_PACKET |
-			  MIPI_DSI_CLOCK_NON_CONTINUOUS;
+			  MIPI_DSI_CLOCK_NON_CONTINUOUS| MIPI_DSI_MODE_NO_EOT_PACKET;
 	ret = of_property_read_u32(dev->of_node, "res-switch", &res_switch);
 	if (ret < 0)
 		res_switch = 0;
