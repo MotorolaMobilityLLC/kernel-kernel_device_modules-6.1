@@ -25,6 +25,7 @@
 #include "../mediatek/mediatek_v2/mtk_panel_ext.h"
 #include "../mediatek/mediatek_v2/mtk_drm_graphics_base.h"
 #endif
+#include "../mediatek/mediatek_v2/mtk_dsi.h"
 #ifdef CONFIG_MTK_ROUND_CORNER_SUPPORT
 #include "../mediatek/mediatek_v2/mtk_corner_pattern/mtk_data_hw_roundedpattern.h"
 #endif
@@ -129,6 +130,8 @@ struct lcm {
 	atomic_t current_bl;
 	atomic_t current_fps;
 	atomic_t pcd_mode;
+	atomic_t doze_enable;
+	//atomic_t current_aod_y_start;
 	enum panel_version version;
 };
 #define lcm_dcs_write_seq(ctx, seq...) \
@@ -223,7 +226,7 @@ static void lcm_panel_init(struct lcm *ctx)
 	lcm_dcs_write_seq_static(ctx, 0x53,0x20);
 	lcm_dcs_write_seq_static(ctx, 0x59,0x09);
 	lcm_dcs_write_seq_static(ctx, 0x5e,0x00);
-	lcm_dcs_write_seq_static(ctx, 0x6c,0x00);
+	//lcm_dcs_write_seq_static(ctx, 0x6c,0x00);
 	lcm_dcs_write_seq_static(ctx, 0x6d,0x00);
 	lcm_dcs_write_seq_static(ctx, 0x6f,0x01);
 	//add 2025.2.8 2a 2b
@@ -274,9 +277,8 @@ static void lcm_panel_init(struct lcm *ctx)
 	lcm_dcs_write_seq_static(ctx, 0xff,0x5a,0x00);
 	lcm_dcs_write_seq_static(ctx, 0xf0,0xaa,0x00);
 
-	pr_info("%s current_fps:%d\n", __func__, current_fps);
-	current_fps = 120;
-	switch (current_fps) {
+	pr_info("%s current_fps:%d\n", __func__, atomic_read(&ctx->current_fps));
+	switch (atomic_read(&ctx->current_fps)) {
 	case 120:
 		lcm_dcs_write_seq_static(ctx, 0x6C,0x00);
 		break;
@@ -295,6 +297,10 @@ static void lcm_panel_init(struct lcm *ctx)
 	msleep(90);
 	lcm_dcs_write_seq_static(ctx, 0x29);
 	msleep(10);
+	atomic_set(&ctx->hbm_mode, 0);
+	atomic_set(&ctx->dc_mode, 0);
+	atomic_set(&ctx->apl_mode, 0);
+	atomic_set(&ctx->current_bl, 0);
 
 	printk("%s exit  \n",__func__);
 }
@@ -585,18 +591,54 @@ static int panel_ata_check(struct drm_panel *panel)
 	printk("%s exit  \n",__func__);
 	return 0;
 }
-static int lcm_setbacklight_cmdq(void *dsi, dcs_write_gce cb,
-	void *handle, unsigned int level)
+
+static int lcm_setbacklight_cmdq(void *dsi, dcs_write_gce cb, void *handle,
+				 unsigned int level)
 {
 	struct lcm *ctx = g_ctx;
-	char bl_tb[] = {0x51, 0x3F, 0xff};
+	char bl_tb[] = {0x51, 0x3E, 0x80};
+	char bl_tb_aod[] = {0x6D, 0x02};
+	unsigned int aod_light_mode = 0;
+	static unsigned int current_aod_light_mode = 0;
 
-	printk("%s backlight level = %d  \n",__func__,level);
-	bl_tb[1] = (level >> 8) & 0x3F;
-	bl_tb[2] = level & 0xFF;
+	if (atomic_read(&ctx->hbm_mode) && level) {
+		pr_info("hbm_mode = %d, skip backlight(%d)\n", atomic_read(&ctx->hbm_mode), level);
+		atomic_set(&ctx->current_bl, level);
+		return 0;
+	}
+
 	if (!cb)
 		return -1;
+
+	bl_tb[1] = (level >> 8) & 0x3F;
+	bl_tb[2] = level & 0xFF;
 	cb(dsi, handle, bl_tb, ARRAY_SIZE(bl_tb));
+
+	if (level > 7300) aod_light_mode = 0;
+	else if (level > 4400) aod_light_mode =1;
+	else aod_light_mode = 1;
+
+	bl_tb_aod[1] = aod_light_mode;
+	if (current_aod_light_mode != aod_light_mode) {
+		cb(dsi, handle, bl_tb_aod, ARRAY_SIZE(bl_tb_aod));
+		current_aod_light_mode = aod_light_mode;
+		if (atomic_read(&ctx->doze_enable))
+			pr_info("%s: backlight_level %d aod_light_mode %d\n", __func__, level, aod_light_mode);
+	}
+
+	if (!(atomic_read(&ctx->current_bl) && level)) {
+		char *envp[2];
+		char brightness[36];
+		struct mtk_dsi * mtk_dsi = (struct mtk_dsi *) dsi;
+
+		snprintf(brightness, 36, "SOURCE=backlight-%u", level);
+		envp[0] = brightness;
+		envp[1] = NULL;
+		kobject_uevent_env(&mtk_dsi->dev->kobj, KOBJ_CHANGE, envp);
+		pr_info("backlight changed from %u to %u\n", atomic_read(&ctx->current_bl),level);
+	} else
+		pr_debug("backlight changed from %u to %u\n", atomic_read(&ctx->current_bl), level);
+
 	atomic_set(&ctx->current_bl, level);
 	if (!level)
 		atomic_set(&ctx->hbm_mode, 0);
@@ -694,6 +736,7 @@ static struct mtk_panel_params ext_params = {
 	.panel_ver = 1,
 	.panel_name = "csot_vtdr6126_667_vdo_1220_2712",
 	.panel_supplier = "csot-vtdr6126",
+	.check_panel_feature = 1,
 };
 static struct mtk_panel_params ext_params_90hz = {
 	.cust_esd_check = 1,
@@ -786,6 +829,7 @@ static struct mtk_panel_params ext_params_90hz = {
 	.panel_ver = 1,
 	.panel_name = "csot_vtdr6126_667_vdo_1220_2712",
 	.panel_supplier = "csot-vtdr6126",
+	.check_panel_feature = 1,
 };
 static struct mtk_panel_params ext_params_60hz = {
 	.cust_esd_check = 1,
@@ -878,6 +922,7 @@ static struct mtk_panel_params ext_params_60hz = {
 	.panel_ver = 1,
 	.panel_name = "csot_vtdr6126_667_vdo_1220_2712",
 	.panel_supplier = "csot-vtdr6126",
+	.check_panel_feature = 1,
 };
 
 struct drm_display_mode *get_mode_by_id(struct drm_connector *connector,
@@ -935,7 +980,6 @@ static int mtk_panel_ext_param_get(struct drm_panel *panel,
 {
 	int ret = 0;
 	struct drm_display_mode *m = get_mode_by_id(connector, mode);
-	struct lcm *ctx = panel_to_lcm(panel);
 
 	if (drm_mode_vrefresh(m) == 120)
 		*ext_param = &ext_params;
@@ -947,9 +991,6 @@ static int mtk_panel_ext_param_get(struct drm_panel *panel,
 		*ext_param = &ext_params_48hz;*/
 	else
 		ret = 1;
-
-	if (!ret)
-		atomic_set(&ctx->current_fps, drm_mode_vrefresh(m));
 
 	return ret;
 }
@@ -1189,6 +1230,128 @@ static int panel_feature_set(struct drm_panel *panel, void *dsi,
 	return ret;
 }
 
+
+static struct mtk_panel_para_table aod_en_start_cmd[] = {
+		{1, {0x28}},
+		{3, {0x44, 0x06,0x8c}},
+		{2, {0x6F, 0x02}},
+		{1, {0x39}},
+	};
+
+static int panel_doze_enable_start(struct drm_panel *panel, void *dsi, dcs_write_gce cb,
+	void *handle)
+{
+	unsigned int para_count = 0;
+	struct mtk_panel_para_table *pTable;
+	unsigned int i = 0;
+
+	if (!cb)
+		return -1;
+
+	para_count = sizeof(aod_en_start_cmd) / sizeof(struct mtk_panel_para_table);
+	pr_info("%s: para_count %d\n", __func__, para_count);
+
+	for(i = 0; i < para_count; i++) {
+		pTable = &aod_en_start_cmd[i];
+		pr_info("%s: para: 0x%x , count %d\n", __func__, pTable->para_list[0], pTable->count);
+		cb(dsi, handle, pTable->para_list, pTable->count);
+	}
+
+	mdelay(18);
+	return 0;
+}
+
+static struct mtk_panel_para_table aod_en_cmd[] = {
+		{1, {0x29}},
+	};
+
+static int panel_doze_enable(struct drm_panel *panel, void *dsi, dcs_write_gce cb,
+	void *handle)
+{
+	struct lcm *ctx = panel_to_lcm(panel);
+	unsigned int para_count = 0;
+	struct mtk_panel_para_table *pTable;
+	unsigned int i = 0;
+
+	pr_info("%s: %d -> %d\n", __func__, atomic_read(&ctx->doze_enable), 1);
+
+	if (!cb)
+		return -1;
+
+	para_count = sizeof(aod_en_cmd) / sizeof(struct mtk_panel_para_table);
+
+	pr_info("%s: para_count %d\n", __func__, para_count);
+
+	for(i = 0; i < para_count; i++) {
+		pTable = &aod_en_cmd[i];
+		pr_info("%s: para: 0x%x , count %d\n", __func__, pTable->para_list[0], pTable->count);
+		cb(dsi, handle, pTable->para_list, pTable->count);
+	}
+
+	atomic_set(&ctx->doze_enable, 1);
+
+	return 0;
+}
+
+static struct mtk_panel_para_table aod_disable_cmd[] = {
+		{2, {0xa6, 0x01}},
+		{3, {0x44, 0x00, 0x00 }},
+		{3, {0xf0, 0xaa,0x10}},
+		{2, {0x65, 0x09}},
+		{2, {0xcf, 0x5b}},
+		{2, {0x65, 0x0d}},
+		{3, {0xcf, 0xfd, 0x79}},
+	};
+
+static int panel_doze_disable(struct drm_panel *panel, void *dsi, dcs_write_gce cb,
+	void *handle)
+{
+	struct lcm *ctx = panel_to_lcm(panel);
+	unsigned int para_count = 0;
+	struct mtk_panel_para_table *pTable;
+	unsigned int i = 0;
+
+	pr_info("%s: %d -> %d\n", __func__, atomic_read(&ctx->doze_enable), 0);
+
+	if (!cb)
+		return -1;
+
+	para_count = sizeof(aod_disable_cmd) / sizeof(struct mtk_panel_para_table);
+
+	pr_info("%s: para_count %d\n", __func__, para_count);
+
+	for(i = 0; i < para_count; i++) {
+		pTable = &aod_disable_cmd[i];
+		pr_info("%s: para: 0x%x , count %d\n", __func__, pTable->para_list[0], pTable->count);
+		cb(dsi, handle, pTable->para_list, pTable->count);
+	}
+
+	atomic_set(&ctx->doze_enable, 0);
+	//atomic_set(&ctx->current_aod_y_start, AOD_Y_START_MIN);
+
+	usleep_range(90 * 1000, 91 * 1000);
+
+	return 0;
+}
+
+static unsigned long panel_doze_get_mode_flags(struct drm_panel *panel,
+	int doze_en)
+{
+	unsigned long mode_flags;
+
+	if (doze_en) {
+		mode_flags = MIPI_DSI_MODE_NO_EOT_PACKET
+		       | MIPI_DSI_CLOCK_NON_CONTINUOUS;
+	} else {
+		mode_flags = MIPI_DSI_MODE_VIDEO
+		       | MIPI_DSI_MODE_VIDEO_SYNC_PULSE
+		       | MIPI_DSI_MODE_NO_EOT_PACKET
+		       | MIPI_DSI_CLOCK_NON_CONTINUOUS;
+	}
+	pr_info("%s: mode_flags %ld\n", __func__, mode_flags);
+	return mode_flags;
+}
+
 static struct mtk_panel_funcs ext_funcs = {
 	.reset = panel_ext_reset,
 	.set_backlight_cmdq = lcm_setbacklight_cmdq,
@@ -1203,10 +1366,11 @@ static struct mtk_panel_funcs ext_funcs = {
 	.panel_feature_set = panel_feature_set,
 	.panel_feature_get = panel_feature_get,
 	.scaling_mode_mapping = mtk_scaling_mode_mapping,
-	//.lcm_update_roi = lcm_update_roi,
-	//.lcm_update_roi_cmdq = lcm_update_roi_cmdq,
-	//.get_lcm_power_state = lcm_panel_get_ab_data,
-//	.get_switch_mode_delay = get_switch_mode_delay,
+	.doze_get_mode_flags = panel_doze_get_mode_flags,
+	.doze_enable_start = panel_doze_enable_start,
+	.doze_disable = panel_doze_disable,
+	.doze_enable = panel_doze_enable,
+	//.doze_area = panel_doze_area,
 };
 
 struct panel_desc {
