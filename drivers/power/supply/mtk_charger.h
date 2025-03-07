@@ -482,6 +482,7 @@ struct mmi_params {
 	bool			cp_on_sub_board;
 	bool			enable_mux;
 	struct			mmi_mux_chan mux_channel;
+	struct			mmi_mux_chan chan_temp;
 	bool			typec_mos_only; //only have typec_mos but don't have wls_mos
 	int			wls_switch_en;
 	int			usb_switch_en;
