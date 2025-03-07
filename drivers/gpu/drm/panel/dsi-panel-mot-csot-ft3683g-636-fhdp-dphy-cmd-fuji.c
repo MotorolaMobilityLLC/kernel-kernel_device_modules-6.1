@@ -201,6 +201,7 @@ static int lcm_panel_get_ab_data(struct drm_panel *panel)
 #endif
 
 static int read_gamma_flag = 0;
+static bool panel_pcd_flag = 0;
 
 static struct mtk_panel_para_table panel_lhbm_on_normal[] = {
 	{3, {0xf0,0xaa,0x13}},
@@ -732,6 +733,7 @@ static int lcm_setbacklight_cmdq(void *dsi, dcs_write_gce cb,
 static struct mtk_panel_params ext_params_144hz = {
 	.cust_esd_check = 1,
 	.esd_check_enable = 1,
+	.pcd_check_flag = 1,
 	.lcm_esd_check_table[0] = {
 		.cmd = 0x66,
 		.count = 3,
@@ -811,6 +813,7 @@ static struct mtk_panel_params ext_params_144hz = {
 static struct mtk_panel_params ext_params_120hz = {
 	.cust_esd_check = 1,
 	.esd_check_enable = 1,
+	.pcd_check_flag = 1,
 	.lcm_esd_check_table[0] = {
 		.cmd = 0x66,
 		.count = 3,
@@ -889,6 +892,7 @@ static struct mtk_panel_params ext_params_120hz = {
 static struct mtk_panel_params ext_params_90hz = {
 	.cust_esd_check = 1,
 	.esd_check_enable = 1,
+	.pcd_check_flag = 1,
 	.lcm_esd_check_table[0] = {
 		.cmd = 0x66,
 		.count = 3,
@@ -968,6 +972,7 @@ static struct mtk_panel_params ext_params_90hz = {
 static struct mtk_panel_params ext_params_60hz = {
 	.cust_esd_check = 1,
 	.esd_check_enable = 1,
+	.pcd_check_flag = 1,
 	.lcm_esd_check_table[0] = {
 		.cmd = 0x66,
 		.count = 3,
@@ -1047,6 +1052,7 @@ static struct mtk_panel_params ext_params_60hz = {
 static struct mtk_panel_params ext_params_30hz = {
 	.cust_esd_check = 1,
 	.esd_check_enable = 1,
+	.pcd_check_flag = 1,
 	.lcm_esd_check_table[0] = {
 		.cmd = 0x66,
 		.count = 3,
@@ -1126,6 +1132,7 @@ static struct mtk_panel_params ext_params_30hz = {
 static struct mtk_panel_params ext_params_24hz = {
 	.cust_esd_check = 1,
 	.esd_check_enable = 1,
+	.pcd_check_flag = 1,
 	.lcm_esd_check_table[0] = {
 		.cmd = 0x66,
 		.count = 3,
@@ -1204,6 +1211,7 @@ static struct mtk_panel_params ext_params_24hz = {
 static struct mtk_panel_params ext_params_10hz = {
 	.cust_esd_check = 1,
 	.esd_check_enable = 1,
+	.pcd_check_flag = 1,
 	.lcm_esd_check_table[0] = {
 		.cmd = 0x66,
 		.count = 3,
@@ -1282,6 +1290,7 @@ static struct mtk_panel_params ext_params_10hz = {
 static struct mtk_panel_params ext_params_1hz = {
 	.cust_esd_check = 1,
 	.esd_check_enable = 1,
+	.pcd_check_flag = 1,
 	.lcm_esd_check_table[0] = {
 		.cmd = 0x66,
 		.count = 3,
@@ -1856,6 +1865,11 @@ static int panel_ext_init_power(struct drm_panel *panel)
 	int ret;
 	struct lcm *ctx = panel_to_lcm(panel);
 
+	if (panel_pcd_flag) {
+		pr_err("%s: pcd occurs, panel does not poweron\n", __func__);
+		return 0;
+	}
+
 	ctx->reset_gpio = devm_gpiod_get(ctx->dev, "reset", GPIOD_OUT_HIGH);
 	gpiod_set_value(ctx->reset_gpio, 0);
 	devm_gpiod_put(ctx->dev, ctx->reset_gpio);
@@ -1882,6 +1896,36 @@ static int panel_ext_powerdown(struct drm_panel *panel)
 	return 0;
 }
 
+static int panel_pcd_check(struct drm_panel *panel)
+{
+	struct lcm *ctx = panel_to_lcm(panel);
+	struct mipi_dsi_device *dsi = to_mipi_dsi_device(ctx->dev);
+	u8 data[8] = {0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00};
+	int ret = 1;
+
+	lcm_dcs_write_seq_static(ctx, 0xF0,0xAA,0x12);
+	lcm_dcs_write_seq_static(ctx, 0xD0,0x08,0x02);
+	msleep(20);
+
+	ret = mipi_dsi_dcs_read(dsi, 0xD0, data, 8);
+	if (ret < 0) {
+		pr_err("%s pcd read error\n", __func__);
+		return 0;
+	}
+
+	lcm_dcs_write_seq_static(ctx, 0xF0,0xAA,0x12);
+	lcm_dcs_write_seq_static(ctx, 0xD0,0x00,0x00);
+
+	if(data[7] > 0x83) {
+		pr_err("%s pcd occurs, value is %x, power off panel\n", __func__, data[7]);
+		gate_ic_Power_on(panel, 0);
+		panel_pcd_flag = 1;
+		return 2;
+	} else {
+		pr_debug("%s pcd is normal, value is %x\n", __func__, data[7]);
+		return 1;
+	}
+}
 
 static int panel_hbm_waitfor_fps_valid(struct drm_panel *panel, unsigned int timeout_ms)
 {
@@ -1917,6 +1961,7 @@ static struct mtk_panel_funcs ext_funcs = {
 	.ext_param_set = mtk_panel_ext_param_set,
 	.mode_switch = mode_switch,
 	.ata_check = panel_ata_check,
+	.panel_pcd_check = panel_pcd_check,
 	.panel_feature_set = panel_feature_set,
 	.panel_feature_get = panel_feature_get,
 	.panel_hbm_waitfor_fps_valid = panel_hbm_waitfor_fps_valid,
