@@ -310,6 +310,8 @@
 	mmi,vbatt-empty-cold-mv = <3000>;
 
 	mmi,batt-cold-threshold = <0>;
+
+	mmi,soh_gap = <4>;
 };
 
 &i2c0 {
