@@ -1536,8 +1536,10 @@ static int mt6375_chg_get_property(struct power_supply *psy,
 		mutex_lock(&ddata->attach_lock);
 		val->intval = atomic_read(&ddata->attach[ddata->active_idx]);
 
-		if (ddata->dcp15w.support && ddata->dcp15w.online)
+		if (ddata->dcp15w.support && ddata->dcp15w.online) {
+			pr_info("%s attach_online:%d dcp15w online:1\n", __func__, val->intval);
 			val->intval = 1;
+		}
 
 		mutex_unlock(&ddata->attach_lock);
 		break;
@@ -3174,6 +3176,7 @@ void dcp15w_detect_dwork(struct work_struct *work)
 	int power_mw = 0;
 	int ret = 0;
 	int count = -1;
+	bool otg_en = false;
 
 	dwork = container_of(work, struct delayed_work, work);
 	if (IS_ERR_OR_NULL(dwork)) {
@@ -3190,6 +3193,14 @@ void dcp15w_detect_dwork(struct work_struct *work)
 		ret = mt6375_get_vbus(ddata->chgdev, &vbus_uv);
 		if (ret != 0) {
 			pr_err("%s get vbus failed\n", __func__);
+			return;
+		}
+		ret = mt6375_chg_is_otg_enabled(ddata, &otg_en);
+		if (ret != 0) {
+			pr_err("%s get otg failed\n", __func__);
+			return;
+		} else if (otg_en) {
+			pr_err("%s otg is enable, skip dcp15w\n", __func__);
 			return;
 		}
 	}

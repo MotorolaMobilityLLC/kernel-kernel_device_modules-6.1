@@ -1126,6 +1126,16 @@ static int mmi_mux_switch(struct mtk_charger *info, enum mmi_mux_channel channel
 	if(!info->mmi.enable_mux)
 		return 0;
 
+	if (info->mmi.mux_channel.chan == MMI_MUX_CHANNEL_WLC_FW_UPDATE &&
+		(channel == MMI_MUX_CHANNEL_TYPEC_CHG ||
+		channel == MMI_MUX_CHANNEL_TYPEC_OTG)) {
+		info->mmi.chan_temp.chan = channel;
+		info->mmi.chan_temp.on = on;
+		pr_info("%s save chan_temp %d,%d\n", __func__,
+			info->mmi.chan_temp.chan, info->mmi.chan_temp.on);
+		return 0;
+	}
+
 	mutex_lock(&info->mmi_mux_lock);
 	pre_chan =  info->mmi.mux_channel.chan;
 	pre_on = info->mmi.mux_channel.on;
@@ -1290,13 +1300,23 @@ static int mmi_mux_switch(struct mtk_charger *info, enum mmi_mux_channel channel
 			break;
 		case MMI_MUX_CHANNEL_WLC_FW_UPDATE:
 			if (on) {
+				info->mmi.chan_temp.chan = info->mmi.mux_channel.chan;
+				info->mmi.chan_temp.on = info->mmi.mux_channel.on;
 				mmi_mux_config(info, MMI_MUX_CHANNEL_WLC_FW_UPDATE);
 				info->mmi.mux_channel.chan = MMI_MUX_CHANNEL_WLC_FW_UPDATE;
-			 } else {
-				mmi_mux_config(info, MMI_MUX_CHANNEL_NONE);
-				info->mmi.mux_channel.chan = MMI_MUX_CHANNEL_NONE;
-			 }
-			info->mmi.mux_channel.on = on;
+				info->mmi.mux_channel.on = on;
+			} else {
+				if (info->mmi.chan_temp.on &&
+					info->mmi.chan_temp.chan != MMI_MUX_CHANNEL_NONE) {
+					mmi_mux_config(info, info->mmi.chan_temp.chan);
+					info->mmi.mux_channel.chan = info->mmi.chan_temp.chan;
+					info->mmi.mux_channel.on = true;
+				} else {
+					mmi_mux_config(info, MMI_MUX_CHANNEL_NONE);
+					info->mmi.mux_channel.chan = MMI_MUX_CHANNEL_NONE;
+					info->mmi.mux_channel.on = false;
+				}
+			}
 			break;
 		case MMI_MUX_CHANNEL_WLC_FACTORY_TEST:
 			pr_info("%s MMI_MUX_CHANNEL_WLC_FACTORY_TEST %d\n", __func__, on);
