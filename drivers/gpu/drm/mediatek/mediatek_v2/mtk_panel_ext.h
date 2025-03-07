@@ -528,7 +528,6 @@ struct mtk_panel_params {
 	struct mtk_ddic_dsi_cmd send_cmd_to_ddic;
 	unsigned int cust_esd_check;
 	unsigned int esd_check_enable;
-	unsigned int esd_check_period;
 	struct esd_check_item lcm_esd_check_table[ESD_CHECK_NUM];
 	unsigned int ssc_enable;
 	unsigned int ssc_range;
