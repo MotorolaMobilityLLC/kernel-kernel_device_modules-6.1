@@ -60,7 +60,7 @@
 		compatible = "focaltech,fts";
 		reg = <0x1>;
 		mmi,status = "/chosen","mmi,panel_name","contains","csot_ft3683g";
-		focaltech,panel-supplier = "ft3683g";
+		focaltech,panel-supplier = "csot";
 		spi-max-frequency = <15000000>;
 		focaltech,vdd-gpio = <&pio 183 0x0>;
 		focaltech,reset-gpio = <&pio 60 0x0>;
