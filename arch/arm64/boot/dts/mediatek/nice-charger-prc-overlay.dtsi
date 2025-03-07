@@ -39,7 +39,7 @@
 };
 
 &moto_chg_tcmd {
-	mmi,batt-ids-map = "1", "ATLRN60NVT", "2", "LWNRN60SWD",  "3", "ATLRN67NVT";
+	mmi,batt-ids-map = "1", "ATLRN60NVT", "2", "LWNRN60SWD",  "3", "ATLRN67NVT" , "4", "COSRN67COS";
 };
 
 &mtk_gauge {

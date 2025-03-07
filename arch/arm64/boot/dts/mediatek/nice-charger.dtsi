@@ -178,7 +178,7 @@
 	mmi,adc-channel-pa = <1>;
 	mmi,adc-channel-batid = <3>;
 	mmi,adc-channel-vbat = <100>;
-	mmi,batt-ids-map = "1", "ATLRA52NVT", "2", "LWNRA52SWD", "3", "ATLRN67NVT";
+	mmi,batt-ids-map = "1", "ATLRA52NVT", "2", "LWNRA52SWD", "3", "ATLRN67NVT", "4", "COSRN67COS";
 };
 
 &smart_battery {
@@ -259,11 +259,11 @@
 	car-tune-value = <(98)>;
 
 	/* battery prop */
-	g-fg-pseudo100 = <93 100 100 100
-		93 100 100 100
-		93 100 100 100
-		93 100 100 100
-		93 100 100 100
+	g-fg-pseudo100 = <93 97 100 100
+		93 97 100 100
+		93 97 100 100
+		93 97 100 100
+		93 97 100 100
 		100 100 100 100
 		100 100 100 100
 		100 100 100 100
@@ -329,6 +329,7 @@
 	#include "bat_setting/mt6878_battery_table_nice_nvt_5200mah.dtsi"
 	#include "bat_setting/mt6878_battery_table_nice_xwd_5200mah.dtsi"
 	#include "bat_setting/mt6878_battery_table_nice_rn67_6720mah.dtsi"
+	#include "bat_setting/mt6878_battery_table_nice_cos_6720mah.dtsi"
 };
 
 &pdc {

@@ -10,10 +10,10 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  * See http://www.gnu.org/licenses/gpl-2.0.html for more details.
  */
-serialnum_2 = "ATLRN67NVT";
-battery2-profile-t0-num = <100>;
-battery2-profile-t0-col = <3>;
-battery2-profile-t0 =
+serialnum_3 = "COSRN67COS";
+battery3-profile-t0-num = <100>;
+battery3-profile-t0-col = <3>;
+battery3-profile-t0 =
 <
 0       44640   500
 615     44394   500
@@ -116,9 +116,9 @@ battery2-profile-t0 =
 60265   31187   4083
 60880   29590   6500
 >;
-battery2-profile-t1-num = <100>;
-battery2-profile-t1-col = <3>;
-battery2-profile-t1 =
+battery3-profile-t1-num = <100>;
+battery3-profile-t1-col = <3>;
+battery3-profile-t1 =
 <
 0       44640   780
 615     44417   776
@@ -221,9 +221,9 @@ battery2-profile-t1 =
 60265   33215   3010
 60880   30510   8000
 >;
-battery2-profile-t2-num = <100>;
-battery2-profile-t2-col = <3>;
-battery2-profile-t2 =
+battery3-profile-t2-num = <100>;
+battery3-profile-t2-col = <3>;
+battery3-profile-t2 =
 <
 0       44700   1300
 615     44446   1300
@@ -326,9 +326,9 @@ battery2-profile-t2 =
 60265   34190   17500
 60880   34190   17500
 >;
-battery2-profile-t3-num = <100>;
-battery2-profile-t3-col = <3>;
-battery2-profile-t3 =
+battery3-profile-t3-num = <100>;
+battery3-profile-t3-col = <3>;
+battery3-profile-t3 =
 <
 0       44700   2250
 615     44439   2250
@@ -431,9 +431,9 @@ battery2-profile-t3 =
 60265   36300   23000
 60880   36300   23000
 >;
-battery2-profile-t4-num = <100>;
-battery2-profile-t4-col = <3>;
-battery2-profile-t4 =
+battery3-profile-t4-num = <100>;
+battery3-profile-t4-col = <3>;
+battery3-profile-t4 =
 <
 0       44720   5150
 615     44420   5150
