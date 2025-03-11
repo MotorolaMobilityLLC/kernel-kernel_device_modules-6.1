@@ -101,6 +101,7 @@
 #define VS_VOTER_EN_LO_SET 0x1
 #define VS_VOTER_EN_LO_CLR 0x2
 
+#define EDID_MONITOR_NAME_SIZE     13
 
 enum dp_cmd {
 	DP_DUMP = 0x20,
@@ -330,6 +331,8 @@ struct mtk_dp {
 	u32 vsv_reg;
 	u32 vsv_mask;
 	u32 vsv_vers;
+
+	char monitor_name[EDID_MONITOR_NAME_SIZE+1];
 };
 
 #endif /*__DRTX_TYPE_H__*/

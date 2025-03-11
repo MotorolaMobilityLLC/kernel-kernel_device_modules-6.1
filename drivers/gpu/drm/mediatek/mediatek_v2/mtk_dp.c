@@ -2180,6 +2180,35 @@ int mdrv_DPTx_SetTrainingStart(struct mtk_dp *mtk_dp)
 	return DPTX_TRANING_FAIL;
 }
 
+static void mtk_edid_extract_monitor_name(struct mtk_dp *mtk_dp)
+{
+	char *monitor_name;
+	int i;
+	struct detailed_timing *detail_data;
+	struct detailed_non_pixel *non_pixel_data;
+
+	DPTXMSG("%s enter", __func__);
+	if (!mtk_dp) {
+		DPTXERR("%s: invalid input\n", __func__);
+		return;
+	}
+	monitor_name = mtk_dp->monitor_name;
+
+	for (i=1; i<4; i++) {
+		detail_data = &mtk_dp->edid->detailed_timings[i];
+		non_pixel_data = &(detail_data->data.other_data);
+
+		DPTXDBG("%s  type =%x\n", __func__, non_pixel_data->type);
+		if (non_pixel_data->type == 0xfc) {
+			memset(monitor_name, 0, EDID_MONITOR_NAME_SIZE+1);
+			memcpy(monitor_name, (const void *)non_pixel_data->data.str.str, EDID_MONITOR_NAME_SIZE);
+			DPTXDBG("%s name=%s\n", __func__, monitor_name);
+			break;
+		}
+	}
+	DPTXMSG("%s name=%s\n", __func__, monitor_name);
+}
+
 int mdrv_DPTx_Training_Handler(struct mtk_dp *mtk_dp)
 {
 	int ret = DPTX_NOERR;
@@ -2225,6 +2254,7 @@ int mdrv_DPTx_Training_Handler(struct mtk_dp *mtk_dp)
 	case DPTX_NTSTATE_CHECKEDID:
 		mtk_dp->edid = mtk_dp_handle_edid(mtk_dp);
 		if (mtk_dp->edid) {
+			mtk_edid_extract_monitor_name(mtk_dp);
 			DPTXMSG("READ EDID done!\n");
 			if (mtk_dp_debug_get()) {
 				u8 *raw_edid = (u8 *)mtk_dp->edid;
