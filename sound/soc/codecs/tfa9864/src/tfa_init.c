@@ -1561,6 +1561,7 @@ static enum Tfa98xx_Error tfa986x_specific(struct tfa_device *tfa)
 		tfa_reg_write(tfa, 0xcf, 0x2cd7); //POR=0x0cd7
 		tfa_reg_write(tfa, 0xd7, 0x1000); //POR=0x0000
 		tfa_reg_write(tfa, 0xdd, 0x0036); //POR=0x005e
+		tfa_set_bf(tfa, TFA986X_BF_LPM, 1);
 		/* ----- generated code end   ----- */
 		break;
 
@@ -1887,6 +1888,7 @@ static enum Tfa98xx_Error tfa986x_specific(struct tfa_device *tfa)
 		tfa_reg_write(tfa, 0x78, 0x0001); //POR=0x000d
 		tfa_reg_write(tfa, 0x7c, 0x10f2); //POR=0x1602
 		tfa_reg_write(tfa, 0xdd, 0x01b6); //POR=0x01de
+		tfa_set_bf(tfa, TFA986X_BF_LPM, 0);
 		/* ----- generated code end   ----- */
 		break;
 
