@@ -41,7 +41,7 @@
 		goodix,sample-ctrl;
 		goodix,interpolation-ctrl;
 		goodix,gesture-wait-pm;
-		goodix,stowed-mode-ctrl;
+		//goodix,stowed-mode-ctrl;
 		goodix,pocket-mode-ctrl;
 		/*goodix,config-name = "goodix_gt9916k_cfg_group.bin";
 		goodix,firmware-name = "goodix_gt9916k_firmware.bin";*/
@@ -80,7 +80,7 @@
 		mmi,usb-charger-detection;
 		mmi,enable-gestures;
 		mmi,supported_gesture_type = <0x07>;
-		focaltech,stowed-mode-ctrl;
+	//	focaltech,stowed-mode-ctrl;
 		mtk-charger = <&mt6375_chg>;
 	};
 };
