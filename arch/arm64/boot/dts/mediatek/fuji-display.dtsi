@@ -225,3 +225,6 @@
 	};
 };
 
+&dp_tx {
+	mtk-dp-downgrade;
+};
