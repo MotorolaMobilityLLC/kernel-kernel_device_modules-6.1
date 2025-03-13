@@ -332,6 +332,7 @@ struct mtk_dp {
 	u32 vsv_mask;
 	u32 vsv_vers;
 
+	bool dp_downgrade;
 	char monitor_name[EDID_MONITOR_NAME_SIZE+1];
 };
 

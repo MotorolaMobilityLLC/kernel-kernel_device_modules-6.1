@@ -2058,6 +2058,40 @@ bool mdrv_DPTx_TrainingChangeMode(struct mtk_dp *mtk_dp)
 	return true;
 }
 
+// MMI_STOPSHIP <displayport>: Parse monitor name from dtsi file later
+static bool mtk_allow_downgrade(u8 *monitor_name, int type_index)
+{
+	char *hub_monitor_blacklist_bw14[] = {"Y27q-20", "SAMSUNG", "T24m", NULL};
+	char *dp_monitor_blacklist_bw1e[] = {"P27h-30", "P32p-30", "Y27q-20", NULL};
+	char *dp_monitor_blacklist_bw14[] = {"P32p-20", "T24m", NULL};
+	char *dp_monitor_blacklist_bw0a[] = {"Q27q-1L", "Y27q-20", NULL};
+	bool is_allow = false;
+	char **monitor_list;
+
+	if(type_index == 0)
+		monitor_list = hub_monitor_blacklist_bw14;
+	else if(type_index == 0x1E)
+		monitor_list = dp_monitor_blacklist_bw1e;
+	else if(type_index == 0x14)
+		monitor_list = dp_monitor_blacklist_bw14;
+	else if(type_index == 0xA)
+		monitor_list = dp_monitor_blacklist_bw0a;
+	else
+		return false;
+
+	while(*monitor_list != NULL) {
+		DPTXDBG("downgrade: value: %s\n", *monitor_list);
+		if(strstr(monitor_name, *monitor_list) != NULL){
+			is_allow = true;
+			DPTXMSG("match the monitor name=%s\n", monitor_name);
+			break;
+		}
+		monitor_list++;
+	}
+
+	return is_allow;
+}
+
 int mdrv_DPTx_SetTrainingStart(struct mtk_dp *mtk_dp)
 {
 	u8 ret = DPTX_NOERR;
@@ -2125,6 +2159,42 @@ int mdrv_DPTx_SetTrainingStart(struct mtk_dp *mtk_dp)
 	maxLinkRate = ubLinkRate;
 	ubTrainTimeLimits = 0x6;
 #endif
+
+	if (mtk_dp->dp_downgrade) {
+		DPTXMSG("Use Moto Display Port compatibility solution");
+
+		if (ubLaneCount == 2 && ubLinkRate == DP_LINKRATE_HBR2 &&
+			mtk_allow_downgrade(mtk_dp->monitor_name, 0)) {
+			ubLinkRate = DP_LINKRATE_HBR;
+			DPTXMSG("downgrade to DP_LINKRATE_HBR for hub");
+		}
+
+		if (ubLaneCount == 2 && ubLinkRate == DP_LINKRATE_HBR3) {
+			ubLinkRate = DP_LINKRATE_HBR2;
+			DPTXMSG("downgrade to DP_LINKRATE_HBR2 for hub");
+		}
+
+		if (ubLaneCount == 4 && mtk_allow_downgrade(mtk_dp->monitor_name, ubLinkRate)) {
+			switch (ubLinkRate)
+			{
+			case DP_LINKRATE_HBR3:
+				ubLinkRate = DP_LINKRATE_HBR2;
+				DPTXMSG("downgrade to DP_LINKRATE_HBR2 for dp");
+				break;
+			case DP_LINKRATE_HBR2:
+				ubLinkRate = DP_LINKRATE_HBR;
+				DPTXMSG("downgrade to DP_LINKRATE_HBR for dp");
+				break;
+			case DP_LINKRATE_HBR:
+				ubLinkRate = DP_LINKRATE_RBR;
+				DPTXMSG("downgrade to DP_LINKRATE_RBR for dp");
+				break;
+			default:
+				break;
+			}
+		}
+	}
+
 	do {
 		DPTXMSG("LinkRate:0x%x, LaneCount:%x", ubLinkRate, ubLaneCount);
 
@@ -3556,6 +3626,8 @@ static int mtk_dp_dt_parse_pdata(struct mtk_dp *mtk_dp,
 	ret = mtk_dp_vsvoter_parse(mtk_dp, dev->of_node);
 	if (ret)
 		dev_info(dev, "failed to parse vsv property\n");
+
+	mtk_dp->dp_downgrade = of_property_read_bool(dev->of_node, "mtk-dp-downgrade");
 
 	return 0;
 }
