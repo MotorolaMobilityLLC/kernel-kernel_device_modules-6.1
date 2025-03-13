@@ -42,7 +42,7 @@
 		goodix,interpolation-ctrl;
 		goodix,gesture-wait-pm;
 		//goodix,stowed-mode-ctrl;
-		goodix,pocket-mode-ctrl;
+		//goodix,pocket-mode-ctrl;
 		/*goodix,config-name = "goodix_gt9916k_cfg_group.bin";
 		goodix,firmware-name = "goodix_gt9916k_firmware.bin";*/
 		mmi,enable-gestures;
@@ -72,7 +72,7 @@
 		focaltech,edge-ctrl;
 		focaltech,interpolation-ctrl;
 		focaltech,sample-ctrl;
-		fts,pocket-mode-ctrl;
+		//fts,pocket-mode-ctrl;
 		pinctrl-names = "pmx_ts_active", "pmx_ts_suspend", "pmx_ts_release";
 		pinctrl-0 = <&ctp_gt9896s_int_active>;
 		pinctrl-1 = <&ctp_gt9896s_int_suspend>;
