@@ -632,13 +632,13 @@ static void fill_backlight_cmd(unsigned int bl_level, char *pCmdTable)
 	pCmdTable[20] = aod_mode[aod_light_mode][0];
 	pCmdTable[21] = aod_mode[aod_light_mode][1];
 
-	if( ctx->version > 2) {
+/*	if( ctx->version > 2) {
 		if (bl_level < APL_THRESHOLD) pCmdTable[7] = 0x00;
 		else pCmdTable[7] = 0x01;
 	} else {
 		pCmdTable[6] = 0x01;
 		pCmdTable[7] = 0x00;
-	}
+	}*/
 	if (atomic_read(&ctx->doze_enable))
 		pr_info("%s: backlight_level %d aod_light_mode %d\n", __func__, bl_level, aod_light_mode);
 }
@@ -1116,8 +1116,8 @@ static void set_lhbm_alpha(struct lcm *ctx, unsigned int bl_level, struct mtk_pa
 	else if (bl_level > 16000)
 		lhbm_alpha_index = 15999;
 
-	if ((ctx->version == 1) || (ctx->version == 2))
-		alpha = lhbm_alpha[lhbm_alpha_index];
+//	if ((ctx->version == 1) || (ctx->version == 2))
+	alpha = lhbm_alpha[lhbm_alpha_index];
 	//else
 		//alpha = lhbm_alpha_v3[lhbm_alpha_index];
 
@@ -1318,13 +1318,13 @@ static int panel_doze_disable(struct drm_panel *panel, void *dsi, dcs_write_gce 
 
 	//if (!atomic_read(&ctx->doze_enable)) return 0;
 	bl_level = atomic_read(&ctx->current_bl);
-	if( ctx->version > 2) {
+/*	if( ctx->version > 2) {
 		if (bl_level < APL_THRESHOLD) aod_disable_cmd[7] = 0x00;
 		else aod_disable_cmd[7] = 0x01;
 	} else {
 		aod_disable_cmd[6] = 0x01;
 		aod_disable_cmd[7] = 0x00;
-	}
+	} */
 
 	cb(dsi, handle, aod_disable_cmd, ARRAY_SIZE(aod_disable_cmd));
 
@@ -1342,13 +1342,12 @@ static unsigned long panel_doze_get_mode_flags(struct drm_panel *panel,
 	unsigned long mode_flags;
 
 	if (doze_en) {
-		mode_flags = MIPI_DSI_MODE_LPM
-		       | MIPI_DSI_MODE_NO_EOT_PACKET
+		mode_flags = MIPI_DSI_MODE_NO_EOT_PACKET
 		       | MIPI_DSI_CLOCK_NON_CONTINUOUS;
 	} else {
 		mode_flags = MIPI_DSI_MODE_VIDEO
 		       | MIPI_DSI_MODE_VIDEO_SYNC_PULSE
-		       | MIPI_DSI_MODE_LPM | MIPI_DSI_MODE_NO_EOT_PACKET
+		       | MIPI_DSI_MODE_NO_EOT_PACKET
 		       | MIPI_DSI_CLOCK_NON_CONTINUOUS;
 	}
 	pr_info("%s: mode_flags %ld\n", __func__, mode_flags);
