@@ -26,6 +26,13 @@
 	};
 };
 
+&charger {
+	mmi,enable-ifc;
+};
+
+&NFG1000 {
+	nfg,support_ifc;
+};
 
 #include <fuji_evb/cust.dtsi>
 #include "mediatek/cust_fuji_camera_v4l2.dtsi"
