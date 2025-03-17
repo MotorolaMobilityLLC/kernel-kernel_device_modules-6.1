@@ -18,6 +18,7 @@
 
 #define AITO_ROW2_RADIO 7
 #define AITO_PRC2_RADIO 8
+#define AITO_MEA2_RADIO 11
 
 /* Board match root node */
 / {
@@ -25,7 +26,7 @@
 		target-path = "/";
 		__overlay__ {
 			mot,model = "aito";
-			mot,board-id = <(AITO_ROW2_RADIO << 8 | 0x43) 0xB300>, <(AITO_PRC2_RADIO << 8 | 0x43) 0xB300>, <(AITO_ROW2_RADIO << 8 | 0x46) 0xC000>, <(AITO_PRC2_RADIO << 8 | 0x46) 0xC000>;
+			mot,board-id = <(AITO_ROW2_RADIO << 8 | 0x43) 0xB300>, <(AITO_PRC2_RADIO << 8 | 0x43) 0xB300>, <(AITO_ROW2_RADIO << 8 | 0x46) 0xC000>, <(AITO_PRC2_RADIO << 8 | 0x46) 0xC000>, <(AITO_MEA2_RADIO << 8 | 0x46) 0xC000>;
 		};
 	};
 };
