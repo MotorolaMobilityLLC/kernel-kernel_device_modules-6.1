@@ -280,7 +280,7 @@ static void lcm_panel_init(struct lcm *ctx)
 	lcm_dcs_write_seq_static(ctx, 0x03, 0x01);
 	lcm_dcs_write_seq_static(ctx, 0x35, 0x00);
 	lcm_dcs_write_seq_static(ctx, 0x53, 0x28);
-	lcm_dcs_write_seq_static(ctx, 0x51, 0x0D,0xBA);
+	lcm_dcs_write_seq_static(ctx, 0x51, 0x00,0x00);
 	lcm_dcs_write_seq_static(ctx, 0x5e, 0x00);
 	lcm_dcs_write_seq_static(ctx, 0x6c, 0x01);
 	lcm_dcs_write_seq_static(ctx, 0x6d, 0x00);
@@ -675,28 +675,7 @@ static int panel_ext_reset(struct drm_panel *panel, int on)
 
 static int panel_ata_check(struct drm_panel *panel)
 {
-	struct lcm *ctx = panel_to_lcm(panel);
-	struct mipi_dsi_device *dsi = to_mipi_dsi_device(ctx->dev);
-	unsigned char data[3] = {0x00, 0x00, 0x00};
-	unsigned char id[3] = {0x00, 0x00, 0x00};
-	ssize_t ret;
-	printk("%s enter  \n",__func__);
-	ret = mipi_dsi_dcs_read(dsi, 0x4, data, 3);
-	if (ret < 0) {
-		pr_err("%s error\n", __func__);
-		return 0;
-	}
-
-	pr_info("ATA read data %x %x %x\n", data[0], data[1], data[2]);
-
-	if (data[0] == id[0] &&
-			data[1] == id[1] &&
-			data[2] == id[2])
-		return 1;
-
-	pr_info("ATA expect read data is %x %x %x\n",
-			id[0], id[1], id[2]);
-	printk("%s exit  \n",__func__);
+	/* Customer test by own ATA tool */
 	return 0;
 }
 
@@ -1896,7 +1875,8 @@ static int panel_ext_powerdown(struct drm_panel *panel)
 	return 0;
 }
 
-static int panel_pcd_check(struct drm_panel *panel)
+// MMI_STOPSHIP <display>: Temp remove pcd check
+/*static int panel_pcd_check(struct drm_panel *panel)
 {
 	struct lcm *ctx = panel_to_lcm(panel);
 	struct mipi_dsi_device *dsi = to_mipi_dsi_device(ctx->dev);
@@ -1925,7 +1905,7 @@ static int panel_pcd_check(struct drm_panel *panel)
 		pr_debug("%s pcd is normal, value is %x\n", __func__, data[7]);
 		return 1;
 	}
-}
+}*/
 
 static int panel_hbm_waitfor_fps_valid(struct drm_panel *panel, unsigned int timeout_ms)
 {
@@ -1961,7 +1941,7 @@ static struct mtk_panel_funcs ext_funcs = {
 	.ext_param_set = mtk_panel_ext_param_set,
 	.mode_switch = mode_switch,
 	.ata_check = panel_ata_check,
-	.panel_pcd_check = panel_pcd_check,
+	//.panel_pcd_check = panel_pcd_check,
 	.panel_feature_set = panel_feature_set,
 	.panel_feature_get = panel_feature_get,
 	.panel_hbm_waitfor_fps_valid = panel_hbm_waitfor_fps_valid,
