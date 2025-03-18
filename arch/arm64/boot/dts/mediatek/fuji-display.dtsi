@@ -228,3 +228,7 @@
 &dp_tx {
 	mtk-dp-downgrade;
 };
+
+&dispsys_config {
+	force-disable-idlemgr-by-repaint;
+};
