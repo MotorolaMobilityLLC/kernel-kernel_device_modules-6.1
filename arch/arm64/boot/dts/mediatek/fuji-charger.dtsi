@@ -435,12 +435,12 @@
 };
 
 &extcon_usb {
-	vbus-current = <1300000>;
+	vbus-current = <1800000>;
 };
 
 &mt6363_dynamic_loading_throttling {
 	status = "okay";
 	bob-check-flag = <0>;
 	uvlo-level = <2400>;
-	vbb-uvlo-level = <2400>;
+	vbb-uvlo-level = <2500>;
 };
