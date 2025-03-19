@@ -14,6 +14,7 @@
 /plugin/;
 
 #include "mediatek/mt6878-nice-common-overlay.dtsi"
+#include "mediatek/nice-charger.dtsi"
 
 /* Board match root node */
 / {

@@ -16,14 +16,14 @@
 #include "mediatek/mt6878-nice-common-overlay.dtsi"
 #include "mediatek/nice-charger-6720mah.dtsi"
 
-#define NICE_PRC_RADIO 3
+#define NICE_EMEAPOWER_RADIO 6
 /* Board match root node */
 / {
 	fragment@model {
 		target-path = "/";
 		__overlay__ {
 			mot,model = "nice";
-			mot,board-id = <(NICE_PRC_RADIO << 8 | 0x4B) 0xA100>;
+			mot,board-id = <(NICE_EMEAPOWER_RADIO << 8 | 0x4B) 0xB100>;
 		};
 	};
 };
@@ -44,8 +44,5 @@
 	mmi_cid_int = <&pio 37 0x0>;
 };
 
-&awinic_sar {
-	platform_state = "prc";
-};
 #include <nice_evb/cust.dtsi>
 /*End of this file, DO NOT ADD ANYTHING HERE*/
