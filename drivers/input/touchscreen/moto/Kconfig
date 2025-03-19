@@ -41,6 +41,11 @@ config BOARD_USES_DOUBLE_TAP_CTRL
 	help
 		Say Y here if support touch wake gesture feature.
 
+config GTP_GLOVE_MODE
+	bool "Support touch glove mode feature"
+	help
+		Say Y here if support glove mode feature.
+
 config ENABLE_GTP_PALM_CANCEL
 	bool "Support touch palm cancel feature"
 	help
