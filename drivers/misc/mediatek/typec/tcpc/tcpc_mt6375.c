@@ -2444,12 +2444,15 @@ static struct tcpc_ops mt6375_tcpc_ops = {
 static irqreturn_t mt6375_pd_evt_handler(int irq, void *data)
 {
 	struct mt6375_tcpc_data *ddata = data;
+	int ret = 0;
 
 	MT6375_DBGINFO("++\n");
 	pm_stay_awake(ddata->dev);
-	tcpci_lock_typec(ddata->tcpc);
-	tcpci_alert(ddata->tcpc, true);
-	tcpci_unlock_typec(ddata->tcpc);
+	do {
+		tcpci_lock_typec(ddata->tcpc);
+		ret = tcpci_alert(ddata->tcpc, false);
+		tcpci_unlock_typec(ddata->tcpc);
+	} while (ret != -ENODATA);
 	pm_relax(ddata->dev);
 	MT6375_DBGINFO("--\n");
 
