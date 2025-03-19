@@ -4428,11 +4428,13 @@ end:
 }
 
 #define IFC_HYST_STEP_MV 50
+#define VOLTAGE_REACHED_COUNT 2
 static void mmi_ifc_heart_work(struct mtk_charger *info, int batt_mv, int batt_ma, int batt_soc)
 {
 	int max_fv_mv;
 	struct mmi_params *mmi = &info->mmi;
 	struct mmi_ifc_zone *ifc_zone;
+	static int voltage_reached_cnt = 0;
 
 	ifc_zone = &mmi->ifc_zones[mmi->pres_ifc_zone];
 	max_fv_mv = mmi->ifc_zones[mmi->num_ifc_zones-1].norm_mv;
@@ -4448,18 +4450,34 @@ static void mmi_ifc_heart_work(struct mtk_charger *info, int batt_mv, int batt_m
 		info->mmi.pres_ifc_zone = mmi_get_ifc_init_step_zone(info, batt_mv);
 		mmi->pres_ifc_step = IFC_STEP_MAX;
 	} else if (mmi->pres_ifc_step == IFC_STEP_MAX) {
-		if ((batt_mv + IFC_HYST_STEP_MV) < ifc_zone->norm_mv) {
-			mmi->ifc_taper_cnt = 0;
-			mmi->pres_ifc_step = IFC_STEP_MAX;
-		} else if (mmi_has_current_tapered(info, &mmi->sm_param[BASE_BATT], batt_ma,
-						 ifc_zone->fcc_norm_ma)) {
-			mmi->ifc_taper_cnt = 0;
-			if (mmi->pres_ifc_zone >= info->mmi.num_ifc_zones - 1) {
-				mmi->pres_ifc_zone = info->mmi.num_ifc_zones - 1;
-				mmi->pres_ifc_step = IFC_STEP_FULL;
-			} else {
-				mmi->pres_ifc_zone++;
+		if (0 == ifc_zone->fcc_norm_ma) {
+			if (batt_mv < ifc_zone->norm_mv) {
+				voltage_reached_cnt = 0;
 				mmi->pres_ifc_step = IFC_STEP_MAX;
+			} else if (++voltage_reached_cnt >= VOLTAGE_REACHED_COUNT) {
+				voltage_reached_cnt= 0;
+				if (mmi->pres_ifc_zone >= info->mmi.num_ifc_zones - 1) {
+					mmi->pres_ifc_zone = info->mmi.num_ifc_zones - 1;
+					mmi->pres_ifc_step = IFC_STEP_FULL;
+				} else {
+					mmi->pres_ifc_zone++;
+					mmi->pres_ifc_step = IFC_STEP_MAX;
+				}
+			}
+		} else {
+			if ((batt_mv + IFC_HYST_STEP_MV) < ifc_zone->norm_mv) {
+				mmi->ifc_taper_cnt = 0;
+				mmi->pres_ifc_step = IFC_STEP_MAX;
+			} else if (mmi_has_current_tapered(info, &mmi->sm_param[BASE_BATT], batt_ma,
+							ifc_zone->fcc_norm_ma)) {
+				mmi->ifc_taper_cnt = 0;
+				if (mmi->pres_ifc_zone >= info->mmi.num_ifc_zones - 1) {
+					mmi->pres_ifc_zone = info->mmi.num_ifc_zones - 1;
+					mmi->pres_ifc_step = IFC_STEP_FULL;
+				} else {
+					mmi->pres_ifc_zone++;
+					mmi->pres_ifc_step = IFC_STEP_MAX;
+				}
 			}
 		}
 	} else if (mmi->pres_ifc_step == IFC_STEP_FULL) {
