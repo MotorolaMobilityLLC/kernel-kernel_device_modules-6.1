@@ -402,25 +402,15 @@ static int panel_ext_init_power(struct drm_panel *panel)
 	gpiod_set_value(ctx->reset_gpio, 0);
 	devm_gpiod_put(ctx->dev, ctx->reset_gpio);
 
-	ctx->vci_gpio =devm_gpiod_get(ctx->dev, "vci", GPIOD_OUT_HIGH);
-	if (IS_ERR(ctx->vci_gpio)) {
-		dev_err(ctx->dev, "%s: cannot get vci_gpio %ld\n",
-			__func__, PTR_ERR(ctx->vci_gpio));
-		return PTR_ERR(ctx->vci_gpio);
-	}
-	gpiod_set_value(ctx->vci_gpio, 1);
-	devm_gpiod_put(ctx->dev, ctx->vci_gpio);
-	udelay(2000);
-
 	ctx->vddi_gpio =devm_gpiod_get(ctx->dev, "vddi", GPIOD_OUT_HIGH);
-    if (IS_ERR(ctx->vddi_gpio)) {
+    	if (IS_ERR(ctx->vddi_gpio)) {
         dev_err(ctx->dev, "%s: cannot get vddi_gpio %ld\n",
             __func__, PTR_ERR(ctx->vddi_gpio));
         return PTR_ERR(ctx->vddi_gpio);
-    }
-    gpiod_set_value(ctx->vddi_gpio, 1);
-    devm_gpiod_put(ctx->dev, ctx->vddi_gpio);
-    udelay(2000);
+        }
+        gpiod_set_value(ctx->vddi_gpio, 1);
+        devm_gpiod_put(ctx->dev, ctx->vddi_gpio);
+        udelay(2000);
 
 	ctx->oled_dvdd = devm_regulator_get_optional(ctx->dev, "oled-dvdd");
 	if (IS_ERR(ctx->oled_dvdd)) { /* handle return value */
@@ -436,8 +426,17 @@ static int panel_ext_init_power(struct drm_panel *panel)
 	ret = regulator_enable(ctx->oled_dvdd);
 	if (ret < 0)
 		pr_err("enable regulator ctx->oled_dvdd fail, ret = %d\n", ret);
-
 	udelay(2000);
+
+        ctx->vci_gpio =devm_gpiod_get(ctx->dev, "vci", GPIOD_OUT_HIGH);
+        if (IS_ERR(ctx->vci_gpio)) {
+                dev_err(ctx->dev, "%s: cannot get vci_gpio %ld\n",
+                        __func__, PTR_ERR(ctx->vci_gpio));
+                return PTR_ERR(ctx->vci_gpio);
+        }
+        gpiod_set_value(ctx->vci_gpio, 1);
+        devm_gpiod_put(ctx->dev, ctx->vci_gpio);
+
 	return ret;
 }
 
@@ -456,6 +455,17 @@ static int panel_ext_powerdown(struct drm_panel *panel)
 	usleep_range(2000, 2001);
 
 	msleep(30);
+
+	ctx->vci_gpio =
+        devm_gpiod_get(ctx->dev, "vci", GPIOD_OUT_HIGH);
+        if (IS_ERR(ctx->vci_gpio)) {
+                dev_err(ctx->dev, "%s: cannot get vci_gpio %ld\n",
+                __func__, PTR_ERR(ctx->vci_gpio));
+                return PTR_ERR(ctx->vci_gpio);
+        }
+        gpiod_set_value(ctx->vci_gpio, 0);
+        devm_gpiod_put(ctx->dev, ctx->vci_gpio);
+        udelay(2000);
 	/* disable regulator */
 	ret = regulator_disable(ctx->oled_dvdd);
 	if (ret < 0)
@@ -473,17 +483,6 @@ static int panel_ext_powerdown(struct drm_panel *panel)
 	}
 	gpiod_set_value(ctx->vddi_gpio, 0);
 	devm_gpiod_put(ctx->dev, ctx->vddi_gpio);
-	udelay(2000);
-
-	ctx->vci_gpio =
-        devm_gpiod_get(ctx->dev, "vci", GPIOD_OUT_HIGH);
-    if (IS_ERR(ctx->vci_gpio)) {
-        dev_err(ctx->dev, "%s: cannot get vci_gpio %ld\n",
-            __func__, PTR_ERR(ctx->vci_gpio));
-        return PTR_ERR(ctx->vci_gpio);
-    }
-    gpiod_set_value(ctx->vci_gpio, 0);
-    devm_gpiod_put(ctx->dev, ctx->vci_gpio);
 
 	return 0;
 }
