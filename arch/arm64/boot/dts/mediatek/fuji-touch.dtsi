@@ -79,7 +79,7 @@
 		//panel = <&mot_tm_icna3508_ft3683g_667_1080x2400_dsc_vid &mot_boe_vtdr6130a_ft3683g_667_1080x2400_dsc_cmd>;
 		mmi,usb-charger-detection;
 		mmi,enable-gestures;
-		mmi,supported_gesture_type = <0x07>;
+		mmi,supported_gesture_type = <0x04>;
 		mmi,resolution_boost = <16>;
 		mtk-charger = <&mt6375_chg>;
 	};
