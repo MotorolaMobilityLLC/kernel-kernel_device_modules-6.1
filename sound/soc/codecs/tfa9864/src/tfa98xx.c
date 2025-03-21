@@ -73,6 +73,7 @@ static TfaContainer_t *tfa98xx_container = NULL;
 
 static int tfa98xx_kmsg_regs = 0;
 static int tfa98xx_ftrace_regs = 0;
+static uint8_t ic_type = 0;
 uint8_t tfadsp_volume = 0;
 
 static int tfa98xx_cali_l = 458752;
@@ -91,6 +92,10 @@ unsigned char tfa98xx_volume_tab[33] = /* index 0 is sleep time, start from inde
 static char *fw_name = "tfa98xx.cnt";
 module_param(fw_name, charp, S_IRUGO | S_IWUSR);
 MODULE_PARM_DESC(fw_name, "TFA98xx DSP firmware (container file) name.");
+
+static char *fw_name_m = "tfa98xx_m.cnt";
+module_param(fw_name_m, charp, S_IRUGO | S_IWUSR);
+MODULE_PARM_DESC(fw_name_m, "TFA98xx DSP firmware (container file) name.");
 
 static int trace_level = 0;
 module_param(trace_level, int, S_IRUGO);
@@ -2616,11 +2621,24 @@ static void tfa98xx_container_loaded(const struct firmware *cont, void *context)
 
 static int tfa98xx_load_container(struct tfa98xx *tfa98xx)
 {
+	uint16_t devtype = 0;
 	tfa98xx->dsp_fw_state = TFA98XX_DSP_FW_PENDING;
 
-	return request_firmware_nowait(THIS_MODULE, true,
-		fw_name, tfa98xx->dev, GFP_KERNEL,
-		tfa98xx, tfa98xx_container_loaded);                   //modify by mono for kernel6.1 20231030
+	if (tfa98xx_read_register16(tfa98xx->tfa, 6, &devtype) != Tfa98xx_Error_Ok) {
+		pr_debug("Error: Unable to read revid from slave: 0x%.2x\n", tfa98xx->i2c->addr);
+		return -1;
+	}
+	ic_type = (devtype >> 8) & 0x3;
+	if(ic_type){
+		return request_firmware_nowait(THIS_MODULE, true,
+			fw_name_m, tfa98xx->dev, GFP_KERNEL,
+			tfa98xx, tfa98xx_container_loaded);                   //modify by mono for kernel6.1 20231030
+	}
+	else{
+		return request_firmware_nowait(THIS_MODULE, true,
+			fw_name, tfa98xx->dev, GFP_KERNEL,
+			tfa98xx, tfa98xx_container_loaded);                   //modify by mono for kernel6.1 20231030
+	}
 }
 
 static void tfa98xx_nmode_update_work(struct work_struct *work)
@@ -3608,7 +3626,7 @@ static ssize_t tfa98xx_cal_read(struct file *filp, struct kobject *kobj,
 {
 
 	//TODO NULL;
-	return 0;
+	return ic_type;
 }
 static ssize_t tfa98xx_cal_send(struct file *filp, struct kobject *kobj,
 	struct bin_attribute *bin_attr,
