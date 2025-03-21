@@ -391,3 +391,27 @@
         maximum-speed = "super-speed";
 };
 
+&swtp {
+	interrupt-parent = <&pio>;
+	interrupts = <104 IRQ_TYPE_LEVEL_HIGH 90 0>;
+	deb-gpios = <&pio 90 0>;
+	debounce = <512>;
+	status = "okay";
+};
+
+&swtp_1 {
+	interrupt-parent = <&pio>;
+	interrupts = <103 IRQ_TYPE_LEVEL_HIGH 89 0>;
+	deb-gpios = <&pio 89 0>;
+	debounce = <512>;
+	status = "okay";
+};
+
+&swtp_2 {
+	interrupt-parent = <&pio>;
+	interrupts = <101 IRQ_TYPE_LEVEL_HIGH 87 0>;
+	deb-gpios = <&pio 87 0>;
+	debounce = <512>;
+	status = "okay";
+};
+
