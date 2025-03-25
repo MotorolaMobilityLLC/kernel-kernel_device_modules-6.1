@@ -63,6 +63,7 @@ typedef struct {
 
 static struct workqueue_struct *ois_ext_workqueue;
 static ois_ext_work_struct ois_ext_work;
+static int32_t ois_init_done;
 
 static DEFINE_MUTEX(ois_mutex);
 static motOISGOffsetResult dw9784GyroOffsetResult;
@@ -1313,6 +1314,7 @@ static int dw9784_init(struct dw9784_device *dw9784)
 	LOG_INF("Check HW lock_ois: %x\n", lock_ois);
 	ret = ois_i2c_rd_u16(client, 0x7194, &is_gyro);
 	LOG_INF("dw9784_init ois_reset is_gyro: 0x%x\n", is_gyro);
+	ois_init_done = 1;
 	LOG_INF("-\n");
 	return 0;
 }
@@ -1510,6 +1512,7 @@ static int dw9784_close(struct v4l2_subdev *sd, struct v4l2_subdev_fh *fh)
 
 	LOG_INF("%s\n", __func__);
 
+	ois_init_done = 0;
 	ret = dw9784_release(dw9784);
 	if (ret)
 		LOG_INF("dw9784 release failed!\n");
@@ -1657,75 +1660,81 @@ static int dw9784_sample(struct hf_device *hfdev)
 	u16 reg_val_x = 0, reg_val_y = 0;
 	int32_t w0 = 0, w1 = 0, w2 = 0, w3 = 0;
 
-	if (ois_echo_en > 1) {
-		s16 gyro_x = 0, gyro_y = 0;
-		s16 target_x = 0, target_y = 0;
+	if (ois_init_done == 1) {
+		if (ois_echo_en > 1) {
+			s16 gyro_x = 0, gyro_y = 0;
+			s16 target_x = 0, target_y = 0;
 
-		int64_t ts1 = 0;
+			int64_t ts1 = 0;
 
-		if (ois_debug_en == 1)
-			ts1 = ktime_get_boottime_ns();
+			if (ois_debug_en == 1)
+				ts1 = ktime_get_boottime_ns();
 
-		if (ois_hfmgr_test == 0)
-		{
+			if (ois_hfmgr_test == 0)
+			{
+				ois_i2c_rd_u16(m_client, DW9784_REG_OIS_LENS_POSX, &reg_val_x);
+				ois_i2c_rd_u16(m_client, DW9784_REG_OIS_LENS_POSY, &reg_val_y);
+			}
+
+			hf_mgr_event.timestamp = ktime_get_boottime_ns();
+
+			if (ois_debug_en == 1) {
+				len_x = (hf_mgr_event.timestamp - prv_sample_ts) / 100000;
+				len_y = (hf_mgr_event.timestamp - ts1) / 100000;
+				prv_sample_ts = hf_mgr_event.timestamp;
+			} else {
+				len_x = reg_val_x;
+				len_y = reg_val_y;
+			}
+
+			if (ois_data_dbg_en == 1) {
+				ois_i2c_rd_u16(m_client, DW9784_REG_OIS_GYROX, &gyro_x);
+				ois_i2c_rd_u16(m_client, DW9784_REG_OIS_GYROY, &gyro_y);
+				if (ois_ctrl_data == OIS_ON) {
+					ois_i2c_rd_u16(m_client, DW9784_REG_OIS_TARGETX, &reg_val_1);
+					ois_i2c_rd_u16(m_client, DW9784_REG_OIS_TARGETY, &reg_val_2);
+				} else {
+					ois_i2c_rd_u16(m_client, DW9784_REG_OIS_CL_TARGETX, &reg_val_1);
+					ois_i2c_rd_u16(m_client, DW9784_REG_OIS_CL_TARGETY, &reg_val_2);
+				}
+				target_x = (s16)(reg_val_1);
+				target_y = (s16)(reg_val_2);
+
+				w0 = gyro_x * 1000 / 16 * 1000;	// ois gyro x
+				w1 = gyro_y * 1000 / 16 * 1000;	// ois gyro y
+				w2 = target_x * 1000000;		// target x
+				w3 = target_y * 1000000;		// target y
+				LOG_INF("dw9784 sample ois_gyro_x/w0 %d, ois_gyro_y/w1 %d target_x/w2 %d target_y/w3 %d",
+						w0, w1, w2, w3);
+			}
+			LOG_INF("dw9784 sample ois_log_dbg_en %d", ois_log_dbg_en);
+			if (ois_log_dbg_en == 1) {
+				LOG_INF("Ts(%lld),  Gyro(%d/%d), Target(%d/%d), Lens position(%d/%d)\n",
+					hf_mgr_event.timestamp, gyro_x, gyro_y,
+					target_x, target_y, len_x, len_y);
+			}
+
+			if (ois_hall_check == 1) {
+				ois_hall_cnt++;
+				if ((ois_hall_warn == 1 && ois_hall_cnt > 5000) &&
+				    (abs(len_x) > 1000 || abs(len_y) > 1000)) {
+					aee_kernel_warning("OV64B-OIS check fail",
+						"\nCRDISPATCH_KEY:OIS_CHECK\nLEVEL Hall pos");
+					ois_hall_warn = 0;
+				}
+			}
+		} else {
 			ois_i2c_rd_u16(m_client, DW9784_REG_OIS_LENS_POSX, &reg_val_x);
 			ois_i2c_rd_u16(m_client, DW9784_REG_OIS_LENS_POSY, &reg_val_y);
-		}
-
-
-		hf_mgr_event.timestamp = ktime_get_boottime_ns();
-
-		if (ois_debug_en == 1) {
-			len_x = (hf_mgr_event.timestamp - prv_sample_ts) / 100000;
-			len_y = (hf_mgr_event.timestamp - ts1) / 100000;
-			prv_sample_ts = hf_mgr_event.timestamp;
-		} else {
+			hf_mgr_event.timestamp = ktime_get_boottime_ns();
 			len_x = reg_val_x;
 			len_y = reg_val_y;
-		}
-
-		if (ois_data_dbg_en == 1) {
-			ois_i2c_rd_u16(m_client, DW9784_REG_OIS_GYROX, &gyro_x);
-			ois_i2c_rd_u16(m_client, DW9784_REG_OIS_GYROY, &gyro_y);
-			if (ois_ctrl_data == OIS_ON) {
-				ois_i2c_rd_u16(m_client, DW9784_REG_OIS_TARGETX, &reg_val_1);
-				ois_i2c_rd_u16(m_client, DW9784_REG_OIS_TARGETY, &reg_val_2);
-			} else {
-				ois_i2c_rd_u16(m_client, DW9784_REG_OIS_CL_TARGETX, &reg_val_1);
-				ois_i2c_rd_u16(m_client, DW9784_REG_OIS_CL_TARGETY, &reg_val_2);
-			}
-			target_x = (s16)(reg_val_1);
-			target_y = (s16)(reg_val_2);
-
-			w0 = gyro_x * 1000 / 16 * 1000;	// ois gyro x
-			w1 = gyro_y * 1000 / 16 * 1000;	// ois gyro y
-			w2 = target_x * 1000000;		// target x
-			w3 = target_y * 1000000;		// target y
-			LOG_INF("dw9784 sample ois_gyro_x/w0 %d, ois_gyro_y/w1 %d target_x/w2 %d target_y/w3 %d",
-					w0, w1, w2, w3);
-		}
-		LOG_INF("dw9784 sample ois_log_dbg_en %d", ois_log_dbg_en);
-		if (ois_log_dbg_en == 1) {
-			LOG_INF("Ts(%lld),  Gyro(%d/%d), Target(%d/%d), Lens position(%d/%d)\n",
-				hf_mgr_event.timestamp, gyro_x, gyro_y,
-				target_x, target_y, len_x, len_y);
-		}
-
-		if (ois_hall_check == 1) {
-			ois_hall_cnt++;
-			if ((ois_hall_warn == 1 && ois_hall_cnt > 5000) &&
-			    (abs(len_x) > 1000 || abs(len_y) > 1000)) {
-				aee_kernel_warning("OV64B-OIS check fail",
-					"\nCRDISPATCH_KEY:OIS_CHECK\nLEVEL Hall pos");
-				ois_hall_warn = 0;
-			}
+			if (ois_log_en)
+				LOG_INF("dw9784 sample hf_mgr_event.timestamp %lld, len_x %d, len_y %d",
+						hf_mgr_event.timestamp, len_x, len_y);
 		}
 	} else {
-		ois_i2c_rd_u16(m_client, DW9784_REG_OIS_LENS_POSX, &reg_val_x);
-		ois_i2c_rd_u16(m_client, DW9784_REG_OIS_LENS_POSY, &reg_val_y);
 		hf_mgr_event.timestamp = ktime_get_boottime_ns();
-		len_x = reg_val_x;
-		len_y = reg_val_y;
 		if (ois_log_en)
 			LOG_INF("dw9784 sample hf_mgr_event.timestamp %lld, len_x %d, len_y %d",
 					hf_mgr_event.timestamp, len_x, len_y);
