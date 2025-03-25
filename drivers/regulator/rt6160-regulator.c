@@ -34,11 +34,12 @@
 #define RT6160_PGSTAT_MASK	BIT(0)
 
 #define RT6160_VENDOR_ID	0xA0
+#define SM5811_VENDOR_ID    0x10
 #define RT6160_VOUT_MINUV	2025000
 #define RT6160_VOUT_MAXUV	5200000
 #define RT6160_VOUT_STPUV	25000
 #define RT6160_N_VOUTS		((RT6160_VOUT_MAXUV - RT6160_VOUT_MINUV) / RT6160_VOUT_STPUV + 1)
-
+int g_bob_id = 0;
 #define RT6160_I2CRDY_TIMEUS	100
 
 struct rt6160_priv {
@@ -48,6 +49,10 @@ struct rt6160_priv {
 	bool enable_state;
 };
 
+enum {
+	BOB_RT6160 = 1,
+	BOB_SM5811,
+};
 static int rt6160_enable(struct regulator_dev *rdev)
 {
 	struct rt6160_priv *priv = rdev_get_drvdata(rdev);
@@ -254,7 +259,7 @@ static int rt6160_probe(struct i2c_client *i2c)
 	struct regulator_config regulator_cfg = {};
 	struct regulator_dev *rdev;
 	bool vsel_active_low;
-	unsigned int devid;
+	unsigned int devid, reg;
 	int ret;
 
 	priv = devm_kzalloc(&i2c->dev, sizeof(*priv), GFP_KERNEL);
@@ -286,9 +291,13 @@ static int rt6160_probe(struct i2c_client *i2c)
 		return ret;
 
 	if ((devid & RT6160_VID_MASK) != RT6160_VENDOR_ID) {
-		dev_err(&i2c->dev, "VID not correct [0x%02x]\n", devid);
-		return -ENODEV;
-	}
+		if ((devid & RT6160_VID_MASK) != SM5811_VENDOR_ID) {
+			dev_err(&i2c->dev, "VID not correct [0x%02x]\n", devid);
+			return -ENODEV;
+		} else
+			g_bob_id = BOB_SM5811;
+	} else
+		g_bob_id = BOB_RT6160;
 
 	priv->desc.name = "rt6160-buckboost";
 	priv->desc.type = REGULATOR_VOLTAGE;
@@ -299,6 +308,17 @@ static int rt6160_probe(struct i2c_client *i2c)
 		priv->desc.vsel_reg = RT6160_REG_VSELL;
 	else
 		priv->desc.vsel_reg = RT6160_REG_VSELH;
+
+	if (g_bob_id == BOB_SM5811) {
+		regmap_read(priv->regmap, RT6160_REG_CNTL, &reg);
+		regmap_write(priv->regmap, RT6160_REG_CNTL, reg | 0x40);
+
+		//when RANGE bit is high, output voltage = 2.025 + (VOUT2[7:0] * 0.25)
+		reg = (3700 -2025)/25;
+		regmap_write(priv->regmap, RT6160_REG_VSELH, reg);
+		dev_err(&i2c->dev, "sm5811 vout2cntl register= %x;\n", reg);
+	}
+
 	priv->desc.vsel_mask = RT6160_VSEL_MASK;
 	priv->desc.n_voltages = RT6160_N_VOUTS;
 	priv->desc.of_map_mode = rt6160_of_map_mode;
@@ -322,6 +342,8 @@ static int rt6160_probe(struct i2c_client *i2c)
 		dev_notice(&i2c->dev, "Failed to add platform device\n");
 		return ret;
 	}
+
+	pr_info("[%s] bob%d prob successfully\n", __func__, g_bob_id);
 
 	return 0;
 }
