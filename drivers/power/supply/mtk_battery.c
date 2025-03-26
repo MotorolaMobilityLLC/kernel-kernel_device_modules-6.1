@@ -1949,6 +1949,7 @@ void fg_custom_init_from_header(struct mtk_battery *gm)
          }
 
 	gm->dynamic_shutdown_cond = DYNAMIC_SHUTDOWN_COND;
+	gm->en_dynamic_gauge0_by_cycle = 0;
 }
 
 void fg_convert_prop_tolower(char *s)
@@ -2201,6 +2202,7 @@ void fg_custom_init_from_dts(struct platform_device *dev,
 	int r_pseudo100_raw = 0, r_pseudo100_col = 0;
 	int lk_v = 0, lk_i = 0, shuttime = 0;
 	int is_evb_board = 0;
+	int byte_len = 0;
 	char node_name[128];
 	struct fuel_gauge_custom_data *fg_cust_data;
 	struct fuel_gauge_table_custom_data *fg_table_cust_data;
@@ -2932,7 +2934,43 @@ void fg_custom_init_from_dts(struct platform_device *dev,
 	}
 
 	fg_read_dts_val(np, "CHARGER_IEOC", &(fg_cust_data->charger_ieoc), 1);
+	
+	fg_read_dts_val(np, "EN_DYNAMIC_GAUGE0_BY_CYCLE", &(gm->en_dynamic_gauge0_by_cycle), 1);
+	if (gm->en_dynamic_gauge0_by_cycle == true) {
+		if (of_find_property(np, "mmi,mmi-cycle-gauge0-steps", &byte_len)) {
+			if ((byte_len / sizeof(u32)) % 2) {
+				pr_err("[%s]DT error wrong mmi cycle batt_gauge0 zones, byte_len = %d\n",
+					__func__, byte_len);
+			}
 
+			gm->cycle_gauge0_steps = (struct mmi_cycle_gauge0_steps *)
+				devm_kzalloc(&dev->dev, byte_len, GFP_KERNEL);
+
+			if (gm->cycle_gauge0_steps == NULL)
+				pr_err("cycle_gauge0_steps kzalloc failed");
+
+			gm->num_cycle_gauge0_steps =
+				byte_len / sizeof(struct mmi_cycle_gauge0_steps);
+
+			of_property_read_u32_array(np,
+					"mmi,mmi-cycle-gauge0-steps",
+					(u32 *)gm->cycle_gauge0_steps,
+					byte_len / sizeof(u32));
+			pr_info("[%s]mmi cycle gauge0 steps: Num: %d\n",
+					__func__,
+					gm->num_cycle_gauge0_steps);
+			for (i = 0; i < gm->num_cycle_gauge0_steps; i++) {
+				pr_info("[%s]mmi cycle gauge0 steps: cycle > %d, shutdown_gauge0_vol delta = %d mV\n",
+					__func__,
+					gm->cycle_gauge0_steps[i].cycle,
+					gm->cycle_gauge0_steps[i].shutdown_gauge0_vol/10);
+			}
+		} else {
+			gm->cycle_gauge0_steps = NULL;
+			gm->num_cycle_gauge0_steps = 0;
+			pr_err("[%s]mmi cycle gauge0 steps is not set\n", __func__);
+		}
+	}
 }
 
 #endif	/* end of CONFIG_OF */

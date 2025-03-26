@@ -992,6 +992,11 @@ struct dynamic_data{
 	int dynamic_zcv_cycle;
 };
 
+struct mmi_cycle_gauge0_steps {
+	int		cycle;
+	int		shutdown_gauge0_vol;
+};
+
 struct mtk_battery {
 	/*linux driver related*/
 	wait_queue_head_t  wait_que;
@@ -1125,6 +1130,8 @@ struct mtk_battery {
 	struct alarm sw_uisoc_timer;
 	struct work_struct sw_uisoc_timer_work;
 
+	/* Dynamic shutdown gauge0 work*/
+	struct delayed_work dynamic_shutdown_gauge0_work;
 	/* battery cycle */
 	bool is_reset_battery_cycle;
 	int bat_cycle;
@@ -1207,6 +1214,14 @@ struct mtk_battery {
 	struct dynamic_data dynamic_data_rcv;
 	unsigned long manufacturing_date;
 	unsigned long first_usage_date;
+
+	/*custom gauge0 config*/
+	int en_dynamic_gauge0_by_cycle;
+	int num_cycle_gauge0_steps;
+	int g_shutdown_gauge0_vol;
+	int retry_times;
+	struct alarm gauge0_check_timer;
+	struct mmi_cycle_gauge0_steps *cycle_gauge0_steps;
 };
 
 struct mtk_battery_sysfs_field_info {

@@ -4136,6 +4136,10 @@ static void mtk_battery_daemon_handler(struct mtk_battery *gm, void *nl_data,
 		gm->bat_cycle = int_value;
 		bm_debug("[K]FG_DAEMON_CMD_SET_BAT_CYCLES %d\n",
 		gm->bat_cycle);
+		if (gm->en_dynamic_gauge0_by_cycle) {
+			gm->retry_times = 0;
+			schedule_delayed_work(&gm->dynamic_shutdown_gauge0_work, msecs_to_jiffies(1000));
+		}
 	}
 	break;
 	case FG_DAEMON_CMD_SET_NCAR:
@@ -5405,6 +5409,67 @@ bool is_daemon_support(struct mtk_battery *gm)
 	return is_support;
 }
 
+static int mmi_get_shutdown_gauge0_by_cycle(struct mtk_battery *gm)
+{
+	int shutdown_gauge0_vol = 0, i = 0, num_zones = 0;
+	struct mmi_cycle_gauge0_steps *zones;
+
+	zones = gm->cycle_gauge0_steps;
+	num_zones = gm->num_cycle_gauge0_steps;
+
+	if(zones != NULL && num_zones > 0) {
+		for(i = 0; i < num_zones; i++) {
+			if(gm->bat_cycle >= zones[i].cycle) {
+				shutdown_gauge0_vol = zones[i].shutdown_gauge0_vol;
+			}
+		}
+	}
+
+	return shutdown_gauge0_vol;
+}
+
+static void set_dynamic_shutdown_gauge0_work_handler(struct work_struct *work)
+{
+	ktime_t ctime = 0, ktime = 0;;
+	int secs = 10;
+	struct timespec64 tmp_time, end_time;
+	struct delayed_work *dwork = to_delayed_work(work);
+	struct mtk_battery *gm = container_of(dwork,
+						     struct mtk_battery,
+						     dynamic_shutdown_gauge0_work);
+
+	gm->g_shutdown_gauge0_vol = mmi_get_shutdown_gauge0_by_cycle(gm);
+	exec_BAT_EC(809, gm->g_shutdown_gauge0_vol);
+	bm_err("[%s] bat_cycle[%d] shutdown_gauge0_vol[%d]\n", __func__, gm->bat_cycle, gm->g_shutdown_gauge0_vol);
+	if (secs != 0 && secs > 0) {
+		ctime = ktime_get_boottime();
+		tmp_time = ktime_to_timespec64(ctime);
+		end_time.tv_sec = tmp_time.tv_sec + secs;
+		end_time.tv_nsec = 0;
+		ktime = ktime_set(end_time.tv_sec, end_time.tv_nsec);
+		alarm_start(&gm->gauge0_check_timer, ktime);
+	}
+}
+
+
+static enum alarmtimer_restart gauge0_check_timer_callback(
+	struct alarm *alarm, ktime_t now)
+{
+	struct mtk_battery *gm;
+
+	gm = container_of(alarm,
+		struct mtk_battery, gauge0_check_timer);
+	bm_debug("[%s]\n", __func__);
+	
+	if (gm->g_shutdown_gauge0_vol != gm->dynamic_data_rcv.dynamic_gauge0_voltage && gm->retry_times++ < 10) {
+		bm_err("[%s] g_shutdown_gauge0_vol[%d] dynamic_data_rcv.dynamic_gauge0_voltage[%d]\n", __func__, gm->g_shutdown_gauge0_vol, gm->dynamic_data_rcv.dynamic_gauge0_voltage);
+		schedule_delayed_work(&gm->dynamic_shutdown_gauge0_work, msecs_to_jiffies(10));
+	}else {
+		gm->retry_times = 0;
+	}
+	return ALARMTIMER_NORESTART;
+}
+
 int mtk_battery_daemon_init(struct platform_device *pdev)
 {
 	int ret;
@@ -5433,6 +5498,12 @@ int mtk_battery_daemon_init(struct platform_device *pdev)
 	gm->suspend = mtk_battery_suspend;
 	gm->resume = mtk_battery_resume;
 	fg_cust_data = &gm->fg_cust_data;
+
+	if (gm->en_dynamic_gauge0_by_cycle) {
+		INIT_DELAYED_WORK(&gm->dynamic_shutdown_gauge0_work, set_dynamic_shutdown_gauge0_work_handler);
+		alarm_init(&gm->gauge0_check_timer, ALARM_BOOTTIME,
+			gauge0_check_timer_callback);
+	}
 
 	mtk_irq_thread_init(gm);
 

@@ -370,6 +370,12 @@
 	vbat2-det1-voltage2 = <(29000)>;
 	vbat2-det1-voltage3 = <(31000)>;
 
+        en-dynamic-gauge0-by-cycle = <(1)>;
+        mmi,mmi-cycle-gauge0-steps =<101 500
+                                     201 1500
+                                     501 2000
+                                     1050 3000
+                                     1201 4000>;
 	df-serialnum = "ATLRN67NVT";
 	#include "bat_setting/mt6878_battery_table_nice_rn67_6720mah.dtsi"
 	#include "bat_setting/mt6878_battery_table_nice_cos_6720mah.dtsi"
