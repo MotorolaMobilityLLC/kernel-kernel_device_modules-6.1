@@ -4451,7 +4451,7 @@ static void mmi_ifc_heart_work(struct mtk_charger *info, int batt_mv, int batt_m
 		mmi->pres_ifc_step = IFC_STEP_MAX;
 	} else if (mmi->pres_ifc_step == IFC_STEP_MAX) {
 		if (0 == ifc_zone->fcc_norm_ma) {
-			if (batt_mv < ifc_zone->norm_mv) {
+			if (batt_mv + mmi->ifc_no_cv_step_hyst < ifc_zone->norm_mv) {
 				voltage_reached_cnt = 0;
 				mmi->pres_ifc_step = IFC_STEP_MAX;
 			} else if (++voltage_reached_cnt >= VOLTAGE_REACHED_COUNT) {
@@ -5922,6 +5922,12 @@ static int parse_mmi_dt(struct mtk_charger *info, struct device *dev)
 	pr_info("%s battery charge max temp %d, min temp %d \n", __func__,
 		info->mmi.batt_max_chg_temp, info->mmi.batt_min_chg_temp);
 
+	rc = of_property_read_u32(node, "mmi,ifc-no-cv-step-hyst",
+				  &info->mmi.ifc_no_cv_step_hyst);
+	if (rc)
+		info->mmi.ifc_no_cv_step_hyst = 10;
+	pr_info("%s ifc_no_cv_step_hyst %d \n", __func__,
+		info->mmi.ifc_no_cv_step_hyst);
 
 	return rc;
 }

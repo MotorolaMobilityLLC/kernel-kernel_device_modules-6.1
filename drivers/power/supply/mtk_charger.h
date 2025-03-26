@@ -457,6 +457,7 @@ struct mmi_params {
 	enum mmi_ifc_step	pres_ifc_step;
 	bool			ifc_is_working;
 	int			ifc_taper_cnt;
+	int			ifc_no_cv_step_hyst;
 
 	bool			enable_charging_limit;
 	bool			is_factory_image;
