@@ -43,5 +43,9 @@
 	mmi,hvdcp-support;
 };
 
+&stk501xx {
+	status = "okay";
+};
+
 #include <scout_evb/cust.dtsi>
 /*End of this file, DO NOT ADD ANYTHING HERE*/

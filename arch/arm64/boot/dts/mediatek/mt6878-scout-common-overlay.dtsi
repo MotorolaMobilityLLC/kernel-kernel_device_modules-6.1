@@ -229,13 +229,13 @@
 		ref_phase   = <1 0 0 1 0 1 0 0>; //reference phase set to '1'
 		mapping_phase = <1 4 6 2 0 3 5 7>;
 		dist1_en = <0 1 0 0 1 0 0 0>; // enable dist1
-		dist0_thd = <90000 3000 2000 90000 3500 90000 1500 90000>;
+		dist0_thd = <90000 1300 500 90000 1600 90000 780 90000>;
 		dist1_thd = <90000 8000 90000 90000 8000 90000 5000 90000>;
-		tc_config_a = <175000 0 2 1 2 255>; //temp_delta_thd, ,maping_ref_ph, major_ph, base_reinit_ph_1, base_reinit_ph_2, base_reinit_ph_3
-		tc_config_b = <44000 3 4 4 255 255>; //temp_delta_thd, ,maping_ref_ph, major_ph, base_reinit_ph_1, base_reinit_ph_2, base_reinit_ph_3
-		tc_config_c = <19000 5 6 6 255 255>; //temp_delta_thd, ,maping_ref_ph, major_ph, base_reinit_ph_1, base_reinit_ph_2, base_reinit_ph_3
+		tc_config_a = <44000 0 1 1 2 255>; //temp_delta_thd, ,maping_ref_ph, major_ph, base_reinit_ph_1, base_reinit_ph_2, base_reinit_ph_3
+		tc_config_b = <9500 3 4 4 255 255>; //temp_delta_thd, ,maping_ref_ph, major_ph, base_reinit_ph_1, base_reinit_ph_2, base_reinit_ph_3
+		tc_config_c = <4000 5 6 6 255 255>; //temp_delta_thd, ,maping_ref_ph, major_ph, base_reinit_ph_1, base_reinit_ph_2, base_reinit_ph_3
 		tc_ctrl_des_a = <409 3 3>; //delta_ctrl_thd, delta_deb_clr, delta_deb_set
-		tc_ctrl_des_b = <102 3 3>; //delta_ctrl_thd, delta_deb_clr, delta_deb_set
+		tc_ctrl_des_b = <358 3 3>; //delta_ctrl_thd, delta_deb_clr, delta_deb_set
 		tc_ctrl_des_c = <307 3 3>; //delta_ctrl_thd, delta_deb_clr, delta_deb_set
 		rxio_map = < //usage: 0=OPT, 1=HZ, 2=GND, 3=SHIELD, 4=MEASUER
 			4 4	//RXIO_0 mappint to (phase_idx, usage)
@@ -291,29 +291,29 @@
 			0x348 0x6000505
 			0x388 0x7000d0d
 			0x3c8 0x7000d0d
-			0x20c 0x20004002
-			0x24c 0x10004002
-			0x28c 0x20004002
-			0x2cc 0x00004002
-			0x30c 0x20004002
-			0x34c 0x00004002
-			0x38c 0x10004002
-			0x3cc 0x10004002
+			0x20c 0x20004007
+			0x24c 0x10004007
+			0x28c 0x20004007
+			0x2cc 0x00004007
+			0x30c 0x20004007
+			0x34c 0x00004007
+			0x38c 0x10004007
+			0x3cc 0x10004007
 			0x210 0x110
-			0x250 0x112
+			0x250 0x113
 			0x290 0x112
 			0x2d0 0x113
-			0x310 0x2123
+			0x310 0x1123
 			0x350 0x112
 			0x390 0x112
 			0x3d0 0x112
 			0x214 0x8008010
-			0x254 0xa209514
-			0x294 0xa009C14
+			0x254 0x8d08a14
+			0x294 0x9608D14
 			0x2d4 0x8008010
-			0x314 0xb90c515
+			0x314 0xb909e15
 			0x354 0x8008010
-			0x394 0x15311616
+			0x394 0x11c12A16
 			0x3d4 0x8008000
 			0x430 0x0
 			0x434 0x0
@@ -384,9 +384,9 @@
 			0x740 0x413aa
 			0x10 0x5a
 			0xa00 0x5
-			0x148 0x8000000
+			0x148 0xDAC0000
 			0x4 0x420ee
-			0x1100 0x55
+			0x1100 0x15
 			0x130 0x12c03FF
 		>;
 
