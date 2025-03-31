@@ -222,6 +222,7 @@ static void lcm_panel_init(struct lcm *ctx)
 {
 	lcm_dcs_write_seq_static(ctx, 0x03,0x01);
 	lcm_dcs_write_seq_static(ctx, 0x35,0x00);
+	lcm_dcs_write_seq_static(ctx, 0x44,0x06,0x8c);
 	lcm_dcs_write_seq_static(ctx, 0x51,0x00,0x00); //800nit
 	lcm_dcs_write_seq_static(ctx, 0x53,0x20);
 	lcm_dcs_write_seq_static(ctx, 0x55,0x10);
@@ -241,6 +242,8 @@ static void lcm_panel_init(struct lcm *ctx)
 
 	lcm_dcs_write_seq_static(ctx, 0xf0,0xaa,0x12);
 	lcm_dcs_write_seq_static(ctx, 0xc7, 0xff);
+	lcm_dcs_write_seq_static(ctx, 0x65,0x0B);
+	lcm_dcs_write_seq_static(ctx, 0xE9,0x00);
 	lcm_dcs_write_seq_static(ctx, 0xd6, 0x04, 0x00);
 
 	lcm_dcs_write_seq_static(ctx, 0xF0,0xAA,0x10);
@@ -284,6 +287,8 @@ static void lcm_panel_init(struct lcm *ctx)
 	lcm_dcs_write_seq_static(ctx, 0xFF, 0x5A, 0x83);
 	lcm_dcs_write_seq_static(ctx, 0x65, 0x0B);
 	lcm_dcs_write_seq_static(ctx, 0xf7, 0x03);
+	lcm_dcs_write_seq_static(ctx, 0x65,0x09);
+	lcm_dcs_write_seq_static(ctx, 0xF7,0x10,0x10);
 
 	lcm_dcs_write_seq_static(ctx, 0xf0, 0xaa, 0x00);
 	lcm_dcs_write_seq_static(ctx, 0xff, 0x5a, 0x00);
@@ -305,7 +310,7 @@ static void lcm_panel_init(struct lcm *ctx)
 	}
 
 	lcm_dcs_write_seq_static(ctx, 0x11);
-	msleep(90);
+	msleep(85);
 	lcm_dcs_write_seq_static(ctx, 0x29);
 	msleep(10);
 	atomic_set(&ctx->hbm_mode, 0);
