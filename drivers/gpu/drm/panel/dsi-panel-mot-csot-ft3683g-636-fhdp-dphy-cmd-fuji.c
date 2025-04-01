@@ -248,6 +248,32 @@ static void lcm_panel_get_data(struct lcm *ctx)
 	}
 }
 
+static void panel_pcd_check(struct lcm *ctx)
+{
+	struct mipi_dsi_device *dsi = to_mipi_dsi_device(ctx->dev);
+	u8 data[8] = {0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00};
+	int ret = 0;
+
+	lcm_dcs_write_seq_static(ctx, 0xF0,0xAA,0x12);
+	lcm_dcs_write_seq_static(ctx, 0xD0,0x08,0x02);
+	msleep(17);
+
+	ret = mipi_dsi_dcs_read(dsi, 0xD0, data, 8);
+	if (ret < 0) {
+		pr_err("%s pcd read error\n", __func__);
+	}
+
+	lcm_dcs_write_seq_static(ctx, 0xF0,0xAA,0x12);
+	lcm_dcs_write_seq_static(ctx, 0xD0,0x00,0x00);
+
+	if(data[7] > 0x83) {
+		pr_err("%s pcd occurs, value is %x\n", __func__, data[7]);
+		panel_pcd_flag = 1;
+	} else {
+		pr_info("%s pcd value is %x\n", __func__, data[7]);
+	}
+}
+
 static void lcm_panel_init(struct lcm *ctx)
 {
 	char bl_tb[] = {0x51, 0x0f, 0xff};
@@ -413,6 +439,8 @@ if(ctx->version == 1){
 
 	lcm_dcs_write_seq_static(ctx, 0x11);
 	msleep(85);
+	//check vtdr6130 pcd
+	panel_pcd_check(ctx);
 	lcm_dcs_write_seq_static(ctx, 0x29);
 	atomic_set(&ctx->hbm_mode, 0);
 	atomic_set(&ctx->dc_mode, 0);
@@ -712,7 +740,6 @@ static int lcm_setbacklight_cmdq(void *dsi, dcs_write_gce cb,
 static struct mtk_panel_params ext_params_144hz = {
 	.cust_esd_check = 1,
 	.esd_check_enable = 1,
-	.pcd_check_flag = 1,
 	.esd_check_period = 8000,
 	.lcm_esd_check_table[0] = {
 		.cmd = 0x66,
@@ -793,7 +820,6 @@ static struct mtk_panel_params ext_params_144hz = {
 static struct mtk_panel_params ext_params_120hz = {
 	.cust_esd_check = 1,
 	.esd_check_enable = 1,
-	.pcd_check_flag = 1,
 	.esd_check_period = 8000,
 	.lcm_esd_check_table[0] = {
 		.cmd = 0x66,
@@ -873,7 +899,6 @@ static struct mtk_panel_params ext_params_120hz = {
 static struct mtk_panel_params ext_params_90hz = {
 	.cust_esd_check = 1,
 	.esd_check_enable = 1,
-	.pcd_check_flag = 1,
 	.esd_check_period = 8000,
 	.lcm_esd_check_table[0] = {
 		.cmd = 0x66,
@@ -954,7 +979,6 @@ static struct mtk_panel_params ext_params_90hz = {
 static struct mtk_panel_params ext_params_60hz = {
 	.cust_esd_check = 1,
 	.esd_check_enable = 1,
-	.pcd_check_flag = 1,
 	.esd_check_period = 8000,
 	.lcm_esd_check_table[0] = {
 		.cmd = 0x66,
@@ -1035,7 +1059,6 @@ static struct mtk_panel_params ext_params_60hz = {
 static struct mtk_panel_params ext_params_30hz = {
 	.cust_esd_check = 1,
 	.esd_check_enable = 1,
-	.pcd_check_flag = 1,
 	.esd_check_period = 8000,
 	.lcm_esd_check_table[0] = {
 		.cmd = 0x66,
@@ -1116,7 +1139,6 @@ static struct mtk_panel_params ext_params_30hz = {
 static struct mtk_panel_params ext_params_24hz = {
 	.cust_esd_check = 1,
 	.esd_check_enable = 1,
-	.pcd_check_flag = 1,
 	.esd_check_period = 8000,
 	.lcm_esd_check_table[0] = {
 		.cmd = 0x66,
@@ -1196,7 +1218,6 @@ static struct mtk_panel_params ext_params_24hz = {
 static struct mtk_panel_params ext_params_10hz = {
 	.cust_esd_check = 1,
 	.esd_check_enable = 1,
-	.pcd_check_flag = 1,
 	.esd_check_period = 8000,
 	.lcm_esd_check_table[0] = {
 		.cmd = 0x66,
@@ -1276,7 +1297,6 @@ static struct mtk_panel_params ext_params_10hz = {
 static struct mtk_panel_params ext_params_1hz = {
 	.cust_esd_check = 1,
 	.esd_check_enable = 1,
-	.pcd_check_flag = 1,
 	.esd_check_period = 8000,
 	.lcm_esd_check_table[0] = {
 		.cmd = 0x66,
@@ -1883,38 +1903,6 @@ static int panel_ext_powerdown(struct drm_panel *panel)
 	return 0;
 }
 
-// MMI_STOPSHIP <display>: Temp remove pcd check
-/*static int panel_pcd_check(struct drm_panel *panel)
-{
-	struct lcm *ctx = panel_to_lcm(panel);
-	struct mipi_dsi_device *dsi = to_mipi_dsi_device(ctx->dev);
-	u8 data[8] = {0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00};
-	int ret = 1;
-
-	lcm_dcs_write_seq_static(ctx, 0xF0,0xAA,0x12);
-	lcm_dcs_write_seq_static(ctx, 0xD0,0x08,0x02);
-	msleep(20);
-
-	ret = mipi_dsi_dcs_read(dsi, 0xD0, data, 8);
-	if (ret < 0) {
-		pr_err("%s pcd read error\n", __func__);
-		return 0;
-	}
-
-	lcm_dcs_write_seq_static(ctx, 0xF0,0xAA,0x12);
-	lcm_dcs_write_seq_static(ctx, 0xD0,0x00,0x00);
-
-	if(data[7] > 0x83) {
-		pr_err("%s pcd occurs, value is %x, power off panel\n", __func__, data[7]);
-		gate_ic_Power_on(panel, 0);
-		panel_pcd_flag = 1;
-		return 2;
-	} else {
-		pr_debug("%s pcd is normal, value is %x\n", __func__, data[7]);
-		return 1;
-	}
-}*/
-
 static int panel_hbm_waitfor_fps_valid(struct drm_panel *panel, unsigned int timeout_ms)
 {
 	struct lcm *ctx = panel_to_lcm(panel);
@@ -1949,7 +1937,6 @@ static struct mtk_panel_funcs ext_funcs = {
 	.ext_param_set = mtk_panel_ext_param_set,
 	.mode_switch = mode_switch,
 	.ata_check = panel_ata_check,
-	//.panel_pcd_check = panel_pcd_check,
 	.panel_feature_set = panel_feature_set,
 	.panel_feature_get = panel_feature_get,
 	.panel_hbm_waitfor_fps_valid = panel_hbm_waitfor_fps_valid,
