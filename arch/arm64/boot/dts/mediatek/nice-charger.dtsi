@@ -264,6 +264,27 @@
 	};
 };
 
+&low_battery_throttling {
+	thd-volts-l = <
+		3163 2975 2907
+		3440 3171 3072
+		3958 3549 3395>;
+	thd-volts-h = <
+		3263 3163 2975
+		3540 3440 3171
+		4058 3958 3549>;
+	lvsys-thd-volt-l = <2824>;
+	lvsys-thd-volt-h = <2875>;
+};
+
+&bp_thl {
+	soc-limit-threshold = <3>;
+};
+
+&mt6375_batoc_throttle {
+	status = "disabled";
+};
+
 &mtk_gauge {
 
 	difference-fullocv-ith = <80>;  /*gauge cut-off current, should overtop ieoc 50ma*/
