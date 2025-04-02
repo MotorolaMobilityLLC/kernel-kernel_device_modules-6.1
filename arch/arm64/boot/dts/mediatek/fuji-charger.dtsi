@@ -222,6 +222,7 @@
 
                 latest_fw_version = [01 02 08 52 32];
                 mmi,batt-ids-map = "ATLR041NVT","00";
+                mmi,batt-ids-map-alis = "ATLR041NVT","ATLR041NVT-5000MAH";
         };
 
 	sc858x_slave:sc858x-slave@6e{
