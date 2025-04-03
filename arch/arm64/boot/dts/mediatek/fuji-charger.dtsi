@@ -160,6 +160,10 @@
 	mmi,ui_full_soc = <97>;
 };
 
+&i2c5 {
+	mediatek,fifo-use-polling;
+};
+
 &i2c10 {
        clock-frequency = <400000>;
         status = "okay";
