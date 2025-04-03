@@ -179,7 +179,7 @@
 	mmi,adc-channel-pa = <1>;
 	mmi,adc-channel-batid = <3>;
 	mmi,adc-channel-vbat = <100>;
-	mmi,batt-ids-map = "1", "ATLRA52NVT", "2", "LWNRA52SWD", "3", "ATLRN67NVT", "4", "COSRN67COS";
+	mmi,batt-ids-map = "1", "ATLRA52NVT", "2", "LWNRA52SWD";
 };
 
 &smart_battery {
@@ -337,8 +337,6 @@
 	df-serialnum = "ATLRA52NVT";
 	#include "bat_setting/mt6878_battery_table_nice_nvt_5200mah.dtsi"
 	#include "bat_setting/mt6878_battery_table_nice_xwd_5200mah.dtsi"
-	#include "bat_setting/mt6878_battery_table_nice_rn67_6720mah.dtsi"
-	#include "bat_setting/mt6878_battery_table_nice_cos_6720mah.dtsi"
 };
 
 &pdc {
