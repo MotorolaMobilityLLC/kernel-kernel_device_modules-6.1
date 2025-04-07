@@ -21,7 +21,7 @@
 		pinctrl-3 = <&ctp_gt9896s_reset_suspend>;
 		pinctrl-4 = <&ctp_gt9896s_spi_mode>;
 		spi-max-frequency = <15000000>;  /* 4800000,9600000,15000000,19200000 */
-		mmi,status = "/chosen","mmi,panel_name","contains","panel_mot_vdo_tm_nt37706_667_1220_2712_dsc_dphy_nice","panel_mot_vdo_csot_nt37706_667_1220_2712_dsc_dphy_nice","panel_mot_vdo_csot_vtdr6126_667_1220_2712_dsc_dphy_nice";
+		mmi,status = "/chosen","mmi,panel_name","contains","tianma_nt37706_667_1220_2712_nice","panel_mot_vdo_csot_nt37706_667_1220_2712_dsc_dphy_nice","csot_vtdr6126_667_1220_2712_nice";
 		goodix,panel-supplier = "tm_nt37706","csot_vtdr6126";
 		goodix,reset-gpio = <&pio 152 0x0>;
 		goodix,irq-gpio = <&pio 7 0x2002>;
@@ -57,7 +57,7 @@
 		status = "okay";
 		compatible = "focaltech,fts";
 		reg = <0x1>;
-		mmi,status = "/chosen","mmi,panel_name","contains","panel_mot_vdo_boe_vtdr6126_667_1220_2712_dsc_dphy_nice";
+		mmi,status = "/chosen","mmi,panel_name","contains","boe_vtdr6126_667_1220_2712_nice";
 		focaltech,panel-supplier = "boe";
 		spi-max-frequency = <9600000>;
 //		focaltech,vdd-gpio = <&pio 183 0x0>;
