@@ -340,11 +340,11 @@ static int lcm_prepare(struct drm_panel *panel)
 	printk("%s enter  \n",__func__);
 	udelay(2000);
 	gpiod_set_value(ctx->reset_gpio, 0);
-	udelay(10 * 1000);
+	udelay(5 * 1000);
 	gpiod_set_value(ctx->reset_gpio, 1);
-	udelay(10 * 1000);
+	udelay(5 * 1000);
 	gpiod_set_value(ctx->reset_gpio, 0);
-	udelay(2 * 1000);
+	udelay(5 * 1000);
 	gpiod_set_value(ctx->reset_gpio, 1);
 	msleep(20);
 	devm_gpiod_put(ctx->dev,ctx->reset_gpio);

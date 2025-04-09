@@ -225,7 +225,7 @@ static void lcm_panel_init(struct lcm *ctx)
 	lcm_dcs_write_seq_static(ctx, 0x44,0x06,0x8c);
 	lcm_dcs_write_seq_static(ctx, 0x51,0x00,0x00); //800nit
 	lcm_dcs_write_seq_static(ctx, 0x53,0x20);
-	lcm_dcs_write_seq_static(ctx, 0x55,0x10);
+	lcm_dcs_write_seq_static(ctx, 0x55,0x00);
 	lcm_dcs_write_seq_static(ctx, 0x59,0x09);
 	lcm_dcs_write_seq_static(ctx, 0x5e,0x00);
 	//lcm_dcs_write_seq_static(ctx, 0x6c,0x00);//120hz
@@ -366,11 +366,11 @@ static int lcm_prepare(struct drm_panel *panel)
 	printk("%s enter  \n",__func__);
 	udelay(2000);
 	gpiod_set_value(ctx->reset_gpio, 0);
-	udelay(10 * 1000);
+	udelay(5 * 1000);
 	gpiod_set_value(ctx->reset_gpio, 1);
-	udelay(10 * 1000);
+	udelay(5 * 1000);
 	gpiod_set_value(ctx->reset_gpio, 0);
-	udelay(2 * 1000);
+	udelay(5 * 1000);
 	gpiod_set_value(ctx->reset_gpio, 1);
 	msleep(20);
 	devm_gpiod_put(ctx->dev,ctx->reset_gpio);
