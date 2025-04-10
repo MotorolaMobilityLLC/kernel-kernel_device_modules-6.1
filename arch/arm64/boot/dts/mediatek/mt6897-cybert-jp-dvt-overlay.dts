@@ -73,6 +73,9 @@
 &charger {
 	/*typec_otp*/
 	mmi,typecotp-charger;
+
+	mmi,upper-limit-capacity = <77>;
+	mmi,lower-limit-capacity = <72>;
 };
 
 &spmi {
