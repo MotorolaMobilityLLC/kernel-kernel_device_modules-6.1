@@ -90,9 +90,21 @@ static long adpf_device_ioctl(struct file *filp,
 	case POWERHAL_SET_ADPF_DATA:
 
 		if (t_msgKM->cmd == ADPF_CREATE_HINT_SESSION) {
+			if (t_msgKM->threadIds_size > ADPF_MAX_THREAD || !t_msgKM->threadIds_size) {
+				pr_info("ADPF_CREATE_HINT_SESSION threadIds_size bigger than ADPF_MAX_THREAD or 0");
+				ret = -EFAULT;
+				goto ret_ioctl;
+			}
+
 			threadIds = kcalloc(t_msgKM->threadIds_size,
-				t_msgKM->threadIds_size*sizeof(__s32),
+				sizeof(__s32),
 				GFP_KERNEL);
+
+			if (!threadIds) {
+				pr_info("ADPF_CREATE_HINT_SESSION kcalloc failed");
+				ret = -ENOMEM;
+				goto ret_ioctl;
+			}
 
 			if (perfctl_copy_from_user(threadIds, t_msgKM->threadIds,
 					t_msgKM->threadIds_size*sizeof(__s32))) {
@@ -118,9 +130,22 @@ static long adpf_device_ioctl(struct file *filp,
 				powerhal_adpf_update_work_duration_fp(t_msgKM->sid,
 					t_msgKM->targetDurationNanos);
 		} else if (t_msgKM->cmd == ADPF_REPORT_ACTUAL_WORK_DURATION) {
+			if (t_msgKM->work_duration_size <= 0) {
+				pr_info("ADPF_REPORT_ACTUAL_WORK_DURATION threadIds_size error: %d",
+					t_msgKM->work_duration_size);
+				ret = -EFAULT;
+				goto ret_ioctl;
+			}
+
 			workDuration = kcalloc(t_msgKM->work_duration_size,
-				t_msgKM->work_duration_size*sizeof(struct _ADPF_WORK_DURATION),
+				sizeof(struct _ADPF_WORK_DURATION),
 				GFP_KERNEL);
+
+			if (!workDuration) {
+				pr_info("ADPF_REPORT_ACTUAL_WORK_DURATION kcalloc failed");
+				ret = -ENOMEM;
+				goto ret_ioctl;
+			}
 
 			if (perfctl_copy_from_user(workDuration, t_msgKM->workDuration,
 				t_msgKM->work_duration_size
@@ -149,8 +174,20 @@ static long adpf_device_ioctl(struct file *filp,
 			if (powerhal_adpf_sent_hint_fp)
 				powerhal_adpf_sent_hint_fp(t_msgKM->sid, t_msgKM->hint);
 		} else if (t_msgKM->cmd == ADPF_SET_THREADS) {
+			if (t_msgKM->threadIds_size > ADPF_MAX_THREAD || !t_msgKM->threadIds_size) {
+				pr_info("ADPF_SET_THREADS threadIds_size bigger than ADPF_MAX_THREAD or 0");
+				ret = -EFAULT;
+				goto ret_ioctl;
+			}
+
 			threadIds = kcalloc(t_msgKM->threadIds_size,
-				t_msgKM->threadIds_size*sizeof(__s32), GFP_KERNEL);
+				sizeof(__s32), GFP_KERNEL);
+
+			if (!threadIds) {
+				pr_info("ADPF_SET_THREADS kcalloc failed");
+				ret = -ENOMEM;
+				goto ret_ioctl;
+			}
 
 			if (perfctl_copy_from_user(threadIds, t_msgKM->threadIds,
 							t_msgKM->threadIds_size*sizeof(__s32))) {
