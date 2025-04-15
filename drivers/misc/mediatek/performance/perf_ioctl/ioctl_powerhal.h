@@ -73,6 +73,7 @@ enum {
 	CPUFREQ_BOOST = 1,
 };
 
+#define ADPF_MAX_THREAD 32
 #define NOTIFY_BOOST             _IOW('g', 1, struct _CPU_CTRL_PACKAGE)
 #define POWERHAL_SET_ADPF_DATA   _IOW('g', 1, struct _ADPF_PACKAGE)
 #define POWERHAL_GET_ADPF_DATA   _IOW('g', 2, struct _ADPF_PACKAGE)
