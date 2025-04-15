@@ -255,6 +255,8 @@ struct usb_offload_dev {
 	bool adsp_ready;
 	struct ssusb_offload *ssusb_offload_notify;
 	struct mutex dev_lock;
+	spinlock_t lock;
+	unsigned long stage;
 	u64 *mapping_table;
 };
 
@@ -290,6 +292,16 @@ extern unsigned int debug_memory_log;
 	if (1) \
 		pr_info("UD, %s(%d) " fmt, __func__, __LINE__, ## args); \
 	} while (0)
+
+#define wait_condition(condition, timeout) ({ struct timespec64 ref, cur;\
+	ktime_get_ts64(&ref); \
+	cur = ref; \
+	while (!condition && (cur.tv_nsec - ref.tv_nsec) < timeout) { \
+		mdelay(1); \
+		ktime_get_ts64(&cur); \
+	} \
+	(condition) ? 0 : -ETIMEDOUT; \
+})
 
 extern u32 sram_version;
 extern int soc_init_aud_intf(void);
