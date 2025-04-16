@@ -899,6 +899,7 @@ static inline bool typec_cc_change_source_entry(struct tcpc_device *tcpc)
 static inline bool typec_attached_snk_cc_change(struct tcpc_device *tcpc)
 {
 	uint8_t cc_res = typec_get_cc_res();
+	bool changed = false;
 #if IS_ENABLED(CONFIG_USB_POWER_DELIVERY)
 	struct pd_port *pd_port = &tcpc->pd_port;
 #endif	/* CONFIG_USB_POWER_DELIVERY */
@@ -906,19 +907,21 @@ static inline bool typec_attached_snk_cc_change(struct tcpc_device *tcpc)
 	if (cc_res != tcpc->typec_remote_rp_level) {
 		TYPEC_INFO("RpLvl Change\n");
 		tcpc->typec_remote_rp_level = cc_res;
+		changed = true;
+	}
 
 #if CONFIG_USB_PD_REV30
-		if (pd_port->pe_data.pd_connected && pd_check_rev30(pd_port) &&
-		    cc_res == TYPEC_CC_VOLT_SNK_3_0)
-			pd_put_sink_tx_event(tcpc, cc_res);
+	if (pd_port->pe_data.pd_connected && pd_check_rev30(pd_port) &&
+	    cc_res == TYPEC_CC_VOLT_SNK_3_0)
+		pd_put_sink_tx_event(tcpc, cc_res);
 #endif	/* CONFIG_USB_PD_REV30 */
 
+	if (changed)
 #if IS_ENABLED(CONFIG_USB_POWER_DELIVERY)
 		if (!pd_port->pe_data.pd_connected)
 #endif	/* CONFIG_USB_POWER_DELIVERY */
 			tcpci_sink_vbus(tcpc,
 				TCP_VBUS_CTRL_TYPEC, TCPC_VBUS_SINK_5V, -1);
-	}
 
 	return true;
 }
@@ -1035,11 +1038,6 @@ static inline void typec_attach_wait_entry(struct tcpc_device *tcpc)
 	case typec_attached_dbgacc_snk:
 #endif	/* CONFIG_TYPEC_CAP_DBGACC_SNK */
 	case typec_attached_custom_src:
-		if (cc_res == tcpc->typec_remote_rp_level) {
-			tcpc_reset_typec_debounce_timer(tcpc);
-			TYPEC_DBG("The Same RpLvl, Ignore cc_attach\n");
-			return;
-		}
 		TYPEC_INFO("RpLvl Alert\n");
 #if CONFIG_USB_PD_REV30
 		if (pd_port->pe_data.pd_connected && pd_check_rev30(pd_port) &&
