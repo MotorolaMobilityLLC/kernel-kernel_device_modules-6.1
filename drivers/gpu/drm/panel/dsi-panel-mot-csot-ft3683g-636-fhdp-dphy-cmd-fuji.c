@@ -388,7 +388,7 @@ if(ctx->version == 1){
 	lcm_dcs_write(ctx, bl_tb, ARRAY_SIZE(bl_tb));
 
 	lcm_dcs_write_seq_static(ctx, 0x11);
-	msleep(85);
+	msleep(75);
 	//check vtdr6130 pcd
 	panel_pcd_check(ctx);
 	lcm_dcs_write_seq_static(ctx, 0x29);
@@ -446,7 +446,7 @@ static int gate_ic_Power_on(struct drm_panel *panel, int enabled)
 			}
 			gpiod_set_value(pm_en_pin, gpio_status);
 			devm_gpiod_put(ctx->dev, pm_en_pin);
-			usleep_range(1000, 1001);
+			usleep_range(2000, 2001);
 		}
 	}
 	return 0;
@@ -1684,6 +1684,8 @@ static int panel_ext_powerdown(struct drm_panel *panel)
 	ctx->reset_gpio = devm_gpiod_get(ctx->dev, "reset", GPIOD_OUT_HIGH);
 	gpiod_set_value(ctx->reset_gpio, 0);
 	devm_gpiod_put(ctx->dev, ctx->reset_gpio);
+
+	usleep_range(2000, 2001);
 
 	gate_ic_Power_on(panel, 0);
 
