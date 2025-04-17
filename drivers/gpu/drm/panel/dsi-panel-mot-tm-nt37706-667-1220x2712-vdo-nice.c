@@ -1649,7 +1649,7 @@ atomic_set(&ctx->hbm_mode, 0);
 	atomic_set(&ctx->dc_mode, 0);
 	atomic_set(&ctx->apl_mode, 0);
 	atomic_set(&ctx->current_fps, 120);
-
+	atomic_set(&ctx->current_bl, 6515);
 	ctx->lhbm_en = 1;
 	pr_info("%s-\n", __func__);
 	return ret;
