@@ -842,6 +842,7 @@ static int charger_dev_event(struct notifier_block *nb, unsigned long event,
 			container_of(nb, struct mtk_charger, chg1_nb);
 	struct chgdev_notify *data = v;
 	int i;
+	union power_supply_propval prop = {0};
 
 	chr_err("%s %lu\n", __func__, event);
 
@@ -884,6 +885,21 @@ static int charger_dev_event(struct notifier_block *nb, unsigned long event,
 		break;
 	case CHARGER_DEV_NOTIFY_INFO_SYNC:
 		pr_info("%s: INFO SYNC\n", __func__);
+
+		if (IS_ERR_OR_NULL(info->chg_psy)) {
+			info->chg_psy = power_supply_get_by_name("primary_chg");
+		}
+
+		if (!IS_ERR_OR_NULL(info->chg_psy)) {
+			power_supply_get_property(info->chg_psy,
+					POWER_SUPPLY_PROP_ONLINE, &prop);
+
+			if (prop.intval == 0 && !IS_ERR_OR_NULL(info->psy1)) {
+				//mtk-master-charger psy notify for other device listen such as sar sensor when DCP removed
+				power_supply_changed(info->psy1);
+			}
+		}
+
 		break;
 	case CHARGER_DEV_NOTIFY_CTD_DONE:
 		pr_info("%s: CTD done\n", __func__);
