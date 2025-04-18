@@ -8137,7 +8137,7 @@ static void ddp_cmdq_cb(struct cmdq_cb_data data)
 
 	if (mtk_drm_helper_get_opt(priv->helper_opt, MTK_DRM_OPT_RPO) &&
 		mtk_drm_helper_get_opt(priv->helper_opt, MTK_DRM_OPT_MMDVFS_SUPPORT) &&
-		((id == 0) || (id == 3)) && (!mtk_crtc->rpo_params.need_rpo_en) &&
+		((id == 0) || (id == 3)) &&
 		(!atomic_read(&mtk_crtc->force_high_step)) && priv->data->need_rpo_ratio_for_mmclk &&
 		mtk_crtc->rpo_params.rpo_status_changed && mtk_crtc->enabled && (fps_dst <= fps_src)) {
 		struct mtk_ddp_comp *output_comp = mtk_ddp_comp_request_output(mtk_crtc);
@@ -16345,6 +16345,7 @@ static void mtk_drm_crtc_atomic_flush(struct drm_crtc *crtc,
 		int en = 1;
 
 		mtk_crtc->rpo_params.rpo_status_changed = true;
+		mtk_crtc->qos_ctx->mmclk_need_up_now = 1;
 		if (output_comp)
 			mtk_ddp_comp_io_cmd(output_comp, NULL, SET_MMCLK_BY_DATARATE, &en);
 	}

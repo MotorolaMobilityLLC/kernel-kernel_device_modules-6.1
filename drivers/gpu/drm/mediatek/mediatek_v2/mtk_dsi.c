@@ -9254,7 +9254,7 @@ void mtk_dsi_set_mmclk_by_datarate_V2(struct mtk_dsi *dsi,
 
 		mmclk_need_up_now =
 			(mtk_crtc->qos_ctx) ? mtk_crtc->qos_ctx->mmclk_need_up_now : 0;
-		if (!mtk_dsi_is_cmd_mode(&dsi->ddp_comp) && mmclk_need_up_now){
+		if (mmclk_need_up_now){
 			mtk_crtc->qos_ctx->mmclk_need_up_now = 0;
 			if (last_pixclk > pixclk)
 				skip_set_mmclk = 1;
