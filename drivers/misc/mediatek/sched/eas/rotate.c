@@ -275,6 +275,10 @@ void task_check_for_rotation(struct rq *src_rq)
 		rts = &((struct mtk_task *) rq->curr->android_vendor_data1)->rot_task;
 		run = wc - READ_ONCE(rts->ktime_ns);
 
+#if IS_ENABLED(CONFIG_MTK_SCHED_VIP_TASK)
+                if (task_is_vip(rq->curr, NOT_VIP))
+                    continue;
+#endif
 		if (run < TASK_ROTATION_THRESHOLD_NS)
 			continue;
 
