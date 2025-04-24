@@ -211,7 +211,7 @@ static void panel_pcd_check(struct lcm *ctx)
 
 	lcm_dcs_write_seq_static(ctx, 0xF0,0xAA,0x12);
 	lcm_dcs_write_seq_static(ctx, 0xD0,0x08,0x02);
-	msleep(17);
+	usleep_range(9000, 9100);
 
 	ret = mipi_dsi_dcs_read(dsi, 0xD0, data, 8);
 	if (ret < 0) {
@@ -234,7 +234,7 @@ static void lcm_panel_init(struct lcm *ctx)
 	char bl_tb[] = {0x51, 0x0f, 0xff};
 	unsigned int level = 0;
 	printk("%s enter  \n",__func__);
-	udelay(2000);
+	usleep_range(2000, 2001);
 	ctx->reset_gpio =
 		devm_gpiod_get(ctx->dev, "reset", GPIOD_OUT_LOW);
 	if (IS_ERR(ctx->reset_gpio)) {
@@ -243,13 +243,13 @@ static void lcm_panel_init(struct lcm *ctx)
 		return;
 	}
 	gpiod_set_value(ctx->reset_gpio, 0);
-	udelay(3 * 1000);
+	usleep_range(3000, 3001);
 	gpiod_set_value(ctx->reset_gpio, 1);
-	udelay(1 * 1000);
+	usleep_range(1000, 1001);
 	gpiod_set_value(ctx->reset_gpio, 0);
-	udelay(2 * 1000);
+	usleep_range(2000, 2001);
 	gpiod_set_value(ctx->reset_gpio, 1);
-	msleep(25);
+	usleep_range(25 * 1000, 26 * 1000);
 	devm_gpiod_put(ctx->dev, ctx->reset_gpio);
 
 	lcm_dcs_write_seq_static(ctx, 0x59, 0x09);
@@ -307,7 +307,7 @@ if(ctx->version == 1){
 	case 144:
 		lcm_dcs_write_seq_static(ctx, 0x6c,0x00);
 		lcm_dcs_write_seq_static(ctx, 0x71,0x00);
-		msleep(10);
+		usleep_range(10000, 10100);
 		lcm_dcs_write_seq_static(ctx, 0x75,0x00);
 		lcm_dcs_write_seq_static(ctx, 0xF0,0xAA,0x1B);
 		lcm_dcs_write_seq_static(ctx, 0xD0,0x00);
@@ -317,7 +317,7 @@ if(ctx->version == 1){
 	case 120:
 		lcm_dcs_write_seq_static(ctx, 0x6c,0x01);
 		lcm_dcs_write_seq_static(ctx, 0x71,0x00);
-		msleep(10);
+		usleep_range(10000, 10100);
 		lcm_dcs_write_seq_static(ctx, 0x75,0x00);
 		lcm_dcs_write_seq_static(ctx, 0xF0,0xAA,0x1B);
 		lcm_dcs_write_seq_static(ctx, 0xD0,0x00);
@@ -327,7 +327,7 @@ if(ctx->version == 1){
 	case 90:
 		lcm_dcs_write_seq_static(ctx, 0x6c,0x02);
 		lcm_dcs_write_seq_static(ctx, 0x71,0x00);
-		msleep(10);
+		usleep_range(10000, 10100);
 		lcm_dcs_write_seq_static(ctx, 0x75,0x00);
 		lcm_dcs_write_seq_static(ctx, 0xF0,0xAA,0x1B);
 		lcm_dcs_write_seq_static(ctx, 0xD0,0x00);
@@ -337,7 +337,7 @@ if(ctx->version == 1){
 	case 60:
 		lcm_dcs_write_seq_static(ctx, 0x6C, 0x01);
 		lcm_dcs_write_seq_static(ctx, 0x71,0x01,0x01,0x00);
-		msleep(10);
+		usleep_range(10000, 10100);
 		lcm_dcs_write_seq_static(ctx, 0x75,0x00);
 		lcm_dcs_write_seq_static(ctx, 0xF0,0xAA,0x1B);
 		lcm_dcs_write_seq_static(ctx, 0xD0,0x00);
@@ -347,7 +347,7 @@ if(ctx->version == 1){
 	case 30:
 		lcm_dcs_write_seq_static(ctx, 0x6C, 0x01);
 		lcm_dcs_write_seq_static(ctx, 0x71,0x01,0x03,0x00);
-		msleep(10);
+		usleep_range(10000, 10100);
 		lcm_dcs_write_seq_static(ctx, 0x75,0x00);
 		lcm_dcs_write_seq_static(ctx, 0xF0,0xAA,0x1B);
 		lcm_dcs_write_seq_static(ctx, 0xD0,0x00);
@@ -357,7 +357,7 @@ if(ctx->version == 1){
 	case 24:
 		lcm_dcs_write_seq_static(ctx, 0x6C,0x01);
 		lcm_dcs_write_seq_static(ctx, 0x71,0x00);
-		msleep(10);
+		usleep_range(10000, 10100);
 		lcm_dcs_write_seq_static(ctx, 0x75,0x01);
 		lcm_dcs_write_seq_static(ctx, 0xF0,0xAA,0x1B);
 		lcm_dcs_write_seq_static(ctx, 0x65,0x0C);
@@ -388,7 +388,7 @@ if(ctx->version == 1){
 	lcm_dcs_write(ctx, bl_tb, ARRAY_SIZE(bl_tb));
 
 	lcm_dcs_write_seq_static(ctx, 0x11);
-	msleep(75);
+	usleep_range(75 * 1000, 76 * 1000);
 	//check vtdr6130 pcd
 	panel_pcd_check(ctx);
 	lcm_dcs_write_seq_static(ctx, 0x29);
@@ -461,21 +461,21 @@ static int lcm_unprepare(struct drm_panel *panel)
 	printk("%s enter  \n",__func__);
 	lcm_dcs_write_seq_static(ctx, 0x6c,0x02);
 	lcm_dcs_write_seq_static(ctx, 0x71,0x00);
-	msleep(10);
+	usleep_range(10000, 10100);
 	lcm_dcs_write_seq_static(ctx, 0x75,0x00);
 	lcm_dcs_write_seq_static(ctx, 0xF0,0xAA,0x1B);
 	lcm_dcs_write_seq_static(ctx, 0xD0,0x00);
 	lcm_dcs_write_seq_static(ctx, 0xF0,0xAA,0x10);
 	lcm_dcs_write_seq_static(ctx, 0xCF,0x09);
-	msleep(10);
+	usleep_range(10000, 10100);
 	lcm_dcs_write_seq_static(ctx, 0x28);
-	msleep(10);
+	usleep_range(10000, 10100);
 	lcm_dcs_write_seq_static(ctx, 0xF0,0xAA,0x10);
 	lcm_dcs_write_seq_static(ctx, 0x65,0x05);
 	lcm_dcs_write_seq_static(ctx, 0xD0,0x0BE);
-	msleep(11);
+	usleep_range(11000, 11100);
 	lcm_dcs_write_seq_static(ctx, 0x10);
-	msleep(150);
+	usleep_range(150 * 1000, 151 * 1000);
 
 	ctx->error = 0;
 	ctx->prepared = false;
@@ -1393,7 +1393,7 @@ static void mode_switch_to_90(struct drm_panel *panel,
 
 		lcm_dcs_write_seq_static(ctx, 0x6c,0x02);
 		lcm_dcs_write_seq_static(ctx, 0x71,0x00);
-		msleep(10);
+		usleep_range(10000, 10100);
 		lcm_dcs_write_seq_static(ctx, 0x75,0x00);
 		lcm_dcs_write_seq_static(ctx, 0xF0,0xAA,0x1B);
 		lcm_dcs_write_seq_static(ctx, 0xD0,0x00);
@@ -1410,7 +1410,7 @@ static void mode_switch_to_120(struct drm_panel *panel,
 		struct lcm *ctx = panel_to_lcm(panel);
 		lcm_dcs_write_seq_static(ctx, 0x6c,0x01);
 		lcm_dcs_write_seq_static(ctx, 0x71,0x00);
-		msleep(10);
+		usleep_range(10000, 10100);
 		lcm_dcs_write_seq_static(ctx, 0x75,0x00);
 		lcm_dcs_write_seq_static(ctx, 0xF0,0xAA,0x1B);
 		lcm_dcs_write_seq_static(ctx, 0xD0,0x00);
@@ -1427,7 +1427,7 @@ static void mode_switch_to_144(struct drm_panel *panel,
 		struct lcm *ctx = panel_to_lcm(panel);
 		lcm_dcs_write_seq_static(ctx, 0x6c,0x00);
 		lcm_dcs_write_seq_static(ctx, 0x71,0x00);
-		msleep(10);
+		usleep_range(10000, 10100);
 		lcm_dcs_write_seq_static(ctx, 0x75,0x00);
 		lcm_dcs_write_seq_static(ctx, 0xF0,0xAA,0x1B);
 		lcm_dcs_write_seq_static(ctx, 0xD0,0x00);
@@ -1445,7 +1445,7 @@ static void mode_switch_to_60(struct drm_panel *panel,
 
 		lcm_dcs_write_seq_static(ctx, 0x6C, 0x01);
 		lcm_dcs_write_seq_static(ctx, 0x71,0x01,0x01,0x00);
-		msleep(10);
+		usleep_range(10000, 10100);
 		lcm_dcs_write_seq_static(ctx, 0x75,0x00);
 		lcm_dcs_write_seq_static(ctx, 0xF0,0xAA,0x1B);
 		lcm_dcs_write_seq_static(ctx, 0xD0,0x00);
@@ -1464,7 +1464,7 @@ static void mode_switch_to_30(struct drm_panel *panel,
 
 		lcm_dcs_write_seq_static(ctx, 0x6C, 0x01);
 		lcm_dcs_write_seq_static(ctx, 0x71,0x01,0x03,0x00);
-		msleep(10);
+		usleep_range(10000, 10100);
 		lcm_dcs_write_seq_static(ctx, 0x75,0x00);
 		lcm_dcs_write_seq_static(ctx, 0xF0,0xAA,0x1B);
 		lcm_dcs_write_seq_static(ctx, 0xD0,0x00);
@@ -1483,7 +1483,7 @@ static void mode_switch_to_24(struct drm_panel *panel,
 
 		lcm_dcs_write_seq_static(ctx, 0x6C,0x01);
 		lcm_dcs_write_seq_static(ctx, 0x71,0x00);
-		msleep(10);
+		usleep_range(10000, 10100);
 		lcm_dcs_write_seq_static(ctx, 0x75,0x01);
 		lcm_dcs_write_seq_static(ctx, 0xF0,0xAA,0x1B);
 		lcm_dcs_write_seq_static(ctx, 0x65,0x0C);
@@ -1504,7 +1504,7 @@ static void mode_switch_to_10(struct drm_panel *panel,
 
 		lcm_dcs_write_seq_static(ctx, 0x6C,0x01);
 		lcm_dcs_write_seq_static(ctx, 0x71,0x00);
-		msleep(10);
+		usleep_range(10000, 10100);
 		lcm_dcs_write_seq_static(ctx, 0x75,0x02);
 		lcm_dcs_write_seq_static(ctx, 0xF0,0xAA,0x1B);
 		lcm_dcs_write_seq_static(ctx, 0xD0,0x11,0x02);
@@ -1524,7 +1524,7 @@ static void mode_switch_to_1(struct drm_panel *panel,
 
 		lcm_dcs_write_seq_static(ctx, 0x6c, 0x01);
 		lcm_dcs_write_seq_static(ctx, 0x71, 0x00);
-		msleep(10);
+		usleep_range(10000, 10100);
 		lcm_dcs_write_seq_static(ctx, 0x75, 0x03);
 		lcm_dcs_write_seq_static(ctx, 0xF0, 0xAA,0x1B);
 		lcm_dcs_write_seq_static(ctx, 0xD0, 0x11,0x02);
