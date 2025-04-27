@@ -343,6 +343,8 @@
 	vbat2-det-voltage2 = <(29000)>;
 	vbat2-det-voltage3 = <(31000)>;
 
+	charge-pseudo-full-level = <9000>;
+
         en-dynamic-gauge0-by-cycle = <(1)>;
         mmi,mmi-cycle-gauge0-steps =<101 500
                                      201 1500

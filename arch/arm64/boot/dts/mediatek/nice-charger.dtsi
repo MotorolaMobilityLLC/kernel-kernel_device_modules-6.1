@@ -333,6 +333,7 @@
 	active-table = <(5)>;
 	r-fg-value = <(2)>;
 	no-bat-temp-compensate = <(1)>;
+	charge-pseudo-full-level = <9000>;
 
 	df-serialnum = "ATLRA52NVT";
 	#include "bat_setting/mt6878_battery_table_nice_nvt_5200mah.dtsi"
