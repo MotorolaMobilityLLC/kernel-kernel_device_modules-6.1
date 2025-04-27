@@ -201,34 +201,6 @@ static int lcm_panel_get_ab_data(struct drm_panel *panel)
 
 #endif
 
-static bool panel_pcd_flag = 0;
-
-static void panel_pcd_check(struct lcm *ctx)
-{
-	struct mipi_dsi_device *dsi = to_mipi_dsi_device(ctx->dev);
-	u8 data[8] = {0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00};
-	int ret = 0;
-
-	lcm_dcs_write_seq_static(ctx, 0xF0,0xAA,0x12);
-	lcm_dcs_write_seq_static(ctx, 0xD0,0x08,0x02);
-	usleep_range(9000, 9100);
-
-	ret = mipi_dsi_dcs_read(dsi, 0xD0, data, 8);
-	if (ret < 0) {
-		pr_err("%s pcd read error\n", __func__);
-	}
-
-	lcm_dcs_write_seq_static(ctx, 0xF0,0xAA,0x12);
-	lcm_dcs_write_seq_static(ctx, 0xD0,0x00,0x00);
-
-	if(data[7] > 0x83) {
-		pr_err("%s pcd occurs, value is %x\n", __func__, data[7]);
-		panel_pcd_flag = 1;
-	} else {
-		pr_info("%s pcd value is %x\n", __func__, data[7]);
-	}
-}
-
 static void lcm_panel_init(struct lcm *ctx)
 {
 	char bl_tb[] = {0x51, 0x0f, 0xff};
@@ -389,8 +361,6 @@ if(ctx->version == 1){
 
 	lcm_dcs_write_seq_static(ctx, 0x11);
 	usleep_range(75 * 1000, 76 * 1000);
-	//check vtdr6130 pcd
-	panel_pcd_check(ctx);
 	lcm_dcs_write_seq_static(ctx, 0x29);
 	atomic_set(&ctx->hbm_mode, 0);
 	atomic_set(&ctx->dc_mode, 0);
@@ -1658,11 +1628,6 @@ static int panel_ext_init_power(struct drm_panel *panel)
 {
 	int ret;
 	struct lcm *ctx = panel_to_lcm(panel);
-
-	if (panel_pcd_flag) {
-		pr_err("%s: pcd occurs, panel does not poweron\n", __func__);
-		return 0;
-	}
 
 	ctx->reset_gpio = devm_gpiod_get(ctx->dev, "reset", GPIOD_OUT_HIGH);
 	gpiod_set_value(ctx->reset_gpio, 0);
