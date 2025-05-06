@@ -12,6 +12,10 @@
 #include <media/v4l2-device.h>
 #include <media/v4l2-subdev.h>
 
+#if IS_ENABLED(CONFIG_MOT_I2C_CONFLICT)
+extern int i2c_lock_bus_helper(struct i2c_adapter *adap);
+#endif
+
 #if IS_ENABLED(CONFIG_MTK_AEE_FEATURE)
 #include <aee.h>
 #endif
@@ -208,6 +212,71 @@ static void ois_mdelay(unsigned long ms)
         unsigned long us = ms*1000;
         usleep_range(us, us+2000);
 }
+
+#if IS_ENABLED(CONFIG_MOT_I2C_CONFLICT)
+int ois_i2c_rd(struct i2c_client *i2c_client, u16 reg, u16 *val)
+{
+	int ret;
+	u8 buf[2];
+	struct i2c_msg msg[2];
+	u16 addr = i2c_client->addr;
+
+	buf[0] = reg >> 8;
+	buf[1] = reg & 0xff;
+	msg[0].addr = addr;
+	msg[0].flags = i2c_client->flags;
+	msg[0].buf = buf;
+	msg[0].len = sizeof(buf);
+	msg[1].addr  = addr;
+	msg[1].flags = i2c_client->flags | I2C_M_RD;
+	msg[1].buf = buf;
+	msg[1].len = 2;
+	ret = __i2c_transfer(i2c_client->adapter, msg, 2);
+	if (ret < 0) {
+		LOG_INF("i2c transfer failed (%d)\n", ret);
+		return ret;
+	}
+	*val = ((u16)buf[0] << 8) | buf[1];
+
+	return 0;
+}
+
+int ois_i2c_wr(struct i2c_client *i2c_client, u16 reg, u16 val)
+{
+	int ret;
+	u8 buf[4];
+	struct i2c_msg msg;
+	u16 addr = i2c_client->addr;
+
+	LOG_INF("OIS write 0x%x: 0x%x (%d)\n", reg, val, val);
+
+	buf[0] = reg >> 8;
+	buf[1] = reg & 0xff;
+	buf[2] = val >> 8;
+	buf[3] = val & 0xff;
+	msg.addr = addr;
+	msg.flags = i2c_client->flags;
+	msg.buf = buf;
+	msg.len = sizeof(buf);
+	ret = __i2c_transfer(i2c_client->adapter, &msg, 1);
+	if (ret < 0) {
+		LOG_INF("i2c transfer failed (%d)\n", ret);
+		return ret;
+	}
+	return 0;
+}
+
+void ois_reset_conflict(void)
+{
+	ois_i2c_wr(m_client, 0xD002, 0x0001);
+	ois_mdelay(4);
+
+	ois_i2c_wr(m_client, 0xD001, 0x0001);
+	ois_mdelay(25);
+
+	ois_i2c_wr(m_client, 0xEBF1, 0x56FA);
+}
+#endif
 
 void ois_reset(void)
 {
@@ -1296,8 +1365,18 @@ static int dw9784_init(struct dw9784_device *dw9784)
 	// there are at least 10ms from drv_vdd to ois_reset, plus 6ms in power_on.
 	// more 1ms to accommodate gki upgrade resulting in usleep_range to min.
 	ois_mdelay(5);
+#if IS_ENABLED(CONFIG_MOT_I2C_CONFLICT)
+	ret = i2c_lock_bus_helper(client->adapter);
+	LOG_INF("dw9784_init ret %d\n", ret);
+	if (ret)
+		return ret;
+	ois_reset_conflict();
+	ret = ois_i2c_rd(client, 0x7011, &lock_ois);
+	i2c_unlock_bus(client->adapter, I2C_LOCK_SEGMENT);
+#else
 	ois_reset();
 	ret = ois_i2c_rd_u16(client, 0x7011, &lock_ois);
+#endif
 	LOG_INF("Check HW lock_ois: %x\n", lock_ois);
 
 	ois_init_done = 1;

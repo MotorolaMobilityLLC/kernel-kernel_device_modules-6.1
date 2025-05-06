@@ -339,6 +339,11 @@ config MOTO_AF_POWER_OFF_DELAY_OULU
         help
           MOT AF power off delay of OULU
 
+config MOT_I2C_CONFLICT
+	bool "For MOT I2C CONFLICT for VCM/OIS/Sensor"
+	help
+	  MOT I2C CONFLICT for VCM/OIS/Sensor
+
 config NICE_RM_CAMERA_GT9764VAF
         bool "For NICE RM camera GT9764V AF power off delay"
         help

@@ -11,6 +11,10 @@
 #include <media/v4l2-device.h>
 #include <media/v4l2-subdev.h>
 
+#if IS_ENABLED(CONFIG_MOT_I2C_CONFLICT)
+extern int i2c_lock_bus_helper(struct i2c_adapter *adap);
+#endif
+
 #define DRIVER_NAME "main_vcm"
 #define MAIN_VCM_I2C_SLAVE_ADDR 0x18
 
@@ -123,6 +127,10 @@ static void register_setting(struct i2c_client *client, char table[][3], int tab
 {
 	int ret = 0, read_count = 0, i = 0, j = 0;
 
+#if IS_ENABLED(CONFIG_MOT_I2C_CONFLICT)
+	union i2c_smbus_data data;
+#endif
+
 	for (i = 0; i < table_size; ++i) {
 
 		LOG_INF("table[%d] = [0x%x 0x%x 0x%x]\n",
@@ -137,9 +145,15 @@ static void register_setting(struct i2c_client *client, char table[][3], int tab
 		if (table[i][0] == 0x1) {
 
 			// write register
+#if IS_ENABLED(CONFIG_MOT_I2C_CONFLICT)
+			data.byte = table[i][2];
+			ret = __i2c_smbus_xfer(client->adapter, client->addr, client->flags, I2C_SMBUS_WRITE,
+					table[i][1], I2C_SMBUS_BYTE_DATA, &data);
+#else
 			ret = i2c_smbus_write_byte_data(client,
 					table[i][1],
 					table[i][2]);
+#endif
 			if (ret < 0) {
 				LOG_INF(
 					"i2c write fail: %d, table[%d] = [0x%x 0x%x 0x%x]\n",
@@ -162,8 +176,13 @@ static void register_setting(struct i2c_client *client, char table[][3], int tab
 						table[i][2]);
 					break;
 				}
+#if IS_ENABLED(CONFIG_MOT_I2C_CONFLICT)
+				ret = __i2c_smbus_xfer(client->adapter, client->addr, client->flags, I2C_SMBUS_READ,
+					table[i][1], I2C_SMBUS_BYTE_DATA, &data);
+#else
 				ret = i2c_smbus_read_byte_data(client,
 					table[i][1]);
+#endif
 				read_count++;
 			} while (ret != table[i][2]);
 
@@ -178,8 +197,13 @@ static void register_setting(struct i2c_client *client, char table[][3], int tab
 
 			// read register
 			for (j = 0; j < table[i][2]; ++j) {
+#if IS_ENABLED(CONFIG_MOT_I2C_CONFLICT)
+				ret = __i2c_smbus_xfer(client->adapter, client->addr, client->flags, I2C_SMBUS_READ,
+					table[i][1], I2C_SMBUS_BYTE_DATA, &data);
+#else
 				ret = i2c_smbus_read_byte_data(client,
 					table[i][1]);
+#endif
 				if (ret < 0)
 					LOG_INF(
 						"i2c read fail: %d, table[%d] = [0x%x 0x%x 0x%x]\n",
@@ -301,7 +325,17 @@ static int main_vcm_release(struct main_vcm_device *main_vcm)
 #ifndef CONFIG_AF_NOISE_ELIMINATION
 	if (g_vcmconfig.origin_focus_pos == 0xffffffff) {
 		LOG_INF("%s Skip park lens.", __func__);
+#if IS_ENABLED(CONFIG_MOT_I2C_CONFLICT)
+		ret = i2c_lock_bus_helper(client->adapter);
+		LOG_INF("main_vcm_init ret %d\n", ret);
+		if (ret)
+			return ret;
+
 		register_setting(client, g_vcmconfig.wr_rls_table, 8);
+		i2c_unlock_bus(client->adapter, I2C_LOCK_SEGMENT);
+#else
+		register_setting(client, g_vcmconfig.wr_rls_table, 8);
+#endif
 		return 0;
 	}
 #endif
@@ -335,7 +369,18 @@ static int main_vcm_release(struct main_vcm_device *main_vcm)
 		return ret;
 	}
 
+#if IS_ENABLED(CONFIG_MOT_I2C_CONFLICT)
+	ret = i2c_lock_bus_helper(client->adapter);
+	LOG_INF("main_vcm_init ret %d\n", ret);
+	if (ret)
+		return ret;
+
 	register_setting(client, g_vcmconfig.wr_rls_table, 8);
+
+	i2c_unlock_bus(client->adapter, I2C_LOCK_SEGMENT);
+#else
+	register_setting(client, g_vcmconfig.wr_rls_table, 8);
+#endif
 
 	return 0;
 }
@@ -349,7 +394,18 @@ static int main_vcm_init(struct main_vcm_device *main_vcm)
 
 	client->addr = g_vcmconfig.slave_addr >> 1;
 
+#if IS_ENABLED(CONFIG_MOT_I2C_CONFLICT)
+	ret = i2c_lock_bus_helper(client->adapter);
+	LOG_INF("main_vcm_init ret %d\n", ret);
+	if (ret)
+		return ret;
+
 	register_setting(client, g_vcmconfig.wr_table, 16);
+
+	i2c_unlock_bus(client->adapter, I2C_LOCK_SEGMENT);
+#else
+	register_setting(client, g_vcmconfig.wr_table, 16);
+#endif
 
 	LOG_INF("-\n");
 
