@@ -255,6 +255,11 @@ config ABI_MONITOR
 	  Say Y here if you are need abi monitor support.
 	  If unsure, say N
 
+config MOTO_CAM_CTLE_FUJI
+	bool "Camera CTLE"
+	help
+	  Debug camera ctle.
+
 config EXT_MODULES
 	string "out-of-tree kernel modules"
 	help
