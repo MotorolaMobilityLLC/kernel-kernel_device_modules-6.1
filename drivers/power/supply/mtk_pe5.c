@@ -1097,7 +1097,7 @@ static int pe50_enable_ta_charging(struct pe50_algo_info *info, bool en, int mV,
 		mV = auth_data->vta_min;
 	}
 
-	if (auth_data->ita_max < mA) {
+	if ((auth_data->ita_max != 0) && (auth_data->ita_max < mA)){
 		mA = auth_data->ita_max;
 	}
 
