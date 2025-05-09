@@ -309,11 +309,11 @@
 	/*vboot voltage for gauge 0%*/
 	g-pmic-min-vol-row = <4>;
 	g-pmic-min-vol-col = <10>;
-	g-pmic-min-vol = <30000  30000  30000  33500
-		30000  30000  30000  33000
-		30000  30000  30000  33000
-		30000  30000  30000  32200
-		30000  30000  30000  31360
+	g-pmic-min-vol = <30200  30200  30000  33500
+		30200  30200  30000  33000
+		30200  30200  30000  33000
+		30200  30200  30000  32200
+		30200  30200  30000  31360
 		31000  31000  31000  31000
 		31000  31000  31000  31000
 		31000  31000  31000  31000
@@ -339,18 +339,19 @@
 	r-fg-value = <(2)>;
 	no-bat-temp-compensate = <(1)>;
 
-	vbat2-det-voltage1 = <(30500)>;
-	vbat2-det-voltage2 = <(29000)>;
-	vbat2-det-voltage3 = <(31000)>;
+	vbat2-det-voltage1 = <(34500)>;
+	vbat2-det-voltage2 = <(30300)>;
+	vbat2-det-voltage3 = <(35000)>;
 
 	charge-pseudo-full-level = <9000>;
+	bat-voltage-low-bound = <(3050)>;
 
         en-dynamic-gauge0-by-cycle = <(1)>;
-        mmi,mmi-cycle-gauge0-steps =<101 500
-                                     201 1500
-                                     501 2000
-                                     1050 3000
-                                     1201 4000>;
+        mmi,mmi-cycle-gauge0-steps =<101 700
+                                     201 1700
+                                     501 2200
+                                     1050 3200
+                                     1201 4200>;
 	df-serialnum = "ATLRN67NVT";
 	#include "bat_setting/mt6878_battery_table_nice_rn67_6720mah.dtsi"
 	#include "bat_setting/mt6878_battery_table_nice_cos_6720mah.dtsi"
@@ -573,6 +574,6 @@
 &mt6363_dynamic_loading_throttling {
 	status = "okay";
 	bob-check-flag = <0>;
-	uvlo-level = <2600>;
-	vbb-uvlo-level = <2600>;
+	uvlo-level = <2400>;
+	vbb-uvlo-level = <2400>;
 };

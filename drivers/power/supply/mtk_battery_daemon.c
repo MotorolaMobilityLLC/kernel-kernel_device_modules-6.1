@@ -5427,7 +5427,7 @@ static int mmi_get_shutdown_gauge0_by_cycle(struct mtk_battery *gm)
 
 	return shutdown_gauge0_vol;
 }
-
+#define BAT_SHUTDOWN_VOLTAGE_LOW_BOUND 30000
 static void set_dynamic_shutdown_gauge0_work_handler(struct work_struct *work)
 {
 	ktime_t ctime = 0, ktime = 0;;
@@ -5437,10 +5437,21 @@ static void set_dynamic_shutdown_gauge0_work_handler(struct work_struct *work)
 	struct mtk_battery *gm = container_of(dwork,
 						     struct mtk_battery,
 						     dynamic_shutdown_gauge0_work);
+	struct mmi_cycle_gauge0_steps *zones;
+
+	zones = gm->cycle_gauge0_steps;
 
 	gm->g_shutdown_gauge0_vol = mmi_get_shutdown_gauge0_by_cycle(gm);
+
+	if(gm->bat_cycle >= zones[0].cycle) {
+		gm->bat_voltage_low_bound = (BAT_SHUTDOWN_VOLTAGE_LOW_BOUND + gm->g_shutdown_gauge0_vol + 300) / 10;
+		gm->fg_cust_data.vbat2_det_voltage2 = BAT_SHUTDOWN_VOLTAGE_LOW_BOUND + gm->g_shutdown_gauge0_vol + 200;
+	}
+
 	exec_BAT_EC(809, gm->g_shutdown_gauge0_vol);
-	bm_err("[%s] bat_cycle[%d] shutdown_gauge0_vol[%d]\n", __func__, gm->bat_cycle, gm->g_shutdown_gauge0_vol);
+	bm_err("[%s] bat_cycle[%d] shutdown_gauge0_vol[%d] bat_voltage_low_bound[%d] vbat2_det_voltage2[%d]\n", __func__, 
+		gm->bat_cycle, gm->g_shutdown_gauge0_vol,
+		gm->bat_voltage_low_bound, gm->fg_cust_data.vbat2_det_voltage2);
 	if (secs != 0 && secs > 0) {
 		ctime = ktime_get_boottime();
 		tmp_time = ktime_to_timespec64(ctime);
