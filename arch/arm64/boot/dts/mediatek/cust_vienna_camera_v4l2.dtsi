@@ -432,9 +432,9 @@
 
     sensor1: sensor1@10 {
         compatible = "mediatek,imgsensor";
-        sensor-names = "mot_vienna_s5kjd1_mipi_raw";
+        sensor-names = "mot_vienna_s5kjd1_mipi_raw","mot_paris_ov32b_mipi_raw";
         reg = <0x10>;
-        reindex-match = "mot_vienna_s5kjd1_mipi_raw";
+        reindex-match = "mot_vienna_s5kjd1_mipi_raw","mot_paris_ov32b_mipi_raw";
 
         #thermal-sensor-cells = <0>;
 
