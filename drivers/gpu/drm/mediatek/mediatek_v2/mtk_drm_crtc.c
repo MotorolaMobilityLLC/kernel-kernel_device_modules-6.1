@@ -2523,6 +2523,15 @@ bool mtk_crtc_is_dual_pipe(struct drm_crtc *crtc)
 	if (drm_crtc_index(crtc) == 1) {
 		if (priv->data->mmsys_id == MMSYS_MT6989)
 			return false;
+
+		if (priv->data->mmsys_id == MMSYS_MT6897 &&
+			((drm_mode_vrefresh(&crtc->state->adjusted_mode) == 120) ||
+			(crtc->state->adjusted_mode.clock >= MTK_PCLK_2K60) ||
+			(crtc->state->adjusted_mode.hdisplay > 1952))) {
+			DDPFUNC();
+			return true;
+		}
+
 		if ((crtc->state->adjusted_mode.hdisplay == 1920*2) ||
 			(drm_mode_vrefresh(&crtc->state->adjusted_mode) == 120) ||
 			(crtc->state->adjusted_mode.clock >= MTK_PCLK_2K60)) {
