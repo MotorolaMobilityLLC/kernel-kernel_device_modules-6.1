@@ -425,6 +425,7 @@ struct mmi_sm_params {
 	int			target_fcc;
 	int			target_fv;
 	int			demo_mode_prev_soc;
+	int			max_fcc_ma; //cell support max fcc
 
 	enum charging_limit_modes	charging_limit_modes;
 };

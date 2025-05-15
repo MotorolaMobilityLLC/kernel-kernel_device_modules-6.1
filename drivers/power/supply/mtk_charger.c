@@ -4343,6 +4343,11 @@ static int mmi_get_ifc_step_arrary_from_fg(struct mtk_charger *info)
 	pr_info("IFC:[%s]"
 		"ifc zones: Num: %d\n", __func__, info->mmi.num_ifc_zones);
 	for (i = 0; i < info->mmi.num_ifc_zones; i++) {
+
+		if (info->mmi.sm_param[BASE_BATT].max_fcc_ma < info->mmi.ifc_zones[i].fcc_max_ma) {
+			info->mmi.ifc_zones[i].fcc_max_ma = info->mmi.sm_param[BASE_BATT].max_fcc_ma;
+		}
+
 		pr_info("IFC:[%s]"
 			" Zone %d, "
 			"CV Volt %d mV, MAX Current %d mA, "
@@ -5588,6 +5593,14 @@ static int parse_mmi_single_batt_dt(struct mtk_charger *info)
 		pr_info("[%s]"
 			"mmi temp zones: Num: %d\n", __func__, chip->num_temp_zones);
 		for (i = 0; i < chip->num_temp_zones; i++) {
+
+			if (i == 0) {
+				chip->max_fcc_ma = chip->temp_zones[i].fcc_max_ma;
+			} else {
+				if (chip->max_fcc_ma < chip->temp_zones[i].fcc_max_ma)
+					chip->max_fcc_ma = chip->temp_zones[i].fcc_max_ma;
+			}
+
 			pr_info("[%s]"
 				"mmi temp zones: Zone %d, Temp %d C, "
 				"Step Volt %d mV, Full Rate %d mA, "
