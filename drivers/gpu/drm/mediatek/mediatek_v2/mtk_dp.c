@@ -3045,6 +3045,13 @@ void mtk_dp_video_config(struct mtk_dp *mtk_dp)
 		DPTX_TBL->Vtt = 1646; DPTX_TBL->Vbp = 37; DPTX_TBL->Vsw = 6;
 		DPTX_TBL->bVsp = 0; DPTX_TBL->Vfp = 3; DPTX_TBL->Vde = 1600;
 		break;
+	case SINK_2160_1440:
+		DPTX_TBL->FrameRate = 60;
+		DPTX_TBL->Htt = 2944; DPTX_TBL->Hbp = 392; DPTX_TBL->Hsw = 168;
+		DPTX_TBL->bHsp = 0; DPTX_TBL->Hfp = 40; DPTX_TBL->Hde = 2160;
+		DPTX_TBL->Vtt = 1493; DPTX_TBL->Vbp = 33; DPTX_TBL->Vsw = 10;
+		DPTX_TBL->bVsp = 0; DPTX_TBL->Vfp = 3; DPTX_TBL->Vde = 1440;
+		break;
 	case SINK_2560_1440:
 		DPTX_TBL->FrameRate = 60;
 		DPTX_TBL->Htt = 2720; DPTX_TBL->Hbp = 80; DPTX_TBL->Hsw = 32;
@@ -3728,6 +3735,7 @@ static struct drm_display_limit_mode dp_plat_limit[] = {
 	{3840, 2160, 60, 594000, 1},
 	{3840, 2160, 30, 297000, 1},
 	{2560, 1600, 60, 268500, 1},
+	{2160, 1440, 60, 263724, 1},
 	{2560, 1440, 60, 241500, 1},
 	{1080, 2460, 60, 174110, 1},
 	{1920, 1200, 60, 152128, 1},

@@ -376,6 +376,10 @@ static const struct mtk_dp_intf_resolution_cfg mt6897_resolution_cfg[SINK_MAX] =
 					.clksrc = 0,
 					.con1 = 0
 				},
+	[SINK_2160_1440] = {
+					.clksrc = MT6897_TVDPLL_D8,
+					.con1 = 0x831fb13b
+				},
 	[SINK_2560_1440] = {
 					.clksrc = MT6897_TVDPLL_D8,
 					.con1 = 0x821293B1
@@ -866,7 +870,16 @@ static void mtk_dp_intf_config(struct mtk_ddp_comp *comp,
 		vpw = 6;
 		vfp = 3;
 		vbp = 26;
-	} else if ((cfg->w == 2560) && (cfg->h == 1440)
+	} else if ((cfg->w == 2160) && (cfg->h == 1440)
+		   && (cfg->vrefresh == 60)) {
+		dp_intf->res = SINK_2160_1440;
+		hpw = 58;
+		hfp = 40;
+		hbp = 98;
+		vpw = 10;
+		vfp = 3;
+		vbp = 40;
+	}  else if ((cfg->w == 2560) && (cfg->h == 1440)
 		   && (cfg->vrefresh == 60)) {
 		dp_intf->res = SINK_2560_1440;
 		hpw = 8;
