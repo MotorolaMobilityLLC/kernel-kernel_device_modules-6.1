@@ -2706,7 +2706,6 @@ static void tfa98xx_dsp_init(struct tfa98xx *tfa98xx)
 				tfa98xx->init_count);
 			/* cancel other pending init works */
 			cancel_delayed_work(&tfa98xx->init_work);
-			tfa98xx->tfa->ext_dsp = 2;
 			tfa98xx->init_count = 0;
 		}
 	}
@@ -2719,8 +2718,6 @@ static void tfa98xx_dsp_init(struct tfa98xx *tfa98xx)
 	}
 	if (reschedule) {
 		/* reschedule this init work for later */
-		pr_info("TFA98xx Setting ext_dsp as 1. \n");
-		tfa98xx->tfa->ext_dsp = 1;
 		queue_delayed_work(tfa98xx->tfa98xx_wq,
 			&tfa98xx->init_work,
 			msecs_to_jiffies(5));
