@@ -1001,6 +1001,12 @@ def get_overlay_modules_list():
         mgk_64_k61_device_modules.append("drivers/regulator/aw37004-regulator.ko")
         mgk_64_k61_device_modules.append("drivers/misc/mediatek/flashlight/v4l2/aw36518.ko")
 
+    if "fujilt" in DEFCONFIG_OVERLAYS:
+        # base on fuji
+        mgk_64_k61_device_modules.remove("drivers/misc/mediatek/flashlight/v4l2/aw36518.ko")
+        mgk_64_k61_device_modules.append("drivers/misc/mediatek/flashlight/v4l2/aw36518.ko")
+
+
     if "nice" in DEFCONFIG_OVERLAYS:
         mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/input/misc/fpc_fps_mmi:fpc_mtk_tee")
         mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/nfc/st54lnfc/st21nfc:st54lnfc")

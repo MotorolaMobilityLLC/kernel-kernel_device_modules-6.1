@@ -1,0 +1,417 @@
+/* Copyright (c) 2023, Motorola Mobility Inc. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
+#include "mediatek/mt6897-moto-common-overlay-single-panel.dtsi"
+
+#include "mediatek/fuji-charger.dtsi"
+#include "mediatek/fuji-fps.dtsi"
+#include "mediatek/fuji-ntc.dtsi"
+#include "mediatek/fuji-display.dtsi"
+#include "mediatek/fuji-touch.dtsi"
+#include "mediatek/fuji-audio.dtsi"
+#include "mediatek/fuji-ppg.dtsi"
+#include <dt-bindings/gpio/gpio.h>
+
+&rt5133 {
+	status = "disabled";
+};
+
+&regulator_vibrator {
+	status = "disabled";
+};
+
+&spmi {
+	second_pmic@5 {
+		regulators {
+			mt6368_vmch_eint_low: vmch-eint-low {
+				regulator-compatible = "VMCH_EINT_LOW";
+				regulator-name = "mt6368_vmch_eint_low";
+				regulator-min-microvolt = <1200000>;
+				regulator-max-microvolt = <3500000>;
+				regulator-enable-ramp-delay = <680>;
+				regulator-allowed-modes = <0 2>;
+			};
+		};
+	};
+};
+
+&mmc1 {
+       status = "ok";
+       cd-gpios = <&pio 33 GPIO_ACTIVE_HIGH>;
+       vmmc-supply = <&mt6368_vmch_eint_low>;
+       ocr-voltage = <0x00030000>;
+};
+
+&mmc2 {
+       status = "disabled";
+};
+
+&pio {
+	nfc_spi_cs_mode_spi: nfc_spi_cs_mode_spi {
+		pins_cmd_dat {
+			pinmux = <PINMUX_GPIO28__FUNC_SPI3_CSB>;
+			bias-disable;
+		};
+	};
+
+	nfc_spi_cs_mode_idle: nfc_spi_cs_mode_idle {
+		pins_cmd_dat {
+			pinmux = <PINMUX_GPIO28__FUNC_GPIO28>;
+			bias-disable;
+		};
+	};
+};
+
+
+&spi3 {
+	st54spi: st54spi@0 {
+		compatible = "st,st54spi";
+		reg = <0>;
+		spi-max-frequency = <1000000>;
+		gpio-power_nreset = <36>;
+		gpio-power_nreset-std = <&pio 36 0x00>;
+		power_mode = "ST54J";
+		bootmode = <&chosen>;
+		pinctrl-names = "pinctrl_state_mode_spi",
+				"pinctrl_state_mode_idle";
+		pinctrl-0 = <&nfc_spi_cs_mode_spi>;
+		pinctrl-1 = <&nfc_spi_cs_mode_idle>;
+		status = "okay";
+	};
+};
+
+&i2c3 {
+	status = "ok";
+	clock-frequency = <400000>;
+	st21nfc: st21nfc@0x08 {
+		compatible = "st,st21nfc";
+		reg = <0x08>;
+		interrupt-parent = <&pio>;
+		interrupts = <37 0>;
+		bootmode = <&chosen>;
+		reset-gpios = <&pio 38 0x00>;
+		irq-gpios = <&pio 37 0x00>;
+		clkreq-gpios = <&pio 84 0x00>;
+		status = "ok";
+	};
+};
+
+&pio {
+	sar_int_default: sar_int_default {
+		pins_cmd_dat {
+			pinmux = <PINMUX_GPIO39__FUNC_GPIO39>;
+			input-enable;
+			drive-strength = <2>;
+			bias-pull-up;
+		};
+	};
+
+	sar_int_sleep: sar_int_sleep {
+		pins_cmd_dat {
+			pinmux = <PINMUX_GPIO39__FUNC_GPIO39>;
+			input-enable;
+			drive-strength = <2>;
+			bias-pull-up;
+		};
+	};
+	gpio1_input_pull_up: gpio1_input_pull_up {
+		pins_cmd_dat {
+			pinmux = <PINMUX_GPIO24__FUNC_GPIO24>;
+			slew-rate = <0>;
+			bias-pull-up = <00>;
+		};
+	};
+};
+
+&therm_intf {
+	/*Vsensor name should be CASE DIFFERENT with the name in config file*/
+	mmi,temperature-names = "BACK_TEMP", "FRONT_TEMP";/*for "back_temp" in config file*/
+};
+
+&rt6160_bus5{
+	status = "disabled";
+};
+&i2c5 {
+	hl7603@77 {
+		status = "ok";
+		compatible = "hl7603";
+		reg = <0x77>;
+		/* hl7603_vout_voltage = <0x0B>; //3.4v */
+	};
+	sgm6211@75 {
+		status = "ok";
+		compatible = "sgm62110";
+		reg = <0x75>;
+	};
+};
+
+&mt6363_vio18 {
+	regulator-min-microvolt = <1800000>;
+	regulator-max-microvolt = <2100000>;
+};
+
+&mt6368_vio28 {
+        regulator-min-microvolt = <3300000>;
+        regulator-max-microvolt = <3300000>;
+};
+
+&i2c0 {
+	status = "ok";
+
+	sx937x: sx937x@2c { /* SAR sensor */
+		compatible = "Semtech,sx937x";
+		reg = <0x2c>;
+		Semtech,power-supply-type = <0>;
+		cap_vdd-supply = <&mt6363_vio18>;
+		pinctrl-names = "default","sleep";
+		pinctrl-0 = <&sar_int_default>;
+		pinctrl-1 = <&sar_int_sleep>;
+		interrupt-parent = <&pio>;
+		interrupts = <39 0x02>;
+		interrupt-names = "sx937x_irq";
+		Semtech,nirq-gpio= <&pio 39 0x02>;
+		esd-reinit-on = <1>;
+		/*use PH5/6 as the reference sensor
+		set it to 0xff if the ref-phases-x is not used*/
+		Semtech,ref-phases-a = <4>;
+		Semtech,ref-phases-b = <5>;
+		Semtech,ref-phases-c = <6>;
+		Semtech,button-flag = <0x0f>;
+		Semtech,reg-num = <59>;
+		Semtech,reg-init = <
+			0x8024 0x00007F00
+			0x4004 0x00000074
+			0x4008 0x00000008
+			0x8020 0x00000032
+			0x8028 0x0000085E    /*AFE_PARAM_PH0*/
+			0x8034 0x0000085E    /*AFE_PARAM_PH1*/
+			0x8040 0x0000085E    /*AFE_PARAM_PH2*/
+			0x804C 0x0000085E    /*AFE_PARAM_PH3*/
+			0x8058 0x0000085E    /*AFE_PARAM_PH4*/
+			0x8064 0x0000085E    /*AFE_PARAM_PH5*/
+			0x8070 0x0000085E    /*AFE_PARAM_PH6*/
+			0x807C 0x0000085E    /*AFE_PARAM_PH7*/
+			/*set CS3 to HZ, because it used as IRQ pin*/
+			0x8030 0x00924925    /*REG_AFEPH_PH0, CS0, ANT0*/
+			0x803C 0x0092C924    /*REG_AFEPH_PH1, CS5, ANT1*/
+			0x8048 0x00964924    /*REG_AFEPH_PH2, CS6, ANT3/4/5*/
+			0x8054 0x00B24924    /*REG_AFEPH_PH3, CS7, ANT2*/
+			0x8060 0x0092492C    /*REG_AFEPH_PH4, CS1, ANT0_REF*/
+			0x806C 0x00924964    /*REG_AFEPH_PH5, CS2, ANT3/4/5 REF*/
+			0x8078 0x00925924    /*REG_AFEPH_PH6, CS4, ANT1 REF*/
+			0x8084 0x00B24924    /*REG_AFEPH_PH7, NOT USE*/
+			0x8098 0x00006239
+			0x80B8 0x00005130
+			0x80D8 0x00004630
+			0x80F8 0x00002525
+			0x8118 0x000000FF
+			0x8138 0x000000FF
+			0x8158 0x000000FF
+			0x8178 0x000000FF
+			0x80A0 0x1D1D0001
+			0x80C0 0x1D1D0003
+			0x80E0 0x5F5F0002
+			0x8100 0x24240001
+			0x8188 0x08000004
+			0x818C 0x08000005
+			0x8190 0x08000006
+			0x8090 0x54AC5000
+			0x80B0 0x34CC5000
+			0x80D0 0x54AC5000
+			0x80F0 0x30D05000
+			0x8110 0x54AC5000
+			0x8130 0x54AC5000
+			0x8150 0x54AC5000
+			0x8170 0x54AC5000
+			0x8088 0x00300000
+			0x80A8 0x00300000
+			0x80C8 0x00300000
+			0x80E8 0x00300000
+			0x8108 0x06300000
+			0x8128 0x06300000
+			0x8148 0x06300000
+			0x8168 0x06300000
+			0x808C 0x60200030
+			0x80AC 0x60200030
+			0x80CC 0x60200030
+			0x80EC 0x60200030
+			0x810C 0x60200030
+			0x812C 0x60200030
+			0x814C 0x60200030
+			0x816C 0x60200030
+		>;
+		status = "okay";
+	};
+};
+
+&i2c1 {
+	clock-frequency = <400000>;
+	status = "okay";
+	haptic_hv@5A {
+		status = "okay";
+		compatible = "awinic,haptic_hv";
+		reg = <0x5A>;
+		irq-gpio = <&pio 24 0>;
+		reset-gpio = <&pio 23 0>;
+		pinctrl-names = "irq_active";
+		pinctrl-0 = <&gpio1_input_pull_up>;
+		f0_pre = < 1700 >;
+		mode = /bits/ 8 < 5 >;
+
+		aw8693x_f0_cali_percent = /bits/ 8 < 15 >;
+		aw8693x_gain_bypass = /bits/ 8 < 1 >;
+		aw8693x_uvlo_vol_default = /bits/ 8 < 0 >;
+		aw8693x_cont_smart_loop = /bits/ 8 < 0 >;
+		aw8693x_cont_drv1_lvl = /bits/ 8 < 0x7F >;
+		aw8693x_cont_lra_vrms = < 1800 >;
+		aw8693x_cont_drv1_time = /bits/ 8 < 0x04 >;
+		aw8693x_cont_drv2_time = /bits/ 8 < 0x14 >;
+		aw8693x_cont_track_margin = /bits/ 8 < 0x0F >;
+		aw8693x_cont_brk_gain = /bits/ 8 < 0x08 >;
+		aw8693x_cont_brk_time = /bits/ 8 < 0x08 >;
+		aw8693x_duration_time = /bits/ 8 < 20 30 60 >;
+		aw8693x_d2s_gain = /bits/ 8 < 0x04 >;
+		aw8693x_trig_config = /bits/ 8 < 0 0 0 1 0 2 0 0
+						 0 0 0 1 0 2 0 0
+						 0 0 0 1 0 2 0 0 >;
+		aw8693x_bst_vol_default = < 8000 >;
+		aw8693x_is_enabled_track_en;
+		aw8693x_is_pwm_12k;
+		/* aw8693x_is_enabled_auto_bst; */
+		/* aw8693x_is_enabled_one_wire; */
+	};
+
+};
+
+&u2port0{
+        mediatek,eye-vrt = <0x6>;
+        mediatek,eye-vrt-host = <0x3>;
+        mediatek,eye-term = <0x4>;
+        mediatek,eye-term-host = <0x4>;
+        mediatek,rev6 = <0x2>;
+        mediatek,rev6-host = <0x2>;
+};
+
+&usb_boost{
+        customization-boost;
+        small-core-f = <1250000>;
+        middle-core-f = <1600000>;
+        big-core-f = <1600000>;
+};
+
+/*vol+/- keys swap*/
+&mt6363keys {
+	mediatek,long-press-mode = <2>;
+	power-off-time-sec = <0>;
+	home {
+		linux,keycodes = <114>;
+	};
+};
+
+/* KEY GPIO standardization start */
+&pio{
+	aikey_gpio_default:key-default {
+		ai_key_int {
+			pinmux = <PINMUX_GPIO101__FUNC_GPIO101>;
+			input-enable;
+			bias-pull-up;
+		};
+	};
+};
+/* KEY GPIO standardization end */
+&gpio_keys {
+	status = "okay";
+	pinctrl-names = "default";
+	pinctrl-0 = <&aikey_gpio_default>;
+	aikey {
+		label = "AI_key";
+		linux,code = <583>;
+		linux,input-type = <1>;
+		gpios = <&pio 101 1>;
+		wakeup-source;
+		debounce-interval = <30>;
+	};
+};
+
+&low_battery_throttling {
+        thd-volts-l = <
+                3369 3243 3133
+                3772 3412 3277
+                4231 3753 3570>;
+        thd-volts-h = <
+                3469 3369 3243
+                3872 3772 3412
+                4331 4231 3753>;
+        lvsys-thd-volt-l = <3133>;
+        lvsys-thd-volt-h = <3243>;
+};
+
+&cpu_power_throttling {
+        lbat-limit-freq-lv2 = < 1800000  1800000 1800000>;
+        lbat-limit-freq-lv3 = < 1200000  1200000 1200000>;
+};
+
+&gpu_power_throttling {
+        lbat-limit-freq = <1200000 700000 600000>;
+};
+
+&bp_thl {
+        soc-limit-threshold = <5>;
+};
+
+&mt6375_batoc_throttle {
+        status = "disabled";
+};
+
+&md_power_throttling {
+        lbat-max-level = <3>;
+        lbat-reduce-tx-lv1 = <0>;
+        lbat-reduce-tx-lv2 = <0>;
+        lbat-reduce-tx-lv3 = <0>;
+
+        oc-max-level = <2>;
+        oc-reduce-tx-lv1 = <0>;
+        oc-reduce-tx-lv2 = <0>;
+
+        soc-max-level = <1>;
+        soc-reduce-tx-lv1 = <6>;
+};
+
+&ssusb {
+        /delete-property/ maximum-speed;
+        maximum-speed = "super-speed";
+};
+
+&swtp {
+	interrupt-parent = <&pio>;
+	interrupts = <104 IRQ_TYPE_LEVEL_HIGH 90 0>;
+	deb-gpios = <&pio 90 0>;
+	debounce = <512>;
+	status = "okay";
+};
+
+&swtp_1 {
+	interrupt-parent = <&pio>;
+	interrupts = <103 IRQ_TYPE_LEVEL_HIGH 89 0>;
+	deb-gpios = <&pio 89 0>;
+	debounce = <512>;
+	status = "okay";
+};
+
+&swtp_2 {
+	interrupt-parent = <&pio>;
+	interrupts = <101 IRQ_TYPE_LEVEL_HIGH 87 0>;
+	deb-gpios = <&pio 87 0>;
+	debounce = <512>;
+	status = "okay";
+};
+
