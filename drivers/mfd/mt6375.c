@@ -155,6 +155,10 @@ static int mt6375_regmap_read(void *context, const void *reg_buf,
 static const struct regmap_bus mt6375_regmap_bus = {
 	.write = mt6375_regmap_write,
 	.read = mt6375_regmap_read,
+#if defined(CONFIG_TCPC_ALL_POLL)
+	.max_raw_read = 16,
+	.max_raw_write = 15,
+#endif
 };
 
 static bool mt6375_is_accessible_reg(struct device *dev, unsigned int reg)
@@ -247,6 +251,57 @@ static irqreturn_t mt6375_irq_thread(int irq, void *data)
 	struct mt6375_data *ddata = data;
 	u8 evt[MT6375_IRQ_REGS];
 	bool handled = false;
+#if defined(CONFIG_TCPC_ALL_POLL)
+	unsigned long evt_bitmap = 0;
+	int i, j, ret, start, end;
+	size_t evt_count;
+
+	ret = regmap_bulk_read(ddata->rmap, MT6375_REG_CHG_IRQ0, evt,
+			       MT6375_IRQ_REGS);
+	if (ret) {
+		dev_err(ddata->dev, "failed to read irq event\n");
+		return IRQ_HANDLED;
+	}
+
+	/* ignore masked irq and ack */
+	for (i = 0; i < MT6375_IRQ_REGS; i++) {
+		evt[i] &= ~ddata->mask_buf[i];
+		if (evt[i])
+			set_bit(i, &evt_bitmap);
+	}
+	if (!evt_bitmap)
+		return IRQ_NONE;
+	start = ffs(evt_bitmap) - 1;
+	end = fls(evt_bitmap) - 1;
+	evt_count = end - start + 1;
+	if (start + evt_count > MT6375_IRQ_REGS)
+		evt_count = MT6375_IRQ_REGS - start;
+	ret = regmap_bulk_write(ddata->rmap, MT6375_REG_CHG_IRQ0 + start, evt + start,
+		evt_count);
+
+	if (ret < 0)
+		dev_err(ddata->dev, "failed to ack irq status\n");
+
+	/* for Coverity defect */
+	if (end >= MT6375_IRQ_REGS)
+		end = MT6375_IRQ_REGS -1;
+	if (start < 0)
+		start = 0;
+	/* handle irq, PD_EVT first */
+	for (i = end; i >= start; i--) {
+		if (!evt[i] || i == (MT6375_GM30_EVT / 8))
+			continue;
+		for (j = 0; j < 8; j++) {
+			if (!(evt[i] & BIT(j)))
+				continue;
+			handle_nested_irq(irq_find_mapping(ddata->domain,
+							   i * 8 + j));
+			handled = true;
+		}
+	}
+
+	return IRQ_HANDLED;
+#else
 	int i, j, ret;
 
 	ret = regmap_bulk_read(ddata->rmap, MT6375_REG_CHG_IRQ0, evt,
@@ -278,6 +333,7 @@ static irqreturn_t mt6375_irq_thread(int irq, void *data)
 	}
 
 	return handled ? IRQ_HANDLED : IRQ_NONE;
+#endif
 }
 
 static int mt6375_add_irq_chip(struct mt6375_data *ddata)
