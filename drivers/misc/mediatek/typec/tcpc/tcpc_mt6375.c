@@ -1993,9 +1993,13 @@ static int mt6375_get_message(struct tcpc_device *tcpc, u32 *payload,
 	int ret = 0;
 	u8 cnt = 0, buf[32] = {0};
 	struct mt6375_tcpc_data *ddata = tcpc_get_dev_data(tcpc);
-
+#if defined(CONFIG_TCPC_ALL_POLL)
+	ret = mt6375_bulk_read(ddata, TCPC_V10_REG_RX_BYTE_CNT,
+			       buf, 14);
+#else
 	ret = mt6375_bulk_read(ddata, TCPC_V10_REG_RX_BYTE_CNT,
 			       buf, sizeof(buf));
+#endif
 	if (ret < 0)
 		return ret;
 
@@ -2008,13 +2012,29 @@ static int mt6375_get_message(struct tcpc_device *tcpc, u32 *payload,
 	MT6375_DBGINFO("MessageType is %d\n", PD_HEADER_TYPE(*msg_head));
 
 	/* TCPC 1.0 ==> no need to subtract the size of msg_head */
+#if defined(CONFIG_TCPC_ALL_POLL)
+	if (cnt <= 3)
+		return ret;
+
+	cnt -= 3; /* FRAME_TYPE + HEADER */
+	if (cnt > sizeof(buf) - 4)
+		cnt = sizeof(buf) - 4;
+	if (cnt > 10) {
+		ret = mt6375_bulk_read(ddata, TCPC_V10_REG_RX_DATA + 10,
+				buf + 14, cnt -10);
+
+		if (ret < 0)
+			return ret;
+	}
+	memcpy(payload, buf + 4, cnt);
+#else
 	if (cnt > 3) {
 		cnt -= 3; /* MSG_HDR */
 		if (cnt > sizeof(buf) - 4)
 			cnt = sizeof(buf) - 4;
 		memcpy(payload, buf + 4, cnt);
 	}
-
+#endif
 	return ret;
 }
 

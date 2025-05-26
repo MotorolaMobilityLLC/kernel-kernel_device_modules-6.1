@@ -103,3 +103,9 @@ config MFD_RT9490
 	  path management device for 1 to 4 cell Li-Ion and Li-Polymer battery.
 	  Except the charger circuit, it also includes ADCs to sense the
 	  charger voltage and current like as VBUS/IBUS/VBAT/IBAT.
+
+config TCPC_ALL_POLL
+	tristate "Let all tcpc i2c transfer use polling"
+	default n
+	help
+	  Say Yes to let all tcpc i2c transfer use polling mode
