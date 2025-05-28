@@ -207,8 +207,6 @@
 };
 
 &dispsys_config {
-	force-disable-idlemgr-by-repaint;
-
 	helper-value = <0>, /*MTK_DRM_OPT_STAGE*/
 		<1>, /*MTK_DRM_OPT_USE_CMDQ*/
 		<1>, /*MTK_DRM_OPT_USE_M4U*/
