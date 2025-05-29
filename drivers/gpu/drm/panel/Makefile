@@ -78,6 +78,7 @@ obj-$(CONFIG_DRM_PANEL_BOE_VTDR6126A_667_1220x2712_DPHY_VDO) += dsi-panel-mot-bo
 obj-$(CONFIG_DRM_PANEL_TM_NT37706_667_1220x2712_DPHY_VDO_120HZ) += dsi-panel-mot-tm-nt37706-667-1220x2712-dphy-vdo-120hz.o
 obj-$(CONFIG_DRM_PANEL_CSOT_NT37706_667_1220x2712_VDO_CYBERT) += dsi-panel-mot-csot-nt37706-667-1220x2712-vdo-cybert.o
 obj-$(CONFIG_DRM_PANEL_TM_VTD6126A_667_1220x2712_VDO_CYBERT) += dsi-panel-mot-tm-vtd6126a-667-1220x2712-vdo-cybert.o
+obj-$(CONFIG_DRM_PANEL_TIANMA_NT37707_636_FHDP_DPHY_CMD_120HZ_U9) += dsi-panel-mot-tianma-nt37707-636-fhdp-dphy-cmd-120hz-u9.o
 obj-$(CONFIG_DRM_PANEL_MOT_DUMMY_VDO_60HZ) += dsi-panel-mot-dummy-vdo-60hz.o
 obj-$(CONFIG_DRM_PANEL_MOT_DUMMY_CMD_60HZ) += dsi-panel-mot-dummy-cmd-60hz.o
 obj-$(CONFIG_DRM_PANEL_TM_NT37706_667_1220x2712_VDO_NICE) += dsi-panel-mot-tm-nt37706-667-1220x2712-vdo-nice.o
