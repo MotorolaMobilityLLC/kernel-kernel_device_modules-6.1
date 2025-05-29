@@ -1188,7 +1188,7 @@ static int mmi_mux_switch(struct mtk_charger *info, enum mmi_mux_channel channel
 					info->mmi.mux_channel.chan = MMI_MUX_CHANNEL_WLC_FACTORY_TEST;
 					info->mmi.mux_channel.on = true;
 #endif
-				} else {
+				} else if (pre_chan == MMI_MUX_CHANNEL_TYPEC_CHG) {
 					mmi_mux_config(info, MMI_MUX_CHANNEL_NONE);
 					info->mmi.mux_channel.chan = MMI_MUX_CHANNEL_NONE;
 					info->mmi.mux_channel.on = false;
