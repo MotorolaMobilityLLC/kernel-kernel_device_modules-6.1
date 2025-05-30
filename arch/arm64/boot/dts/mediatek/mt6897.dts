@@ -8458,13 +8458,15 @@
 			clocks = <&dispsys0_config_clk CLK_DISPSYS0_DISP_DP_INTF0>,
 				<&dispsys0_config_clk CLK_DISPSYS0_DP_CLK>,
 				<&topckgen_clk CLK_TOP_DP_SEL>,
+				<&topckgen_clk CLK_TOP_TVDPLL_D2>,
 				<&topckgen_clk CLK_TOP_TVDPLL_D4>,
 				<&topckgen_clk CLK_TOP_TVDPLL_D8>,
 				<&topckgen_clk CLK_TOP_TVDPLL_D16>,
-				<&topckgen_clk CLK_TOP_TVDPLL>;
+				<&apmixedsys_clk CLK_APMIXED_TVDPLL>;
 			clock-names = "hf_fmm_ck",
 					"hf_fdp_ck",
 					"MUX_DP",
+					"TVDPLL_D2",
 					"TVDPLL_D4",
 					"TVDPLL_D8",
 					"TVDPLL_D16",
