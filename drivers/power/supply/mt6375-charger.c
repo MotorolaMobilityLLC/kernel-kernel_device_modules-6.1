@@ -29,6 +29,7 @@
 #include <linux/of_gpio.h>
 
 static bool dbg_log_en;
+static bool wait_done;
 module_param(dbg_log_en, bool, 0644);
 #define mt_dbg(dev, fmt, ...) \
 	do { \
@@ -1333,7 +1334,7 @@ static int mt6375_chg_enable_bc12(struct mt6375_chg_data *ddata, bool en)
 		/* CDP port specific process */
 		dev_info(ddata->dev, "check CDP block\n");
 		for (i = 0; i < max_wait_cnt; i++) {
-			if (is_usb_rdy(ddata->dev))
+			if (is_usb_rdy(ddata->dev) || wait_done)
 				break;
 			attach = atomic_read(&ddata->attach[0]);
 			if (attach == ATTACH_TYPE_PWR_RDY ||
@@ -1346,9 +1347,10 @@ static int mt6375_chg_enable_bc12(struct mt6375_chg_data *ddata, bool en)
 				break;
 			}
 		}
-		if (i == max_wait_cnt)
+		if (i == max_wait_cnt) {
+			wait_done = true;
 			dev_notice(ddata->dev, "%s: CDP timeout\n", __func__);
-		else
+		} else
 			dev_info(ddata->dev, "%s: CDP free\n", __func__);
 	}
 	__pm_relax(ddata->bc12_wakelock);
@@ -4512,6 +4514,7 @@ static int mt6375_chg_probe(struct platform_device *pdev)
 	char *name = NULL;
 
 	dev_info(dev, "%s: entry. 6375 charger probe now.\n", __func__);
+	wait_done = false;
 	ddata = devm_kzalloc(dev, sizeof(*ddata), GFP_KERNEL);
 	if (!ddata)
 		return -ENOMEM;
