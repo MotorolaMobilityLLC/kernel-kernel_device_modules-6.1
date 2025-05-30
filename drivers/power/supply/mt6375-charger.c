@@ -1123,22 +1123,6 @@ static int mmi_notify_vbus_event(struct mt6375_chg_data *ddata, bool vbus_status
 {
 	char *event_string = NULL;
 	union power_supply_propval val = {0};
-	struct power_supply *chg_psy = NULL;
-	struct mtk_charger *info = NULL;
-	bool water_detected = false;
-
-	chg_psy = power_supply_get_by_name("mtk-master-charger");
-	if (IS_ERR_OR_NULL(chg_psy)) {
-		dev_info(ddata->dev, "%s Couldn't get chg_psy\n", __func__);
-		return -EINVAL;
-	} else {
-		info = (struct mtk_charger *)power_supply_get_drvdata(chg_psy);
-		if (info == NULL) {
-			dev_info(ddata->dev, "%s info is NULL\n", __func__);
-			return -EINVAL;
-		}
-		water_detected = info->water_detected;
-	}
 
 	if(!ddata->batt_psy)
 		ddata->batt_psy = power_supply_get_by_name("battery");
@@ -1158,7 +1142,7 @@ static int mmi_notify_vbus_event(struct mt6375_chg_data *ddata, bool vbus_status
 			return 0;
 	}
 
-	if (mmi_is_vbus_changed(ddata) && water_detected) {
+	if (mmi_is_vbus_changed(ddata)) {
 		event_string = kmalloc(CHG_SHOW_MAX_SIEZE, GFP_KERNEL);
 
 		scnprintf(event_string, CHG_SHOW_MAX_SIEZE,
