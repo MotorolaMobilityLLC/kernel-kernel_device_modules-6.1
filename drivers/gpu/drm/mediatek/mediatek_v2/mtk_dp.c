@@ -2054,23 +2054,15 @@ bool mdrv_DPTx_TrainingChangeMode(struct mtk_dp *mtk_dp)
 // MMI_STOPSHIP <displayport>: Parse monitor name from dtsi file later
 static bool mtk_allow_downgrade(u8 *monitor_name, int type_index)
 {
-	char *hub_monitor_blacklist_bw14[] = {"Y27q-20", "SAMSUNG", "T24m", NULL};
+	char *hub_monitor_blacklist_bw14[] = {"Y27q-20", "SAMSUNG", NULL};
 	char *dp_monitor_blacklist_bw1e[] = {"P27h-30", "P32p-30", "Y27q-20", NULL};
-	char *dp_monitor_blacklist_bw14[] = {"P32p-20", "T24m", NULL};
-	char *dp_monitor_blacklist_bw0a[] = {"Q27q-1L", "Y27q-20", NULL};
 	bool is_allow = false;
 	char **monitor_list;
 
 	if(type_index == 0)
 		monitor_list = hub_monitor_blacklist_bw14;
-	else if(type_index == 0x1E)
-		monitor_list = dp_monitor_blacklist_bw1e;
-	else if(type_index == 0x14)
-		monitor_list = dp_monitor_blacklist_bw14;
-	else if(type_index == 0xA)
-		monitor_list = dp_monitor_blacklist_bw0a;
 	else
-		return false;
+		monitor_list = dp_monitor_blacklist_bw1e;
 
 	while(*monitor_list != NULL) {
 		DPTXDBG("downgrade: value: %s\n", *monitor_list);
@@ -2154,7 +2146,6 @@ int mdrv_DPTx_SetTrainingStart(struct mtk_dp *mtk_dp)
 #endif
 
 	if (mtk_dp->dp_downgrade) {
-		DPTXMSG("Use Moto Display Port compatibility solution");
 
 		if (ubLaneCount == 2 && ubLinkRate == DP_LINKRATE_HBR2 &&
 			mtk_allow_downgrade(mtk_dp->monitor_name, 0)) {
@@ -2167,24 +2158,10 @@ int mdrv_DPTx_SetTrainingStart(struct mtk_dp *mtk_dp)
 			DPTXMSG("downgrade to DP_LINKRATE_HBR2 for hub");
 		}
 
-		if (ubLaneCount == 4 && mtk_allow_downgrade(mtk_dp->monitor_name, ubLinkRate)) {
-			switch (ubLinkRate)
-			{
-			case DP_LINKRATE_HBR3:
-				ubLinkRate = DP_LINKRATE_HBR2;
-				DPTXMSG("downgrade to DP_LINKRATE_HBR2 for dp");
-				break;
-			case DP_LINKRATE_HBR2:
-				ubLinkRate = DP_LINKRATE_HBR;
-				DPTXMSG("downgrade to DP_LINKRATE_HBR for dp");
-				break;
-			case DP_LINKRATE_HBR:
-				ubLinkRate = DP_LINKRATE_RBR;
-				DPTXMSG("downgrade to DP_LINKRATE_RBR for dp");
-				break;
-			default:
-				break;
-			}
+		if (ubLaneCount == 4 && ubLinkRate == DP_LINKRATE_HBR3 &&
+			mtk_allow_downgrade(mtk_dp->monitor_name, 1)) {
+			ubLinkRate = DP_LINKRATE_HBR2;
+			DPTXMSG("downgrade to DP_LINKRATE_HBR2 for dp");
 		}
 	}
 
