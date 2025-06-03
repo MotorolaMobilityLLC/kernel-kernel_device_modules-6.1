@@ -234,10 +234,7 @@ bootargs_ext = "";
 			dsi_out1: endpoint@1 {
 				remote-endpoint = <&panel_in1>;
 			};
-                        dsi_out3: endpoint3 {
-                                remote-endpoint = <&panel_in3>;
-                        };
-                };
+		};
 
 	};
 };
