@@ -76,11 +76,39 @@
 		/delete-property/ pm-enable-gpios;
 		/delete-property/ reset-gpios;
 		/delete-property/ gate-ic;
+
+		compatible = "tianma,nt37707,cmd,636,u9";
+		reg = <3>;
+		vddi-gpios = <&pio 188 0>;
+		dvdd-gpios = <&pio 28 0>;
+		oled-vci-supply = <&mt6369_vmch>;
+		reset-gpios = <&pio 90 0>;
+		pinctrl-names = "default";
+                port {
+                        panel_in3: endpoint {
+                                remote-endpoint = <&dsi_out3>;
+                        };
+                };
+	};
+
+	panel4@3 {
+		/delete-property/ compatible;
+		/delete-property/ pm-enable-gpios;
+		/delete-property/ reset-gpios;
+		/delete-property/ gate-ic;
 		/delete-property/ swap-from-dts;
 		/delete-property/ lane-swap-setting;
 		/delete-property/ pn-swap-setting;
 
 		compatible = "mot,dummy,vdo,60hz";
+	};
+
+	ports {
+		port {
+                        dsi_out3: endpoint3 {
+                                remote-endpoint = <&panel_in3>;
+                        };
+                };
 	};
 };
 
