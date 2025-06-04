@@ -396,10 +396,6 @@ static const struct mtk_dp_intf_resolution_cfg mt6897_resolution_cfg[SINK_MAX] =
 					.clksrc = 0,
 					.con1 = 0
 				},
-	[SINK_1080_1920] = {
-					.clksrc = MT6897_TVDPLL_D8,
-					.con1 = 0x831B2B52
-				},
 };
 
 static const struct mtk_dp_intf_resolution_cfg mt6989_resolution_cfg[SINK_MAX] = {
@@ -906,15 +902,6 @@ static void mtk_dp_intf_config(struct mtk_ddp_comp *comp,
 		vpw = 10;
 		vfp = 8;
 		vbp = 72;
-	} else if ((cfg->w == 1080) && (cfg->h == 1920)
-		   && (cfg->vrefresh == 60)) {
-		dp_intf->res = SINK_1080_1920;
-		hpw = 28;
-		hfp = 22;
-		hbp = 50;
-		vpw = 10;
-		vfp = 3;
-		vbp = 56;
 	} else
 		DPTXERR("%s error, w %d, h, %d, fps %d!\n",
 			__func__, cfg->w, cfg->h, cfg->vrefresh);
