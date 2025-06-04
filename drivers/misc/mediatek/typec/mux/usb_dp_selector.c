@@ -196,10 +196,9 @@ static int usb_dp_selector_mux_set(struct typec_mux_dev *mux,
 			break;
 		}
 		uds->hdp_state = 0;
-		/* Mark force HPD WA by DP Team Request. */
-		/* schedule_delayed_work(&uds->check_wk, msecs_to_jiffies(CHECK_HPD_DELAY)); */
+		schedule_delayed_work(&uds->check_wk, msecs_to_jiffies(CHECK_HPD_DELAY));
 
-	} else {
+	} else if (dp_data->status) {
 		u32 irq = dp_data->status & DP_STATUS_IRQ_HPD;
 		u32 state = dp_data->status & DP_STATUS_HPD_STATE;
 
