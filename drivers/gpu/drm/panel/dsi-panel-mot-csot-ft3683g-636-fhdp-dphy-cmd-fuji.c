@@ -237,8 +237,16 @@ static void lcm_panel_init(struct lcm *ctx)
 	lcm_dcs_write_seq_static(ctx, 0x75, 0x00);
 	lcm_dcs_write_seq_static(ctx, 0x72, 0x00);
 	lcm_dcs_write_seq_static(ctx, 0xff, 0x5a,0x81);
+	lcm_dcs_write_seq_static(ctx, 0x65, 0x06);
+	lcm_dcs_write_seq_static(ctx, 0xf3, 0x87);
+	lcm_dcs_write_seq_static(ctx, 0x65, 0x09);
+	lcm_dcs_write_seq_static(ctx, 0xf3, 0x00);
+	lcm_dcs_write_seq_static(ctx, 0x65, 0x0a);
+	lcm_dcs_write_seq_static(ctx, 0xf3, 0x10);
+	lcm_dcs_write_seq_static(ctx, 0x65, 0x10);
+	lcm_dcs_write_seq_static(ctx, 0xf3, 0x10);
 	lcm_dcs_write_seq_static(ctx, 0x65, 0x02);
-	lcm_dcs_write_seq_static(ctx, 0xfb, 0xb3,0xb3,0xb3);
+	lcm_dcs_write_seq_static(ctx, 0xfb, 0xd3,0xd3,0xd3,0xd3);
 	lcm_dcs_write_seq_static(ctx, 0xff, 0x5a,0x80);
 	lcm_dcs_write_seq_static(ctx, 0x65, 0x0a);
 	lcm_dcs_write_seq_static(ctx, 0xf9, 0x9e,0x8f);
@@ -369,7 +377,7 @@ if(ctx->version == 1){
 	lcm_dcs_write(ctx, bl_tb, ARRAY_SIZE(bl_tb));
 
 	lcm_dcs_write_seq_static(ctx, 0x11);
-	usleep_range(75 * 1000, 76 * 1000);
+	usleep_range(85 * 1000, 86 * 1000);
 	lcm_dcs_write_seq_static(ctx, 0x29);
 	atomic_set(&ctx->hbm_mode, 0);
 	atomic_set(&ctx->dc_mode, 0);
@@ -438,23 +446,10 @@ static int lcm_unprepare(struct drm_panel *panel)
 	if (!ctx->prepared)
 		return 0;
 	printk("%s enter  \n",__func__);
-	lcm_dcs_write_seq_static(ctx, 0x6c,0x02);
-	lcm_dcs_write_seq_static(ctx, 0x71,0x00);
-	usleep_range(10000, 10100);
-	lcm_dcs_write_seq_static(ctx, 0x75,0x00);
-	lcm_dcs_write_seq_static(ctx, 0xF0,0xAA,0x1B);
-	lcm_dcs_write_seq_static(ctx, 0xD0,0x00);
-	lcm_dcs_write_seq_static(ctx, 0xF0,0xAA,0x10);
-	lcm_dcs_write_seq_static(ctx, 0xCF,0x09);
-	usleep_range(10000, 10100);
 	lcm_dcs_write_seq_static(ctx, 0x28);
-	usleep_range(10000, 10100);
-	lcm_dcs_write_seq_static(ctx, 0xF0,0xAA,0x10);
-	lcm_dcs_write_seq_static(ctx, 0x65,0x05);
-	lcm_dcs_write_seq_static(ctx, 0xD0,0x0BE);
-	usleep_range(11000, 11100);
+	usleep_range(20000, 20100);
 	lcm_dcs_write_seq_static(ctx, 0x10);
-	usleep_range(150 * 1000, 151 * 1000);
+	usleep_range(120 * 1000, 121 * 1000);
 
 	ctx->error = 0;
 	ctx->prepared = false;
