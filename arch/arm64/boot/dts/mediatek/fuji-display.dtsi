@@ -204,6 +204,8 @@
 
 &dp_tx {
 	mtk-dp-downgrade;
+	mmi,hub_monitor_list = "Y27q-20", "SAMSUNG";
+	mmi,dp_monitor_list = "P27h-30", "P32p-30", "Y27q-20";
 };
 
 &dispsys_config {
