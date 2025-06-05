@@ -2051,24 +2051,21 @@ bool mdrv_DPTx_TrainingChangeMode(struct mtk_dp *mtk_dp)
 	return true;
 }
 
-// MMI_STOPSHIP <displayport>: Parse monitor name from dtsi file later
-static bool mtk_allow_downgrade(u8 *monitor_name, int type_index)
+static bool mtk_allow_downgrade(struct mtk_dp *mtk_dp, int type_index)
 {
-	char *hub_monitor_blacklist_bw14[] = {"Y27q-20", "SAMSUNG", NULL};
-	char *dp_monitor_blacklist_bw1e[] = {"P27h-30", "P32p-30", "Y27q-20", NULL};
 	bool is_allow = false;
 	char **monitor_list;
 
 	if(type_index == 0)
-		monitor_list = hub_monitor_blacklist_bw14;
+		monitor_list = mtk_dp->hub_monitor_list_bw14;
 	else
-		monitor_list = dp_monitor_blacklist_bw1e;
+		monitor_list = mtk_dp->dp_monitor_list_bw1e;
 
 	while(*monitor_list != NULL) {
 		DPTXDBG("downgrade: value: %s\n", *monitor_list);
-		if(strstr(monitor_name, *monitor_list) != NULL){
+		if(strstr(mtk_dp->monitor_name, *monitor_list) != NULL){
 			is_allow = true;
-			DPTXMSG("match the monitor name=%s\n", monitor_name);
+			DPTXMSG("match the monitor name=%s\n",  mtk_dp->monitor_name);
 			break;
 		}
 		monitor_list++;
@@ -2146,9 +2143,8 @@ int mdrv_DPTx_SetTrainingStart(struct mtk_dp *mtk_dp)
 #endif
 
 	if (mtk_dp->dp_downgrade) {
-
 		if (ubLaneCount == 2 && ubLinkRate == DP_LINKRATE_HBR2 &&
-			mtk_allow_downgrade(mtk_dp->monitor_name, 0)) {
+			mtk_allow_downgrade(mtk_dp, 0)) {
 			ubLinkRate = DP_LINKRATE_HBR;
 			DPTXMSG("downgrade to DP_LINKRATE_HBR for hub");
 		}
@@ -2159,7 +2155,7 @@ int mdrv_DPTx_SetTrainingStart(struct mtk_dp *mtk_dp)
 		}
 
 		if (ubLaneCount == 4 && ubLinkRate == DP_LINKRATE_HBR3 &&
-			mtk_allow_downgrade(mtk_dp->monitor_name, 1)) {
+			mtk_allow_downgrade(mtk_dp, 1)) {
 			ubLinkRate = DP_LINKRATE_HBR2;
 			DPTXMSG("downgrade to DP_LINKRATE_HBR2 for dp");
 		}
@@ -3467,6 +3463,30 @@ static int mtk_dp_vsvoter_parse(struct mtk_dp *mtk_dp, struct device_node *node)
 	return PTR_ERR_OR_ZERO(mtk_dp->vsv);
 }
 
+static int mtk_dp_monitor_list_parse(struct mtk_dp *mtk_dp, struct device_node *node)
+{
+	int ret = 0;
+	mtk_dp->dp_downgrade = of_property_read_bool(node, "mtk-dp-downgrade");
+	if (mtk_dp->dp_downgrade) {
+		mtk_dp->hub_list_count = of_property_count_strings(node, "mmi,hub_monitor_list");
+		if (mtk_dp->hub_list_count > 0) {
+			ret = of_property_read_string_array(node, "mmi,hub_monitor_list",
+				(const char **)mtk_dp->hub_monitor_list_bw14, mtk_dp->hub_list_count);
+		}
+
+		mtk_dp->dp_list_count = of_property_count_strings(node, "mmi,dp_monitor_list");
+		if (mtk_dp->dp_list_count > 0) {
+			ret = of_property_read_string_array(node, "mmi,dp_monitor_list",
+				(const char **)mtk_dp->dp_monitor_list_bw1e, mtk_dp->dp_list_count);
+		}
+	}
+
+	dev_info(mtk_dp->dev, "hub_list_count = %d, dp_list_count = %d\n",
+		mtk_dp->hub_list_count, mtk_dp->dp_list_count);
+
+	return ret;
+}
+
 static int mtk_dp_dt_parse_pdata(struct mtk_dp *mtk_dp,
 		struct platform_device *pdev)
 {
@@ -3500,7 +3520,9 @@ static int mtk_dp_dt_parse_pdata(struct mtk_dp *mtk_dp,
 	if (ret)
 		dev_info(dev, "failed to parse vsv property\n");
 
-	mtk_dp->dp_downgrade = of_property_read_bool(dev->of_node, "mtk-dp-downgrade");
+	ret = mtk_dp_monitor_list_parse(mtk_dp, dev->of_node);
+	if (ret < 0)
+		dev_info(dev, "failed to parse monitor list\n");
 
 	return 0;
 }

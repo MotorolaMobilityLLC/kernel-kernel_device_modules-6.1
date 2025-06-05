@@ -102,6 +102,7 @@
 #define VS_VOTER_EN_LO_CLR 0x2
 
 #define EDID_MONITOR_NAME_SIZE     13
+#define MONITOR_MAX_NUM 8
 
 enum dp_cmd {
 	DP_DUMP = 0x20,
@@ -334,6 +335,10 @@ struct mtk_dp {
 
 	bool dp_downgrade;
 	char monitor_name[EDID_MONITOR_NAME_SIZE+1];
+	uint8_t hub_list_count;
+	char *hub_monitor_list_bw14[MONITOR_MAX_NUM];
+	uint8_t dp_list_count;
+	char *dp_monitor_list_bw1e[MONITOR_MAX_NUM];
 };
 
 #endif /*__DRTX_TYPE_H__*/
