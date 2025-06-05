@@ -269,7 +269,7 @@
 #define MT6375_WD_SETTING2(TDET, TSLEEP) \
 	((TDET << MT6375_SFT_WD_TDET) | (TSLEEP << MT6375_SFT_WD_TSLEEP))
 
-#define MT6375_SBU_PH_LBOUND_FACTORY	700
+#define MT6375_SBU_PH_LBOUND_FACTORY	600
 
 struct mt6375_tcpc_data {
 	struct device *dev;
