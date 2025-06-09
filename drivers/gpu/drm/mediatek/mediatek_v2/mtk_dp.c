@@ -4183,7 +4183,7 @@ void mtk_dp_HPDInterruptSet(int bstatus)
 	}
 
 	if (bstatus == HPD_CONNECT && g_mtk_dp->bPowerOn &&
-		g_mtk_dp->bUeventToHwc) {
+		g_mtk_dp->bUeventToHwc && g_mtk_dp->dp_ready) {
 		DPTXMSG("force send uevent\n");
 		mtk_dp_hotplug_uevent(1);
 		g_mtk_dp->bUeventToHwc = false;
