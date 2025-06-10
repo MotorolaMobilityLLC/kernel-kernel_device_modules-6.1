@@ -289,7 +289,6 @@ void mtk_dp_aux_swap_enable(bool enable);
 void mtk_dp_set_pin_assign(u8 type);
 
 extern void mhal_DPTx_VideoClock(bool enable, int resolution);
-extern void mhal_DPTx_ModeCopy(struct drm_display_mode *mode);
 void mtk_dp_clock_debug(unsigned int clksrc, unsigned int con1);
 unsigned int mtk_de_get_clk_debug(void);
 unsigned int mtk_de_get_clksrc(void);
