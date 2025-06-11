@@ -509,6 +509,7 @@ struct mmi_params {
 	int			num_cycle_cv_steps;
 	struct mmi_cycle_cv_steps	*cycle_cv_steps;
 #endif
+       bool			fast_update_uevent;
 };
 /*moto mmi Functionality end*/
 

@@ -134,6 +134,8 @@
 
 	/*fcnt charge feature*/
 	fcnt,charger-feature-support;
+
+	mmi,fast-update-uevent;
 };
 
 &moto_chg_tcmd {

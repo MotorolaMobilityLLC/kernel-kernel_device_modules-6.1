@@ -4168,6 +4168,9 @@ static bool mmi_is_power_supply_changed(struct mtk_charger *info)
 	if (info == NULL)
 		return false;
 
+	if (info->mmi.fast_update_uevent)
+		return true;
+
 	if(g_charge_rate == info->mmi.charge_rate &&
 		g_battery_age == mmi_get_battery_age() &&
 		g_water_detected == info->water_detected &&
@@ -5969,6 +5972,11 @@ static int parse_mmi_dt(struct mtk_charger *info, struct device *dev)
 		info->mmi.ifc_no_cv_step_hyst = 10;
 	pr_info("%s ifc_no_cv_step_hyst %d \n", __func__,
 		info->mmi.ifc_no_cv_step_hyst);
+
+	info->mmi.fast_update_uevent =
+		of_property_read_bool(node, "mmi,fast-update-uevent");
+	pr_info("%s fast_update_uevent %d \n", __func__,
+		info->mmi.fast_update_uevent);
 
 	return rc;
 }
