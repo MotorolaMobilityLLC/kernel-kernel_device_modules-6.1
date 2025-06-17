@@ -91,6 +91,11 @@ config GTP_SPI_PINCTRL
 	help
 		Say Y here if need to adjust SPI mode.
 
+config TOUCH_HARDWARE_STATUS
+	bool "Get hardware status"
+	help
+		Say Y here if need to support get hardware status information.
+
 config ENABLE_GTP_PALM_CANCEL_BY_ID
 	bool "Support goodix touch palm cancel by ID feature"
 	help
