@@ -14,6 +14,10 @@
 	mmi,batt-ids-map = "1", "ATLSP50NVT";
 };
 
+&bp_thl {
+	soc-limit-threshold = <5>;
+};
+
 /*End of this file, DO NOT ADD ANYTHING HERE*/
 
 
