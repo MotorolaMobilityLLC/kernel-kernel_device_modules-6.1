@@ -18,6 +18,60 @@
 	soc-limit-threshold = <5>;
 };
 
+&lk_charger {
+        boot-battery-voltage = <3300000>;
+        boot-battery-voltage-max = <3300000>;
+        /*boot battery voltage when using AC charger*/
+        ac_charger_boot_battery_voltage = <3200000>;
+};
+
+&low_battery_throttling {
+        thd-volts-l = <
+                3099 2985 2900
+                3452 3153 3042
+                3885 3471 3315>;
+        thd-volts-h = <
+                3199 3099 2985
+                3552 3452 3153
+                3985 3885 3471>;
+        lvsys-thd-volt-l = <2900>;
+        lvsys-thd-volt-h = <2985>;
+};
+
+&cpu_power_throttling {
+        lbat-limit-freq-lv2 = < 1800000  1800000 1800000>;
+        lbat-limit-freq-lv3 = < 1200000  1200000 1200000>;
+};
+
+&gpu_power_throttling {
+        lbat-limit-freq = <1047000 709000 598000>;
+};
+
+&mt6375_batoc_throttle {
+        status = "disabled";
+};
+
+&md_power_throttling {
+        lbat-max-level = <3>;
+        lbat-reduce-tx-lv1 = <0>;
+        lbat-reduce-tx-lv2 = <0>;
+        lbat-reduce-tx-lv3 = <0>;
+
+        oc-max-level = <2>;
+        oc-reduce-tx-lv1 = <0>;
+        oc-reduce-tx-lv2 = <0>;
+
+        soc-max-level = <1>;
+        soc-reduce-tx-lv1 = <6>;
+};
+
+&mt6363_dynamic_loading_throttling {
+        status = "okay";
+        bob-check-flag = <0>;
+        uvlo-level = <2400>;
+        vbb-uvlo-level = <2400>;
+};
+
 &charger {
 	battery-cv = <4530000>;
 	mmi,iterm-ma = <243>;
