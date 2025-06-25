@@ -3819,6 +3819,11 @@ static enum drm_mode_status mtk_dp_conn_mode_valid(struct drm_connector *conn,
 	if (mode->clock < (dp_plat_limit[plat_limit_array-1].clock - 5000))
 		return MODE_CLOCK_LOW;
 
+	if ((mtk_dp && mtk_dp->priv && mtk_dp->priv->data) &&
+	drm_mode_vrefresh(mode) > 60 && mtk_dp->priv->data->mmsys_id == MMSYS_MT6897) {
+		DPTXDBG("Returning MODE : FPS is too high\n");
+		return MODE_NOMODE;
+	}
 	for (i = 0; i < plat_limit_array; i++) {
 		if (mode->hdisplay == 640 && mode->vdisplay == 480)
 			break;
