@@ -69,7 +69,7 @@
         status = "okay";
         bob-check-flag = <0>;
         uvlo-level = <2400>;
-        vbb-uvlo-level = <2400>;
+        vbb-uvlo-level = <2500>;
 };
 
 &charger {
