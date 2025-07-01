@@ -57,6 +57,7 @@ void unset_clkdbg_ops(void)
 }
 EXPORT_SYMBOL(unset_clkdbg_ops);
 
+#if IS_ENABLED(CONFIG_MTK_CLKMGR_DEBUG)
 static const struct fmeter_clk *get_all_fmeter_clks(void)
 {
 	if (clkdbg_ops == NULL || clkdbg_ops->get_all_fmeter_clks  == NULL)
@@ -96,6 +97,7 @@ static const char * const *get_all_clk_names(void)
 
 	return clkdbg_ops->get_all_clk_names();
 }
+#endif /* CONFIG_MTK_CLKMGR_DEBUG */
 
 static const char * const *get_pwr_names(void)
 {
@@ -154,16 +156,19 @@ static void set_clkdbg_flag(enum clkdbg_opt opt)
 	clkdbg_flags |= BIT(opt);
 }
 
+#if IS_ENABLED(CONFIG_MTK_CLKMGR_DEBUG)
 static void clr_clkdbg_flag(enum clkdbg_opt opt)
 {
 	clkdbg_flags &= ~BIT(opt);
 }
+#endif /* CONFIG_MTK_CLKMGR_DEBUG */
 
 static bool has_clkdbg_flag(enum clkdbg_opt opt)
 {
 	return (clkdbg_flags & BIT(opt)) != 0U;
 }
 
+#if IS_ENABLED(CONFIG_MTK_CLKMGR_DEBUG)
 typedef void (*fn_fclk_freq_proc)(const struct fmeter_clk *fclk,
 					u32 freq, void *data);
 
@@ -280,6 +285,7 @@ static int clkdbg_dump_regs2(struct seq_file *s, void *v)
 
 	return 0;
 }
+#endif /* CONFIG_MTK_CLKMGR_DEBUG */
 
 static u32 read_spm_pwr_status(void)
 {
@@ -315,6 +321,7 @@ static int clkdbg_pvdck_is_on(struct provider_clk *pvdck)
 	return false;
 }
 
+#if IS_ENABLED(CONFIG_MTK_CLKMGR_DEBUG)
 static const char *ccf_state(struct clk_hw *hw)
 {
 	if (clk_hw_is_enabled(hw))
@@ -423,6 +430,7 @@ static int clkdbg_dump_muxes(struct seq_file *s, void *v)
 
 	return 0;
 }
+#endif /* CONFIG_MTK_CLKMGR_DEBUG */
 
 static void show_pwr_status(u32 spm_pwr_status)
 {
@@ -439,6 +447,7 @@ static void show_pwr_status(u32 spm_pwr_status)
 	}
 }
 
+#if IS_ENABLED(CONFIG_MTK_CLKMGR_DEBUG)
 static int dump_pwr_status(u32 spm_pwr_status, struct seq_file *s)
 {
 	unsigned int i;
@@ -822,7 +831,7 @@ static int clkdbg_test_task(struct seq_file *s, void *v)
 	return 0;
 }
 
-#if IS_ENABLED(CONFIG_MTK_CLKMGR_DEBUG)
+#if IS_ENABLED(CONFIG_MTK_CLKMGR_DEBUG_REG_RW)
 static void *reg_from_str(const char *str)
 {
 	static phys_addr_t phys;
@@ -1061,6 +1070,7 @@ static int clkdbg_clr_flag(struct seq_file *s, void *v)
 
 	return 0;
 }
+#endif /* CONFIG_MTK_CLKMGR_DEBUG */
 
 #if CLKDBG_PM_DOMAIN
 
@@ -1131,6 +1141,7 @@ out:
 	return pds;
 }
 
+#if IS_ENABLED(CONFIG_MTK_CLKMGR_DEBUG)
 static struct generic_pm_domain *__pd_dbg_lookup(int pg_idx)
 {
 	struct generic_pm_domain **pds = get_all_genpd();
@@ -1210,6 +1221,7 @@ static struct generic_pm_domain *genpd_from_name(const char *name)
 
 	return NULL;
 }
+#endif /* CONFIG_MTK_CLKMGR_DEBUG */
 
 struct genpd_dev_state {
 	struct device *dev;
@@ -1330,6 +1342,7 @@ static void show_genpd_state(struct genpd_state *pdst)
 	}
 }
 
+#if IS_ENABLED(CONFIG_MTK_CLKMGR_DEBUG)
 static void dump_genpd_state(struct genpd_state *pdst, struct seq_file *s)
 {
 	int j;
@@ -1890,8 +1903,10 @@ static int clkdbg_dump_power_domain_status(struct seq_file *s, void *v)
 	return 0;
 }
 
+#endif /* CONFIG_MTK_CLKMGR_DEBUG */
 #endif /* CLKDBG_PM_DOMAIN */
 
+#if IS_ENABLED(CONFIG_MTK_CLKMGR_DEBUG)
 void reg_pdrv(const char *pdname)
 {
 #if CLKDBG_PM_DOMAIN
@@ -1905,6 +1920,7 @@ void unreg_pdrv(const char *pdname)
 	unreg_pdev_drv(pdname, NULL);
 #endif
 }
+#endif /* CONFIG_MTK_CLKMGR_DEBUG */
 
 /*
  * Suspend / resume handler
@@ -1932,7 +1948,9 @@ struct save_point {
 
 static struct save_point save_point_1;
 static struct save_point save_point_2;
+#if IS_ENABLED(CONFIG_MTK_CLKMGR_DEBUG)
 static struct save_point save_point_3;
+#endif /* CONFIG_MTK_CLKMGR_DEBUG */
 
 static void save_pwr_status(u32 spm_pwr_status)
 {
@@ -1973,6 +1991,7 @@ static void show_provider_clk_state(struct provider_clk_state *st)
 	mdelay(20);
 }
 
+#if IS_ENABLED(CONFIG_MTK_CLKMGR_DEBUG)
 static void dump_provider_clk_state(struct provider_clk_state *st,
 					struct seq_file *s)
 {
@@ -1988,6 +2007,7 @@ static void dump_provider_clk_state(struct provider_clk_state *st,
 		st->parent != NULL ?
 			clk_hw_get_name(__clk_get_hw(st->parent)) : "- ");
 }
+#endif /* CONFIG_MTK_CLKMGR_DEBUG */
 
 static void show_save_point(struct save_point *sp)
 {
@@ -2018,6 +2038,7 @@ static void store_save_point(struct save_point *sp)
 		show_save_point(sp);
 }
 
+#if IS_ENABLED(CONFIG_MTK_CLKMGR_DEBUG)
 static void dump_save_point(struct save_point *sp, struct seq_file *s)
 {
 	struct provider_clk_state *st = sp->clks_states;
@@ -2063,6 +2084,7 @@ static int clkdbg_dump_suspend_clks(struct seq_file *s, void *v)
 
 	return 0;
 }
+#endif /* CONFIG_MTK_CLKMGR_DEBUG */
 
 static int clkdbg_pm_event_handler(struct notifier_block *nb,
 					unsigned long event, void *ptr)
@@ -2086,6 +2108,7 @@ static int clkdbg_pm_event_handler(struct notifier_block *nb,
 	return NOTIFY_DONE;
 }
 
+#if IS_ENABLED(CONFIG_MTK_CLKMGR_DEBUG)
 static int clkdbg_suspend_ops_valid(suspend_state_t state)
 {
 	return state == PM_SUSPEND_MEM ? 1 : 0;
@@ -2209,7 +2232,7 @@ static const struct cmd_fn common_cmds[] = {
 	CMDFN("disable_unprepare_provider", clkdbg_disable_unprepare_provider),
 	CMDFN("set_parent", clkdbg_set_parent),
 	CMDFN("set_rate", clkdbg_set_rate),
-#if IS_ENABLED(CONFIG_MTK_CLKMGR_DEBUG)
+#if IS_ENABLED(CONFIG_MTK_CLKMGR_DEBUG_REG_RW)
 	CMDFN("reg_read", clkdbg_reg_read),
 	CMDFN("reg_write", clkdbg_reg_write),
 	CMDFN("reg_set", clkdbg_reg_set),
@@ -2310,7 +2333,7 @@ static ssize_t clkdbg_write(
 
 	return (ssize_t)len;
 }
-
+#endif /* CONFIG_MTK_CLKMGR_DEBUG */
 static struct notifier_block clkdbg_pm_notifier = {
 	.notifier_call = clkdbg_pm_event_handler,
 };
@@ -2328,6 +2351,7 @@ static const struct dev_pm_ops clk_dbg_dev_pm_ops = {
 	.resume_noirq = NULL,
 };
 
+#if IS_ENABLED(CONFIG_MTK_CLKMGR_DEBUG)
 static const struct proc_ops clkdbg_fops = {
 	.proc_open		= clkdbg_open,
 	.proc_read		= seq_read,
@@ -2335,11 +2359,14 @@ static const struct proc_ops clkdbg_fops = {
 	.proc_lseek		= seq_lseek,
 	.proc_release	= single_release,
 };
+#endif /* CONFIG_MTK_CLKMGR_DEBUG */
 
 int clk_dbg_driver_register(struct platform_driver *drv, const char *name)
 {
 	static struct platform_device *clk_dbg_dev;
+#if IS_ENABLED(CONFIG_MTK_CLKMGR_DEBUG)
 	struct proc_dir_entry *entry;
+#endif /* CONFIG_MTK_CLKMGR_DEBUG */
 	int r = 0;
 
 	if (name) {
@@ -2354,10 +2381,11 @@ int clk_dbg_driver_register(struct platform_driver *drv, const char *name)
 		return r;
 	}
 
+#if IS_ENABLED(CONFIG_MTK_CLKMGR_DEBUG)
 	entry = proc_create("clkdbg", 0644, NULL, &clkdbg_fops);
 	if (entry == 0)
 		return -ENOMEM;
-
+#endif /* CONFIG_MTK_CLKMGR_DEBUG */
 	set_clkdbg_flag(CLKDBG_EN_SUSPEND_SAVE_3);
 
 	drv->driver.pm = &clk_dbg_dev_pm_ops;
