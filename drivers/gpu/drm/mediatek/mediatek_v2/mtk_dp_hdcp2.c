@@ -870,6 +870,7 @@ int HDCPTx_Hdcp2FSM(struct mtk_dp *mtk_dp)
 		case HDCP2_MSG_AUTH_DONE:
 			DPTXMSG("HDCP2.x Authentication done.\n");
 			mdelay(200);
+			mdrv_DPTx_HDCP2_RestVariable(mtk_dp);
 			mtk_dp->info.bAuthStatus = AUTH_PASS;
 			mtk_dp->info.hdcp2_info.uRetryCount = 0;
 			HDCPTx_Hdcp2SetState(HDCP2_MS_A5F5, HDCP2_MSG_ZERO);
@@ -1100,8 +1101,10 @@ int dp_tx_hdcp2x_authenticate_repeater(struct mtk_dp *mtk_dp)
 {
 	int ret = -1;
 
+	DPTXFUNC();
 	mtk_dp->info.bAuthStatus = AUTH_INIT;
 	HDCPTx_Hdcp2SetState(HDCP2_MS_A6F6, HDCP2_MSG_REPAUTH_SEND_RECVID_LIST);
+	g_u32PreTime = getSystemTime();
 
 	do {
 		if (!mtk_dp->training_info.bCablePlugIn || !mtk_dp->dp_ready)
@@ -1181,11 +1184,17 @@ int dp_tx_hdcp2x_check_link(struct mtk_dp *mtk_dp, struct DPTX_INFO *info)
 	}
 
 	if (tmp == TOPOLOGY_CHANGE) {
-		ret = dp_tx_hdcp2x_authenticate_repeater(mtk_dp);
-		if (ret != 0) {
-			DPTXFUNC("[HDCP2.X] repeater authentication failed\n");
+		if (!mtk_dp->info.hdcp2_info.bReadVprime) {
+			DPTXDBG("[HDCP2.X] Topology change request without IRQ\n");
+			ret = 0;
 			goto end;
-		}
+                } else {
+			ret = dp_tx_hdcp2x_authenticate_repeater(mtk_dp);
+			if (ret != 0) {
+				DPTXFUNC("[HDCP2.X] repeater authentication failed\n");
+				goto end;
+			}
+                }
 	} else {
 		DPTXFUNC("[HDCP2.X] link failed with:0x%x, retrying auth\n", tmp);
 	}
