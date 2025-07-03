@@ -659,6 +659,41 @@ static void aw_dev_switch(struct aw_device *aw_dev, struct aw_switch_desc *btn, 
 	aw_dev_info(aw_dev->dev, "%s set %d done", btn->name, enable);
 }
 
+void aw_dev_monitor_status(struct aw_device *aw_dev)
+{
+	int ret = -1;
+	unsigned int reg_val = 0;
+	struct aw_sysst_desc *desc = &aw_dev->sysst_desc;
+	int re = 0;
+	int te = 0;
+	ret = aw_dev->ops.aw_i2c_read(aw_dev->i2c, desc->reg, &reg_val);
+	if (ret) {
+		aw_dev_err(aw_dev->dev, "I2C read fail");
+		reg_val = 0;
+	}
+
+	ret = aw882xx_dsp_read_st(aw_dev, &re, &te);
+	if (ret) {
+		aw_dev_err(aw_dev->dev, "get r0 failed!");
+		re = 0;
+	}
+
+	if(re == 99000){
+		aw_dev->pa_st = aw_dev->pa_st | 0x0001;
+		aw_dev_info(aw_dev->dev, "speaker is Open Circuit");
+	}
+	if(reg_val&0x0008){
+		aw_dev->pa_st = aw_dev->pa_st | 0x0002;
+		aw_dev_info(aw_dev->dev, "sysst check: %x",reg_val);
+	}
+#if 0
+	if(reg_val&0x0002){
+		aw_dev->pa_st = aw_dev->pa_st | 0x0008;
+		aw_dev_info(aw_dev->dev, "over temp check: %x",reg_val);
+	}
+#endif
+}
+
 static int aw_dev_mode1_pll_check(struct aw_device *aw_dev)
 {
 	int ret = -1;

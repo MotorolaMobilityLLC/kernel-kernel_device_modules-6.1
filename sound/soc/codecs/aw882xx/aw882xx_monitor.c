@@ -418,6 +418,8 @@ static int aw_monitor_work(struct aw_device *aw_dev)
 		return 0;
 	}
 
+	aw_dev_monitor_status(aw_dev);
+
 	ret = aw_monitor_get_temp_and_vol(aw_dev);
 	if (ret < 0)
 		return ret;
