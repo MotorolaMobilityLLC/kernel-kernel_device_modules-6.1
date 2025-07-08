@@ -86,6 +86,7 @@ struct tfa98xx {
 	struct delayed_work monitor_work;
 	struct delayed_work interrupt_work;
 	struct delayed_work nmodeupdate_work;
+	struct delayed_work collect_work;
 	struct mutex dsp_lock;
 	int dsp_init;
 	int dsp_fw_state;

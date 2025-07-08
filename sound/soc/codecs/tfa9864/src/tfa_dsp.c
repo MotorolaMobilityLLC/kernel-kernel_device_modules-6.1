@@ -363,6 +363,7 @@ void tfa_set_query_info(struct tfa_device *tfa)
 	tfa->dynamicTDMmode = -1; /**tracking dynamic TDM setting from alsa input stream*/
 	tfa->rate = 0;
 	tfa->bitwidth = -1;/**bitwdith from alsa input stream*/
+	tfa->fail_point = 0x100; /* 0x100 means the value is not initialed */
 
 	/* TODO use the getfeatures() for retrieving the features [artf103523]
 	tfa->supportDrc = supportNotSet;*/

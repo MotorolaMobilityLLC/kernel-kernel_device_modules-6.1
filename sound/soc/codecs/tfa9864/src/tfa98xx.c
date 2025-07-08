@@ -129,6 +129,41 @@ static int get_profile_id_for_sr(int id, unsigned int rate);
 static int tfa98xx_send_mute_cmd(void);
 static int tfa98xx_send_volume(uint8_t volume, int only_left);
 
+static char *tfa986x_irq_info[] = {
+        "Power on reset",
+        "Overcurrent booster",
+        "Overtemperature",
+        "Overcurrent amp",
+        "Undervoltage",
+        "TDM error",
+        "Lost clock",
+        "DC too high amp",
+        "Brown out VDDD",
+        "Clock out of range",
+        "Overvoltage protection",
+        "Qpump fail"};
+
+static tfaIrqName_t tfa986x_irq_names[] = {\
+        {0, "STVDDS"},\
+        {1, "STBSTOC"},\
+        {2, "STOTDS"},\
+        {3, "STOCPR"},\
+        {4, "STUVDS"},\
+        {5, "STTDMER"},\
+        {6, "STNOCLK"},\
+        {7, "STDCTH"},\
+        {8, "STBODNOK"},\
+        {9, "STCOOR"},\
+        {10, "STOVDS"},\
+        {11, "STQPFAIL"},\
+        {12, "12"},\
+};
+
+#define TFA98XX_INTERRUPT_ENABLE_REG1           0x48
+#define TFA98XX_INTERRUPT_IN_REG1               0x44
+#define TFA98XX_INTERRUPT_OUT_REG1              0x40
+#define TFA98XX_STATUS_POLARITY_REG1            0x4c
+
 #ifndef CONFIG_MTK_PLATFORM
 //Please export the symbol from q6afe.c
 extern int send_tfa_cal_apr(void *buf, int cmd_size, bool bRead);
@@ -1790,6 +1825,50 @@ static int tfa98xx_set_volume_ctl(struct snd_kcontrol *kcontrol,
 	return 1;
 }
 
+static int tfa98xx_info_point_ctl(struct snd_kcontrol *kcontrol,
+        struct snd_ctl_elem_info *uinfo)
+{
+        uinfo->type = SNDRV_CTL_ELEM_TYPE_INTEGER;
+        mutex_lock(&tfa98xx_mutex);
+        uinfo->count = 1;
+        mutex_unlock(&tfa98xx_mutex);
+        uinfo->value.integer.min = 0;
+        uinfo->value.integer.max = 0x8000;  /* 16 bit value */
+
+        return 0;
+}
+
+static int tfa98xx_get_point0_ctl(struct snd_kcontrol *kcontrol,
+        struct snd_ctl_elem_value *ucontrol)
+{
+        struct tfa98xx *tfa98xx;
+
+        mutex_lock(&tfa98xx_mutex);
+        list_for_each_entry(tfa98xx, &tfa98xx_device_list, list) {
+        if (tfa98xx->tfa->dev_idx == 0)
+            ucontrol->value.integer.value[0] = tfa98xx->tfa->fail_point;
+        }
+        mutex_unlock(&tfa98xx_mutex);
+
+        return 0;
+}
+
+static int tfa98xx_get_point1_ctl(struct snd_kcontrol *kcontrol,
+        struct snd_ctl_elem_value *ucontrol)
+{
+        struct tfa98xx *tfa98xx;
+
+        mutex_lock(&tfa98xx_mutex);
+        list_for_each_entry(tfa98xx, &tfa98xx_device_list, list) {
+                if (tfa98xx->tfa->dev_idx == 1)
+                    ucontrol->value.integer.value[0] = tfa98xx->tfa->fail_point;
+        }
+        mutex_unlock(&tfa98xx_mutex);
+
+        return 0;
+}
+
+
 static int tfa98xx_info_cal_ctl(struct snd_kcontrol *kcontrol,
 	struct snd_ctl_elem_info *uinfo)
 {
@@ -1858,7 +1937,7 @@ static int tfa98xx_create_controls(struct tfa98xx *tfa98xx)
 	 *  - Stop control on TFA1 devices
 	 */
 
-	nr_controls = 5; /* Profile and stop control and Algo Bypass */
+	nr_controls = 7; /* Profile and stop control and Algo Bypass */
 
 	if (tfa98xx->flags & TFA98XX_FLAG_CALIBRATION_CTL)
 		nr_controls += 1; /* calibration */
@@ -2007,6 +2086,27 @@ static int tfa98xx_create_controls(struct tfa98xx *tfa98xx)
 		tfa98xx_controls[mix_index].put = tfa98xx_set_cal_ctl;
 		mix_index++;
 	}
+
+        //fail pooint
+        name = devm_kzalloc(tfa98xx->codec->dev, MAX_CONTROL_NAME, GFP_KERNEL);
+        if (!name)
+                return -ENOMEM;
+        scnprintf(name, MAX_CONTROL_NAME, "smartpa_0_status");
+        tfa98xx_controls[mix_index].name = name;
+        tfa98xx_controls[mix_index].iface = SNDRV_CTL_ELEM_IFACE_MIXER;
+        tfa98xx_controls[mix_index].info = tfa98xx_info_point_ctl;
+        tfa98xx_controls[mix_index].get = tfa98xx_get_point0_ctl;
+        mix_index++;
+
+        name = devm_kzalloc(tfa98xx->codec->dev, MAX_CONTROL_NAME, GFP_KERNEL);
+        if (!name)
+                return -ENOMEM;
+        scnprintf(name, MAX_CONTROL_NAME, "smartpa_1_status");
+        tfa98xx_controls[mix_index].name = name;
+        tfa98xx_controls[mix_index].iface = SNDRV_CTL_ELEM_IFACE_MIXER;
+        tfa98xx_controls[mix_index].info = tfa98xx_info_point_ctl;
+        tfa98xx_controls[mix_index].get = tfa98xx_get_point1_ctl;
+        mix_index++;
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4,18,0)
 	return snd_soc_add_component_controls(tfa98xx->codec,
@@ -2794,6 +2894,17 @@ static void tfa98xx_dsp_init_work(struct work_struct *work)
 	tfa98xx_dsp_init(tfa98xx);
 }
 
+
+int tfa_status_collect(struct tfa_device *tfa);
+
+static void tfa98xx_collect_work(struct work_struct *work)
+{
+        struct tfa98xx *tfa98xx = container_of(work, struct tfa98xx, collect_work.work);
+
+        pr_info("tfa98xx_collect_work\n");
+        tfa_status_collect(tfa98xx->tfa);
+}
+
 static int tfa98xx_fade_thread(void *data)
 {
 	unsigned int times = 0;
@@ -2846,9 +2957,9 @@ static void tfa98xx_interrupt(struct work_struct *work)
 {
 	struct tfa98xx *tfa98xx = container_of(work, struct tfa98xx, interrupt_work.work);
 
-	mutex_lock(&tfa98xx->dsp_lock);
-	tfa_irq_report(tfa98xx->tfa);
-	mutex_unlock(&tfa98xx->dsp_lock);
+	//mutex_lock(&tfa98xx->dsp_lock);
+	//tfa_irq_report(tfa98xx->tfa);
+	//mutex_unlock(&tfa98xx->dsp_lock);
 
 	/* unmask interrupts masked in IRQ handler */
 	tfa_irq_unmask(tfa98xx->tfa);
@@ -3236,6 +3347,52 @@ static int tfa98xx_send_mute_cmd(void)
 #endif
 }
 
+int tfa_status_collect(struct tfa_device *tfa)
+{
+	unsigned short irqmask, irqstatus, activemask;
+	int irq, irq_max, rc;
+	char **irq_info;
+	tfaIrqName_t *irq_names;
+	struct tfa98xx *tfa98xx = (struct tfa98xx *)tfa->data;
+
+	irq_max = ARRAY_SIZE(tfa986x_irq_info);
+	irq_names = tfa986x_irq_names;
+	irq_info = tfa986x_irq_info;
+
+	/* get status bits */
+	rc = tfa_reg_read(tfa, TFA98XX_INTERRUPT_OUT_REG1, &irqstatus); /* INTERRUPT STATUSREG */
+	if (rc < 0)
+		return -rc;
+
+	irqmask = tfa->interrupt_enable[0];
+	activemask = irqmask & irqstatus;
+
+	pr_info("irqstatus=0x%x,irqmask=0x%x,activemask=0x%x,fail_point=0x%x,i2c=0x%x",irqstatus, irqmask,activemask,tfa->fail_point,tfa98xx->i2c->addr);
+
+	tfa->fail_point &= 0x7;
+
+	for (irq = 0; irq < irq_max; irq++)
+	{
+		if (activemask & (1 << irq))
+			pr_info("device[%d] interrupt: %s %s\n",
+				tfa->dev_idx, irq_names[irq].irqName, irq_info[irq]);
+	}
+
+	if((activemask & 0x2) || (activemask & 0x8)) 
+	{
+		tfa->fail_point |= 0x2;
+	}
+
+	/* mask all to clear INT pin */
+	tfa_reg_write(tfa, TFA98XX_INTERRUPT_ENABLE_REG1, 0);
+
+	/* clear active irqs */
+	tfa_reg_write(tfa, TFA98XX_INTERRUPT_IN_REG1, activemask);
+
+	pr_info("exit tfa_status_collect,fail_point=0x%x,i2c=0x%x\n",tfa->fail_point,tfa98xx->i2c->addr);
+
+	return 0;
+}
 static int tfa98xx_mute(struct snd_soc_dai *dai, int mute, int stream)
 {
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4,18,0)
@@ -3279,6 +3436,8 @@ static int tfa98xx_mute(struct snd_soc_dai *dai, int mute, int stream)
 		cancel_delayed_work_sync(&tfa98xx->monitor_work);
 
 		cancel_delayed_work_sync(&tfa98xx->init_work);
+
+		cancel_delayed_work_sync(&tfa98xx->collect_work);
 		if (tfa98xx->dsp_fw_state != TFA98XX_DSP_FW_OK)
 			return 0;
 		mutex_lock(&tfa98xx->dsp_lock);
@@ -3330,6 +3489,7 @@ static int tfa98xx_mute(struct snd_soc_dai *dai, int mute, int stream)
 		}else {
 			pr_info(" Fade Fail as DSP NOT work\n");
 		}
+      queue_delayed_work(tfa98xx->tfa98xx_wq, &tfa98xx->collect_work,5 * HZ);
 
 	     if(tfa98xx->flags & TFA98XX_FLAG_ADAPT_NOISE_MODE)
 		 	queue_delayed_work(tfa98xx->tfa98xx_wq,
@@ -3410,6 +3570,7 @@ static int tfa98xx_probe(struct snd_soc_codec *codec)
 	INIT_DELAYED_WORK(&tfa98xx->monitor_work, tfa98xx_monitor);
 	INIT_DELAYED_WORK(&tfa98xx->interrupt_work, tfa98xx_interrupt);
 	INIT_DELAYED_WORK(&tfa98xx->nmodeupdate_work, tfa98xx_nmode_update_work);
+	INIT_DELAYED_WORK(&tfa98xx->collect_work, tfa98xx_collect_work);
 
 	tfa98xx->codec = codec;
 
@@ -3449,6 +3610,7 @@ static int tfa98xx_remove(struct snd_soc_codec *codec)
 	cancel_delayed_work_sync(&tfa98xx->monitor_work);
 	cancel_delayed_work_sync(&tfa98xx->init_work);
 	cancel_delayed_work_sync(&tfa98xx->nmodeupdate_work);
+	cancel_delayed_work_sync(&tfa98xx->collect_work);
 
 	if (tfa98xx->tfa98xx_wq)
 		destroy_workqueue(tfa98xx->tfa98xx_wq);
@@ -4134,6 +4296,7 @@ static int tfa98xx_i2c_remove(struct i2c_client *i2c)           //modify by mono
 	cancel_delayed_work_sync(&tfa98xx->monitor_work);
 	cancel_delayed_work_sync(&tfa98xx->init_work);
 	cancel_delayed_work_sync(&tfa98xx->nmodeupdate_work);
+	cancel_delayed_work_sync(&tfa98xx->collect_work);
 
 	device_remove_bin_file(&i2c->dev, &dev_attr_reg);
 	device_remove_bin_file(&i2c->dev, &dev_attr_rw);
