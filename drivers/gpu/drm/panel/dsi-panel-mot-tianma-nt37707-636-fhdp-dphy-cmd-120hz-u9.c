@@ -1632,7 +1632,7 @@ static int panel_ext_powerdown(struct drm_panel *panel)
 	gpiod_set_value(ctx->dvdd_gpio, 0);
 	devm_gpiod_put(ctx->dev, ctx->dvdd_gpio);
 
-	udelay(2000);
+	udelay(4000);
 	ctx->vddi_gpio =
 		devm_gpiod_get(ctx->dev, "vddi", GPIOD_OUT_HIGH);
 	if (IS_ERR(ctx->vddi_gpio)) {
@@ -1642,7 +1642,7 @@ static int panel_ext_powerdown(struct drm_panel *panel)
 	}
 	gpiod_set_value(ctx->vddi_gpio, 0);
 	devm_gpiod_put(ctx->dev, ctx->vddi_gpio);
-	pr_info("%s-\n", __func__);
+	pr_info("%s-, dvdd -> vddi delay 4ms\n", __func__);
 
 	return 0;
 }
