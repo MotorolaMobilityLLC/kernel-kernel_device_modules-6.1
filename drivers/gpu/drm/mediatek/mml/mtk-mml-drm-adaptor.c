@@ -537,6 +537,7 @@ static s32 frame_buf_to_task_buf(struct mml_drm_ctx *ctx, struct mml_file_buf *f
 		return -EFAULT;
 	}
 
+	user_buf->cnt = min(user_buf->cnt, MML_MAX_PLANES);
 	if (user_buf->use_dma)
 		mml_buf_get(fbuf, user_buf->dmabuf, user_buf->cnt, name);
 	else
