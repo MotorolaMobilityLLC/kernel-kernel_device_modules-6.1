@@ -453,6 +453,7 @@ static DECLARE_WAIT_QUEUE_HEAD(g_oddmr_hrt_wq);
 static DEFINE_SPINLOCK(g_oddmr_clock_lock);
 static DEFINE_SPINLOCK(g_oddmr_timing_lock);
 static DEFINE_MUTEX(g_dbi_data_lock);
+static DEFINE_MUTEX(g_od_load_param_lock);
 
 static void mtk_oddmr_od_hsk_force_clk(struct mtk_ddp_comp *comp, struct cmdq_pkt *pkg);
 static void mtk_oddmr_od_smi(struct mtk_ddp_comp *comp, struct cmdq_pkt *pkg);
@@ -6583,7 +6584,9 @@ int mtk_drm_ioctl_oddmr_load_param(struct drm_device *dev, void *data,
 	 * If any section is loaded, set all to loading,
 	 * set loading done in init to support partial loading.
 	 */
+	mutex_lock(&g_od_load_param_lock);
 	ret = mtk_oddmr_load_param(g_oddmr_priv, data);
+	mutex_unlock(&g_od_load_param_lock);
 	return ret;
 }
 
