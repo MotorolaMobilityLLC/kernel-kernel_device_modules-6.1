@@ -1628,7 +1628,7 @@ err:
 }
 
 #define VADPT_PPS_D4CP_MAX_VOLTAGE 19600
-#define VADPT_PPS_D4CP_THRE_CURRENT 3000
+#define VADPT_PPS_D4CP_THRE_CURRENT 2250
 #define VADPT_PPS_MAX_VOLTAGE 11000
 
 int pe5_set_operating_mode(struct pe50_algo_info *info, enum pe50_cp_op_mode cp_op_mode) {
