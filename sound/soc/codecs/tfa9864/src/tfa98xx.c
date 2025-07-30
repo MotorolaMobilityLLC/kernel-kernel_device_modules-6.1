@@ -3381,6 +3381,8 @@ int tfa_status_collect(struct tfa_device *tfa)
 	if((activemask & 0x2) || (activemask & 0x8)) 
 	{
 		tfa->fail_point |= 0x2;
+	} else {
+		tfa->fail_point = 0;
 	}
 
 	/* mask all to clear INT pin */
