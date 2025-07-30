@@ -233,7 +233,7 @@ static s32 frame_buf_to_task_buf(struct mml_file_buf *fbuf,
 
 	mml_mmp(dle_buf, MMPROFILE_FLAG_START, user_buf->use_dma, user_buf->cnt);
 
-	user_buf->cnt = min(user_buf->cnt, MML_MAX_PLANES);
+	user_buf->cnt = min_t(u8, user_buf->cnt, MML_MAX_PLANES);
 	if (user_buf->use_dma)
 		mml_buf_get(fbuf, user_buf->dmabuf, user_buf->cnt, name);
 	else
