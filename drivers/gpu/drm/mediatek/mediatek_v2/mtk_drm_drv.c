@@ -1459,7 +1459,7 @@ static enum mml_mode _mtk_atomic_mml_plane(struct drm_device *dev,
 	submit_kernel->buffer.seg_map.use_dma = false;
 	memset(&submit_kernel->buffer.src.dmabuf, 0, sizeof(submit_kernel->buffer.src.dmabuf));
 	submit_kernel->buffer.src.cnt = max(min(submit_kernel->buffer.src.cnt,
-						MML_MAX_PLANES), 1);
+						(uint8_t)MML_MAX_PLANES), 1);
 
 	for (i = 0; i < MML_MAX_PLANES && i < submit_kernel->buffer.src.cnt; ++i) {
 		int32_t fd = submit_kernel->buffer.src.fd[i];
