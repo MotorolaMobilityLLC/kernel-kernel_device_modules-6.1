@@ -37,6 +37,9 @@
 #include "mtk-mml-dpc.h"
 #include "mdp_dpc.h"
 
+
+#define DPC_MEM_SIZE 0x2000
+
 int debug_runtime_ctrl;
 module_param(debug_runtime_ctrl, int, 0644);
 int debug_mmp;
@@ -3801,7 +3804,7 @@ static void process_dbg_opt(const char *opt)
 		dpc_mtcmos_vote(v1, 7, (bool)v2);
 	} else if (strncmp(opt, "wr:", 3) == 0) {
 		ret = sscanf(opt, "wr:0x%x=0x%x\n", &v1, &v2);
-		if (ret != 2)
+		if (ret != 2 || v1 >= DPC_MEM_SIZE)
 			goto err;
 		DPCFUNC("(%#llx)=(%x)", (u64)(dpc_base + v1), v2);
 		writel(v2, dpc_base + v1);
