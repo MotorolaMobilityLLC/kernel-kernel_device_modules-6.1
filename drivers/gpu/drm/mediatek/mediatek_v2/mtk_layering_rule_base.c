@@ -4659,6 +4659,7 @@ static void check_is_mml_layer(const int disp_idx,
 			mml_dc_layers = true;
 	}
 
+	mutex_lock(&mtk_crtc->mml_cfg_dc_lock);
 	if (mtk_crtc->mml_cfg_dc && mml_dc_layers == false) {
 		for (i = 0; i < MML_MAX_OUTPUTS; i++)
 			kfree(mtk_crtc->mml_cfg_dc->pq_param[i]);
@@ -4669,6 +4670,7 @@ static void check_is_mml_layer(const int disp_idx,
 			__func__, mtk_crtc->is_mml_dc, c->layer_caps,
 			MTK_MML_DISP_DECOUPLE_LAYER);
 	}
+	mutex_unlock(&mtk_crtc->mml_cfg_dc_lock);
 
 	if (disp_info->gles_head[disp_idx] != -1) {
 		int adjusted_gles_head = -1;
