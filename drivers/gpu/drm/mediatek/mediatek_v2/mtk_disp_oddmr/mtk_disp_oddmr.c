@@ -5550,15 +5550,23 @@ static int mtk_oddmr_dbi_init(struct mtk_drm_dbi_cfg_info *cfg_info)
 		return -1;
 	}
 
+	mutex_lock(&g_dbi_data_lock);
+
 	dbi_cfg_data =	&g_oddmr_priv->dbi_cfg_info;
 	dbi_cfg_data_tb1 = &g_oddmr_priv->dbi_cfg_info_tb1;
 	memcpy(dbi_cfg_data, cfg_info, sizeof(struct mtk_drm_dbi_cfg_info));
 
+	if (dbi_cfg_data->basic_info.panel_id_len < 0 || dbi_cfg_data->basic_info.panel_id_len > 16) {
+		mutex_unlock(&g_dbi_data_lock);
+		ODDMRFLOW_LOG("panelid len %d invalid!\n", dbi_cfg_data->basic_info.panel_id_len);
+		return -1;
+	}
 	/*match panel id */
 	expect_panel_id.len = dbi_cfg_data->basic_info.panel_id_len;
 	if(expect_panel_id.len)
 		memcpy(expect_panel_id.data, dbi_cfg_data->basic_info.panel_id, expect_panel_id.len);
 	if (!mtk_oddmr_match_panelid(&g_panelid, &expect_panel_id)) {
+		mutex_unlock(&g_dbi_data_lock);
 		ODDMRFLOW_LOG("panelid does not match\n");
 		return -1;
 	}
@@ -5937,6 +5945,7 @@ static int mtk_oddmr_dbi_init(struct mtk_drm_dbi_cfg_info *cfg_info)
 
 
 	g_oddmr_priv->dbi_state = ODDMR_INIT_DONE;
+	mutex_unlock(&g_dbi_data_lock);
 
 	return 0;
 
@@ -5946,6 +5955,7 @@ fail:
 			vfree(data[i]);
 
 	}
+	mutex_unlock(&g_dbi_data_lock);
 	return -EFAULT;
 
 
@@ -6704,6 +6714,8 @@ static int mtk_oddmr_pq_ioctl_transact(struct mtk_ddp_comp *comp,
 	unsigned long flags;
 	unsigned int temp;
 
+	if (cmd == PQ_DMR_INIT || cmd == PQ_DMR_ENABLE || cmd == PQ_DMR_DISABLE)
+		return 0;
 	switch (cmd) {
 	case PQ_DMR_INIT:
 		ret = mtk_oddmr_dmr_init(params);
