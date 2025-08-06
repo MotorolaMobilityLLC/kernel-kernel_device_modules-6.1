@@ -9,6 +9,14 @@
 #include <uapi/drm/mediatek_drm.h>
 #include "mtk_disp_vidle.h"
 
+#define PQ_MAX_REG_NUM 0x800
+#define PQ_MAX_DATA_SIZE 0x2000
+#define PQ_MAX_DATA_SIZE_EXT (PQ_MAX_DATA_SIZE * 2) // extend to 16K for gamma/dbi/PQ_COLOR_SET_PQINDEX
+#define PQ_CMD_WRITE 0x1
+#define PQ_CMD_READ 0x2
+#define PQ_CMD_RW 0x3
+#define PQ_CMD_SIZE_ANY (~(uint32_t)0)
+
 enum mtk_pq_persist_property {
 	DISP_PQ_COLOR_BYPASS,
 	DISP_PQ_CCORR_BYPASS,
@@ -44,6 +52,13 @@ struct pq_tuning_pa_base {
 	resource_size_t pa_base;
 	resource_size_t companion_pa_base;
 };
+
+struct pq_cmd_prop {
+	enum mtk_pq_frame_cfg_cmd cmd;
+	uint32_t size;
+	uint32_t direction;
+};
+extern const struct pq_cmd_prop g_pq_cmd_map[];
 
 int mtk_drm_ioctl_pq_frame_config(struct drm_device *dev, void *data,
 	struct drm_file *file_priv);
