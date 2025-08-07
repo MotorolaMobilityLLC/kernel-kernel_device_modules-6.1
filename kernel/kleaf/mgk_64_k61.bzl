@@ -892,6 +892,7 @@ def get_overlay_modules_list():
         mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/input/touchscreen/goodix_gt96x_u_mmi:goodix_gt96x_u_mmi")
         mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/input/misc/ets_fod_mmi_u:ets_fod_mmi_u")
         mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/input/misc/anc_fps_mmi:anc_fps_mmi")
+        mgk_64_k61_kleaf_modules.append("//motorola/kernel/modules/drivers/mm_iosched:mm_iosched")
 
         mgk_64_k61_device_modules.append("drivers/gpu/drm/panel/dsi-panel-mot-csot-nt37707-667-fhdp-dphy-cmd.ko")
         mgk_64_k61_device_modules.append("drivers/gpu/drm/panel/dsi-panel-mot-tianma-nt37707-667-fhdp-dphy-cmd.ko")
