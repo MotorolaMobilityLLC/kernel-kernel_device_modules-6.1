@@ -104,7 +104,6 @@
 	batt_serialnums = "ATLSP50NVT";
 	batt_chem_versions = /bits/ 8 <0x4E 0x56 0x54 0x30 0x30 0x30
 					0x30 0x30 0x30 0x30 0x33>;
-	mpc,support_update_param_chem;
 };
 
 /*End of this file, DO NOT ADD ANYTHING HERE*/
