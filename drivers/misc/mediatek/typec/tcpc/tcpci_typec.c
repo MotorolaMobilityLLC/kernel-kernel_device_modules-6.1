@@ -2099,6 +2099,7 @@ repeat:
 	tcpc = tcpcs[i];
 	if (i > 0)
 		tcpci_lock_typec(tcpc);
+#ifdef MTK_BASE
 	if (tcpc->bootmode == 8 || tcpc->bootmode == 9) {
 		tcpc->wd_in_kpoc = wd;
 		if (wd) {
@@ -2120,6 +2121,9 @@ repeat:
 	tcpci_set_cc_hidet(tcpc, true);
 	ret = tcpci_set_water_protection(tcpc, true);
 out:
+#else
+	ret = tcpci_set_water_protection(tcpc, wd);
+#endif
 	tcpci_notify_wd_status(tcpc, wd);
 	if (i > 0)
 		tcpci_unlock_typec(tcpc);

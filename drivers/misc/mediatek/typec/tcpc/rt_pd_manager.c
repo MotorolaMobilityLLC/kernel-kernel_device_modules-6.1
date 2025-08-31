@@ -49,6 +49,7 @@ static int pd_tcp_notifier_call(struct notifier_block *nb,
 	uint32_t partner_vdos[VDO_MAX_NR];
 	struct typec_displayport_data dp_data = {.status = 0, .conf = 0};
 	struct typec_mux_state state = {.mode = 0, .data = &dp_data};
+	static bool is_water_detected = false;
 
 	dev_info(rpmd->dev, "%s event = %lu, idx = %d\n", __func__, event, idx);
 
@@ -355,10 +356,23 @@ static int pd_tcp_notifier_call(struct notifier_block *nb,
 					__func__, noti->pd_state.vdm_verify);
 		break;
 	case TCP_NOTIFY_CID_STATE:
+		dev_info(rpmd->dev, "%s is_water_detected = %d, noti->cid_state.cid =%d\n",
+					__func__, is_water_detected, noti->cid_state.cid);
 		tcpm_typec_change_role_postpone(rpmd->tcpc[idx],
-						noti->cid_state.cid ?
+						(noti->cid_state.cid && !is_water_detected) ?
 						rpmd->role_def[idx] :
 						TYPEC_ROLE_SNK, true);
+		break;
+	case TCP_NOTIFY_WD_STATUS:
+		is_water_detected = noti->wd_status.water_detected;
+		dev_info(rpmd->dev, "%s noti->wd_status.water_detected = %d, is_water_detected = %d\n",
+					__func__, noti->wd_status.water_detected, is_water_detected);
+		if (!tcpci_is_support_cid(rpmd->tcpc[idx])) {
+			tcpm_typec_change_role_postpone(rpmd->tcpc[idx],
+							noti->wd_status.water_detected ?
+							TYPEC_ROLE_SNK :
+							rpmd->role_def[idx], true);
+		}
 		break;
 	default:
 		break;
