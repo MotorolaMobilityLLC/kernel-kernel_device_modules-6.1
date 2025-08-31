@@ -185,6 +185,11 @@ static int pd_tcp_notifier_call(struct notifier_block *nb,
 			srcu_notifier_call_chain(&adapter->evt_nh,
 				MMI_PD30_VDM_VERIFY, NULL);
 		break;
+	case TCP_NOTIFY_CID_STATE:
+		pr_info("%s mmi cid state = %d\n",
+					__func__, noti->cid_state.cid);
+		srcu_notifier_call_chain(&adapter->evt_nh, MMI_TYPEC_CID_STATE,
+					 &noti->cid_state.cid);
 	}
 
 	return NOTIFY_OK;

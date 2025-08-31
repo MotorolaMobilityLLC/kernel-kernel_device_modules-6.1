@@ -212,12 +212,21 @@ static bool select_charging_current_limit(struct mtk_charger *info,
 		goto done;
 	}
 
+#ifdef MTK_BASE
 	if (info->water_detected) {
 		pdata->input_current_limit = info->data.usb_charger_current;
 		pdata->charging_current_limit = info->data.usb_charger_current;
 		is_basic = true;
 		goto done;
 	}
+#else
+	if (info->water_detected && info->fcnt_charge_support) {
+		is_basic = true;
+		pdata->input_current_limit = 0;
+		pdata->charging_current_limit = 0;
+		goto done;
+	}
+#endif
 
 	if (((info->bootmode == 1) ||
 	    (info->bootmode == 5)) && info->enable_meta_current_limit != 0) {
