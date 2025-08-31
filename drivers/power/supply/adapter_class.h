@@ -62,6 +62,7 @@ enum adapter_event {
 	MTK_SINK_VBUS,
 	MTK_TYPEC_CC_HI_STATUS,
 	MMI_PD30_VDM_VERIFY,
+	MMI_TYPEC_CID_STATE,
 };
 
 enum adapter_property {

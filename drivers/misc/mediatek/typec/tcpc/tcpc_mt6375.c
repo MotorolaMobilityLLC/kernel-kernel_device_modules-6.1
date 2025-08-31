@@ -2492,10 +2492,7 @@ static void mmi_cid_detect_work(struct work_struct *work)
 	if (cid_state != ddata->mmi_cid_state) {
 		ddata->mmi_cid_state = cid_state;
 		dev_info(ddata->dev, "[%s] cid state %s\n", __func__, ddata->mmi_cid_state?"plug":"unplug");
-		if (!ddata->is_water_detected)
-			tcpci_notify_cid_state(ddata->tcpc, ddata->mmi_cid_state);
-		else
-			dev_info(ddata->dev, "[%s] is_water_detected, Don't change typec Role\n", __func__);
+		tcpci_notify_cid_state(ddata->tcpc, ddata->mmi_cid_state);
 	}
 	mutex_unlock(&ddata->cid_irq_lock);
 

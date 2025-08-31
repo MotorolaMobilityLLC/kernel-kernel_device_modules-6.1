@@ -4164,6 +4164,7 @@ static bool mmi_is_power_supply_changed(struct mtk_charger *info)
 	static int g_power_watt = 0;
 	static int g_power_max_design_mw = 0;
 	static int g_real_charger_type = 0;
+	static bool g_cid_state = false;
 
 	if (info == NULL)
 		return false;
@@ -4175,7 +4176,8 @@ static bool mmi_is_power_supply_changed(struct mtk_charger *info)
 		info->water_detected == false) &&
 		g_power_watt == mmi_check_power_info(info, false) &&
 		g_power_max_design_mw == info->mmi.power_max_design_mw &&
-		g_real_charger_type == info->mmi.real_charger_type)
+		g_real_charger_type == info->mmi.real_charger_type &&
+		g_cid_state == info->mmi.cid_state)
 	{
 		pr_info("[%s] same mmi status no need broadcast uevent\n", __func__);
 		return false;
@@ -4188,11 +4190,12 @@ static bool mmi_is_power_supply_changed(struct mtk_charger *info)
 	g_power_watt = mmi_check_power_info(info, false);
 	g_power_max_design_mw = info->mmi.power_max_design_mw;
 	g_real_charger_type = info->mmi.real_charger_type;
+	g_cid_state = info->mmi.cid_state;
 
 	return true;
 }
 
-#define MMI_BATT_UEVENT_NUM (7)
+#define MMI_BATT_UEVENT_NUM (8)
 static void mmi_updata_batt_status(struct mtk_charger *info)
 {
 	static struct power_supply	*batt_psy;
@@ -4203,6 +4206,7 @@ static void mmi_updata_batt_status(struct mtk_charger *info)
 	char *chrg_pmax_mw = NULL;
 	char *chrg_pmax_design_string = NULL;
 	char *real_charger_type_string = NULL;
+	char *cid_state_string = NULL;
 	char *batt_string = NULL;
 	char *envp[MMI_BATT_UEVENT_NUM + 1];
 	int rc;
@@ -4235,6 +4239,7 @@ static void mmi_updata_batt_status(struct mtk_charger *info)
 			chrg_pmax_mw = &batt_string[CHG_SHOW_MAX_SIZE * 4];
 			chrg_pmax_design_string = &batt_string[CHG_SHOW_MAX_SIZE * 5];
 			real_charger_type_string = &batt_string[CHG_SHOW_MAX_SIZE * 6];
+			cid_state_string = &batt_string[CHG_SHOW_MAX_SIZE * 7];
 
 			scnprintf(chrg_rate_string, CHG_SHOW_MAX_SIZE,
 				  "POWER_SUPPLY_CHARGE_RATE=%s",
@@ -4259,6 +4264,9 @@ static void mmi_updata_batt_status(struct mtk_charger *info)
 			scnprintf(real_charger_type_string, CHG_SHOW_MAX_SIZE,
 				  "POWER_SUPPLY_CHARGE_REAL_TYPE=%d", info->mmi.real_charger_type);
 
+			scnprintf(cid_state_string, CHG_SHOW_MAX_SIZE,
+				  "POWER_SUPPLY_CID_STATUS=%d", info->mmi.cid_state);
+
 			envp[0] = chrg_rate_string;
 			envp[1] = batt_age_string;
 			envp[2] = chrg_lpd_string;
@@ -4266,6 +4274,7 @@ static void mmi_updata_batt_status(struct mtk_charger *info)
 			envp[4] = chrg_pmax_mw;
 			envp[5] = chrg_pmax_design_string;
 			envp[6] = real_charger_type_string;
+			envp[7] = cid_state_string;
 			envp[MMI_BATT_UEVENT_NUM] = NULL;
 			kobject_uevent_env(&batt_psy->dev.kobj, KOBJ_CHANGE, envp);
 			kfree(batt_string);
@@ -7644,6 +7653,30 @@ static int mmi_notify_lpd_event(struct mtk_charger *pinfo) {
 	return 0;
 }
 
+static int mmi_notify_cid_event(struct mtk_charger *pinfo) {
+	char *event_string = NULL;
+	char *batt_uenvp[2];
+
+	if(!pinfo->bat_psy)
+		pinfo->bat_psy = power_supply_get_by_name("battery");
+	if(!pinfo->bat_psy) {
+		chr_err("%s: get battery supply failed\n", __func__);
+		return -EINVAL;
+	}
+
+	event_string = kmalloc(CHG_SHOW_MAX_SIEZE, GFP_KERNEL);
+
+	scnprintf(event_string, CHG_SHOW_MAX_SIEZE,
+			"POWER_SUPPLY_CID_STATUS=%d", pinfo->mmi.cid_state);
+
+	batt_uenvp[0] = event_string;
+	batt_uenvp[1] = NULL;
+	kobject_uevent_env(&pinfo->bat_psy->dev.kobj, KOBJ_CHANGE, batt_uenvp);
+	chr_err("%s, cid:%d send %s\n",__func__, pinfo->mmi.cid_state, event_string);
+	kfree(event_string);
+	return 0;
+}
+
 #define CHG_SHOW_MAX_SIEZE 50
 #define MMI_UEVENT_NUM (2)
 static void mmi_notify_power_event_work(struct work_struct *work) {
@@ -7813,6 +7846,10 @@ int notify_adapter_event(struct notifier_block *notifier,
 	case MMI_PD30_VDM_VERIFY:
 		chr_err("%s VDM VERIFY\n", __func__);
 		mtk_chg_alg_notify_call(pinfo, EVT_VDM_VERIFY, 0);
+		break;
+	case MMI_TYPEC_CID_STATE:
+		pinfo->mmi.cid_state = *(bool *)val;
+		mmi_notify_cid_event(pinfo);
 		break;
 	}
 	if (report_psy)
