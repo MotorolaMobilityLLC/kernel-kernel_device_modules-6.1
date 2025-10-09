@@ -1634,6 +1634,11 @@
 		#clock-cells = <1>;
 	};
 
+	usbcfg_ao_clk: syscon@11022000 {
+		compatible = "mediatek,mt6878-usbcfg-ao-clk-w", "syscon";
+		reg = <0 0x11022000 0 0x1000>;
+	};
+
 	afe_clk: syscon@11050000 {
 		compatible = "mediatek,mt6878-audiosys", "syscon";
 		reg = <0 0x11050000 0 0x1000>;
@@ -8994,7 +8999,7 @@
 		};
 
 		ssusb: usb0@11201000 {
-			compatible = "mediatek,mtu3";
+			compatible = "mediatek,mt6878-mtu3", "mediatek,mtu3";
 			reg = <0 0x11201000 0 0x2e00>,
 				<0 0x11203e00 0 0x0100>;
 			reg-names = "mac", "ippc";
@@ -9019,6 +9024,7 @@
 			mediatek,syscon-wakeup = <&pericfg_ao_clk 0x214 105>;
 			wakeup-source;
 			usb-role-switch;
+			mediatek,usb-mbist = <&usbcfg_ao_clk>;
 			cdp-block;
 			port {
 				mtu3_drd_switch: endpoint {
