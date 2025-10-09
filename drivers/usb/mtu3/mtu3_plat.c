@@ -291,6 +291,64 @@ static int ssusb_dp_switch_of_property_parse(struct ssusb_mtk *ssusb,
 	return PTR_ERR_OR_ZERO(ssusb->dp_switch);
 }
 
+static int ssusb_ao_cfg_of_property_parse(struct ssusb_mtk *ssusb,
+						struct device_node *dn)
+{
+	struct of_phandle_args args;
+	struct platform_device *pdev;
+	int ret;
+
+	/* usb mbist is optional */
+	if (!of_property_read_bool(dn, "mediatek,usb-mbist"))
+		return 0;
+
+	ret = of_parse_phandle_with_fixed_args(dn,
+		"mediatek,usb-mbist", 0, 0, &args);
+
+	if (ret)
+		return ret;
+
+	pdev = of_find_device_by_node(args.np);
+	if (!pdev)
+		return -ENODEV;
+
+	ssusb->usb_mbist = device_node_to_regmap(args.np);
+
+	if (!ssusb->usb_mbist)
+		return -ENODEV;
+
+	return PTR_ERR_OR_ZERO(ssusb->usb_mbist);
+}
+
+int ssusb_wait_power_state(struct ssusb_mtk *ssusb,
+	enum mtu3_power_state state)
+{
+	unsigned long timeout;
+	u32 val = 0;
+
+	if (IS_ERR_OR_NULL(ssusb->usb_mbist))
+		return -1;
+
+	timeout = jiffies + HZ*3; /* 3 seconds timeout */
+
+	while (time_before(jiffies, timeout)) {
+		if (of_device_is_compatible(ssusb->dev->of_node, "mediatek,mt6878-mtu3")) {
+			regmap_read(ssusb->usb_mbist, 0xc0, &val);
+			if ((val & BIT(0))==0x0 && (val & BIT(1)) == 0x0)
+				return 0;
+
+			dev_info(ssusb->dev, "[WARNING] USB bus not idle, usb-mbist: ox%x\n", val);
+			mdelay(100);
+		} else {
+			dev_info(ssusb->dev, "[WARNING] No compatible bus idle setting?\n");
+			return 0;
+		}
+	}
+
+	dev_info(ssusb->dev, "[WARNING] USB bus not idle, wait timeout\n");
+	return 0;
+}
+
 static int ssusb_offload_get_mode(void)
 {
 	if (usb_offload && usb_offload->get_mode)
@@ -722,6 +780,10 @@ get_phy:
 	ret = ssusb_dp_switch_of_property_parse(ssusb, node);
 	if (ret)
 		dev_info(dev, "failed to parse dp_switch property\n");
+
+	ret = ssusb_ao_cfg_of_property_parse(ssusb, node);
+	if (ret)
+		dev_info(dev, "failed to parse usb ao cfg\n");
 
 	ssusb->dr_mode = usb_get_dr_mode(dev);
 	if (ssusb->dr_mode == USB_DR_MODE_UNKNOWN)

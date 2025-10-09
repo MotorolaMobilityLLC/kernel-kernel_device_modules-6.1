@@ -348,6 +348,8 @@ struct ssusb_mtk {
 	struct regmap *dp_switch;
 	u32 dp_switch_oft;
 	bool is_suspended;
+	/* usb bus related address */
+	struct regmap *usb_mbist;
 };
 
 /**
@@ -528,6 +530,7 @@ int ssusb_clks_enable(struct ssusb_mtk *ssusb);
 void ssusb_clks_disable(struct ssusb_mtk *ssusb);
 void ssusb_ip_sw_reset(struct ssusb_mtk *ssusb);
 void ssusb_set_power_state(struct ssusb_mtk *ssusb, enum mtu3_power_state);
+int ssusb_wait_power_state(struct ssusb_mtk *ssusb, enum mtu3_power_state);
 void ssusb_set_txdeemph(struct ssusb_mtk *ssusb);
 void ssusb_set_noise_still_tr(struct ssusb_mtk *ssusb);
 void ssusb_vsvoter_set(struct ssusb_mtk *ssusb);

@@ -109,6 +109,7 @@ static void switch_port_to_on(struct ssusb_mtk *ssusb, enum phy_mode mode)
 
 	ssusb_clks_enable(ssusb);
 	ssusb_vsvoter_set(ssusb);
+	ssusb_set_power_state(ssusb, MTU3_STATE_POWER_ON);
 	ssusb_phy_power_on(ssusb);
 	ssusb_phy_set_mode(ssusb, mode);
 	ssusb_ip_sw_reset(ssusb);
@@ -122,6 +123,7 @@ static void switch_port_to_off(struct ssusb_mtk *ssusb)
 	ssusb_ip_sleep(ssusb);
 	ssusb_phy_set_mode(ssusb, PHY_MODE_INVALID);
 	ssusb_phy_power_off(ssusb);
+	ssusb_set_power_state(ssusb, MTU3_STATE_POWER_OFF);
 	ssusb_vsvoter_clr(ssusb);
 	ssusb_clks_disable(ssusb);
 
@@ -249,8 +251,7 @@ static void ssusb_mode_sw_work_v2(struct work_struct *work)
 		mdelay(100);
 		/* unregister host driver */
 		ssusb_host_register(ssusb, false);
-		ssusb_set_power_state(ssusb, MTU3_STATE_POWER_OFF);
-		ssusb_host_disable(ssusb);
+		ssusb_host_cleanup(ssusb);
 		switch_port_to_off(ssusb);
 		break;
 	case USB_ROLE_DEVICE:
@@ -263,7 +264,6 @@ static void ssusb_mode_sw_work_v2(struct work_struct *work)
 				pm_runtime_put(ssusb->dev);
 		}
 		spin_unlock_irqrestore(&mtu->lock, flags);
-		ssusb_set_power_state(ssusb, MTU3_STATE_POWER_OFF);
 		mtu3_device_disable(mtu);
 		switch_port_to_off(ssusb);
 		pm_relax(ssusb->dev);
