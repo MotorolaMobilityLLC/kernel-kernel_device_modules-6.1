@@ -478,6 +478,7 @@
 	mmi_therm_step = <3>;
 	mmi_max_ibat = <18000>;
 	mmi_max_hrst_cnt = <1>;
+	mmi_never_stop_dvchgm = <1>;
 };
 
 &mt6375_typec {

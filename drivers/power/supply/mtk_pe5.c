@@ -2524,11 +2524,17 @@ static int pe50_algo_ss_dvchg_with_ta_cv(struct pe50_algo_info *info)
 			PE50_ERR("select dual dvchg ita lmt fail(%d)\n", ret);
 			goto single_dvchg_select_ita;
 		}
-		ret = pe50_enable_dvchg_charging(info, PE50_DVCHG_MASTER,
+		/* IKSWV-183387:Optimize for 30W third-party adapter */
+		PE50_INFO("Current feature flag is %d, cp mode is %d.\n",
+				data->mmi_never_stop_dvchg_master, data->cp_op_mode_curr);
+		if (data->mmi_never_stop_dvchg_master != 1 || data->cp_op_mode_curr != CP_2_1_MODE) {
+			PE50_INFO("This device does not skip disable master charge pump\n");
+			ret = pe50_enable_dvchg_charging(info, PE50_DVCHG_MASTER,
 						 false);
-		if (ret < 0) {
-			PE50_ERR("disable master dvchg fail(%d)\n", ret);
-			goto single_dvchg_restart;
+			if (ret < 0) {
+				PE50_ERR("disable master dvchg fail(%d)\n", ret);
+				goto single_dvchg_restart;
+			}
 		}
 		data->ignore_ibusucpf = true;
 		ret = pe50_enable_dvchg_charging(info, PE50_DVCHG_MASTER, true);
@@ -4529,6 +4535,14 @@ static int pe50_parse_dt(struct pe50_algo_info *info)
 		pr_notice("mmi_max_hrst_cnt using default:%d\n",
 			MMI_MAX_HRST_CNT);
 		data->mmi_hardreset_max_cnt = MMI_MAX_HRST_CNT;
+	}
+
+	if (of_property_read_u32(np, "mmi_never_stop_dvchgm", &val) >= 0)
+		data->mmi_never_stop_dvchg_master = val;
+	else {
+		pr_notice("mmi_never_stop_dvchg_master using default:%d\n",
+			MMI_NEVER_STOP_DVCHG_MASTER);
+		data->mmi_never_stop_dvchg_master = MMI_NEVER_STOP_DVCHG_MASTER;
 	}
 
 	data->mmi_startup_convert_ratio = PE50_DVCHG_STARTUP_CONVERT_RATIO;
