@@ -676,6 +676,8 @@
 
 #define MOT_FUJILT_IMX917_SENSOR_ID                       0x0917
 #define SENSOR_DRVNAME_MOT_FUJILT_IMX917_MIPI_RAW         "mot_fujilt_imx917_mipi_raw"
+#define MOT_FUJILT_S5KJNS_SENSOR_ID                       0x38F1
+#define SENSOR_DRVNAME_MOT_FUJILT_S5KJNS_MIPI_RAW         "mot_fujilt_s5kjns_mipi_raw"
 #define MOT_FUJILT_S5KJNS_UW_SENSOR_ID                    0x38F0
 #define SENSOR_DRVNAME_MOT_FUJILT_S5KJNS_UW_MIPI_RAW      "mot_fujilt_s5kjns_uw_mipi_raw"
 
