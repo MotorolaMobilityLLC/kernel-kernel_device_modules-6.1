@@ -44,6 +44,7 @@ struct moto_chg_tcmd_client {
 	int (*set_bat_cycle)(void *input, int val);
 
 	int (*get_adc_value)(void *input, int channel, int* val);
+	int (*get_cp_status)(void *input, int* val);
 
 	/*wireless*/
 	int (*get_chip_id)(void *input);

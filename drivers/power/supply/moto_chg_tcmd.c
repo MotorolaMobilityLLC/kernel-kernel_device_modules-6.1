@@ -433,6 +433,30 @@ end:
 static DEVICE_ATTR(force_chg_auto_enable, S_IWUSR | S_IRUGO,
 	force_chg_auto_enable_show, force_chg_auto_enable_store);
 
+static ssize_t cp_status_check_show(struct device *dev, struct device_attribute *attr, char *buf)
+{
+	int ret;
+	int val = 0;
+
+	if (!chg_client) {
+		pr_err("%s chg_client is null\n", __func__);
+		return -EINVAL;
+	}
+
+	ret = chg_client->get_cp_status(chg_client->data,
+					&val);
+
+	if (ret) {
+		pr_err("%s get cp status fail %d\n", __func__, ret);
+		return -EINVAL;
+	}
+
+	return snprintf(buf, PAGE_SIZE, "%d\n", val);
+}
+
+static DEVICE_ATTR(cp_status_check, S_IRUGO,
+	cp_status_check_show, NULL);
+
 static ssize_t force_chg_iusb_show(struct device *dev, struct device_attribute *attr, char *buf)
 {
 	struct platform_device *pdev = to_platform_device(dev);
@@ -1223,6 +1247,7 @@ static struct attribute *moto_chg_tcmd_attrs[] = {
 	&dev_attr_wireless_en.attr,
 	&dev_attr_wireless_chip_id.attr,
 	&dev_attr_batt_id.attr,
+	&dev_attr_cp_status_check.attr,
 	NULL,
 };
 

@@ -7966,6 +7966,53 @@ static int  mtk_charger_tcmd_get_charger_watt(void *input, int* val)
 	return ret;
 }
 
+#define CP_STATUS_NUM_SHIFT 4
+#define CP_STATUS_SLAVE_BIT (1 << 1)
+#define CP_STATUS_MAIN_BIT  (1 << 0)
+static int  mtk_charger_tcmd_get_cp_status(void *input, int* val)
+{
+	struct mtk_charger *cm = (struct mtk_charger *)input;
+	int rc = 0;
+	int num = 0;
+	bool cp_main = false, cp_slave = false;
+
+	if (IS_ERR_OR_NULL(cm)) {
+		pr_err("%s: cm err", __func__);
+		return PTR_ERR(cm);
+	}
+	if (IS_ERR_OR_NULL(val)) {
+		pr_err("%s: val err", __func__);
+		return PTR_ERR(val);
+	}
+
+
+	if (!IS_ERR_OR_NULL(cm->dvchg1_dev)) {
+		num++;
+		rc = charger_dev_is_enabled(cm->dvchg1_dev, &cp_main);
+		if (rc < 0) {
+			pr_err("%s: failed to get primary cp status: %d\n", __func__, rc);
+			return rc;
+		}
+	}
+
+	if (!IS_ERR_OR_NULL(cm->dvchg2_dev)) {
+		num++;
+		rc = charger_dev_is_enabled(cm->dvchg2_dev, &cp_slave);
+		if (rc < 0) {
+			pr_err("%s: failed to get secondary cp status: %d\n", __func__, rc);
+			return rc;
+		}
+	}
+
+	*val = ((num << CP_STATUS_NUM_SHIFT) |
+			(cp_slave ? CP_STATUS_SLAVE_BIT : 0) |
+			(cp_main ? CP_STATUS_MAIN_BIT : 0));
+	pr_info("%s get cp status is 0x%x\n", __func__, *val);
+
+	return 0;
+
+}
+
 static int  mtk_charger_tcmd_register(struct mtk_charger *cm)
 {
 	int ret;
@@ -7986,6 +8033,8 @@ static int  mtk_charger_tcmd_register(struct mtk_charger *cm)
 	cm->chg_tcmd_client.get_charger_type = mtk_charger_tcmd_get_charger_type;
 
 	cm->chg_tcmd_client.get_charger_watt = mtk_charger_tcmd_get_charger_watt;
+
+	cm->chg_tcmd_client.get_cp_status = mtk_charger_tcmd_get_cp_status;
 
 	ret = moto_chg_tcmd_register(&cm->chg_tcmd_client);
 
