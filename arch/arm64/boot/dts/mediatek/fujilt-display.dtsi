@@ -1,0 +1,280 @@
+/* Copyright (c) 2023, Motorola Mobility Inc. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
+&mtk_leds {
+	backlight {
+		/delete-property/ max-hw-brightness;
+		/delete-property/ max-brightness;
+		max-brightness = <4080>;
+		max-hw-brightness = <4080>;
+	};
+};
+
+&mipi_tx_config0 {
+	mipi-volt = <11>;
+};
+
+&dsi0 {
+	status = "okay";
+	#address-cells = <1>;
+	#size-cells = <0>;
+	panel1@0 {
+		/delete-property/ compatible;
+		/delete-property/ pm-enable-gpios;
+		/delete-property/ reset-gpios;
+		/delete-property/ gate-ic;
+		/delete-property/ swap-from-dts;
+		/delete-property/ lane-swap-setting;
+		/delete-property/ pn-swap-setting;
+
+                compatible = "mot,dummy,vdo,60hz";
+                reg = <0>;
+                reset-gpios = <&pio 41 0>;
+		pinctrl-names = "default";
+		port {
+			panel_in1: endpoint {
+				remote-endpoint = <&dsi_out>;
+			};
+		};
+	};
+
+	panel2@1 {
+		/delete-property/ compatible;
+		/delete-property/ pm-enable-gpios;
+		/delete-property/ reset-gpios;
+		/delete-property/ gate-ic;
+
+		compatible = "csot,vtdr6130,cmd,ltpo";
+		reg = <1>;
+
+                pm-enable-gpios = <&pio 185 0>,
+                          <&pio 184 0>,
+                          <&pio 186 0>;
+                reset-gpios = <&pio 41 0>;
+		pinctrl-names = "default";
+		port {
+			panel_in2: endpoint {
+				remote-endpoint = <&dsi_out2>;
+			};
+		};
+	};
+
+	ports {
+		port {
+			dsi_out: endpoint {
+				remote-endpoint = <&panel_in1>;
+			};
+			dsi_out2: endpoint2 {
+				remote-endpoint = <&panel_in2>;
+			};
+		};
+	};
+};
+
+
+&mtkfb {
+	/delete-property/ pinctrl-names;
+	/delete-property/ pinctrl-0;
+	/delete-property/ pinctrl-1;
+	/delete-property/ pinctrl-2;
+	/delete-property/ pinctrl-3;
+	/delete-property/ pinctrl-4;
+	/delete-property/ pinctrl-5;
+	/delete-property/ pinctrl-6;
+	/delete-property/ pinctrl-7;
+	/delete-property/ pinctrl-8;
+	/delete-property/ pinctrl-9;
+	/delete-property/ pinctrl-10;
+
+	pinctrl-names = "lcm_rst_out0_gpio", "mode_te_te",
+		"oled_vci_en_gpio", "oled_vio_en_gpio",
+		"oled_dvdd_en_gpio","oled_dvdd_in_en_gpio";
+
+	pinctrl-0 = <&mtkfb_pins_lcm_rst_out_gpio>;
+	pinctrl-1 = <&mtkfb_pins_lcm_dsi_te>;
+	pinctrl-2 = <&mtkfb_pins_oled_vci_en>;
+	pinctrl-3 = <&mtkfb_pins_oled_vio_en>;
+	pinctrl-4 = <&mtkfb_pins_oled_dvdd_en>;
+	pinctrl-5 = <&mtkfb_pins_oled_dvdd_in_en>;
+
+	status = "okay";
+
+};
+
+
+&pio {
+	mtkfb_pins_oled_vci_en: oled_vci_en_gpio {
+		pins_cmd_dat {
+			pinmux = <PINMUX_GPIO184__FUNC_GPIO184>;
+			slew-rate = <1>;
+			output-low;
+		};
+	};
+
+	mtkfb_pins_oled_vio_en: oled_vio_en_gpio {
+		pins_cmd_dat {
+			pinmux = <PINMUX_GPIO185__FUNC_GPIO185>;
+			slew-rate = <1>;
+			output-low;
+		};
+	};
+
+	mtkfb_pins_oled_dvdd_en: oled_dvdd_en_gpio {
+		pins_cmd_dat {
+			pinmux = <PINMUX_GPIO186__FUNC_GPIO186>;
+			slew-rate = <1>;
+			output-low;
+		};
+	};
+
+	mtkfb_pins_oled_dvdd_in_en: oled_dvdd_in_en_gpio {
+		pins_cmd_dat {
+			pinmux = <PINMUX_GPIO62__FUNC_GPIO62>;
+			slew-rate = <1>;
+			output-low;
+		};
+	};
+
+	mtkfb_pins_lcm_rst_out_gpio: lcm_rst_out_gpio {
+		pins_cmd_dat {
+			pinmux = <PINMUX_GPIO41__FUNC_GPIO41>;
+			slew-rate = <1>;
+			output-low;
+		};
+	};
+};
+
+&i2c6 {
+	gate_ic: gate-ic@11 {
+		status = "disabled";
+	};
+};
+
+&ps5170 {
+       status = "disabled";
+};
+
+&i2c13 {
+	ps5169: ps5169@30 {
+		compatible = "parade,ps5170";
+		reg = <0x30>;
+		mediatek,vs-voter = <&pmic 0x189a 0x20 1>;
+		pinctrl-names = "enable", "disable";
+		pinctrl-0 = <&ps_enable>;
+		pinctrl-1 = <&ps_disable>;
+
+		ps5169,reg-num = <22>;
+		ps5169,reg-init = <
+			0x51 0x87
+			0x50 0x10
+			0x54 0x11
+			0x5d 0x56
+			0x52 0x20
+			0x55 0x00
+			0x56 0x00
+			0x57 0x00
+			0x58 0x00
+			0x59 0x00
+			0x5a 0x00
+			0x5b 0x00
+			0x5e 0x06
+			0x5f 0x00
+			0x60 0x00
+			0x61 0x03
+			0x65 0x40
+			0x66 0x00
+			0x67 0x03
+			0x75 0x0c
+			0x77 0x00
+			0x78 0x7c
+		>;
+
+		status = "okay";
+	};
+};
+
+&dp_tx {
+	mtk-dp-downgrade;
+	mmi,hub_monitor_list = "Y27q-20", "SAMSUNG";
+	mmi,dp_monitor_list = "P27h-30", "P32p-30", "Y27q-20";
+};
+
+&dispsys_config {
+	helper-value = <0>, /*MTK_DRM_OPT_STAGE*/
+		<1>, /*MTK_DRM_OPT_USE_CMDQ*/
+		<1>, /*MTK_DRM_OPT_USE_M4U*/
+		<1>, /*MTK_DRM_OPT_MMQOS_SUPPORT*/
+		<1>, /*MTK_DRM_OPT_MMDVFS_SUPPORT*/
+		<0>, /*MTK_DRM_OPT_SODI_SUPPORT*/
+		<1>, /*MTK_DRM_OPT_IDLE_MGR*/
+		<0>, /*MTK_DRM_OPT_IDLEMGR_SWTCH_DECOUPLE*/
+		<1>, /*MTK_DRM_OPT_IDLEMGR_BY_REPAINT*/
+		<0>, /*MTK_DRM_OPT_IDLEMGR_ENTER_ULPS*/
+		<0>, /*MTK_DRM_OPT_IDLEMGR_KEEP_LP11*/
+		<0>, /*MTK_DRM_OPT_DYNAMIC_RDMA_GOLDEN_SETTING*/
+		<1>, /*MTK_DRM_OPT_IDLEMGR_DISABLE_ROUTINE_IRQ*/
+		<1>, /*MTK_DRM_OPT_IDLEMGR_ASYNC*/
+		<0>, /*MTK_DRM_OPT_MET_LOG*/
+		<1>, /*MTK_DRM_OPT_USE_PQ*/
+		<1>, /*MTK_DRM_OPT_ESD_CHECK_RECOVERY*/
+		<1>, /*MTK_DRM_OPT_ESD_CHECK_SWITCH*/
+		<1>, /*MTK_DRM_OPT_PRESENT_FENCE*/
+		<0>, /*MTK_DRM_OPT_RDMA_UNDERFLOW_AEE*/
+		<1>, /*MTK_DRM_OPT_DSI_UNDERRUN_AEE*/
+		<0>, /*MTK_DRM_OPT_ODDMR_OD_AEE*/
+		<0>, /*MTK_DRM_OPT_ODDMR_DMR_AEE*/
+		<1>, /*MTK_DRM_OPT_HRT*/
+		<1>, /*MTK_DRM_OPT_HRT_MODE*/
+		<0>, /*MTK_DRM_OPT_DELAYED_TRIGGER*/
+		<1>, /*MTK_DRM_OPT_OVL_EXT_LAYER*/
+		<1>, /*MTK_DRM_OPT_AOD*/
+		<1>, /*MTK_DRM_OPT_RPO*/
+		<0>, /*MTK_DRM_OPT_DUAL_PIPE*/
+		<0>, /*MTK_DRM_OPT_DC_BY_HRT*/
+		<1>, /*MTK_DRM_OPT_OVL_WCG*/
+		<0>, /*MTK_DRM_OPT_OVL_SBCH*/
+		<1>, /*MTK_DRM_OPT_COMMIT_NO_WAIT_VBLANK*/
+		<0>, /*MTK_DRM_OPT_MET*/
+		<0>, /*MTK_DRM_OPT_REG_PARSER_RAW_DUMP*/
+		<0>, /*MTK_DRM_OPT_VP_PQ*/
+		<0>, /*MTK_DRM_OPT_GAME_PQ*/
+		<0>, /*MTK_DRM_OPT_MMPATH*/
+		<0>, /*MTK_DRM_OPT_HBM*/
+		<0>, /*MTK_DRM_OPT_VDS_PATH_SWITCH*/
+		<0>, /*MTK_DRM_OPT_LAYER_REC*/
+		<1>, /*MTK_DRM_OPT_CLEAR_LAYER*/
+		<1>, /*MTK_DRM_OPT_LFR*/
+		<0>, /*MTK_DRM_OPT_SF_PF*/
+		<1>, /*MTK_DRM_OPT_DYN_MIPI_CHANGE*/
+		<1>, /*MTK_DRM_OPT_PRIM_DUAL_PIPE*/
+		<1>, /*MTK_DRM_OPT_MSYNC2_0*/
+		<1>, /*MTK_DRM_OPT_MML_PRIMARY*/
+		<1>, /*MTK_DRM_OPT_MML_SUPPORT_CMD_MODE*/
+		<1>, /*MTK_DRM_OPT_MML_PQ*/
+		<1>, /*MTK_DRM_OPT_MML_IR*/
+		<0>, /*MTK_DRM_OPT_DUAL_TE*/
+		<1>, /*MTK_DRM_OPT_RES_SWITCH*/
+		<0>, /*MTK_DRM_OPT_PREFETCH_TE*/
+		<0>, /*MTK_DRM_OPT_VIDLE_APSRC_OFF*/
+		<0>, /*MTK_DRM_OPT_VIDLE_DSI_PLL_OFF*/
+		<0>, /*MTK_DRM_OPT_CHECK_TRIGGER_MERGE*/
+		<1>, /*MTK_DRM_OPT_VIRTUAL_DISP*/
+		<1>, /*MTK_DRM_OPT_OVL_BW_MONITOR*/
+		<0>, /*MTK_DRM_OPT_GPU_CACHE*/
+		<1>, /*MTK_DRM_OPT_SPHRT*/
+		<1>, /*MTK_DRM_OPT_SDPA_OVL_SWITCH*/
+		<1>, /*MTK_DRM_OPT_HRT_BY_LARB*/
+		<1>, /*MTK_DRM_OPT_RES_SWITCH_ON_AP*/
+		<1>, /*MTK_DRM_OPT_TILE_OVERHEAD*/
+		<0>, /*MTK_DRM_OPT_VBLANK_CONFIG_REC*/
+		<1>; /*MTK_DRM_OPT_OVL_WCG_BY_COLOR_MODE*/
+};
