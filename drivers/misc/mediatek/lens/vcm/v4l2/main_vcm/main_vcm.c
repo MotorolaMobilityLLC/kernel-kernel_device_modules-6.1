@@ -22,7 +22,13 @@ extern int i2c_lock_bus_helper(struct i2c_adapter *adap);
 	pr_info(DRIVER_NAME " [%s] " format, __func__, ##args)
 
 #define MAIN_VCM_NAME				"main_vcm"
-#define MAIN_VCM_MAX_FOCUS_POS			1023
+
+#if defined(CONFIG_FUJILT_RM_CAMERA_AK7377AF)
+	#define MAIN_VCM_MAX_FOCUS_POS			4095
+#else
+	#define MAIN_VCM_MAX_FOCUS_POS			1023
+#endif
+
 #if IS_ENABLED(CONFIG_MOT_AK7377_HALL_TEST)
 #define AFIOC_G_AFPOS _IOWR('A', 35, int)
 #endif
