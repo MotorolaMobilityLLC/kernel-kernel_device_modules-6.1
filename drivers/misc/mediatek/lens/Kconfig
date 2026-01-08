@@ -302,6 +302,11 @@ config FUJILT_RM_CAMERA_AK7377AF
 	  lens driver for the camera sensor module
 	  Set as y if the driver is used in this project
 
+config FUJILT_RW_CAMERA_DW9800SAF
+        bool "For FUJI RW camera DW9800S AF power off delay"
+        help
+          FUJI RW camera DW9800S AF power off delay
+
 config MOT_TELE_DW9784_OIS
 	bool "MOT TELE DW9784 OIS"
 	help
