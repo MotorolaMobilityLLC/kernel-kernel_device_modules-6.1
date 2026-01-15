@@ -12,7 +12,7 @@
 
 #include "mediatek/mt6897-moto-common-overlay-single-panel.dtsi"
 
-#include "mediatek/fuji-charger.dtsi"
+#include "mediatek/fujilt-charger.dtsi"
 #include "mediatek/fuji-fps.dtsi"
 #include "mediatek/fuji-ntc.dtsi"
 #include "mediatek/fujilt-display.dtsi"
@@ -344,15 +344,15 @@
 
 &low_battery_throttling {
         thd-volts-l = <
-                3369 3243 3133
+                3100 3031 2954
                 3772 3412 3277
                 4231 3753 3570>;
         thd-volts-h = <
-                3469 3369 3243
+                3155 3100 3031
                 3872 3772 3412
                 4331 4231 3753>;
-        lvsys-thd-volt-l = <3133>;
-        lvsys-thd-volt-h = <3243>;
+        lvsys-thd-volt-l = <2850>;
+        lvsys-thd-volt-h = <3031>;
 };
 
 &cpu_power_throttling {
