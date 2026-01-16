@@ -52,4 +52,10 @@ config UFSHID_DEBUG
 	help
 	  UFS HID Debug Enable (for check io stat during trigger)
 
+config UFS_HID_JEDEC
+	bool "UFS Host Initiated Defrag supportr"
+	depends on (SCSI_UFSHCD || SCSI_UFSHCD_QTI)
+	help
+	  Activate or deactive UFS HID JEDEC driver
+
 

@@ -24,6 +24,10 @@
 #endif
 #endif
 
+#if defined(CONFIG_UFS_HID_JEDEC)
+#include "hid_jedec/ufs_hid_jedec.h"
+#endif
+
 /*
  * MCQ define and struct
  */
@@ -310,6 +314,11 @@ struct ufs_mtk_host {
 	struct work_struct update_sysfs_work;
 	/* manual_gc */
 	struct ufs_manual_gc manual_gc;
+#endif
+#if defined(CONFIG_UFS_HID_JEDEC)
+	struct work_struct update_sysfs_hid_jedec_work;
+	/* ufs jedec hid */
+	struct ufs_hid_jedec_feature hid_jedec;
 #endif
 };
 

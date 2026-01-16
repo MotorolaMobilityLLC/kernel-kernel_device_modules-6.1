@@ -2106,6 +2106,10 @@ static int ufs_mtk_init(struct ufs_hba *hba)
 	}
 #endif
 
+#if defined(CONFIG_UFS_HID_JEDEC)
+	hid_jedec_init(hba);
+#endif
+
 	ufs_mtk_get_hw_ip_version(hba);
 
 #if IS_ENABLED(CONFIG_MTK_UFS_DEBUG_BUILD)

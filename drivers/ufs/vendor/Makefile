@@ -8,6 +8,9 @@ ifeq ($(CONFIG_UFSHID_V3),y)
 ccflags-y += -I$(DEVICE_MODULES_PATH)/drivers/ufs/v3
 endif
 ccflags-y += -I$(DEVICE_MODULES_PATH)/drivers/ufs/vendor/
+ifeq ($(CONFIG_UFS_HID_JEDEC),y)
+ccflags-y += -I$(DEVICE_MODULES_PATH)/drivers/ufs/hid_jedec
+endif
 
 # must after -I$(DEVICE_MODULES_PATH)/drivers/ufs/
 ccflags-y += -I$(srctree)/drivers/ufs/
@@ -32,6 +35,7 @@ ufs-mediatek-mod-$(CONFIG_UFSFEATURE)           += ufsfeature.o ufsfeature-mimic
 ufs-mediatek-mod-$(CONFIG_UFSHID)               += ufshid.o
 endif
 ufs-mediatek-mod-$(CONFIG_SCSI_SKHID)           += ufs-manual-gc.o
+ufs-mediatek-mod-$(CONFIG_UFS_HID_JEDEC)           += ../hid_jedec/ufs_hid_jedec.o
 ufs-mediatek-mod-$(CONFIG_FSCRYPT_WRAPED_KEY_MODE_SUPPORT) += ../ufshcd-moto-crypto.o
 
 # UFS KO with iSE enabled
@@ -48,4 +52,5 @@ ufs-mediatek-mod-ise-$(CONFIG_UFSFEATURE)           += ufsfeature.o ufsfeature-m
 ufs-mediatek-mod-ise-$(CONFIG_UFSHID)               += ufshid.o
 endif
 ufs-mediatek-mod-ise-$(CONFIG_SCSI_SKHID)           += ufs-manual-gc.o
+ufs-mediatek-mod-ise-$(CONFIG_UFS_HID_JEDEC)           += ../hid_jedec/ufs_hid_jedec.o
 ufs-mediatek-mod-ise-$(CONFIG_FSCRYPT_WRAPED_KEY_MODE_SUPPORT) += ../ufshcd-moto-crypto.o

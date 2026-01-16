@@ -7,6 +7,9 @@ ifeq ($(CONFIG_UFSHID_V3),y)
 ccflags-y += -I$(DEVICE_MODULES_PATH)/drivers/ufs/v3
 endif
 ccflags-y += -I$(DEVICE_MODULES_PATH)/drivers/ufs/vendor
+ifeq ($(CONFIG_UFS_HID_JEDEC),y)
+ccflags-y += -I$(DEVICE_MODULES_PATH)/drivers/ufs/hid_jedec
+endif
 ccflags-y += -I$(DEVICE_MODULES_PATH)/drivers/ufs/
 ccflags-y += -I$(srctree)/drivers/ufs/core/
 ccflags-y += -I$(srctree)/drivers/devfreq/
