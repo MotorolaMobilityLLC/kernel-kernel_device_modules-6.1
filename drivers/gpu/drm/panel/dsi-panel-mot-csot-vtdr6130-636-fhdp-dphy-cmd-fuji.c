@@ -641,11 +641,11 @@ static int lcm_setbacklight_cmdq(void *dsi, dcs_write_gce cb,
 	char bl_tb[] = {0x51, 0x0F, 0xff};
 	struct lcm *ctx = g_ctx;
 
-	/*if (atomic_read(&ctx->hbm_mode) && level) {
+	if (1 == atomic_read(&ctx->hbm_mode) && level) {
 		pr_info("hbm_mode = %d, skip backlight(%d)\n", atomic_read(&ctx->hbm_mode), level);
 		atomic_set(&ctx->current_backlight, level);
 		return 0;
-	}*/
+	}
 
 	if (!(atomic_read(&ctx->current_backlight) && level)) {
 		char *envp[2];
@@ -751,6 +751,8 @@ static struct mtk_panel_params ext_params_144hz = {
 	.panel_ver = 1,
 	.panel_name = "csot_vtdr6130_ltpo_1200_2670",
 	.panel_supplier = "csot-vtdr6130",
+
+	.check_panel_feature = 1,
 };
 
 
@@ -832,6 +834,8 @@ static struct mtk_panel_params ext_params_120hz = {
 	.panel_ver = 1,
 	.panel_name = "csot_vtdr6130_ltpo_1200_2670",
 	.panel_supplier = "csot-vtdr6130",
+
+	.check_panel_feature = 1,
 };
 
 static struct mtk_panel_params ext_params_90hz = {
@@ -913,6 +917,8 @@ static struct mtk_panel_params ext_params_90hz = {
 	.panel_ver = 1,
 	.panel_name = "csot_vtdr6130_ltpo_1200_2670",
 	.panel_supplier = "csot-vtdr6130",
+
+	.check_panel_feature = 1,
 };
 
 static struct mtk_panel_params ext_params_60hz = {
@@ -994,6 +1000,8 @@ static struct mtk_panel_params ext_params_60hz = {
 	.panel_ver = 1,
 	.panel_name = "csot_vtdr6130_ltpo_1200_2670",
 	.panel_supplier = "csot-vtdr6130",
+
+	.check_panel_feature = 1,
 };
 
 static struct mtk_panel_params ext_params_30hz = {
@@ -1075,6 +1083,8 @@ static struct mtk_panel_params ext_params_30hz = {
 	.panel_ver = 1,
 	.panel_name = "csot_vtdr6130_ltpo_1200_2670",
 	.panel_supplier = "csot-vtdr6130",
+
+	.check_panel_feature = 1,
 };
 
 static struct mtk_panel_params ext_params_24hz = {
@@ -1155,6 +1165,8 @@ static struct mtk_panel_params ext_params_24hz = {
 	.panel_ver = 1,
 	.panel_name = "csot_vtdr6130_ltpo_1200_2670",
 	.panel_supplier = "csot-vtdr6130",
+
+	.check_panel_feature = 1,
 };
 
 static struct mtk_panel_params ext_params_10hz = {
@@ -1235,6 +1247,8 @@ static struct mtk_panel_params ext_params_10hz = {
 	.panel_ver = 1,
 	.panel_name = "csot_vtdr6130_ltpo_1200_2670",
 	.panel_supplier = "csot-vtdr6130",
+
+	.check_panel_feature = 1,
 };
 
 static struct mtk_panel_params ext_params_1hz = {
@@ -1315,6 +1329,8 @@ static struct mtk_panel_params ext_params_1hz = {
 	.panel_ver = 1,
 	.panel_name = "csot_vtdr6130_ltpo_1200_2670",
 	.panel_supplier = "csot-vtdr6130",
+
+	.check_panel_feature = 1,
 };
 
 struct drm_display_mode *get_mode_by_id(struct drm_connector *connector,
@@ -1579,6 +1595,46 @@ static int pane_dc_set_cmdq(struct lcm *ctx, void *dsi, dcs_grp_write_gce cb, vo
 	return 0;
 }
 
+static struct mtk_panel_para_table hbm_on_table[] = {
+	{3, {0x51, 0x0F, 0xFF}},
+};
+
+static struct mtk_panel_para_table hbm_off_table[] = {
+	{3, {0x51, 0x0D, 0xBA}},
+};
+
+static int panel_hbm_set_cmdq(struct lcm *ctx, void *dsi, dcs_grp_write_gce cb, void *handle, uint32_t hbm_state)
+{
+	//unsigned int level = atomic_read(&ctx->current_backlight);
+	unsigned int fps = atomic_read(&ctx->current_fps);
+
+	if (hbm_state > 2) return -1;
+
+	pr_info("%s current_fps = %d hbm_state %d", __func__, fps, hbm_state);
+
+	switch (hbm_state)
+	{
+		case 0:
+			/*if (ctx->lhbm_en){
+				panel_lhbm_set_cmdq(dsi, cb, handle, 0, level,  fps);
+			}*/
+			cb(dsi, handle, hbm_off_table, ARRAY_SIZE(hbm_off_table));
+			break;
+		case 1:
+			cb(dsi, handle, hbm_on_table, ARRAY_SIZE(hbm_on_table));
+			break;
+		case 2:
+			/*if (ctx->lhbm_en){
+				panel_lhbm_set_cmdq(dsi, cb, handle, 1, level,  fps);
+			}*/
+			break;
+		default:
+			break;
+	}
+
+	atomic_set(&ctx->hbm_mode, hbm_state);
+	return 0;
+}
 
 static int panel_feature_get(struct drm_panel *panel, struct panel_param_info *param_info){
 
@@ -1622,7 +1678,8 @@ static int panel_feature_set(struct drm_panel *panel, void *dsi,
 			ret = -1;
 			break;
 		case PARAM_HBM:
-			pr_info("%s: HBM ramping, skip HBM mode:%d\n", __func__, param_info.value);
+			atomic_set(&ctx->hbm_mode, param_info.value);
+			panel_hbm_set_cmdq(ctx, dsi, cb, handle, param_info.value);
 			break;
 		case PARAM_DC:
 			pane_dc_set_cmdq(ctx, dsi, cb, handle, param_info.value);
