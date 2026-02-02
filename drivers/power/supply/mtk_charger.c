@@ -4195,6 +4195,7 @@ static bool mmi_is_power_supply_changed(struct mtk_charger *info)
 	return true;
 }
 
+#define CID_STATE_DETACHED 0 // 0=detached, 1=attached
 #define MMI_BATT_UEVENT_NUM (8)
 static void mmi_updata_batt_status(struct mtk_charger *info)
 {
@@ -4265,7 +4266,7 @@ static void mmi_updata_batt_status(struct mtk_charger *info)
 				  "POWER_SUPPLY_CHARGE_REAL_TYPE=%d", info->mmi.real_charger_type);
 
 			scnprintf(cid_state_string, CHG_SHOW_MAX_SIZE,
-				  "POWER_SUPPLY_CID_STATUS=%d", info->mmi.cid_state);
+				  "POWER_SUPPLY_CID_STATUS=%d", info->water_detected? CID_STATE_DETACHED:info->mmi.cid_state);
 
 			envp[0] = chrg_rate_string;
 			envp[1] = batt_age_string;
@@ -7667,7 +7668,7 @@ static int mmi_notify_cid_event(struct mtk_charger *pinfo) {
 	event_string = kmalloc(CHG_SHOW_MAX_SIEZE, GFP_KERNEL);
 
 	scnprintf(event_string, CHG_SHOW_MAX_SIEZE,
-			"POWER_SUPPLY_CID_STATUS=%d", pinfo->mmi.cid_state);
+			"POWER_SUPPLY_CID_STATUS=%d", pinfo->water_detected? CID_STATE_DETACHED:pinfo->mmi.cid_state);
 
 	batt_uenvp[0] = event_string;
 	batt_uenvp[1] = NULL;
