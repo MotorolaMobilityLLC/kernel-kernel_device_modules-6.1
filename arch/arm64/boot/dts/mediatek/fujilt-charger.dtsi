@@ -75,7 +75,7 @@
 
 &charger {
 	gauge = <&smart_battery>;
-	battery-cv = <4500000>;
+	battery-cv = <4520000>;
 	max-charger-voltage = <22000000>;
 	vbus-sw-ovp-voltage = <22000000>;
 	ac-charger-current = <3000000>;
@@ -113,22 +113,22 @@
 	mmi,batt-max-temp = <45>;
 	mmi,batt-min-temp = <0>;
 
-	mmi,mmi-temp-zones =    <10 4250 4000 2000>,
-                                <15 0 4000 4000>,
-				<45 4250 18000 12400>,
+	mmi,mmi-temp-zones =    <10 4250 5230 2620>,
+                                <15 0 5230 5230>,
+				<45 4230 18000 12400>,
 				<45 4280 12400 10000>,
-				<45 4350 10000 8000>,
-				<45 4500 8000 6000 >;
-	mmi,mmi-ffc-zones =     <10 4500 293>,
-				<15 4500 293>,
-				<25 4530 1315>,
-				<35 4530 1376>,
-				<45 4530 1679>;
-	mmi,mmi-normal-zones = <10 4500 293>,
-				<15 4500 293>,
-				<25 4500 293>,
-				<35 4500 293>,
-				<45 4500 537>;
+				<45 4450 10000 8000>,
+				<45 4520 8000 5230 >;
+	mmi,mmi-ffc-zones =     <10 4520 292>,
+				<15 4520 292>,
+				<25 4550 1315>,
+				<35 4550 1376>,
+				<45 4550 1679>;
+	mmi,mmi-normal-zones = <10 4520 292>,
+				<15 4520 292>,
+				<25 4520 292>,
+				<35 4520 292>,
+				<45 4520 553>;
 	/*typec_otp*/
 	mmi,typecotp-charger;
 
@@ -230,8 +230,8 @@
                 uirbat_pull_up_r_full = <24000>;/*24k*/
 
                 latest_fw_version = [01 02 08 52 32];
-                mmi,batt-ids-map = "ATLR041NVT","00";
-                mmi,batt-ids-map-alis = "ATLR041NVT","ATLR041NVT-5000MAH";
+                mmi,batt-ids-map = "LWNR081SWD","00";
+                mmi,batt-ids-map-alis = "LWNR081SWD","LWNR081SWD-5370MAH";
         };
 
 	sc858x_slave:sc858x-slave@6e{
@@ -351,7 +351,7 @@
 	compatible = "mediatek,charger,pe5";
 	gauge = <&smart_battery>;
 	polling-interval = <10000>;
-	vbat-cv = <4530>;
+	vbat-cv = <4550>;
 	start-soc-min = <0>;
 	start-soc-max = <90>;
 	idvchg-term = <500>;
