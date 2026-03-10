@@ -161,12 +161,21 @@
 	compatible = "mmi,smart-battery";
 	mmi,ui_full_soc = <97>;
 
-	mmi,vbatt-empty-mv = <2850>;
-	mmi,vbatt-empty-cold-mv = <2900>;
-	mmi,batt-cold-threshold = <50>; /*temperature 5 degrees*/
-
 	mmi,vbatt-low-mv = <3300>;
-	mmi,vbatt-low-cold-mv = <3700>;
+	mmi,vbatt-empty-mv = <2900>;
+
+	mmi,batt-cool-degree = <50>; /*temperature 5 degrees*/
+	mmi,vbatt-cool-low-mv = <3600>; //cutoff+200mv
+	mmi,vbatt-cool-empty-mv = <3200>; //cutoff-200mv
+	mmi,batt-cool-shutdown-volt = <3400>; //real cutoff 3.4V
+
+	mmi,batt-cold-degree = <(-50)>; /*temperature -5 degrees*/
+	mmi,vbatt-cold-low-mv = <3800>; //cutoff+200mv
+	mmi,vbatt-cold-empty-mv = <3400>; //cutoff-200mv
+	mmi,batt-cold-shutdown-volt = <3600>; //real cutoff 3.6V
+
+	mmi,enable-raise-battempty-threshold;
+	cyclecount-shutdown-voltage-zones = <0 0xffff 3000>;
 };
 
 &i2c5 {
