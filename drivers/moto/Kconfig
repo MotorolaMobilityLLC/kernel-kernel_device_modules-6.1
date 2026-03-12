@@ -76,4 +76,10 @@ config CAPSENSE_HALL_CAL
 	help
 	  This feature will enable hal cal in sarsensor
 
+config MOTO_LOCKING_2
+	tristate "Moto sched boost lock v2"
+	default n
+	help
+	  This feature will enable moto sched lock v2 boost
+
 endmenu
