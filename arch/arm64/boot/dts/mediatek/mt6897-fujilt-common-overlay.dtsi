@@ -415,3 +415,46 @@
 	status = "okay";
 };
 
+&low_battery_throttling {
+        thd-volts-l = <
+                3120 2964 2898
+                3420 3370 3320
+                3569 3519 3469>;
+        thd-volts-h = <
+                3177 3120 2964
+                3470 3420 3370
+                3619 3569 3519>;
+        lvsys-thd-volt-l = <2800>;
+        lvsys-thd-volt-h = <2964>;
+};
+
+&cpu_power_throttling {
+        lbat-limit-freq-lv2 = < 1800000  1800000 1800000>;
+        lbat-limit-freq-lv3 = < 1300000  1300000 1300000>;
+};
+
+&gpu_power_throttling {
+        lbat-limit-freq = <1200000 700000 600000>;
+};
+
+&bp_thl {
+        soc-limit-threshold = <5>;
+};
+
+&mt6375_batoc_throttle {
+        status = "disabled";
+};
+
+&md_power_throttling {
+        lbat-max-level = <3>;
+        lbat-reduce-tx-lv1 = <0>;
+        lbat-reduce-tx-lv2 = <0>;
+        lbat-reduce-tx-lv3 = <0>;
+
+        oc-max-level = <2>;
+        oc-reduce-tx-lv1 = <0>;
+        oc-reduce-tx-lv2 = <0>;
+
+        soc-max-level = <1>;
+        soc-reduce-tx-lv1 = <6>;
+};
