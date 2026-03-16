@@ -342,50 +342,6 @@
 	};
 };
 
-&low_battery_throttling {
-        thd-volts-l = <
-                3100 3031 2954
-                3772 3412 3277
-                4231 3753 3570>;
-        thd-volts-h = <
-                3155 3100 3031
-                3872 3772 3412
-                4331 4231 3753>;
-        lvsys-thd-volt-l = <2850>;
-        lvsys-thd-volt-h = <3031>;
-};
-
-&cpu_power_throttling {
-        lbat-limit-freq-lv2 = < 1800000  1800000 1800000>;
-        lbat-limit-freq-lv3 = < 1200000  1200000 1200000>;
-};
-
-&gpu_power_throttling {
-        lbat-limit-freq = <1200000 700000 600000>;
-};
-
-&bp_thl {
-        soc-limit-threshold = <5>;
-};
-
-&mt6375_batoc_throttle {
-        status = "disabled";
-};
-
-&md_power_throttling {
-        lbat-max-level = <3>;
-        lbat-reduce-tx-lv1 = <0>;
-        lbat-reduce-tx-lv2 = <0>;
-        lbat-reduce-tx-lv3 = <0>;
-
-        oc-max-level = <2>;
-        oc-reduce-tx-lv1 = <0>;
-        oc-reduce-tx-lv2 = <0>;
-
-        soc-max-level = <1>;
-        soc-reduce-tx-lv1 = <6>;
-};
-
 &ssusb {
         /delete-property/ maximum-speed;
         maximum-speed = "super-speed";
