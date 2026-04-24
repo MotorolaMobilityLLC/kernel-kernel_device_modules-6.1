@@ -245,6 +245,8 @@ struct chg_alg_device *chg_alg_device_register(const char *name,
 	dev_set_name(&chg_dev->dev, algo_name);
 	dev_set_drvdata(&chg_dev->dev, devdata);
 	kfree(algo_name);
+	chg_dev->ops = ops;
+	chg_dev->driver_data = devdata;
 
 	/* Copy properties */
 	if (props) {
@@ -256,7 +258,6 @@ struct chg_alg_device *chg_alg_device_register(const char *name,
 		kfree(chg_dev);
 		return ERR_PTR(rc);
 	}
-	chg_dev->ops = ops;
 	return chg_dev;
 }
 EXPORT_SYMBOL(chg_alg_device_register);
