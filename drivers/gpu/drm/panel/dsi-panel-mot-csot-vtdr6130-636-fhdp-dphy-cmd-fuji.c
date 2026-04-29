@@ -334,6 +334,7 @@ if(ctx->version == 1){
 		lcm_dcs_write_seq_static(ctx, 0x75,0x00);
 		lcm_dcs_write_seq_static(ctx, 0xF0,0xAA,0x1B);
 		lcm_dcs_write_seq_static(ctx, 0xD0,0x11,0x00);
+		lcm_dcs_write_seq_static(ctx, 0xD1,0x00,0x01);
 		lcm_dcs_write_seq_static(ctx, 0xF0,0xAA,0x10);
 		lcm_dcs_write_seq_static(ctx, 0xCF,0x16);
 		break;
@@ -1454,6 +1455,7 @@ static void mode_switch_to_60(struct drm_panel *panel,
 		lcm_dcs_write_seq_static(ctx, 0x75,0x00);
 		lcm_dcs_write_seq_static(ctx, 0xF0,0xAA,0x1B);
 		lcm_dcs_write_seq_static(ctx, 0xD0,0x11,0x00);
+		lcm_dcs_write_seq_static(ctx, 0xD1,0x00,0x01);
 		lcm_dcs_write_seq_static(ctx, 0xF0,0xAA,0x10);
 		lcm_dcs_write_seq_static(ctx, 0xCF,0x16);
 
