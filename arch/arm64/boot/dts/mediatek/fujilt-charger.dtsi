@@ -75,7 +75,7 @@
 
 &charger {
 	gauge = <&smart_battery>;
-	battery-cv = <4520000>;
+	battery-cv = <4500000>;
 	max-charger-voltage = <22000000>;
 	vbus-sw-ovp-voltage = <22000000>;
 	ac-charger-current = <3000000>;
@@ -119,17 +119,17 @@
 				<45 4230 18000 12400>,
 				<45 4280 12400 10000>,
 				<45 4450 10000 8000>,
-				<45 4520 8000 5230 >;
-	mmi,mmi-ffc-zones =     <10 4520 292>,
-				<15 4520 292>,
-				<25 4550 919>,
-				<35 4550 988>,
-				<45 4550 1308>;
-	mmi,mmi-normal-zones = <10 4520 292>,
-				<15 4520 292>,
-				<25 4520 292>,
-				<35 4520 292>,
-				<45 4520 553>;
+				<45 4500 8000 5230 >;
+	mmi,mmi-ffc-zones =     <10 4500 292>,
+				<15 4500 292>,
+				<25 4530 919>,
+				<35 4530 988>,
+				<45 4530 1308>;
+	mmi,mmi-normal-zones = <10 4500 292>,
+				<15 4500 292>,
+				<25 4500 292>,
+				<35 4500 292>,
+				<45 4500 553>;
 	/*typec_otp*/
 	mmi,typecotp-charger;
 
@@ -363,7 +363,7 @@
 	compatible = "mediatek,charger,pe5";
 	gauge = <&smart_battery>;
 	polling-interval = <10000>;
-	vbat-cv = <4550>;
+	vbat-cv = <4530>;
 	start-soc-min = <0>;
 	start-soc-max = <90>;
 	idvchg-term = <500>;
