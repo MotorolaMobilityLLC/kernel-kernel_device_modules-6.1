@@ -2874,7 +2874,6 @@ static int mmi_thermal_ratio(struct pe50_algo_info *info, int ibat, int vbat)
 	return ratio;
 }
 
-#define MIN(a, b)			((a) >= (b) ? (b) : (a))
 static int pe50_algo_cc_cv_with_ta_cv(struct pe50_algo_info *info)
 {
 	int ret, vbat, ibat, vsys, fcc_min, ratio;
