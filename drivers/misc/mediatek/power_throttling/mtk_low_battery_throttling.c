@@ -30,7 +30,6 @@
 #define LVSYS_THD_VOLT_L 2900
 #define MAX_INT 0x7FFFFFFF
 #define MIN_LBAT_VOLT 2000
-#define MAX(a, b) ((a) > (b) ? (a) : (b))
 
 struct lbat_intr_tbl {
 	unsigned int volt_thd;
