@@ -405,8 +405,9 @@ static uint32_t g_od_udma_merge_lines_cand[] = {
 
 static struct mtk_disp_oddmr_parital_data_v dbi_part_data;
 
+#ifndef MIN
 #define MIN(a,b) (((a)<(b))?(a):(b))
-
+#endif
 
 static unsigned char lookup[16] = {
 	0x0, 0x8, 0x4, 0xc, 0x2, 0xa, 0x6, 0xe,
