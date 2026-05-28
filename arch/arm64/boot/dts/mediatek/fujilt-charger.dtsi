@@ -460,7 +460,7 @@
 };
 
 &extcon_usb {
-	vbus-current = <1800000>;
+	vbus-current = <1100000>;
 };
 
 &mt6363_dynamic_loading_throttling {
