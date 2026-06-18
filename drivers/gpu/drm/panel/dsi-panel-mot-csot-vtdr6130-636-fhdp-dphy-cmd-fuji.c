@@ -460,6 +460,9 @@ static int lcm_unprepare(struct drm_panel *panel)
 	printk("%s enter  \n",__func__);
 	lcm_dcs_write_seq_static(ctx, 0x28);
 	usleep_range(20000, 20100);
+	lcm_dcs_write_seq_static(ctx, 0xF0,0xAA,0x12);
+	lcm_dcs_write_seq_static(ctx, 0xBB,0x02,0x31);
+	lcm_dcs_write_seq_static(ctx, 0xF0,0xAA,0x00);
 	lcm_dcs_write_seq_static(ctx, 0x10);
 	usleep_range(120 * 1000, 121 * 1000);
 
