@@ -1601,7 +1601,6 @@ static int pane_dc_set_cmdq(struct lcm *ctx, void *dsi, dcs_grp_write_gce cb, vo
 {
 	unsigned int para_count = 0;
 	struct mtk_panel_para_table *pTable;
-	int i;
 
 	if (dc_state) {
 		para_count = sizeof(panel_dc_on) / sizeof(struct mtk_panel_para_table);
@@ -1610,13 +1609,8 @@ static int pane_dc_set_cmdq(struct lcm *ctx, void *dsi, dcs_grp_write_gce cb, vo
 		para_count = sizeof(panel_dc_off) / sizeof(struct mtk_panel_para_table);
 		pTable = panel_dc_off;
 	}
-
-	for (i = 0; i < para_count; i++) {
-		lcm_dcs_write(ctx, pTable[i].para_list, pTable[i].count);
-	}
-
+	cb(dsi, handle, pTable, para_count);
 	atomic_set(&ctx->dc_mode, dc_state);
-	usleep_range(17 * 1000, 18 * 1000);
 	pr_info("%s: current_fps %d\n", __func__, atomic_read(&ctx->current_fps));
 	return 0;
 }
