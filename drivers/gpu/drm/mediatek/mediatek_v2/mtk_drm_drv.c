@@ -8104,6 +8104,17 @@ static bool mtk_drm_check_panel_feature_valid(struct drm_crtc *crtc, struct pane
 {
 	uint32_t param_value = 0;
 	bool  ret = true;
+
+	if (param_info.param_idx == PARAM_HBM && param_info.value == 0) {
+		/* Workaround for MediaTek panel driver HBM cache desynchronization on Android 17.
+		 * If the display backlight was set to 0 (FOD off-screen touch), the driver silently
+		 * resets its cached hbm_mode state to 0. When we later try to turn HBM off (value = 0),
+		 * the driver checks the cache, sees 0, and skips the actual hardware DSI register write.
+		 * We force a state transition (any HBM MODE -> 0) to bypass the driver's skip validation check.
+		 */
+		return true;
+	}
+
 	if (!mtk_drm_crtc_get_panel_feature(crtc, param_info.param_idx, &param_value)) {
 		if (param_value == param_info.value) {
 			ret = false;
