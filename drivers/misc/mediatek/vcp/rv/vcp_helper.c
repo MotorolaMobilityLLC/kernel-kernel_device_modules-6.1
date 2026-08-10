@@ -3426,8 +3426,35 @@ static void vcp_device_shutdown(struct platform_device *pdev)
 	}
 }
 
+static bool vcp_mbox_has_pending_messages(struct mtk_mbox_device *mbdev)
+{
+	unsigned int i;
+
+	if (!mbdev || !mbdev->pin_send_table)
+		return false;
+
+	for (i = 0; i < mbdev->send_count; i++) {
+		struct mtk_mbox_pin_send *pin = &mbdev->pin_send_table[i];
+
+		if (mtk_mbox_check_send_irq(mbdev, pin->mbox, pin->pin_index))
+			return true;
+	}
+	return false;
+}
+
 static int mtk_vcp_suspend(struct device *pdev)
 {
+	/*
+	 * MOTO: Bugfix for VCP Mailbox Sync (IKSWA17-31785 / IKSWA17-35056)
+	 * Do not block system suspend with long udelays to avoid side-effects
+	 * on USB and other domains. Instead, abort the suspend if the mailbox
+	 * is busy processing graphics messages.
+	 */
+	if (vcp_mbox_has_pending_messages(&vcp_mboxdev)) {
+		pr_warn("[VCP][WARN] Mailbox busy, aborting suspend to prevent deadlock.\n");
+		return -EBUSY;
+	}
+
 	pr_notice("[VCP] %s done\n", __func__);
 	return 0;
 }

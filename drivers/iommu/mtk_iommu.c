@@ -2963,6 +2963,17 @@ repeat:
 skip_smi:
 	pm_runtime_enable(dev);
 
+	/*
+	 * MOTO: Bugfix for VCP/GPU Mali fence timeouts (IKSWA17-31785)
+	 * Delay the auto-suspend of the SMMU domain by 8ms to allow pending
+	 * VCP/GPU buffer unmappings to commit before the clocks are gated.
+	 *
+	 * The delay need to 8 ms which is lower than the time needed to render a frame at 120 fps.
+	 * or 6 ms which is lower than the time needed to render a frame at 144 fps.
+	 */
+	pm_runtime_set_autosuspend_delay(dev, 8);
+	pm_runtime_use_autosuspend(dev);
+
 	if (data->smicomm_dev) {
 		link = device_link_add(data->smicomm_dev, dev,
 				DL_FLAG_STATELESS | DL_FLAG_PM_RUNTIME);
