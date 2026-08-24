@@ -298,8 +298,13 @@ static int mmdvfs_vcp_ipi_send(const u8 func, const u8 idx, const u8 opp, u32 *d
 		if (mmdvfs_rst_clk_done && func == FUNC_CLKMUX_ENABLE)
 			break;
 		if (func == FUNC_VMM_GENPD_NOTIFY || func == FUNC_VMM_CEIL_ENABLE ||
-			func == FUNC_MMDVFS_LP_MODE || (func == FUNC_CLKMUX_ENABLE && !opp))
+			func == FUNC_MMDVFS_LP_MODE || (func == FUNC_CLKMUX_ENABLE && !opp)) {
+			if (func == FUNC_CLKMUX_ENABLE)
+				ret = -2;
 			goto ipi_send_end;
+		}
+		if (func == FUNC_CLKMUX_ENABLE && opp)
+			break;
 		if (++retry > VCP_SYNC_TIMEOUT_MS) {
 			ret = -ETIMEDOUT;
 			goto ipi_send_end;
@@ -1560,6 +1565,8 @@ static void mmdvfs_fmeter_dump(void)
 
 static int mmdvfs_vcp_notifier_callback(struct notifier_block *nb, unsigned long action, void *data)
 {
+	u32 mux_ena, mux_ena_done;
+
 	switch (action) {
 	case VCP_EVENT_READY:
 		cb_timestamp[2] = sched_clock();
@@ -1573,6 +1580,17 @@ static int mmdvfs_vcp_notifier_callback(struct notifier_block *nb, unsigned long
 		mutex_lock(&mmdvfs_vcp_cb_mutex);
 		mmdvfs_vcp_cb_ready = true;
 		mutex_unlock(&mmdvfs_vcp_cb_mutex);
+		mux_ena_done = readl(MEM_CLKMUX_ENABLE_DONE);
+		mux_ena = readl(MEM_CLKMUX_ENABLE);
+		if (mux_ena != mux_ena_done) {
+			MMDVFS_DBG("FUNC_CLKMUX_ENABLE_ALL start mux_ena:%#x mux_ena_done:%#x",
+				mux_ena, mux_ena_done);
+			mmdvfs_vcp_ipi_send(FUNC_CLKMUX_ENABLE_ALL, MAX_OPP, MAX_OPP, NULL);
+			mux_ena_done = readl(MEM_CLKMUX_ENABLE_DONE);
+			mux_ena = readl(MEM_CLKMUX_ENABLE);
+			MMDVFS_DBG("FUNC_CLKMUX_ENABLE_ALL end mux_ena:%#x mux_ena_done:%#x",
+				mux_ena, mux_ena_done);
+		}
 		if (hqa_enable)
 			mtk_mmdvfs_enable_vmm(true);
 		break;
@@ -1768,32 +1786,50 @@ ccu_init_end:
 static int mtk_mmdvfs_clk_enable(const u8 clk_idx)
 {
 	int err;
+	u32 mux_ena, mux_ena_done;
 
 	if (!mmdvfs_is_init_done())
 		return 0;
 
 	err = set_clkmux_memory(clk_idx, true);
 
-	if (err || is_vcp_suspending_ex())
+	if (err || is_vcp_suspending_ex()) {
+		MMDVFS_DBG("err:%d vcp_suspend:%d clk_idx:%hhu",
+			err, is_vcp_suspending_ex(), clk_idx);
 		return 0;
+	}
 
 	mmdvfs_vcp_ipi_send(FUNC_CLKMUX_ENABLE, clk_idx, true, NULL);
+
+	mux_ena_done = readl(MEM_CLKMUX_ENABLE_DONE);
+	mux_ena = readl(MEM_CLKMUX_ENABLE);
+	//MMDVFS_DBG("clk_idx:%d mux_ena:%#x mux_ena_done:%#x",
+	//	clk_idx, mux_ena, mux_ena_done);
 	return 0;
 }
 
 static int mtk_mmdvfs_clk_disable(const u8 clk_idx)
 {
 	int err;
+	u32 mux_ena, mux_ena_done;
 
 	if (!mmdvfs_is_init_done())
 		return 0;
 
 	err = set_clkmux_memory(clk_idx, false);
 
-	if (err || is_vcp_suspending_ex())
+	if (err || is_vcp_suspending_ex()) {
+		MMDVFS_DBG("err:%d vcp_suspend:%d clk_idx:%d",
+			err, is_vcp_suspending_ex(), clk_idx);
 		return 0;
+	}
 
 	mmdvfs_vcp_ipi_send(FUNC_CLKMUX_ENABLE, clk_idx, false, NULL);
+
+	mux_ena_done = readl(MEM_CLKMUX_ENABLE_DONE);
+	mux_ena = readl(MEM_CLKMUX_ENABLE);
+	//MMDVFS_DBG("clk_idx:%d mux_ena:%#x mux_ena_done:%#x",
+	//	clk_idx, mux_ena, mux_ena_done);
 	return 0;
 }
 
