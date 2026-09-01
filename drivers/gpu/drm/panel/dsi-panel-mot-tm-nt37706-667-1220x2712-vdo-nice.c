@@ -1273,12 +1273,20 @@ static int panel_hbm_set_cmdq(struct lcm *ctx, void *dsi, dcs_grp_write_gce cb, 
 	{
 		case 0:
 			if (ctx->lhbm_en){
-				panel_lhbm_set_cmdq(ctx, dsi, cb, handle, 0, level, fps);
+				if (level == 0) {
+					pr_info("%s: current_bl is 0, skip restore backlight during early boot\n", __func__);
+				} else {
+					panel_lhbm_set_cmdq(ctx, dsi, cb, handle, 0, level, fps);
+				}
 			}
 			break;
 		case 1:
 			if (ctx->lhbm_en) {
-				panel_lhbm_set_cmdq(ctx, dsi, cb, handle, 0, level, fps);
+				if (level == 0) {
+					pr_info("%s: current_bl is 0, skip restore backlight during early boot\n", __func__);
+				} else {
+					panel_lhbm_set_cmdq(ctx, dsi, cb, handle, 0, level, fps);
+				}
 			} else {
 				cb(dsi, handle, &hbm_on_table, 1);
 			}
